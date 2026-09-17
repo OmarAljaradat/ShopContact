@@ -1,4 +1,9 @@
 {
+  "name": "shopcoin15-studio",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "node server.js"
+  },
   "dependencies": {
     "puppeteer-core": "^25.11.0"
   }
