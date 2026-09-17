@@ -1,34 +1,38 @@
 /**
- * ShopCoin15 Studio - EA FC 27 Reels Engine (Version 3.0 Magnetic Pro)
+ * ShopCoin15 Studio - EA FC 27 Reels Engine (Version 4.0 Natural Controls)
  * 1. Strictly text on screen + background music (NO voiceover complexity).
  * 2. Pure idea bank where user has 100% control over players.
  * 3. 100% Authentic EA Sports FC 27 marble background & official EA FC 27 and ShopCoin15 logos.
- * 4. Butter-smooth delta dragging with SMART MAGNETIC SNAPPING (X=50% Center Magnet & Visual Guides).
- * 5. Nudge controls (⬆️ ⬇️ ⬅️ ➡️) + One-Click Center button (🎯) + Scale slider.
+ * 4. PURE STABLE COORDINATES: Elements have width: max-content and canvas has direction: ltr.
+ *    Moving right or left NEVER changes element size! Size is 100% constant and independent.
+ * 5. NATURAL SIZE & POSITION CONTROLS:
+ *    - Dedicated Scale slider, -5% and +5% buttons, and quick presets (85%, 100%, 118%).
+ *    - Corner resize handle (⤡) on canvas.
+ *    - Center 50% button + precision nudge arrows (⬆️ ⬇️ ⬅️ ➡️).
  * 6. Two dedicated sections: 🏆 الترتيب التنازلي (Countdown) & ⚔️ مقارنة العمالقة (Versus Duel).
  */
 
 window.ReelsEngine = (function() {
-    const STORAGE_KEY = 'shopcoin15_reel_layouts_v3';
+    const STORAGE_KEY = 'shopcoin15_reel_layouts_v4';
 
     // ---- 1. DEFAULT PERFECT-ALIGNED LAYOUTS (Percentages) ----
     const DEFAULT_LAYOUTS = {
         countdown: {
-            rank: { top: 7.5, left: 50 },
-            title: { top: 16.5, left: 50 },
+            rank: { top: 7.5, left: 50, scale: 1.0 },
+            title: { top: 16.5, left: 50, scale: 1.0 },
             card: { top: 28.5, left: 50, scale: 1.0 },
-            playerName: { top: 78.5, left: 50 },
-            fcLogo: { top: 4, left: 88 },
-            scLogo: { top: 91, left: 50 }
+            playerName: { top: 78.5, left: 50, scale: 1.0 },
+            fcLogo: { top: 4, left: 88, scale: 1.0 },
+            scLogo: { top: 91, left: 50, scale: 1.0 }
         },
         versus: {
-            title: { top: 12.5, left: 50 },
+            title: { top: 12.5, left: 50, scale: 1.0 },
             cardA: { top: 27, left: 73, scale: 0.92 },
             cardB: { top: 27, left: 27, scale: 0.92 },
-            vsBadge: { top: 45, left: 50 },
-            question: { top: 77, left: 50 },
-            fcLogo: { top: 4, left: 88 },
-            scLogo: { top: 91, left: 50 }
+            vsBadge: { top: 45, left: 50, scale: 1.0 },
+            question: { top: 77, left: 50, scale: 1.0 },
+            fcLogo: { top: 4, left: 88, scale: 1.0 },
+            scLogo: { top: 91, left: 50, scale: 1.0 }
         }
     };
 
@@ -52,7 +56,6 @@ window.ReelsEngine = (function() {
         ]
     };
 
-    // Load persisted layouts from localStorage if available
     function loadSavedLayouts() {
         try {
             const saved = localStorage.getItem(STORAGE_KEY);
@@ -176,8 +179,8 @@ window.ReelsEngine = (function() {
         timelineProgress: 0,
         showSafeZone: false,
         dragEnabled: true,
-        magnetEnabled: true, // Magnetic Snapping is ACTIVE by default
-        selectedDragElement: 'card', // Default selected item
+        magnetEnabled: true,
+        selectedDragElement: 'card',
         layouts: loadSavedLayouts()
     };
 
@@ -277,9 +280,10 @@ window.ReelsEngine = (function() {
         }
     }
 
-    // ---- 4. BUTTER-SMOOTH DRAG & SMART MAGNETIC SNAPPING ENGINE ----
+    // ---- 4. DRAG & RESIZE ENGINE (100% INDEPENDENT OF SIZE) ----
     let activeDrag = null;
-    const SNAP_TOLERANCE_X = 3.5; // percentage magnet snap distance
+    let activeResize = null;
+    const SNAP_TOLERANCE_X = 3.5;
     const SNAP_TOLERANCE_Y = 3.0;
 
     function getSnapTargets(dragId) {
@@ -288,8 +292,8 @@ window.ReelsEngine = (function() {
 
         if (state.activeSection === 'versus') {
             targetsX.push(
-                { x: 27, label: 'محاذاة كرت اليمين (27%)' },
-                { x: 73, label: 'محاذاة كرت اليسار (73%)' }
+                { x: 73, label: 'محاذاة كرت اليمين (73%)' },
+                { x: 27, label: 'محاذاة كرت اليسار (27%)' }
             );
 
             const secLayout = state.layouts.versus;
@@ -307,28 +311,63 @@ window.ReelsEngine = (function() {
         const canvas = document.getElementById('exportCanvas');
         if (!canvas) return;
 
-        canvas.onmousedown = onDragStart;
+        canvas.onmousedown = onPointerStart;
         canvas.ontouchstart = (e) => {
-            if (state.dragEnabled && e.target.closest('[data-drag-id]')) {
+            if (state.dragEnabled && (e.target.closest('[data-drag-id]') || e.target.closest('[data-resize-id]'))) {
                 e.preventDefault();
             }
-            onDragStart(e);
+            onPointerStart(e);
         };
 
-        window.onmousemove = onDragMove;
+        window.onmousemove = onPointerMove;
         window.ontouchmove = (e) => {
-            if (activeDrag) {
+            if (activeDrag || activeResize) {
                 e.preventDefault();
             }
-            onDragMove(e);
+            onPointerMove(e);
         };
 
-        window.onmouseup = onDragEnd;
-        window.ontouchend = onDragEnd;
+        window.onmouseup = onPointerEnd;
+        window.ontouchend = onPointerEnd;
+
+        // Mouse wheel scale when hovering selected element
+        canvas.onwheel = (e) => {
+            if (state.dragEnabled && state.selectedDragElement) {
+                const target = e.target.closest(`[data-drag-id="${state.selectedDragElement}"]`);
+                if (target) {
+                    e.preventDefault();
+                    const delta = e.deltaY < 0 ? 0.04 : -0.04;
+                    adjustScaleSelected(delta);
+                }
+            }
+        };
     }
 
-    function onDragStart(e) {
+    function onPointerStart(e) {
         if (!state.dragEnabled) return;
+
+        // 1. Check if clicking on resize handle
+        const resizeHandle = e.target.closest('[data-resize-id]');
+        if (resizeHandle) {
+            e.preventDefault();
+            e.stopPropagation();
+            const resizeId = resizeHandle.getAttribute('data-resize-id');
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+            const secLayout = state.layouts[state.activeSection] || DEFAULT_LAYOUTS[state.activeSection];
+            const curScale = secLayout[resizeId]?.scale || 1.0;
+
+            activeResize = {
+                resizeId,
+                startX: clientX,
+                startY: clientY,
+                startScale: curScale
+            };
+            return;
+        }
+
+        // 2. Check if clicking on draggable element
         const target = e.target.closest('[data-drag-id]');
         if (!target) return;
 
@@ -360,80 +399,113 @@ window.ReelsEngine = (function() {
             canvasRect: canvasRect
         };
 
+        // Visual selection indicator
+        document.querySelectorAll('[data-drag-id]').forEach(el => el.classList.remove('ring-2', 'ring-emerald-400', 'ring-offset-2', 'shadow-2xl'));
         target.classList.add('ring-2', 'ring-emerald-400', 'ring-offset-2', 'shadow-2xl');
         updateSelectedElementInPanel();
     }
 
-    function onDragMove(e) {
-        if (!activeDrag) return;
-        e.preventDefault();
+    function onPointerMove(e) {
+        // Handle Resize
+        if (activeResize) {
+            e.preventDefault();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
 
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            const dy = clientY - activeResize.startY;
+            const dx = activeResize.startX - clientX;
+            const delta = (dy + dx) / 220;
 
-        const canvasRect = activeDrag.canvasRect;
-        const dx = clientX - activeDrag.startMouseX;
-        const dy = clientY - activeDrag.startMouseY;
+            let newScale = Math.round((activeResize.startScale + delta) * 100) / 100;
+            newScale = Math.max(0.5, Math.min(1.8, newScale));
 
-        const dxPercent = (dx / canvasRect.width) * 100;
-        const dyPercent = (dy / canvasRect.height) * 100;
+            const secLayout = state.layouts[state.activeSection];
+            if (!secLayout[activeResize.resizeId]) secLayout[activeResize.resizeId] = {};
+            secLayout[activeResize.resizeId].scale = newScale;
 
-        let rawLeft = activeDrag.startLeft + dxPercent;
-        let rawTop = activeDrag.startTop + dyPercent;
-
-        // Keep inside canvas bounds
-        rawLeft = Math.max(5, Math.min(95, rawLeft));
-        rawTop = Math.max(2, Math.min(96, rawTop));
-
-        let finalLeft = rawLeft;
-        let finalTop = rawTop;
-        let snapXMatch = null;
-        let snapYMatch = null;
-
-        // SMART MAGNET SNAPPING
-        if (state.magnetEnabled !== false) {
-            const { targetsX, targetsY } = getSnapTargets(activeDrag.dragId);
-
-            for (const t of targetsX) {
-                if (Math.abs(rawLeft - t.x) <= SNAP_TOLERANCE_X) {
-                    finalLeft = t.x;
-                    snapXMatch = t;
-                    break;
-                }
+            const elem = document.querySelector(`[data-drag-id="${activeResize.resizeId}"]`);
+            if (elem) {
+                elem.style.transform = `translateX(-50%) scale(${newScale})`;
             }
 
-            for (const t of targetsY) {
-                if (Math.abs(rawTop - t.y) <= SNAP_TOLERANCE_Y) {
-                    finalTop = t.y;
-                    snapYMatch = t;
-                    break;
-                }
-            }
+            updateLiveScaleDisplay(newScale);
+            return;
         }
 
-        const secLayout = state.layouts[state.activeSection];
-        if (!secLayout[activeDrag.dragId]) secLayout[activeDrag.dragId] = {};
-        secLayout[activeDrag.dragId].left = Math.round(finalLeft * 10) / 10;
-        secLayout[activeDrag.dragId].top = Math.round(finalTop * 10) / 10;
+        // Handle Drag
+        if (activeDrag) {
+            e.preventDefault();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
 
-        // Smooth instant DOM coordinate update
-        activeDrag.target.style.left = `${secLayout[activeDrag.dragId].left}%`;
-        activeDrag.target.style.top = `${secLayout[activeDrag.dragId].top}%`;
+            const canvasRect = activeDrag.canvasRect;
+            const dx = clientX - activeDrag.startMouseX;
+            const dy = clientY - activeDrag.startMouseY;
 
-        // Render visual magnetic guides
-        renderMagnetGuides(snapXMatch, snapYMatch);
-        updateLiveCoordsDisplay(secLayout[activeDrag.dragId].left, secLayout[activeDrag.dragId].top, !!snapXMatch || !!snapYMatch);
+            const dxPercent = (dx / canvasRect.width) * 100;
+            const dyPercent = (dy / canvasRect.height) * 100;
+
+            let rawLeft = activeDrag.startLeft + dxPercent;
+            let rawTop = activeDrag.startTop + dyPercent;
+
+            rawLeft = Math.max(5, Math.min(95, rawLeft));
+            rawTop = Math.max(2, Math.min(96, rawTop));
+
+            let finalLeft = rawLeft;
+            let finalTop = rawTop;
+            let snapXMatch = null;
+            let snapYMatch = null;
+
+            if (state.magnetEnabled !== false) {
+                const { targetsX, targetsY } = getSnapTargets(activeDrag.dragId);
+
+                for (const t of targetsX) {
+                    if (Math.abs(rawLeft - t.x) <= SNAP_TOLERANCE_X) {
+                        finalLeft = t.x;
+                        snapXMatch = t;
+                        break;
+                    }
+                }
+
+                for (const t of targetsY) {
+                    if (Math.abs(rawTop - t.y) <= SNAP_TOLERANCE_Y) {
+                        finalTop = t.y;
+                        snapYMatch = t;
+                        break;
+                    }
+                }
+            }
+
+            const secLayout = state.layouts[state.activeSection];
+            if (!secLayout[activeDrag.dragId]) secLayout[activeDrag.dragId] = {};
+            secLayout[activeDrag.dragId].left = Math.round(finalLeft * 10) / 10;
+            secLayout[activeDrag.dragId].top = Math.round(finalTop * 10) / 10;
+
+            activeDrag.target.style.left = `${secLayout[activeDrag.dragId].left}%`;
+            activeDrag.target.style.top = `${secLayout[activeDrag.dragId].top}%`;
+
+            renderMagnetGuides(snapXMatch, snapYMatch);
+            updateLiveCoordsDisplay(secLayout[activeDrag.dragId].left, secLayout[activeDrag.dragId].top, !!snapXMatch || !!snapYMatch);
+        }
     }
 
-    function onDragEnd() {
-        if (!activeDrag) return;
-        if (activeDrag.target) {
-            activeDrag.target.classList.remove('ring-2', 'ring-emerald-400', 'ring-offset-2', 'shadow-2xl');
+    function onPointerEnd() {
+        if (activeResize) {
+            activeResize = null;
+            renderCanvas();
+            renderEditorControls();
+            return;
         }
-        activeDrag = null;
-        hideMagnetGuides();
-        renderCanvas();
-        renderEditorControls();
+
+        if (activeDrag) {
+            if (activeDrag.target) {
+                activeDrag.target.classList.remove('ring-2', 'ring-emerald-400', 'ring-offset-2', 'shadow-2xl');
+            }
+            activeDrag = null;
+            hideMagnetGuides();
+            renderCanvas();
+            renderEditorControls();
+        }
     }
 
     function renderMagnetGuides(snapX, snapY) {
@@ -492,14 +564,21 @@ window.ReelsEngine = (function() {
     function updateLiveCoordsDisplay(x, y, isSnapped) {
         const badge = document.getElementById('dragCoordsBadge');
         if (badge) {
-            badge.textContent = `X: ${x}% | Y: ${y}% ${isSnapped ? '🧲 ملتوي بالمغناطيس' : ''}`;
+            badge.textContent = `X: ${x}% | Y: ${y}% ${isSnapped ? '🧲 بالمنتصف' : ''}`;
             badge.classList.toggle('text-emerald-700', !isSnapped);
             badge.classList.toggle('text-white', isSnapped);
             badge.classList.toggle('bg-emerald-600', isSnapped);
         }
     }
 
-    // ---- 5. FINE-TUNING & CONTROL ACTIONS ----
+    function updateLiveScaleDisplay(scale) {
+        const badge = document.getElementById('cardScaleVal');
+        if (badge) badge.textContent = `${Math.round(scale * 100)}%`;
+        const slider = document.getElementById('cardScaleSlider');
+        if (slider) slider.value = scale;
+    }
+
+    // ---- 5. POSITION & SCALE ACTIONS ----
     function setSelectedElement(elemId) {
         state.selectedDragElement = elemId;
         renderCanvas();
@@ -514,7 +593,7 @@ window.ReelsEngine = (function() {
         renderCanvas();
         renderEditorControls();
         if (window.showCopyToast) {
-            window.showCopyToast('تم ضبط العنصر في المنتصف تماماً 50% 🎯🧲');
+            window.showCopyToast('تم ضبط العنصر في المنتصف تماماً 50% 🎯');
         }
     }
 
@@ -544,8 +623,18 @@ window.ReelsEngine = (function() {
         if (!secLayout[dragId]) secLayout[dragId] = {};
         secLayout[dragId].scale = parseFloat(val) || 1.0;
         renderCanvas();
-        const scaleValEl = document.getElementById('cardScaleVal');
-        if (scaleValEl) scaleValEl.textContent = `${Math.round(secLayout[dragId].scale * 100)}%`;
+        updateLiveScaleDisplay(secLayout[dragId].scale);
+    }
+
+    function adjustScaleSelected(delta) {
+        const secLayout = state.layouts[state.activeSection];
+        const dragId = state.selectedDragElement || (state.activeSection === 'countdown' ? 'card' : 'cardA');
+        if (!secLayout[dragId]) secLayout[dragId] = {};
+        const cur = secLayout[dragId].scale || 1.0;
+        const next = Math.max(0.5, Math.min(1.8, Math.round((cur + delta) * 100) / 100));
+        secLayout[dragId].scale = next;
+        renderCanvas();
+        updateLiveScaleDisplay(next);
     }
 
     function toggleMagnet() {
@@ -573,21 +662,20 @@ window.ReelsEngine = (function() {
         const secLayout = state.layouts[state.activeSection];
         const cfg = secLayout[state.selectedDragElement] || {};
         updateLiveCoordsDisplay(cfg.left || 50, cfg.top || 30, cfg.left === 50);
+        updateLiveScaleDisplay(cfg.scale || 1.0);
     }
 
-    // Save positions permanently for this archetype
     function saveLayoutPositions() {
         try {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(state.layouts));
             if (window.showCopyToast) {
-                window.showCopyToast('تم حفظ وتثبيت مواقع العناصر بنجاح لكل الريلزات القادمة! 💾🔒');
+                window.showCopyToast('تم حفظ وتثبيت مواقع وأحجام العناصر بنجاح لكل الريلزات القادمة! 💾🔒');
             }
         } catch (e) {
             console.error('Error saving layout:', e);
         }
     }
 
-    // Reset positions to default
     function resetLayoutPositions() {
         state.layouts[state.activeSection] = JSON.parse(JSON.stringify(DEFAULT_LAYOUTS[state.activeSection]));
         try {
@@ -596,11 +684,11 @@ window.ReelsEngine = (function() {
         renderCanvas();
         renderEditorControls();
         if (window.showCopyToast) {
-            window.showCopyToast('تمت إعادة تعيين المواقع الافتراضية بنجاح! 🔄');
+            window.showCopyToast('تمت إعادة تعيين المواقع والأحجام الافتراضية بنجاح! 🔄');
         }
     }
 
-    // ---- 6. SLIDE & PLAYER CARD MANAGEMENT (User Full Control) ----
+    // ---- 6. SLIDE & PLAYER CARD MANAGEMENT ----
     function addPlayerSlide() {
         const newRank = (state.slides.filter(s => s.type === 'player_card').length + 1).toString();
         const newSlide = {
@@ -790,7 +878,7 @@ window.ReelsEngine = (function() {
         }
     }
 
-    // ---- 8. CANVAS RENDERING WITH STANDARD CENTER ANCHOR ----
+    // ---- 8. CANVAS RENDERING (PURE STABLE EUCLIDEAN LTR COORDINATES) ----
     function renderCanvas() {
         const canvas = document.getElementById('exportCanvas');
         if (!canvas) return;
@@ -800,6 +888,7 @@ window.ReelsEngine = (function() {
 
         canvas.className = 'canvas-story relative overflow-hidden select-none';
         canvas.setAttribute('data-canvas-ratio', 'story');
+        canvas.style.direction = 'ltr'; // Forces LTR coordinates: moving right never shrinks elements!
 
         if (!state.slides || state.slides.length === 0) {
             initSection(state.activeSection);
@@ -813,30 +902,50 @@ window.ReelsEngine = (function() {
         const fcLogoUrl = getAsset('FC27_OFFICIAL_LOGO', 'assets/fc27-official-logo.png');
         const scLogoUrl = getAsset('SC_LOGO', 'assets/sc-logo.png');
 
-        // Dynamic Standard Position Styles (Unified anchor: translateX(-50%))
+        // Dynamic Position Styles: width is ALWAYS max-content to guarantee ZERO shrinking when moved
         const posStyle = (cfg, transformExtra = '') => {
             if (!cfg) return '';
             const leftVal = (cfg.left !== undefined) ? cfg.left : 50;
             const topVal = (cfg.top !== undefined) ? cfg.top : 20;
-            let s = `position: absolute; left: ${leftVal}%; top: ${topVal}%; touch-action: none; `;
-            const fullTransform = ['translateX(-50%)', transformExtra].filter(Boolean).join(' ');
+            const scaleVal = (cfg.scale !== undefined) ? cfg.scale : 1.0;
+
+            let s = `position: absolute; left: ${leftVal}%; top: ${topVal}%; width: max-content; max-width: none; flex-shrink: 0; box-sizing: border-box; touch-action: none; `;
+            const fullTransform = ['translateX(-50%)', `scale(${scaleVal})`, transformExtra].filter(Boolean).join(' ');
             if (fullTransform) s += `transform: ${fullTransform}; `;
             return s;
         };
 
         const dragCursor = state.dragEnabled ? 'cursor-grab active:cursor-grabbing' : 'cursor-default';
 
+        // Helper to render resize handle on currently selected element
+        const renderResizeHandle = (elemId) => {
+            if (!state.dragEnabled || state.selectedDragElement !== elemId) return '';
+            return `
+                <div class="reel-resize-handle absolute -bottom-2 -left-2 w-5 h-5 rounded-full bg-emerald-400 border-2 border-slate-900 shadow-md cursor-nwse-resize flex items-center justify-center text-[10px] text-slate-950 font-black select-none z-50 hover:scale-125 transition-transform pointer-events-auto" 
+                     data-resize-id="${elemId}" title="اسحب لتكبير وتصغير الحجم">
+                    ⤡
+                </div>
+            `;
+        };
+
+        // Selection ring helper
+        const selectRing = (elemId) => {
+            return (state.dragEnabled && state.selectedDragElement === elemId) ? 'ring-2 ring-emerald-400 ring-offset-2' : '';
+        };
+
         // FC 27 Logo Block
         const fcLogoHtml = `
-            <div data-drag-id="fcLogo" class="z-30 select-none ${dragCursor}" style="${posStyle(layout.fcLogo)}">
+            <div data-drag-id="fcLogo" class="z-30 select-none relative ${dragCursor} ${selectRing('fcLogo')}" style="${posStyle(layout.fcLogo)}">
                 <img src="${fcLogoUrl}" alt="EA FC 27" class="w-12 h-auto object-contain drop-shadow-md pointer-events-none">
+                ${renderResizeHandle('fcLogo')}
             </div>
         `;
 
         // Shop Coin Logo Block
         const scLogoHtml = `
-            <div data-drag-id="scLogo" class="z-30 select-none flex flex-col items-center justify-center ${dragCursor}" style="${posStyle(layout.scLogo)}">
+            <div data-drag-id="scLogo" class="z-30 select-none relative flex flex-col items-center justify-center ${dragCursor} ${selectRing('scLogo')}" style="${posStyle(layout.scLogo)}">
                 <img src="${scLogoUrl}" alt="ShopCoin15" class="w-14 h-auto object-contain drop-shadow-md pointer-events-none">
+                ${renderResizeHandle('scLogo')}
             </div>
         `;
 
@@ -844,7 +953,7 @@ window.ReelsEngine = (function() {
 
         if (currentSlide.type === 'intro') {
             bodyHtml = `
-                <div class="absolute inset-0 flex flex-col items-center justify-center px-10 text-center z-20">
+                <div class="absolute inset-0 flex flex-col items-center justify-center px-10 text-center z-20" dir="rtl">
                     <div class="mb-4 inline-block px-4 py-1.5 rounded-full bg-slate-900 text-white text-xs font-black shadow-sm tracking-wide">
                         ${currentSlide.badge || state.badge}
                     </div>
@@ -863,48 +972,55 @@ window.ReelsEngine = (function() {
                 </div>
             `;
         } else if (currentSlide.type === 'player_card') {
-            const cardScale = layout.card?.scale || 1.0;
             bodyHtml = `
                 <!-- 1. Rank Block -->
-                <div data-drag-id="rank" class="z-20 flex flex-col items-center text-center select-none ${dragCursor}" style="${posStyle(layout.rank)}">
-                    <div class="text-6xl md:text-7xl font-black text-[#0E382B] font-['Alexandria'] drop-shadow-md leading-none">
+                <div data-drag-id="rank" class="z-20 flex flex-col items-center text-center select-none relative ${dragCursor} ${selectRing('rank')}" style="${posStyle(layout.rank)}">
+                    <div class="text-6xl md:text-7xl font-black text-[#0E382B] font-['Alexandria'] drop-shadow-md leading-none pointer-events-none">
                         ${currentSlide.rank || '1'}
                     </div>
+                    ${renderResizeHandle('rank')}
                 </div>
 
-                <!-- 2. Title Block -->
-                <div data-drag-id="title" class="z-20 text-center px-6 max-w-[340px] mx-auto select-none ${dragCursor}" style="${posStyle(layout.title)}">
-                    <div class="text-base md:text-lg font-black text-slate-950 font-['Alexandria'] leading-tight drop-shadow-xs">
-                        ${state.title}
+                <!-- 2. Title Block (Fixed 340px width container to prevent text reflow on move) -->
+                <div data-drag-id="title" class="z-20 select-none relative ${dragCursor} ${selectRing('title')}" style="${posStyle(layout.title)}">
+                    <div class="w-[340px] text-center px-4" dir="rtl">
+                        <div class="text-base md:text-lg font-black text-slate-950 font-['Alexandria'] leading-tight drop-shadow-xs pointer-events-none">
+                            ${state.title}
+                        </div>
                     </div>
+                    ${renderResizeHandle('title')}
                 </div>
 
                 <!-- 3. Card & Badges Block -->
-                <div data-drag-id="card" class="z-20 flex flex-col items-center justify-center select-none ${dragCursor}" style="${posStyle(layout.card, `scale(${cardScale})`)}">
-                    <div class="relative">
+                <div data-drag-id="card" class="z-20 flex flex-col items-center justify-center select-none relative ${dragCursor} ${selectRing('card')}" style="${posStyle(layout.card)}">
+                    <div class="relative flex flex-col items-center justify-center">
                         <div class="absolute -inset-6 bg-emerald-500/15 blur-3xl rounded-full pointer-events-none"></div>
                         <img src="${currentSlide.cardUrl}" alt="${currentSlide.playerName}" 
                              class="w-64 md:w-72 h-auto max-h-[400px] object-contain drop-shadow-[0_20px_35px_rgba(0,0,0,0.4)] pointer-events-none">
                     </div>
 
                     <!-- Badges -->
-                    <div class="mt-3 flex items-center justify-center gap-1.5 flex-wrap max-w-xs pointer-events-none">
+                    <div class="mt-3 flex items-center justify-center gap-1.5 flex-wrap max-w-xs pointer-events-none" dir="rtl">
                         ${(currentSlide.badges || []).map(b => `
                             <span class="px-2.5 py-1 rounded-xl bg-white/95 text-slate-900 border border-slate-200 text-[11px] font-black shadow-xs">
                                 ${b}
                             </span>
                         `).join('')}
                     </div>
+                    ${renderResizeHandle('card')}
                 </div>
 
-                <!-- 4. Player Name Block -->
-                <div data-drag-id="playerName" class="z-20 text-center select-none px-4 w-full ${dragCursor}" style="${posStyle(layout.playerName)}">
-                    <div class="text-2xl md:text-3xl font-black text-slate-950 font-['Alexandria'] drop-shadow-sm">
-                        ${currentSlide.playerArName || currentSlide.playerName}
+                <!-- 4. Player Name Block (Fixed 340px width container) -->
+                <div data-drag-id="playerName" class="z-20 select-none relative ${dragCursor} ${selectRing('playerName')}" style="${posStyle(layout.playerName)}">
+                    <div class="w-[340px] text-center px-4" dir="rtl">
+                        <div class="text-2xl md:text-3xl font-black text-slate-950 font-['Alexandria'] drop-shadow-sm pointer-events-none">
+                            ${currentSlide.playerArName || currentSlide.playerName}
+                        </div>
+                        <div class="text-xs font-black text-[#00A84D] mt-0.5 pointer-events-none">
+                            في FC 27
+                        </div>
                     </div>
-                    <div class="text-xs font-black text-[#00A84D] mt-0.5">
-                        في FC 27
-                    </div>
+                    ${renderResizeHandle('playerName')}
                 </div>
             `;
         } else if (currentSlide.type === 'versus_card') {
@@ -913,54 +1029,67 @@ window.ReelsEngine = (function() {
 
             bodyHtml = `
                 <!-- 1. Title Header -->
-                <div data-drag-id="title" class="z-20 text-center px-6 max-w-[340px] mx-auto select-none ${dragCursor}" style="${posStyle(layout.title)}">
-                    <span class="inline-block px-3 py-1 rounded-full bg-slate-900 text-white text-[10px] font-black mb-1 shadow-xs">
-                        ${state.badge || '⚔️ صراع العمالقة'}
-                    </span>
-                    <h2 class="text-xl md:text-2xl font-black text-slate-950 font-['Alexandria'] leading-snug drop-shadow-xs">
-                        ${currentSlide.title || state.title}
-                    </h2>
+                <div data-drag-id="title" class="z-20 select-none relative ${dragCursor} ${selectRing('title')}" style="${posStyle(layout.title)}">
+                    <div class="w-[340px] text-center px-4" dir="rtl">
+                        <span class="inline-block px-3 py-1 rounded-full bg-slate-900 text-white text-[10px] font-black mb-1 shadow-xs pointer-events-none">
+                            ${state.badge || '⚔️ صراع العمالقة'}
+                        </span>
+                        <h2 class="text-xl md:text-2xl font-black text-slate-950 font-['Alexandria'] leading-snug drop-shadow-xs pointer-events-none">
+                            ${currentSlide.title || state.title}
+                        </h2>
+                    </div>
+                    ${renderResizeHandle('title')}
                 </div>
 
                 <!-- 2. Player Card A (Right side in RTL) -->
-                <div data-drag-id="cardA" class="z-20 flex flex-col items-center select-none w-44 md:w-48 ${dragCursor}" style="${posStyle(layout.cardA, `scale(${layout.cardA?.scale || 0.92})`)}">
-                    <div class="relative h-[230px] flex items-center justify-center">
-                        <img src="${pA.cardUrl}" alt="${pA.name}" class="max-h-[230px] w-auto object-contain drop-shadow-2xl pointer-events-none">
+                <div data-drag-id="cardA" class="z-20 select-none relative ${dragCursor} ${selectRing('cardA')}" style="${posStyle(layout.cardA)}">
+                    <div class="w-[190px] flex flex-col items-center" dir="rtl">
+                        <div class="relative h-[230px] flex items-center justify-center">
+                            <img src="${pA.cardUrl}" alt="${pA.name}" class="max-h-[230px] w-auto object-contain drop-shadow-2xl pointer-events-none">
+                        </div>
+                        <div class="mt-2 text-center pointer-events-none">
+                            <div class="text-sm font-black text-slate-950 font-['Alexandria']">${pA.arName || pA.name}</div>
+                            <div class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-200 mt-1">${pA.statHighlight || ''}</div>
+                        </div>
                     </div>
-                    <div class="mt-2 text-center pointer-events-none">
-                        <div class="text-sm font-black text-slate-950 font-['Alexandria']">${pA.arName || pA.name}</div>
-                        <div class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-200 mt-1">${pA.statHighlight || ''}</div>
-                    </div>
+                    ${renderResizeHandle('cardA')}
                 </div>
 
                 <!-- 3. VS Badge Center (Centered X & Y) -->
-                <div data-drag-id="vsBadge" class="z-25 flex items-center justify-center select-none ${dragCursor}" style="${posStyle(layout.vsBadge, 'translateY(-50%)')}">
+                <div data-drag-id="vsBadge" class="z-25 flex items-center justify-center select-none relative ${dragCursor} ${selectRing('vsBadge')}" style="${posStyle(layout.vsBadge, 'translateY(-50%)')}">
                     <div class="w-13 h-13 rounded-full bg-gradient-to-tr from-rose-600 via-red-600 to-amber-500 text-white font-black text-base flex items-center justify-center shadow-xl border-2 border-white animate-pulse pointer-events-none">
                         VS
                     </div>
+                    ${renderResizeHandle('vsBadge')}
                 </div>
 
                 <!-- 4. Player Card B (Left side in RTL) -->
-                <div data-drag-id="cardB" class="z-20 flex flex-col items-center select-none w-44 md:w-48 ${dragCursor}" style="${posStyle(layout.cardB, `scale(${layout.cardB?.scale || 0.92})`)}">
-                    <div class="relative h-[230px] flex items-center justify-center">
-                        <img src="${pB.cardUrl}" alt="${pB.name}" class="max-h-[230px] w-auto object-contain drop-shadow-2xl pointer-events-none">
+                <div data-drag-id="cardB" class="z-20 select-none relative ${dragCursor} ${selectRing('cardB')}" style="${posStyle(layout.cardB)}">
+                    <div class="w-[190px] flex flex-col items-center" dir="rtl">
+                        <div class="relative h-[230px] flex items-center justify-center">
+                            <img src="${pB.cardUrl}" alt="${pB.name}" class="max-h-[230px] w-auto object-contain drop-shadow-2xl pointer-events-none">
+                        </div>
+                        <div class="mt-2 text-center pointer-events-none">
+                            <div class="text-sm font-black text-slate-950 font-['Alexandria']">${pB.arName || pB.name}</div>
+                            <div class="text-[10px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-lg border border-blue-200 mt-1">${pB.statHighlight || ''}</div>
+                        </div>
                     </div>
-                    <div class="mt-2 text-center pointer-events-none">
-                        <div class="text-sm font-black text-slate-950 font-['Alexandria']">${pB.arName || pB.name}</div>
-                        <div class="text-[10px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-lg border border-blue-200 mt-1">${pB.statHighlight || ''}</div>
-                    </div>
+                    ${renderResizeHandle('cardB')}
                 </div>
 
                 <!-- 5. Bottom Interactive Question Hook -->
-                <div data-drag-id="question" class="z-20 text-center select-none px-4 w-full ${dragCursor}" style="${posStyle(layout.question)}">
-                    <div class="inline-block px-5 py-2.5 rounded-2xl bg-white/95 border border-slate-200 text-slate-950 font-black text-xs md:text-sm shadow-md font-['Alexandria']">
-                        ${currentSlide.question || 'صوت بالتعليقات: من تختار لفريقك؟ 👇'}
+                <div data-drag-id="question" class="z-20 select-none relative ${dragCursor} ${selectRing('question')}" style="${posStyle(layout.question)}">
+                    <div class="w-[340px] text-center px-4" dir="rtl">
+                        <div class="inline-block px-5 py-2.5 rounded-2xl bg-white/95 border border-slate-200 text-slate-950 font-black text-xs md:text-sm shadow-md font-['Alexandria'] pointer-events-none">
+                            ${currentSlide.question || 'صوت بالتعليقات: من تختار لفريقك؟ 👇'}
+                        </div>
                     </div>
+                    ${renderResizeHandle('question')}
                 </div>
             `;
         } else if (currentSlide.type === 'outro') {
             bodyHtml = `
-                <div class="absolute inset-0 flex flex-col items-center justify-center px-8 text-center z-20">
+                <div class="absolute inset-0 flex flex-col items-center justify-center px-8 text-center z-20" dir="rtl">
                     <img src="${scLogoUrl}" alt="ShopCoin15" class="w-20 h-auto object-contain mb-3 drop-shadow-lg animate-pulse">
                     <h2 class="text-3xl md:text-4xl font-black text-slate-950 leading-snug font-['Alexandria']">
                         متجر ShopCoin15
@@ -1009,7 +1138,7 @@ window.ReelsEngine = (function() {
         ` : '';
 
         canvas.innerHTML = `
-            <div class="absolute inset-0 overflow-hidden bg-cover bg-center" style="background-image: url('${bgUrl}');">
+            <div class="absolute inset-0 overflow-hidden bg-cover bg-center" style="background-image: url('${bgUrl}'); direction: ltr;">
                 ${fcLogoHtml}
                 ${scLogoHtml}
                 ${bodyHtml}
@@ -1024,7 +1153,7 @@ window.ReelsEngine = (function() {
         }
     }
 
-    // ---- 9. EDITOR CONTROLS PANEL (WITH SMART MAGNET & FINE NUDGE) ----
+    // ---- 9. EDITOR CONTROLS PANEL (NATURAL POSITION & SCALE CONTROLS) ----
     function renderEditorControls() {
         const container = document.getElementById('suite_reels_panel');
         if (!container) return;
@@ -1039,28 +1168,13 @@ window.ReelsEngine = (function() {
         const curCfg = secLayout[selectedId] || {};
         const curLeft = (curCfg.left !== undefined) ? curCfg.left : 50;
         const curTop = (curCfg.top !== undefined) ? curCfg.top : 30;
-
-        const isCardElement = ['card', 'cardA', 'cardB'].includes(selectedId);
-        const curScale = curCfg.scale || (isCardElement ? (state.activeSection === 'versus' ? 0.92 : 1.0) : 1.0);
+        const curScale = (curCfg.scale !== undefined) ? curCfg.scale : 1.0;
 
         const elementSelectOptions = elementsList.map(item => `
             <option value="${item.id}" ${item.id === selectedId ? 'selected' : ''}>
                 ${item.name}
             </option>
         `).join('');
-
-        const scaleControlHtml = isCardElement ? `
-            <div class="flex items-center justify-between pt-2 border-t border-emerald-100">
-                <span class="text-[11px] font-bold text-slate-700">حجم الكرت (Scale):</span>
-                <div class="flex items-center gap-2">
-                    <input type="range" min="0.75" max="1.30" step="0.02" value="${curScale}" 
-                           oninput="ReelsEngine.setScaleSelected(this.value)" class="w-24 accent-emerald-600 cursor-pointer">
-                    <span id="cardScaleVal" class="text-[10.5px] font-mono font-black text-emerald-800 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
-                        ${Math.round(curScale * 100)}%
-                    </span>
-                </div>
-            </div>
-        ` : '';
 
         let html = `
             <div class="space-y-4">
@@ -1077,16 +1191,16 @@ window.ReelsEngine = (function() {
                     </button>
                 </div>
 
-                <!-- 2. SMART MAGNET & POSITIONING SYSTEM (THE USER'S REQUEST) -->
+                <!-- 2. NATURAL POSITION & SIZE CONTROLS (THE COMPLETE FIX) -->
                 <div class="p-3.5 rounded-2xl bg-gradient-to-br from-emerald-50 via-teal-50 to-emerald-50 border border-emerald-200 shadow-xs space-y-3">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-1.5">
-                            <span class="text-base">🧲</span>
-                            <span class="text-xs font-black text-emerald-950">المغناطيس وتحريك العناصر:</span>
+                            <span class="text-base">🎯</span>
+                            <span class="text-xs font-black text-emerald-950">الموقع والحجم (تحكم طبيعي):</span>
                         </div>
                         <div class="flex items-center gap-1.5">
                             <button type="button" onclick="ReelsEngine.toggleMagnet()" 
-                                    class="px-2.5 py-1 rounded-lg ${state.magnetEnabled !== false ? 'bg-emerald-600 text-white shadow-xs' : 'bg-slate-300 text-slate-700'} text-[10.5px] font-black transition flex items-center gap-1" title="تفعيل/تعطيل المغناطيس الذكي للالتصاق بالمنتصف">
+                                    class="px-2.5 py-1 rounded-lg ${state.magnetEnabled !== false ? 'bg-emerald-600 text-white shadow-xs' : 'bg-slate-300 text-slate-700'} text-[10.5px] font-black transition flex items-center gap-1" title="تفعيل/تعطيل المغناطيس للالتصاق بالمنتصف">
                                 <span>${state.magnetEnabled !== false ? '🧲 مغناطيس: شغال' : '🧲 مغناطيس: مطفأ'}</span>
                             </button>
                             <button type="button" id="btnToggleDragLock" onclick="ReelsEngine.toggleDragLock()" 
@@ -1096,51 +1210,104 @@ window.ReelsEngine = (function() {
                         </div>
                     </div>
 
-                    <!-- Selected Element Controller Box -->
-                    <div class="p-3 rounded-xl bg-white border border-emerald-300 shadow-xs space-y-2.5">
-                        <div class="flex items-center justify-between">
-                            <span class="text-[11px] font-black text-slate-800">العنصر المراد ضبطه:</span>
-                            <span id="dragCoordsBadge" class="text-[10px] font-mono font-black text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                                X: ${curLeft}% | Y: ${curTop}% ${curLeft === 50 ? '🧲 بالمنتصف' : ''}
-                            </span>
+                    <!-- Active Element Controller Box -->
+                    <div class="p-3 rounded-xl bg-white border border-emerald-300 shadow-xs space-y-3">
+                        
+                        <!-- Element Picker -->
+                        <div class="space-y-1">
+                            <div class="flex items-center justify-between">
+                                <label class="text-[11px] font-black text-slate-800">العنصر المراد ضبطه:</label>
+                                <span id="dragCoordsBadge" class="text-[10px] font-mono font-black text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                                    X: ${curLeft}% | Y: ${curTop}%
+                                </span>
+                            </div>
+                            <select id="selectReelElement" onchange="ReelsEngine.setSelectedElement(this.value)" 
+                                    class="w-full px-2.5 py-2 rounded-lg bg-slate-50 border border-slate-200 text-xs font-bold text-slate-900 outline-none focus:border-emerald-500">
+                                ${elementSelectOptions}
+                            </select>
                         </div>
 
-                        <select id="selectReelElement" onchange="ReelsEngine.setSelectedElement(this.value)" 
-                                class="w-full px-2.5 py-2 rounded-lg bg-slate-50 border border-slate-200 text-xs font-bold text-slate-900 outline-none focus:border-emerald-500">
-                            ${elementSelectOptions}
-                        </select>
+                        <!-- 1. Size Controls (تحكم الحجم الطبيعي) -->
+                        <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                            <div class="flex items-center justify-between">
+                                <span class="text-[11px] font-black text-slate-800 flex items-center gap-1">
+                                    <span>📏</span>
+                                    <span>حجم العنصر (Scale):</span>
+                                </span>
+                                <span id="cardScaleVal" class="text-[11px] font-mono font-black text-emerald-700 bg-white px-2 py-0.5 rounded-md border border-slate-200 shadow-2xs">
+                                    ${Math.round(curScale * 100)}%
+                                </span>
+                            </div>
 
-                        <!-- Big Snap to Center Button -->
-                        <button type="button" onclick="ReelsEngine.centerSelectedElement()" 
-                                class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs transition flex items-center justify-center gap-1.5 shadow-sm active:scale-[0.98]">
-                            <span>🎯 وضع في المنتصف تماماً (Center 50%)</span>
-                        </button>
+                            <!-- Slider with Minus / Plus -->
+                            <div class="flex items-center gap-2">
+                                <button type="button" onclick="ReelsEngine.adjustScaleSelected(-0.05)" 
+                                        class="w-8 h-8 rounded-lg bg-white hover:bg-slate-100 text-slate-800 font-black text-xs border border-slate-200 flex items-center justify-center transition active:scale-95 shadow-2xs" title="تصغير 5%">
+                                    ➖
+                                </button>
+                                <input type="range" id="cardScaleSlider" min="0.50" max="1.60" step="0.02" value="${curScale}" 
+                                       oninput="ReelsEngine.setScaleSelected(this.value)" class="flex-1 accent-emerald-600 cursor-pointer">
+                                <button type="button" onclick="ReelsEngine.adjustScaleSelected(0.05)" 
+                                        class="w-8 h-8 rounded-lg bg-white hover:bg-slate-100 text-slate-800 font-black text-xs border border-slate-200 flex items-center justify-center transition active:scale-95 shadow-2xs" title="تكبير 5%">
+                                    ➕
+                                </button>
+                            </div>
 
-                        <!-- Fine Nudge Controls -->
-                        <div class="flex items-center justify-between pt-1.5 border-t border-slate-100">
-                            <span class="text-[10.5px] font-bold text-slate-600">تحريك دقيق (1%):</span>
-                            <div class="flex items-center gap-1">
-                                <button type="button" onclick="ReelsEngine.nudgeSelected('up')" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-emerald-100 text-slate-800 hover:text-emerald-700 font-black text-xs transition border border-slate-200 flex items-center justify-center active:scale-95" title="للأعلى">⬆️</button>
-                                <button type="button" onclick="ReelsEngine.nudgeSelected('down')" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-emerald-100 text-slate-800 hover:text-emerald-700 font-black text-xs transition border border-slate-200 flex items-center justify-center active:scale-95" title="للأسفل">⬇️</button>
-                                <button type="button" onclick="ReelsEngine.nudgeSelected('left')" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-emerald-100 text-slate-800 hover:text-emerald-700 font-black text-xs transition border border-slate-200 flex items-center justify-center active:scale-95" title="يسار">⬅️</button>
-                                <button type="button" onclick="ReelsEngine.nudgeSelected('right')" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-emerald-100 text-slate-800 hover:text-emerald-700 font-black text-xs transition border border-slate-200 flex items-center justify-center active:scale-95" title="يمين">➡️</button>
+                            <!-- Quick Size Presets -->
+                            <div class="grid grid-cols-3 gap-1.5 pt-0.5">
+                                <button type="button" onclick="ReelsEngine.setScaleSelected(0.85)" class="py-1 rounded-lg bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 text-[10px] font-bold border border-slate-200 transition">
+                                    صغير 85%
+                                </button>
+                                <button type="button" onclick="ReelsEngine.setScaleSelected(1.00)" class="py-1 rounded-lg bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 text-[10px] font-bold border border-slate-200 transition">
+                                    أصلي 100%
+                                </button>
+                                <button type="button" onclick="ReelsEngine.setScaleSelected(1.18)" class="py-1 rounded-lg bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 text-[10px] font-bold border border-slate-200 transition">
+                                    كبير 118%
+                                </button>
                             </div>
                         </div>
 
-                        ${scaleControlHtml}
+                        <!-- 2. Position Controls (تحكم الموقع والتوسيط) -->
+                        <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                            <div class="flex items-center justify-between">
+                                <span class="text-[11px] font-black text-slate-800 flex items-center gap-1">
+                                    <span>📍</span>
+                                    <span>الموقع والتوسيط:</span>
+                                </span>
+                                <span class="text-[10px] text-slate-400 font-medium">سحب مباشر أو أزرار</span>
+                            </div>
+
+                            <!-- Big Center Button -->
+                            <button type="button" onclick="ReelsEngine.centerSelectedElement()" 
+                                    class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs transition flex items-center justify-center gap-1.5 shadow-sm active:scale-[0.98]">
+                                <span>🎯 وضع في المنتصف تماماً (Center 50%)</span>
+                            </button>
+
+                            <!-- Precision Nudge Arrows -->
+                            <div class="flex items-center justify-between pt-1 border-t border-slate-200/60">
+                                <span class="text-[10.5px] font-bold text-slate-600">تحريك دقيق (1%):</span>
+                                <div class="flex items-center gap-1">
+                                    <button type="button" onclick="ReelsEngine.nudgeSelected('up')" class="w-8 h-8 rounded-lg bg-white hover:bg-emerald-100 text-slate-800 hover:text-emerald-700 font-black text-xs transition border border-slate-200 flex items-center justify-center active:scale-95 shadow-2xs" title="للأعلى">⬆️</button>
+                                    <button type="button" onclick="ReelsEngine.nudgeSelected('down')" class="w-8 h-8 rounded-lg bg-white hover:bg-emerald-100 text-slate-800 hover:text-emerald-700 font-black text-xs transition border border-slate-200 flex items-center justify-center active:scale-95 shadow-2xs" title="للأسفل">⬇️</button>
+                                    <button type="button" onclick="ReelsEngine.nudgeSelected('left')" class="w-8 h-8 rounded-lg bg-white hover:bg-emerald-100 text-slate-800 hover:text-emerald-700 font-black text-xs transition border border-slate-200 flex items-center justify-center active:scale-95 shadow-2xs" title="يسار">⬅️</button>
+                                    <button type="button" onclick="ReelsEngine.nudgeSelected('right')" class="w-8 h-8 rounded-lg bg-white hover:bg-emerald-100 text-slate-800 hover:text-emerald-700 font-black text-xs transition border border-slate-200 flex items-center justify-center active:scale-95 shadow-2xs" title="يمين">➡️</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Save & Reset -->
+                        <div class="flex items-center gap-2 pt-0.5">
+                            <button type="button" onclick="ReelsEngine.saveLayoutPositions()" 
+                                    class="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-700 hover:brightness-105 text-white font-black text-xs transition shadow-sm flex items-center justify-center gap-1 active:scale-[0.98]">
+                                <span>💾 تثبيت المواضع لهذا النمط</span>
+                            </button>
+                            <button type="button" onclick="ReelsEngine.resetLayoutPositions()" 
+                                    class="py-2.5 px-3 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold text-xs transition active:scale-[0.98]">
+                                <span>🔄 ضبط افتراضي</span>
+                            </button>
+                        </div>
                     </div>
 
-                    <!-- Persistence Controls -->
-                    <div class="flex items-center gap-2 pt-0.5">
-                        <button type="button" onclick="ReelsEngine.saveLayoutPositions()" 
-                                class="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-700 hover:brightness-105 text-white font-black text-xs transition shadow-sm flex items-center justify-center gap-1 active:scale-[0.98]">
-                            <span>💾 تثبيت المواضع لهذا النمط</span>
-                        </button>
-                        <button type="button" onclick="ReelsEngine.resetLayoutPositions()" 
-                                class="py-2.5 px-3 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold text-xs transition active:scale-[0.98]">
-                            <span>🔄 ضبط افتراضي</span>
-                        </button>
-                    </div>
                 </div>
 
                 <!-- 3. VIRAL HOOKS BANK -->
@@ -1578,6 +1745,7 @@ ${state.subtitle}
         nudgeSelected,
         setSelectedElement,
         setScaleSelected,
+        adjustScaleSelected,
         saveLayoutPositions,
         resetLayoutPositions,
         addPlayerSlide,
