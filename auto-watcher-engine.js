@@ -372,6 +372,12 @@ class AutoWatcherEngine {
             { text: 'للطلب والاستفسار بالخاص حياكم ⬇️⬇️', bg: '#E1F5FE', color: '#1E293B' }
         ];
 
+        // Ensure studio DOM is fully loaded and ready
+        const hasStudio = await page.evaluate(() => typeof window.switchTemplate === 'function').catch(() => false);
+        if (!hasStudio) {
+            await page.goto(`http://localhost:${this.port}`, { waitUntil: 'networkidle0', timeout: 25000 });
+        }
+
         // Evaluate inside page to construct 100% genuine studio DOM
         await page.evaluate(async ({ title, imgUrl, bannerItems }) => {
             if (typeof switchTemplate === 'function') {

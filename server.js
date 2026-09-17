@@ -1110,12 +1110,16 @@ const server = http.createServer((req, res) => {
     // API: Check Native Engine Status
     if (reqPath === '/api/native-status') {
         const hasPuppeteer = !!puppeteer;
-        const browserPath = getBrowserExecutable();
-        res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
-        res.end(JSON.stringify({
-            available: !!(hasPuppeteer && browserPath),
-            browserPath: browserPath ? path.basename(browserPath) : null
-        }));
+        getBrowserExecutable().then(browserPath => {
+            res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+            res.end(JSON.stringify({
+                available: !!(hasPuppeteer && browserPath),
+                browserPath: browserPath ? path.basename(browserPath) : null
+            }));
+        }).catch(err => {
+            res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+            res.end(JSON.stringify({ available: false, error: err.message }));
+        });
         return;
     }
 
