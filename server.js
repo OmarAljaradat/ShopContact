@@ -76,7 +76,8 @@ async function ensureNativePage(port) {
     nativePage = await nativeBrowser.newPage();
     // Warm up the page by navigating to the studio
     try {
-        await nativePage.goto(`http://localhost:${port}`, { waitUntil: 'networkidle0', timeout: 25000 });
+        await nativePage.goto(`http://127.0.0.1:${port}`, { waitUntil: 'domcontentloaded', timeout: 15000 });
+        await nativePage.waitForFunction(() => typeof window.selectTemplate === 'function', { timeout: 10000 });
         if (nativePage.evaluate) {
             await nativePage.evaluate(() => document.fonts && document.fonts.ready);
         }
@@ -1294,7 +1295,7 @@ const server = http.createServer((req, res) => {
     });
 });
 
-server.listen(PORT, () => {
+server.listen(PORT, '0.0.0.0', () => {
     console.log(`====================================================`);
     console.log(`🚀 متجر shop_coin15 - استوديو التصاميم والمحتوى جاهز!`);
     console.log(`🌐 الرابط المحلي: http://localhost:${PORT}`);

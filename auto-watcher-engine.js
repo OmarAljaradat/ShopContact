@@ -373,15 +373,16 @@ class AutoWatcherEngine {
         ];
 
         // Ensure studio DOM is fully loaded and ready
-        const hasStudio = await page.evaluate(() => typeof window.switchTemplate === 'function').catch(() => false);
+        const hasStudio = await page.evaluate(() => typeof window.selectTemplate === 'function').catch(() => false);
         if (!hasStudio) {
-            await page.goto(`http://localhost:${this.port}`, { waitUntil: 'networkidle0', timeout: 25000 });
+            await page.goto(`http://127.0.0.1:${this.port}`, { waitUntil: 'domcontentloaded', timeout: 15000 });
+            await page.waitForFunction(() => typeof window.selectTemplate === 'function', { timeout: 10000 });
         }
 
         // Evaluate inside page to construct 100% genuine studio DOM
         await page.evaluate(async ({ title, imgUrl, bannerItems }) => {
-            if (typeof switchTemplate === 'function') {
-                switchTemplate('sbc');
+            if (typeof window.selectTemplate === 'function') {
+                window.selectTemplate('sbc');
             } else {
                 currentTemplate = 'sbc';
             }
@@ -421,7 +422,7 @@ class AutoWatcherEngine {
             await new Promise(r => setTimeout(r, 120));
         }, { title: cleanTitle, imgUrl: sbcImg, bannerItems: banners });
 
-        const cardEl = await page.$('#exportCanvas');
+        const cardEl = await page.evaluateHandle(() => document.getElementById('exportCanvas'));
         if (!cardEl) throw new Error('عنصر exportCanvas غير موجود في المحرك');
 
         const screenshotBuffer = await cardEl.screenshot({
