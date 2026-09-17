@@ -200,7 +200,7 @@ async function fetchFutGGSbcPage(targetUrl) {
                                          data.match(/https:\/\/game-assets\.fut\.gg\/cdn-cgi\/image\/[^"'\s]+player-item-card[^"'\s]+/i) ||
                                          data.match(/https:\/\/game-assets\.fut\.gg\/cdn-cgi\/image\/[^"'\s]+player-item\/[^"'\s]+/i);
                     if (sbcImgMatch) {
-                        sbcImage = sbcImgMatch[0].replace(/width=\d+/, 'width=800');
+                        sbcImage = sbcImgMatch[0].replace(/width=\d+/, 'width=500');
                     }
 
                     const titleMatch = data.match(/<title>([^<]+)<\/title>/i);
@@ -254,7 +254,7 @@ function fetchFutGGPage(targetUrl) {
                                          data.match(/https:\/\/game-assets\.fut\.gg\/cdn-cgi\/image\/[^"'\s]+player-item\/[^"'\s]+/i);
                     
                     if (cardImgMatch) {
-                        cardImage = cardImgMatch[0].replace(/width=\d+/, 'width=800');
+                        cardImage = cardImgMatch[0].replace(/width=\d+/, 'width=500');
                     }
 
                     const titleMatch = data.match(/<title>([^<]+)<\/title>/i);
