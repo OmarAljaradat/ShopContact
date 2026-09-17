@@ -1,38 +1,61 @@
 /**
- * ShopCoin15 Studio - EA FC 27 Reels Engine (Version 2.0)
+ * ShopCoin15 Studio - EA FC 27 Reels Engine (Version 3.0 Magnetic Pro)
  * 1. Strictly text on screen + background music (NO voiceover complexity).
  * 2. Pure idea bank where user has 100% control over players.
  * 3. 100% Authentic EA Sports FC 27 marble background & official EA FC 27 and ShopCoin15 logos.
- * 4. Draggable elements on canvas with PERSISTENT SAVED POSITIONS per archetype.
- * 5. Two dedicated sections: 🏆 الترتيب التنازلي (Countdown) & ⚔️ مقارنة العمالقة (Versus Duel).
+ * 4. Butter-smooth delta dragging with SMART MAGNETIC SNAPPING (X=50% Center Magnet & Visual Guides).
+ * 5. Nudge controls (⬆️ ⬇️ ⬅️ ➡️) + One-Click Center button (🎯) + Scale slider.
+ * 6. Two dedicated sections: 🏆 الترتيب التنازلي (Countdown) & ⚔️ مقارنة العمالقة (Versus Duel).
  */
 
 window.ReelsEngine = (function() {
-    // ---- 1. DEFAULT LAYOUT POSITIONS (Percentages) ----
+    const STORAGE_KEY = 'shopcoin15_reel_layouts_v3';
+
+    // ---- 1. DEFAULT PERFECT-ALIGNED LAYOUTS (Percentages) ----
     const DEFAULT_LAYOUTS = {
         countdown: {
-            rank: { top: 10, left: 50 },
-            title: { top: 20, left: 50 },
-            card: { top: 33, left: 50, scale: 1.0 },
-            playerName: { top: 76, left: 50 },
-            fcLogo: { top: 4, right: 6 },
-            scLogo: { bottom: 4, left: 50 }
+            rank: { top: 7.5, left: 50 },
+            title: { top: 16.5, left: 50 },
+            card: { top: 28.5, left: 50, scale: 1.0 },
+            playerName: { top: 78.5, left: 50 },
+            fcLogo: { top: 4, left: 88 },
+            scLogo: { top: 91, left: 50 }
         },
         versus: {
-            title: { top: 12, left: 50 },
-            cardA: { top: 28, left: 27, scale: 0.92 },
-            cardB: { top: 28, left: 73, scale: 0.92 },
-            vsBadge: { top: 46, left: 50 },
-            question: { top: 76, left: 50 },
-            fcLogo: { top: 4, right: 6 },
-            scLogo: { bottom: 4, left: 50 }
+            title: { top: 12.5, left: 50 },
+            cardA: { top: 27, left: 73, scale: 0.92 },
+            cardB: { top: 27, left: 27, scale: 0.92 },
+            vsBadge: { top: 45, left: 50 },
+            question: { top: 77, left: 50 },
+            fcLogo: { top: 4, left: 88 },
+            scLogo: { top: 91, left: 50 }
         }
+    };
+
+    const ELEMENT_LABELS = {
+        countdown: [
+            { id: 'card', name: '🃏 كرت اللاعب والشارات' },
+            { id: 'rank', name: '🏆 رقم الرانك (الترتيب)' },
+            { id: 'title', name: '🏷️ عنوان الريل المانشيت' },
+            { id: 'playerName', name: '⚽ اسم اللاعب' },
+            { id: 'fcLogo', name: '⚡ شعار EA FC 27 الرسمي' },
+            { id: 'scLogo', name: '👑 شعار المتجر ShopCoin15' }
+        ],
+        versus: [
+            { id: 'cardA', name: '🃏 كرت اللاعب الأول (اليمين)' },
+            { id: 'cardB', name: '🃏 كرت اللاعب الثاني (اليسار)' },
+            { id: 'vsBadge', name: '⚔️ شعار VS المضيء' },
+            { id: 'title', name: '🏷️ عنوان المقارنة' },
+            { id: 'question', name: '💬 سؤال التفاعل بالأسفل' },
+            { id: 'fcLogo', name: '⚡ شعار EA FC 27 الرسمي' },
+            { id: 'scLogo', name: '👑 شعار المتجر ShopCoin15' }
+        ]
     };
 
     // Load persisted layouts from localStorage if available
     function loadSavedLayouts() {
         try {
-            const saved = localStorage.getItem('shopcoin15_reel_layouts_v2');
+            const saved = localStorage.getItem(STORAGE_KEY);
             if (saved) {
                 const parsed = JSON.parse(saved);
                 return {
@@ -46,7 +69,7 @@ window.ReelsEngine = (function() {
         return JSON.parse(JSON.stringify(DEFAULT_LAYOUTS));
     }
 
-    // ---- 2. CURATED VIRAL IDEAS (Angles & Hooks ONLY - User picks players) ----
+    // ---- 2. CURATED VIRAL IDEAS (Hooks ONLY - User picks players) ----
     const VIRAL_IDEAS = {
         countdown: [
             {
@@ -140,8 +163,8 @@ window.ReelsEngine = (function() {
 
     // ---- 3. STATE MANAGEMENT ----
     let state = {
-        activeSection: 'countdown', // 'countdown' or 'versus'
-        theme: 'ea_marble_clean', // 'ea_marble_clean', 'dark_stadium', 'neon_meta'
+        activeSection: 'countdown',
+        theme: 'ea_marble_clean',
         title: 'أفضل 5 مهاجمين للبدايات في FC 27 ⚽🔥',
         subtitle: 'كروت اقتصادية تصنع لك الفارق من أول أسبوع!',
         badge: '🔥 مهاجمين البدايات',
@@ -153,11 +176,11 @@ window.ReelsEngine = (function() {
         timelineProgress: 0,
         showSafeZone: false,
         dragEnabled: true,
-        selectedDragElement: null,
+        magnetEnabled: true, // Magnetic Snapping is ACTIVE by default
+        selectedDragElement: 'card', // Default selected item
         layouts: loadSavedLayouts()
     };
 
-    // Helper to get asset URL
     function getAsset(key, fallbackPath) {
         if (window.EMBEDDED_ASSETS && window.EMBEDDED_ASSETS[key]) {
             return window.EMBEDDED_ASSETS[key];
@@ -165,40 +188,40 @@ window.ReelsEngine = (function() {
         return fallbackPath;
     }
 
-    // Initialize Default Reel based on Section
     function initSection(sectionKey) {
         state.activeSection = sectionKey || 'countdown';
+        state.selectedDragElement = (state.activeSection === 'countdown') ? 'card' : 'cardA';
         const ideaList = VIRAL_IDEAS[state.activeSection] || VIRAL_IDEAS.countdown;
         applyIdea(ideaList[0], false);
     }
 
-    // Switch between Sections (Countdown vs Versus)
     function switchSection(sectionKey) {
         pausePlayback();
         initSection(sectionKey);
         renderEditorControls();
         renderCanvas();
         if (typeof renderPlayerToolbar === 'function') renderPlayerToolbar();
-        if (window.showCopyToast) {
-            const title = sectionKey === 'countdown' ? '🏆 قسم الترتيب التنازلي' : '⚔️ قسم مقارنة العمالقة';
-            window.showCopyToast(`تم فتح ${title}! ✨`);
-        }
     }
 
-    // Apply an Idea from the Bank
     function applyIdea(ideaObj, showToast = true) {
+        if (!ideaObj) return;
+
         state.title = ideaObj.title;
         state.subtitle = ideaObj.subtitle;
         state.badge = ideaObj.badge;
 
         if (state.activeSection === 'countdown') {
-            // Build Slides for Countdown: Intro + 5 Card Slots + Outro
             const ranks = ideaObj.defaultRanks || ['5', '4', '3', '2', '1'];
-            const newSlides = [
-                { type: 'intro', title: ideaObj.title, subtitle: ideaObj.subtitle, badge: ideaObj.badge }
-            ];
+            const newSlides = [];
 
-            ranks.forEach((rankNum, idx) => {
+            newSlides.push({
+                type: 'intro',
+                title: ideaObj.title,
+                subtitle: ideaObj.subtitle,
+                badge: ideaObj.badge
+            });
+
+            ranks.forEach((rankNum) => {
                 newSlides.push({
                     type: 'player_card',
                     rank: rankNum,
@@ -220,7 +243,6 @@ window.ReelsEngine = (function() {
 
             state.slides = newSlides;
         } else {
-            // Versus Duel: Slide 0: Hook Intro, Slide 1: Head-to-Head Battle, Slide 2: Outro
             state.slides = [
                 {
                     type: 'intro',
@@ -255,18 +277,51 @@ window.ReelsEngine = (function() {
         }
     }
 
-    // ---- 4. DRAG & DROP POSITIONING ENGINE (WITH PERSISTENCE) ----
+    // ---- 4. BUTTER-SMOOTH DRAG & SMART MAGNETIC SNAPPING ENGINE ----
     let activeDrag = null;
+    const SNAP_TOLERANCE_X = 3.5; // percentage magnet snap distance
+    const SNAP_TOLERANCE_Y = 3.0;
+
+    function getSnapTargets(dragId) {
+        const targetsX = [{ x: 50, label: 'في المنتصف تماماً (50%)' }];
+        const targetsY = [{ y: 50, label: 'المنتصف الرأسي (50%)' }];
+
+        if (state.activeSection === 'versus') {
+            targetsX.push(
+                { x: 27, label: 'محاذاة كرت اليمين (27%)' },
+                { x: 73, label: 'محاذاة كرت اليسار (73%)' }
+            );
+
+            const secLayout = state.layouts.versus;
+            if (dragId === 'cardB' && secLayout.cardA?.top !== undefined) {
+                targetsY.push({ y: secLayout.cardA.top, label: 'محاذاة أفقية مع الكرت المقابل' });
+            } else if (dragId === 'cardA' && secLayout.cardB?.top !== undefined) {
+                targetsY.push({ y: secLayout.cardB.top, label: 'محاذاة أفقية مع الكرت المقابل' });
+            }
+        }
+
+        return { targetsX, targetsY };
+    }
 
     function initCanvasDragHandlers() {
         const canvas = document.getElementById('exportCanvas');
         if (!canvas) return;
 
         canvas.onmousedown = onDragStart;
-        canvas.ontouchstart = onDragStart;
+        canvas.ontouchstart = (e) => {
+            if (state.dragEnabled && e.target.closest('[data-drag-id]')) {
+                e.preventDefault();
+            }
+            onDragStart(e);
+        };
 
         window.onmousemove = onDragMove;
-        window.ontouchmove = onDragMove;
+        window.ontouchmove = (e) => {
+            if (activeDrag) {
+                e.preventDefault();
+            }
+            onDragMove(e);
+        };
 
         window.onmouseup = onDragEnd;
         window.ontouchend = onDragEnd;
@@ -278,28 +333,35 @@ window.ReelsEngine = (function() {
         if (!target) return;
 
         e.preventDefault();
+        e.stopPropagation();
+
         const clientX = e.touches ? e.touches[0].clientX : e.clientX;
         const clientY = e.touches ? e.touches[0].clientY : e.clientY;
 
         const canvas = document.getElementById('exportCanvas');
         const canvasRect = canvas.getBoundingClientRect();
 
-        const elemRect = target.getBoundingClientRect();
-        const offsetX = clientX - elemRect.left;
-        const offsetY = clientY - elemRect.top;
-
         const dragId = target.getAttribute('data-drag-id');
         state.selectedDragElement = dragId;
+
+        const secLayout = state.layouts[state.activeSection] || DEFAULT_LAYOUTS[state.activeSection];
+        const cfg = secLayout[dragId] || {};
+
+        const startLeft = (cfg.left !== undefined) ? cfg.left : 50;
+        const startTop = (cfg.top !== undefined) ? cfg.top : 30;
 
         activeDrag = {
             dragId,
             target,
-            offsetX,
-            offsetY,
-            canvasRect
+            startMouseX: clientX,
+            startMouseY: clientY,
+            startLeft: startLeft,
+            startTop: startTop,
+            canvasRect: canvasRect
         };
 
-        target.classList.add('ring-2', 'ring-emerald-400', 'ring-offset-2');
+        target.classList.add('ring-2', 'ring-emerald-400', 'ring-offset-2', 'shadow-2xl');
+        updateSelectedElementInPanel();
     }
 
     function onDragMove(e) {
@@ -310,40 +372,213 @@ window.ReelsEngine = (function() {
         const clientY = e.touches ? e.touches[0].clientY : e.clientY;
 
         const canvasRect = activeDrag.canvasRect;
-        const posX = clientX - canvasRect.left - activeDrag.offsetX;
-        const posY = clientY - canvasRect.top - activeDrag.offsetY;
+        const dx = clientX - activeDrag.startMouseX;
+        const dy = clientY - activeDrag.startMouseY;
 
-        // Convert to percentages (0 to 100)
-        let leftPercent = Math.round((posX / canvasRect.width) * 100);
-        let topPercent = Math.round((posY / canvasRect.height) * 100);
+        const dxPercent = (dx / canvasRect.width) * 100;
+        const dyPercent = (dy / canvasRect.height) * 100;
 
-        leftPercent = Math.max(0, Math.min(100, leftPercent));
-        topPercent = Math.max(0, Math.min(100, topPercent));
+        let rawLeft = activeDrag.startLeft + dxPercent;
+        let rawTop = activeDrag.startTop + dyPercent;
 
-        // Update in memory layout
+        // Keep inside canvas bounds
+        rawLeft = Math.max(5, Math.min(95, rawLeft));
+        rawTop = Math.max(2, Math.min(96, rawTop));
+
+        let finalLeft = rawLeft;
+        let finalTop = rawTop;
+        let snapXMatch = null;
+        let snapYMatch = null;
+
+        // SMART MAGNET SNAPPING
+        if (state.magnetEnabled !== false) {
+            const { targetsX, targetsY } = getSnapTargets(activeDrag.dragId);
+
+            for (const t of targetsX) {
+                if (Math.abs(rawLeft - t.x) <= SNAP_TOLERANCE_X) {
+                    finalLeft = t.x;
+                    snapXMatch = t;
+                    break;
+                }
+            }
+
+            for (const t of targetsY) {
+                if (Math.abs(rawTop - t.y) <= SNAP_TOLERANCE_Y) {
+                    finalTop = t.y;
+                    snapYMatch = t;
+                    break;
+                }
+            }
+        }
+
         const secLayout = state.layouts[state.activeSection];
         if (!secLayout[activeDrag.dragId]) secLayout[activeDrag.dragId] = {};
-        secLayout[activeDrag.dragId].top = topPercent;
-        secLayout[activeDrag.dragId].left = leftPercent;
+        secLayout[activeDrag.dragId].left = Math.round(finalLeft * 10) / 10;
+        secLayout[activeDrag.dragId].top = Math.round(finalTop * 10) / 10;
 
-        // Direct DOM update for instant smooth drag
-        activeDrag.target.style.top = `${topPercent}%`;
-        activeDrag.target.style.left = `${leftPercent}%`;
+        // Smooth instant DOM coordinate update
+        activeDrag.target.style.left = `${secLayout[activeDrag.dragId].left}%`;
+        activeDrag.target.style.top = `${secLayout[activeDrag.dragId].top}%`;
+
+        // Render visual magnetic guides
+        renderMagnetGuides(snapXMatch, snapYMatch);
+        updateLiveCoordsDisplay(secLayout[activeDrag.dragId].left, secLayout[activeDrag.dragId].top, !!snapXMatch || !!snapYMatch);
     }
 
     function onDragEnd() {
         if (!activeDrag) return;
         if (activeDrag.target) {
-            activeDrag.target.classList.remove('ring-2', 'ring-emerald-400', 'ring-offset-2');
+            activeDrag.target.classList.remove('ring-2', 'ring-emerald-400', 'ring-offset-2', 'shadow-2xl');
         }
         activeDrag = null;
+        hideMagnetGuides();
         renderCanvas();
+        renderEditorControls();
+    }
+
+    function renderMagnetGuides(snapX, snapY) {
+        const canvas = document.getElementById('exportCanvas');
+        if (!canvas) return;
+
+        let guideV = document.getElementById('reelSnapGuideV');
+        let guideH = document.getElementById('reelSnapGuideH');
+
+        if (snapX) {
+            if (!guideV) {
+                guideV = document.createElement('div');
+                guideV.id = 'reelSnapGuideV';
+                guideV.className = 'absolute top-0 bottom-0 pointer-events-none z-50 border-r-2 border-dashed border-emerald-400 shadow-[0_0_16px_rgba(52,211,153,0.95)]';
+                canvas.appendChild(guideV);
+            }
+            guideV.style.left = `${snapX.x}%`;
+            guideV.innerHTML = `
+                <div class="absolute top-6 -translate-x-1/2 bg-emerald-700 text-white text-[10.5px] font-black px-2.5 py-1 rounded-full shadow-lg whitespace-nowrap flex items-center gap-1 border border-emerald-400 animate-pulse">
+                    <span>🧲</span>
+                    <span>${snapX.label}</span>
+                </div>
+            `;
+            guideV.style.display = 'block';
+        } else if (guideV) {
+            guideV.style.display = 'none';
+        }
+
+        if (snapY) {
+            if (!guideH) {
+                guideH = document.createElement('div');
+                guideH.id = 'reelSnapGuideH';
+                guideH.className = 'absolute left-0 right-0 pointer-events-none z-50 border-b-2 border-dashed border-emerald-400 shadow-[0_0_16px_rgba(52,211,153,0.95)]';
+                canvas.appendChild(guideH);
+            }
+            guideH.style.top = `${snapY.y}%`;
+            guideH.innerHTML = `
+                <div class="absolute right-6 -translate-y-1/2 bg-emerald-700 text-white text-[10.5px] font-black px-2.5 py-1 rounded-full shadow-lg whitespace-nowrap flex items-center gap-1 border border-emerald-400 animate-pulse">
+                    <span>🧲</span>
+                    <span>${snapY.label}</span>
+                </div>
+            `;
+            guideH.style.display = 'block';
+        } else if (guideH) {
+            guideH.style.display = 'none';
+        }
+    }
+
+    function hideMagnetGuides() {
+        const guideV = document.getElementById('reelSnapGuideV');
+        const guideH = document.getElementById('reelSnapGuideH');
+        if (guideV) guideV.style.display = 'none';
+        if (guideH) guideH.style.display = 'none';
+    }
+
+    function updateLiveCoordsDisplay(x, y, isSnapped) {
+        const badge = document.getElementById('dragCoordsBadge');
+        if (badge) {
+            badge.textContent = `X: ${x}% | Y: ${y}% ${isSnapped ? '🧲 ملتوي بالمغناطيس' : ''}`;
+            badge.classList.toggle('text-emerald-700', !isSnapped);
+            badge.classList.toggle('text-white', isSnapped);
+            badge.classList.toggle('bg-emerald-600', isSnapped);
+        }
+    }
+
+    // ---- 5. FINE-TUNING & CONTROL ACTIONS ----
+    function setSelectedElement(elemId) {
+        state.selectedDragElement = elemId;
+        renderCanvas();
+        renderEditorControls();
+    }
+
+    function centerSelectedElement() {
+        const secLayout = state.layouts[state.activeSection];
+        const dragId = state.selectedDragElement || (state.activeSection === 'countdown' ? 'card' : 'cardA');
+        if (!secLayout[dragId]) secLayout[dragId] = {};
+        secLayout[dragId].left = 50.0;
+        renderCanvas();
+        renderEditorControls();
+        if (window.showCopyToast) {
+            window.showCopyToast('تم ضبط العنصر في المنتصف تماماً 50% 🎯🧲');
+        }
+    }
+
+    function nudgeSelected(dir, amount = 1.0) {
+        const secLayout = state.layouts[state.activeSection];
+        const dragId = state.selectedDragElement || (state.activeSection === 'countdown' ? 'card' : 'cardA');
+        if (!secLayout[dragId]) secLayout[dragId] = {};
+
+        let curLeft = (secLayout[dragId].left !== undefined) ? secLayout[dragId].left : 50;
+        let curTop = (secLayout[dragId].top !== undefined) ? secLayout[dragId].top : 30;
+
+        if (dir === 'left') curLeft = Math.max(5, Math.min(95, curLeft - amount));
+        if (dir === 'right') curLeft = Math.max(5, Math.min(95, curLeft + amount));
+        if (dir === 'up') curTop = Math.max(2, Math.min(96, curTop - amount));
+        if (dir === 'down') curTop = Math.max(2, Math.min(96, curTop + amount));
+
+        secLayout[dragId].left = Math.round(curLeft * 10) / 10;
+        secLayout[dragId].top = Math.round(curTop * 10) / 10;
+
+        renderCanvas();
+        renderEditorControls();
+    }
+
+    function setScaleSelected(val) {
+        const secLayout = state.layouts[state.activeSection];
+        const dragId = state.selectedDragElement || (state.activeSection === 'countdown' ? 'card' : 'cardA');
+        if (!secLayout[dragId]) secLayout[dragId] = {};
+        secLayout[dragId].scale = parseFloat(val) || 1.0;
+        renderCanvas();
+        const scaleValEl = document.getElementById('cardScaleVal');
+        if (scaleValEl) scaleValEl.textContent = `${Math.round(secLayout[dragId].scale * 100)}%`;
+    }
+
+    function toggleMagnet() {
+        state.magnetEnabled = !state.magnetEnabled;
+        renderEditorControls();
+        if (window.showCopyToast) {
+            window.showCopyToast(state.magnetEnabled ? 'تم تفعيل المغناطيس الذكي للالتصاق بالمنتصف 🧲✨' : 'تم إيقاف المغناطيس (تحريك حر كامل) 🔓');
+        }
+    }
+
+    function toggleDragLock() {
+        state.dragEnabled = !state.dragEnabled;
+        renderCanvas();
+        renderEditorControls();
+        if (window.showCopyToast) {
+            window.showCopyToast(state.dragEnabled ? 'تم فتح السحب المباشر بالماوس 🔓' : 'تم قفل حركة العناصر على الشاشة 🔒');
+        }
+    }
+
+    function updateSelectedElementInPanel() {
+        const select = document.getElementById('selectReelElement');
+        if (select && state.selectedDragElement) {
+            select.value = state.selectedDragElement;
+        }
+        const secLayout = state.layouts[state.activeSection];
+        const cfg = secLayout[state.selectedDragElement] || {};
+        updateLiveCoordsDisplay(cfg.left || 50, cfg.top || 30, cfg.left === 50);
     }
 
     // Save positions permanently for this archetype
     function saveLayoutPositions() {
         try {
-            localStorage.setItem('shopcoin15_reel_layouts_v2', JSON.stringify(state.layouts));
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(state.layouts));
             if (window.showCopyToast) {
                 window.showCopyToast('تم حفظ وتثبيت مواقع العناصر بنجاح لكل الريلزات القادمة! 💾🔒');
             }
@@ -356,40 +591,29 @@ window.ReelsEngine = (function() {
     function resetLayoutPositions() {
         state.layouts[state.activeSection] = JSON.parse(JSON.stringify(DEFAULT_LAYOUTS[state.activeSection]));
         try {
-            localStorage.setItem('shopcoin15_reel_layouts_v2', JSON.stringify(state.layouts));
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(state.layouts));
         } catch (e) {}
         renderCanvas();
+        renderEditorControls();
         if (window.showCopyToast) {
             window.showCopyToast('تمت إعادة تعيين المواقع الافتراضية بنجاح! 🔄');
         }
     }
 
-    function toggleDragLock() {
-        state.dragEnabled = !state.dragEnabled;
-        const btn = document.getElementById('btnToggleDragLock');
-        if (btn) {
-            btn.innerHTML = state.dragEnabled ? '<span>🔓 السحب مباشر مفعّل</span>' : '<span>🔒 تم قفل المواقع</span>';
-            btn.classList.toggle('bg-emerald-600', state.dragEnabled);
-            btn.classList.toggle('bg-slate-700', !state.dragEnabled);
-        }
-        renderCanvas();
-    }
-
-    // ---- 5. SLIDE & PLAYER CARD MANAGEMENT (User Full Control) ----
+    // ---- 6. SLIDE & PLAYER CARD MANAGEMENT (User Full Control) ----
     function addPlayerSlide() {
         const newRank = (state.slides.filter(s => s.type === 'player_card').length + 1).toString();
         const newSlide = {
             type: 'player_card',
             rank: newRank,
-            playerName: 'لاعب جديد',
-            playerArName: 'لاعب جديد',
+            playerName: 'اسم اللاعب',
+            playerArName: `اللاعب رقم ${newRank}`,
             rating: '86',
             position: 'ST',
             cardUrl: 'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=600/2027/futgg-player-item-card/27-253072.b01bd10077579d6ac45096ea658f3725f2951793cc9543ab9775cd0e7b909ede.webp',
             badges: ['⚡ سرعة', '🔥 ميتّا']
         };
 
-        // Insert before outro
         const outroIdx = state.slides.findIndex(s => s.type === 'outro');
         if (outroIdx !== -1) {
             state.slides.splice(outroIdx, 0, newSlide);
@@ -433,7 +657,7 @@ window.ReelsEngine = (function() {
         renderCanvas();
     }
 
-    // ---- 6. INTERACTIVE VIDEO PLAYER ----
+    // ---- 7. INTERACTIVE VIDEO PLAYER ----
     function playPlayback() {
         if (state.isPlaying) return;
         state.isPlaying = true;
@@ -566,7 +790,7 @@ window.ReelsEngine = (function() {
         }
     }
 
-    // ---- 7. HIGH-FIDELITY CANVAS RENDERING (OFFICIAL ASSETS & DRAGGABLE BLOCKS) ----
+    // ---- 8. CANVAS RENDERING WITH STANDARD CENTER ANCHOR ----
     function renderCanvas() {
         const canvas = document.getElementById('exportCanvas');
         if (!canvas) return;
@@ -585,45 +809,40 @@ window.ReelsEngine = (function() {
         const currentSlide = state.slides[state.currentSlideIndex] || state.slides[0];
         const layout = state.layouts[state.activeSection] || DEFAULT_LAYOUTS[state.activeSection];
 
-        // 1. Authentic Background from Real Reels (with EA pitch markings)
         const bgUrl = getAsset('STORE_BG_PURE', 'assets/store-bg-pure.png');
         const fcLogoUrl = getAsset('FC27_OFFICIAL_LOGO', 'assets/fc27-official-logo.png');
         const scLogoUrl = getAsset('SC_LOGO', 'assets/sc-logo.png');
 
-        // Dynamic Position Styles Helper
+        // Dynamic Standard Position Styles (Unified anchor: translateX(-50%))
         const posStyle = (cfg, transformExtra = '') => {
             if (!cfg) return '';
-            let s = 'position: absolute; ';
-            if (cfg.top !== undefined) s += `top: ${cfg.top}%; `;
-            if (cfg.bottom !== undefined) s += `bottom: ${cfg.bottom}%; `;
-            if (cfg.left !== undefined) s += `left: ${cfg.left}%; `;
-            if (cfg.right !== undefined) s += `right: ${cfg.right}%; `;
-            const baseTransform = (cfg.left === 50 && cfg.right === undefined) ? 'translateX(-50%)' : '';
-            const fullTransform = [baseTransform, transformExtra].filter(Boolean).join(' ');
+            const leftVal = (cfg.left !== undefined) ? cfg.left : 50;
+            const topVal = (cfg.top !== undefined) ? cfg.top : 20;
+            let s = `position: absolute; left: ${leftVal}%; top: ${topVal}%; touch-action: none; `;
+            const fullTransform = ['translateX(-50%)', transformExtra].filter(Boolean).join(' ');
             if (fullTransform) s += `transform: ${fullTransform}; `;
             return s;
         };
 
-        const dragCursor = state.dragEnabled ? 'cursor-move' : 'cursor-default';
+        const dragCursor = state.dragEnabled ? 'cursor-grab active:cursor-grabbing' : 'cursor-default';
 
         // FC 27 Logo Block
         const fcLogoHtml = `
             <div data-drag-id="fcLogo" class="z-30 select-none ${dragCursor}" style="${posStyle(layout.fcLogo)}">
-                <img src="${fcLogoUrl}" alt="EA FC 27" class="w-12 h-auto object-contain drop-shadow-md">
+                <img src="${fcLogoUrl}" alt="EA FC 27" class="w-12 h-auto object-contain drop-shadow-md pointer-events-none">
             </div>
         `;
 
         // Shop Coin Logo Block
         const scLogoHtml = `
             <div data-drag-id="scLogo" class="z-30 select-none flex flex-col items-center justify-center ${dragCursor}" style="${posStyle(layout.scLogo)}">
-                <img src="${scLogoUrl}" alt="ShopCoin15" class="w-14 h-auto object-contain drop-shadow-md">
+                <img src="${scLogoUrl}" alt="ShopCoin15" class="w-14 h-auto object-contain drop-shadow-md pointer-events-none">
             </div>
         `;
 
         let bodyHtml = '';
 
         if (currentSlide.type === 'intro') {
-            // INTRO HOOK SLIDE
             bodyHtml = `
                 <div class="absolute inset-0 flex flex-col items-center justify-center px-10 text-center z-20">
                     <div class="mb-4 inline-block px-4 py-1.5 rounded-full bg-slate-900 text-white text-xs font-black shadow-sm tracking-wide">
@@ -644,7 +863,6 @@ window.ReelsEngine = (function() {
                 </div>
             `;
         } else if (currentSlide.type === 'player_card') {
-            // COUNTDOWN PLAYER CARD SLIDE (100% Draggable Blocks)
             const cardScale = layout.card?.scale || 1.0;
             bodyHtml = `
                 <!-- 1. Rank Block -->
@@ -655,8 +873,8 @@ window.ReelsEngine = (function() {
                 </div>
 
                 <!-- 2. Title Block -->
-                <div data-drag-id="title" class="z-20 text-center px-6 select-none ${dragCursor}" style="${posStyle(layout.title)}">
-                    <div class="text-base md:text-lg font-black text-slate-950 font-['Alexandria'] leading-tight drop-shadow-xs max-w-xs mx-auto">
+                <div data-drag-id="title" class="z-20 text-center px-6 max-w-[340px] mx-auto select-none ${dragCursor}" style="${posStyle(layout.title)}">
+                    <div class="text-base md:text-lg font-black text-slate-950 font-['Alexandria'] leading-tight drop-shadow-xs">
                         ${state.title}
                     </div>
                 </div>
@@ -666,11 +884,11 @@ window.ReelsEngine = (function() {
                     <div class="relative">
                         <div class="absolute -inset-6 bg-emerald-500/15 blur-3xl rounded-full pointer-events-none"></div>
                         <img src="${currentSlide.cardUrl}" alt="${currentSlide.playerName}" 
-                             class="w-64 md:w-72 h-auto max-h-[400px] object-contain drop-shadow-[0_20px_35px_rgba(0,0,0,0.4)]">
+                             class="w-64 md:w-72 h-auto max-h-[400px] object-contain drop-shadow-[0_20px_35px_rgba(0,0,0,0.4)] pointer-events-none">
                     </div>
 
                     <!-- Badges -->
-                    <div class="mt-3 flex items-center justify-center gap-1.5 flex-wrap max-w-xs">
+                    <div class="mt-3 flex items-center justify-center gap-1.5 flex-wrap max-w-xs pointer-events-none">
                         ${(currentSlide.badges || []).map(b => `
                             <span class="px-2.5 py-1 rounded-xl bg-white/95 text-slate-900 border border-slate-200 text-[11px] font-black shadow-xs">
                                 ${b}
@@ -679,8 +897,8 @@ window.ReelsEngine = (function() {
                     </div>
                 </div>
 
-                <!-- 4. Player Name / Sub-headline Block -->
-                <div data-drag-id="playerName" class="z-20 text-center select-none px-4 ${dragCursor}" style="${posStyle(layout.playerName)}">
+                <!-- 4. Player Name Block -->
+                <div data-drag-id="playerName" class="z-20 text-center select-none px-4 w-full ${dragCursor}" style="${posStyle(layout.playerName)}">
                     <div class="text-2xl md:text-3xl font-black text-slate-950 font-['Alexandria'] drop-shadow-sm">
                         ${currentSlide.playerArName || currentSlide.playerName}
                     </div>
@@ -690,70 +908,66 @@ window.ReelsEngine = (function() {
                 </div>
             `;
         } else if (currentSlide.type === 'versus_card') {
-            // VERSUS DUEL SLIDE (Card A vs Card B)
             const pA = currentSlide.playerA || {};
             const pB = currentSlide.playerB || {};
 
             bodyHtml = `
                 <!-- 1. Title Header -->
-                <div data-drag-id="title" class="z-20 text-center px-6 select-none ${dragCursor}" style="${posStyle(layout.title)}">
-                    <span class="inline-block px-3 py-1 rounded-full bg-slate-900 text-white text-[10.5px] font-black mb-1.5 shadow-xs">
+                <div data-drag-id="title" class="z-20 text-center px-6 max-w-[340px] mx-auto select-none ${dragCursor}" style="${posStyle(layout.title)}">
+                    <span class="inline-block px-3 py-1 rounded-full bg-slate-900 text-white text-[10px] font-black mb-1 shadow-xs">
                         ${state.badge || '⚔️ صراع العمالقة'}
                     </span>
-                    <h2 class="text-2xl md:text-3xl font-black text-slate-950 font-['Alexandria'] leading-tight drop-shadow-xs max-w-sm mx-auto">
+                    <h2 class="text-xl md:text-2xl font-black text-slate-950 font-['Alexandria'] leading-snug drop-shadow-xs">
                         ${currentSlide.title || state.title}
                     </h2>
                 </div>
 
                 <!-- 2. Player Card A (Right side in RTL) -->
-                <div data-drag-id="cardA" class="z-20 flex flex-col items-center select-none ${dragCursor}" style="${posStyle(layout.cardA, `scale(${layout.cardA?.scale || 0.92})`)}">
-                    <div class="relative">
-                        <img src="${pA.cardUrl}" alt="${pA.name}" class="w-48 md:w-56 h-auto max-h-[310px] object-contain drop-shadow-2xl">
+                <div data-drag-id="cardA" class="z-20 flex flex-col items-center select-none w-44 md:w-48 ${dragCursor}" style="${posStyle(layout.cardA, `scale(${layout.cardA?.scale || 0.92})`)}">
+                    <div class="relative h-[230px] flex items-center justify-center">
+                        <img src="${pA.cardUrl}" alt="${pA.name}" class="max-h-[230px] w-auto object-contain drop-shadow-2xl pointer-events-none">
                     </div>
-                    <div class="mt-2 text-center">
+                    <div class="mt-2 text-center pointer-events-none">
                         <div class="text-sm font-black text-slate-950 font-['Alexandria']">${pA.arName || pA.name}</div>
-                        <div class="text-[10.5px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-200 mt-1">${pA.statHighlight || ''}</div>
+                        <div class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-200 mt-1">${pA.statHighlight || ''}</div>
                     </div>
                 </div>
 
-                <!-- 3. VS Badge Center -->
-                <div data-drag-id="vsBadge" class="z-25 flex items-center justify-center select-none ${dragCursor}" style="${posStyle(layout.vsBadge)}">
-                    <div class="w-14 h-14 rounded-full bg-gradient-to-tr from-rose-600 via-red-600 to-amber-500 text-white font-black text-lg flex items-center justify-center shadow-xl border-2 border-white animate-pulse">
+                <!-- 3. VS Badge Center (Centered X & Y) -->
+                <div data-drag-id="vsBadge" class="z-25 flex items-center justify-center select-none ${dragCursor}" style="${posStyle(layout.vsBadge, 'translateY(-50%)')}">
+                    <div class="w-13 h-13 rounded-full bg-gradient-to-tr from-rose-600 via-red-600 to-amber-500 text-white font-black text-base flex items-center justify-center shadow-xl border-2 border-white animate-pulse pointer-events-none">
                         VS
                     </div>
                 </div>
 
                 <!-- 4. Player Card B (Left side in RTL) -->
-                <div data-drag-id="cardB" class="z-20 flex flex-col items-center select-none ${dragCursor}" style="${posStyle(layout.cardB, `scale(${layout.cardB?.scale || 0.92})`)}">
-                    <div class="relative">
-                        <img src="${pB.cardUrl}" alt="${pB.name}" class="w-48 md:w-56 h-auto max-h-[310px] object-contain drop-shadow-2xl">
+                <div data-drag-id="cardB" class="z-20 flex flex-col items-center select-none w-44 md:w-48 ${dragCursor}" style="${posStyle(layout.cardB, `scale(${layout.cardB?.scale || 0.92})`)}">
+                    <div class="relative h-[230px] flex items-center justify-center">
+                        <img src="${pB.cardUrl}" alt="${pB.name}" class="max-h-[230px] w-auto object-contain drop-shadow-2xl pointer-events-none">
                     </div>
-                    <div class="mt-2 text-center">
+                    <div class="mt-2 text-center pointer-events-none">
                         <div class="text-sm font-black text-slate-950 font-['Alexandria']">${pB.arName || pB.name}</div>
-                        <div class="text-[10.5px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-lg border border-blue-200 mt-1">${pB.statHighlight || ''}</div>
+                        <div class="text-[10px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-lg border border-blue-200 mt-1">${pB.statHighlight || ''}</div>
                     </div>
                 </div>
 
                 <!-- 5. Bottom Interactive Question Hook -->
-                <div data-drag-id="question" class="z-20 text-center select-none px-4 ${dragCursor}" style="${posStyle(layout.question)}">
+                <div data-drag-id="question" class="z-20 text-center select-none px-4 w-full ${dragCursor}" style="${posStyle(layout.question)}">
                     <div class="inline-block px-5 py-2.5 rounded-2xl bg-white/95 border border-slate-200 text-slate-950 font-black text-xs md:text-sm shadow-md font-['Alexandria']">
                         ${currentSlide.question || 'صوت بالتعليقات: من تختار لفريقك؟ 👇'}
                     </div>
                 </div>
             `;
         } else if (currentSlide.type === 'outro') {
-            // OUTRO CTA SLIDE
             bodyHtml = `
                 <div class="absolute inset-0 flex flex-col items-center justify-center px-8 text-center z-20">
                     <img src="${scLogoUrl}" alt="ShopCoin15" class="w-20 h-auto object-contain mb-3 drop-shadow-lg animate-pulse">
-
                     <h2 class="text-3xl md:text-4xl font-black text-slate-950 leading-snug font-['Alexandria']">
                         متجر ShopCoin15
                     </h2>
                     <div class="text-sm font-bold text-emerald-700 mt-1">
                         شحن كوينز فوري وآمن 100% ⚡
                     </div>
-
                     <div class="mt-6 space-y-2.5 w-full max-w-sm text-right">
                         <div class="flex items-center gap-3 p-3 rounded-2xl bg-white border border-slate-200 shadow-xs">
                             <span class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 font-black flex items-center justify-center text-sm shrink-0">🔒</span>
@@ -762,7 +976,6 @@ window.ReelsEngine = (function() {
                                 <div class="text-[10.5px] text-slate-500">حماية تامة من التصفير ببروتوكول تحويل آمن</div>
                             </div>
                         </div>
-
                         <div class="flex items-center gap-3 p-3 rounded-2xl bg-white border border-slate-200 shadow-xs">
                             <span class="w-8 h-8 rounded-xl bg-blue-100 text-blue-700 font-black flex items-center justify-center text-sm shrink-0">⚡</span>
                             <div>
@@ -771,7 +984,6 @@ window.ReelsEngine = (function() {
                             </div>
                         </div>
                     </div>
-
                     <div class="mt-7 px-6 py-3 rounded-2xl bg-slate-900 text-white font-black text-xs shadow-lg">
                         للطلب حياك على الخاص: @shop_coin15 📩
                     </div>
@@ -779,7 +991,6 @@ window.ReelsEngine = (function() {
             `;
         }
 
-        // Safe Zone Overlay
         const safeZoneHtml = state.showSafeZone ? `
             <div class="absolute inset-0 pointer-events-none z-40 flex flex-col justify-between border-2 border-dashed border-rose-500/50">
                 <div class="h-24 bg-rose-500/10 border-b border-rose-400/30 flex items-center justify-center">
@@ -813,7 +1024,7 @@ window.ReelsEngine = (function() {
         }
     }
 
-    // ---- 8. EDITOR CONTROLS (PANEL) ----
+    // ---- 9. EDITOR CONTROLS PANEL (WITH SMART MAGNET & FINE NUDGE) ----
     function renderEditorControls() {
         const container = document.getElementById('suite_reels_panel');
         if (!container) return;
@@ -821,6 +1032,35 @@ window.ReelsEngine = (function() {
         const isCountdown = state.activeSection === 'countdown';
         const ideaList = VIRAL_IDEAS[state.activeSection] || [];
         const currentSlide = state.slides[state.currentSlideIndex];
+
+        const secLayout = state.layouts[state.activeSection] || DEFAULT_LAYOUTS[state.activeSection];
+        const elementsList = ELEMENT_LABELS[state.activeSection] || [];
+        const selectedId = state.selectedDragElement || elementsList[0].id;
+        const curCfg = secLayout[selectedId] || {};
+        const curLeft = (curCfg.left !== undefined) ? curCfg.left : 50;
+        const curTop = (curCfg.top !== undefined) ? curCfg.top : 30;
+
+        const isCardElement = ['card', 'cardA', 'cardB'].includes(selectedId);
+        const curScale = curCfg.scale || (isCardElement ? (state.activeSection === 'versus' ? 0.92 : 1.0) : 1.0);
+
+        const elementSelectOptions = elementsList.map(item => `
+            <option value="${item.id}" ${item.id === selectedId ? 'selected' : ''}>
+                ${item.name}
+            </option>
+        `).join('');
+
+        const scaleControlHtml = isCardElement ? `
+            <div class="flex items-center justify-between pt-2 border-t border-emerald-100">
+                <span class="text-[11px] font-bold text-slate-700">حجم الكرت (Scale):</span>
+                <div class="flex items-center gap-2">
+                    <input type="range" min="0.75" max="1.30" step="0.02" value="${curScale}" 
+                           oninput="ReelsEngine.setScaleSelected(this.value)" class="w-24 accent-emerald-600 cursor-pointer">
+                    <span id="cardScaleVal" class="text-[10.5px] font-mono font-black text-emerald-800 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+                        ${Math.round(curScale * 100)}%
+                    </span>
+                </div>
+            </div>
+        ` : '';
 
         let html = `
             <div class="space-y-4">
@@ -837,32 +1077,73 @@ window.ReelsEngine = (function() {
                     </button>
                 </div>
 
-                <!-- 2. ELEMENT POSITIONING & PERSISTENCE CONTROLS -->
-                <div class="p-3.5 rounded-2xl bg-emerald-50/70 border border-emerald-200 shadow-xs space-y-2.5">
+                <!-- 2. SMART MAGNET & POSITIONING SYSTEM (THE USER'S REQUEST) -->
+                <div class="p-3.5 rounded-2xl bg-gradient-to-br from-emerald-50 via-teal-50 to-emerald-50 border border-emerald-200 shadow-xs space-y-3">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-1.5">
-                            <span class="text-sm">🎯</span>
-                            <span class="text-xs font-black text-emerald-950">تحريك العناصر وتثبيت المواضع:</span>
+                            <span class="text-base">🧲</span>
+                            <span class="text-xs font-black text-emerald-950">المغناطيس وتحريك العناصر:</span>
                         </div>
-                        <button type="button" id="btnToggleDragLock" onclick="ReelsEngine.toggleDragLock()" 
-                                class="px-2.5 py-1 rounded-lg ${state.dragEnabled ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-200'} text-[10.5px] font-black transition">
-                            ${state.dragEnabled ? '🔓 السحب المباشر مفعّل' : '🔒 تم قفل المواقع'}
-                        </button>
+                        <div class="flex items-center gap-1.5">
+                            <button type="button" onclick="ReelsEngine.toggleMagnet()" 
+                                    class="px-2.5 py-1 rounded-lg ${state.magnetEnabled !== false ? 'bg-emerald-600 text-white shadow-xs' : 'bg-slate-300 text-slate-700'} text-[10.5px] font-black transition flex items-center gap-1" title="تفعيل/تعطيل المغناطيس الذكي للالتصاق بالمنتصف">
+                                <span>${state.magnetEnabled !== false ? '🧲 مغناطيس: شغال' : '🧲 مغناطيس: مطفأ'}</span>
+                            </button>
+                            <button type="button" id="btnToggleDragLock" onclick="ReelsEngine.toggleDragLock()" 
+                                    class="px-2.5 py-1 rounded-lg ${state.dragEnabled ? 'bg-slate-900 text-white' : 'bg-slate-400 text-slate-100'} text-[10.5px] font-black transition">
+                                ${state.dragEnabled ? '🔓 سحب بالماوس' : '🔒 مقفول'}
+                            </button>
+                        </div>
                     </div>
-                    <p class="text-[10.5px] text-emerald-900/80 leading-relaxed font-medium">
-                        💡 يمكنك سحب أي عنصر (الرانك، العنوان، الكرت) بالماوس/اللمس مباشرة على الشاشة. ثم اضغط <b>تثبيت المواضع</b> لتثبت تلقائياً لكل الريلزات القادمة!
-                    </p>
-                    <div class="flex items-center gap-2 pt-1 border-t border-emerald-200/60">
-                        <button type="button" onclick="ReelsEngine.saveLayoutPositions()" class="flex-1 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[11px] transition shadow-xs flex items-center justify-center gap-1">
+
+                    <!-- Selected Element Controller Box -->
+                    <div class="p-3 rounded-xl bg-white border border-emerald-300 shadow-xs space-y-2.5">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[11px] font-black text-slate-800">العنصر المراد ضبطه:</span>
+                            <span id="dragCoordsBadge" class="text-[10px] font-mono font-black text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                                X: ${curLeft}% | Y: ${curTop}% ${curLeft === 50 ? '🧲 بالمنتصف' : ''}
+                            </span>
+                        </div>
+
+                        <select id="selectReelElement" onchange="ReelsEngine.setSelectedElement(this.value)" 
+                                class="w-full px-2.5 py-2 rounded-lg bg-slate-50 border border-slate-200 text-xs font-bold text-slate-900 outline-none focus:border-emerald-500">
+                            ${elementSelectOptions}
+                        </select>
+
+                        <!-- Big Snap to Center Button -->
+                        <button type="button" onclick="ReelsEngine.centerSelectedElement()" 
+                                class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs transition flex items-center justify-center gap-1.5 shadow-sm active:scale-[0.98]">
+                            <span>🎯 وضع في المنتصف تماماً (Center 50%)</span>
+                        </button>
+
+                        <!-- Fine Nudge Controls -->
+                        <div class="flex items-center justify-between pt-1.5 border-t border-slate-100">
+                            <span class="text-[10.5px] font-bold text-slate-600">تحريك دقيق (1%):</span>
+                            <div class="flex items-center gap-1">
+                                <button type="button" onclick="ReelsEngine.nudgeSelected('up')" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-emerald-100 text-slate-800 hover:text-emerald-700 font-black text-xs transition border border-slate-200 flex items-center justify-center active:scale-95" title="للأعلى">⬆️</button>
+                                <button type="button" onclick="ReelsEngine.nudgeSelected('down')" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-emerald-100 text-slate-800 hover:text-emerald-700 font-black text-xs transition border border-slate-200 flex items-center justify-center active:scale-95" title="للأسفل">⬇️</button>
+                                <button type="button" onclick="ReelsEngine.nudgeSelected('left')" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-emerald-100 text-slate-800 hover:text-emerald-700 font-black text-xs transition border border-slate-200 flex items-center justify-center active:scale-95" title="يسار">⬅️</button>
+                                <button type="button" onclick="ReelsEngine.nudgeSelected('right')" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-emerald-100 text-slate-800 hover:text-emerald-700 font-black text-xs transition border border-slate-200 flex items-center justify-center active:scale-95" title="يمين">➡️</button>
+                            </div>
+                        </div>
+
+                        ${scaleControlHtml}
+                    </div>
+
+                    <!-- Persistence Controls -->
+                    <div class="flex items-center gap-2 pt-0.5">
+                        <button type="button" onclick="ReelsEngine.saveLayoutPositions()" 
+                                class="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-700 hover:brightness-105 text-white font-black text-xs transition shadow-sm flex items-center justify-center gap-1 active:scale-[0.98]">
                             <span>💾 تثبيت المواضع لهذا النمط</span>
                         </button>
-                        <button type="button" onclick="ReelsEngine.resetLayoutPositions()" class="py-2 px-3 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold text-[11px] transition">
-                            <span>🔄 إعادة تعيين</span>
+                        <button type="button" onclick="ReelsEngine.resetLayoutPositions()" 
+                                class="py-2.5 px-3 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold text-xs transition active:scale-[0.98]">
+                            <span>🔄 ضبط افتراضي</span>
                         </button>
                     </div>
                 </div>
 
-                <!-- 3. VIRAL HOOKS BANK (Angles ONLY) -->
+                <!-- 3. VIRAL HOOKS BANK -->
                 <div class="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-2.5">
                     <div class="flex items-center justify-between">
                         <span class="text-xs font-black text-slate-900 flex items-center gap-1.5">
@@ -871,7 +1152,7 @@ window.ReelsEngine = (function() {
                         <span class="text-[10px] text-emerald-600 font-bold">بضغطة واحدة ✨</span>
                     </div>
 
-                    <div class="space-y-2 max-h-56 overflow-y-auto pr-1">
+                    <div class="space-y-2 max-h-52 overflow-y-auto pr-1">
                         ${ideaList.map(idea => `
                             <div class="p-2.5 rounded-xl border border-slate-200 hover:border-emerald-500 bg-slate-50/70 hover:bg-white transition space-y-1.5">
                                 <div class="flex items-center justify-between">
@@ -890,7 +1171,7 @@ window.ReelsEngine = (function() {
                     </div>
                 </div>
 
-                <!-- 4. SLIDE & PLAYER CUSTOMIZER (User in Full Control) -->
+                <!-- 4. SLIDE & PLAYER CUSTOMIZER -->
                 <div class="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-3">
                     <div class="flex items-center justify-between">
                         <span class="text-xs font-black text-slate-900">
@@ -954,8 +1235,8 @@ window.ReelsEngine = (function() {
                     <div>
                         <label class="block text-[11px] font-black text-slate-700 mb-1">الوصف والتحفيز (Subtitle):</label>
                         <input type="text" value="${(slide.subtitle || '').replace(/"/g, '&quot;')}" 
-                               oninput="ReelsEngine.updateCurrentSlideField('subtitle', this.value)"
-                               class="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs font-medium outline-none focus:border-emerald-500">
+                                oninput="ReelsEngine.updateCurrentSlideField('subtitle', this.value)"
+                                class="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs font-medium outline-none focus:border-emerald-500">
                     </div>
                 </div>
             `;
@@ -1000,14 +1281,13 @@ window.ReelsEngine = (function() {
             const pB = slide.playerB || {};
             return `
                 <div class="space-y-3">
-                    <!-- Player A -->
                     <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
                         <span class="text-[11px] font-black text-slate-900 block">اللاعب الأول (اليمين):</span>
                         <div class="grid grid-cols-2 gap-2">
                             <input type="text" placeholder="الاسم بالعربي" value="${(pA.arName || '').replace(/"/g, '&quot;')}" 
                                    oninput="ReelsEngine.updateVersusField('playerA', 'arName', this.value)"
                                    class="px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-bold">
-                            <input type="text" placeholder="أبرز ميزة (مثل: سرعة 96)" value="${(pA.statHighlight || '').replace(/"/g, '&quot;')}" 
+                            <input type="text" placeholder="أبرز ميزة" value="${(pA.statHighlight || '').replace(/"/g, '&quot;')}" 
                                    oninput="ReelsEngine.updateVersusField('playerA', 'statHighlight', this.value)"
                                    class="px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-xs">
                         </div>
@@ -1016,14 +1296,13 @@ window.ReelsEngine = (function() {
                                class="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-[10.5px] font-mono">
                     </div>
 
-                    <!-- Player B -->
                     <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
                         <span class="text-[11px] font-black text-slate-900 block">اللاعب الثاني (اليسار):</span>
                         <div class="grid grid-cols-2 gap-2">
                             <input type="text" placeholder="الاسم بالعربي" value="${(pB.arName || '').replace(/"/g, '&quot;')}" 
                                    oninput="ReelsEngine.updateVersusField('playerB', 'arName', this.value)"
                                    class="px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-bold">
-                            <input type="text" placeholder="أبرز ميزة (مثل: بدنية 90)" value="${(pB.statHighlight || '').replace(/"/g, '&quot;')}" 
+                            <input type="text" placeholder="أبرز ميزة" value="${(pB.statHighlight || '').replace(/"/g, '&quot;')}" 
                                    oninput="ReelsEngine.updateVersusField('playerB', 'statHighlight', this.value)"
                                    class="px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-xs">
                         </div>
@@ -1032,7 +1311,6 @@ window.ReelsEngine = (function() {
                                class="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-[10.5px] font-mono">
                     </div>
 
-                    <!-- Question Hook -->
                     <div>
                         <label class="block text-[11px] font-black text-slate-700 mb-1">سؤال التفاعل أسفل المقارنة:</label>
                         <input type="text" value="${(slide.question || '').replace(/"/g, '&quot;')}" 
@@ -1068,7 +1346,7 @@ window.ReelsEngine = (function() {
         if (idea) applyIdea(idea, true);
     }
 
-    // ---- 9. PLAYER TOOLBAR (BELOW CANVAS) ----
+    // ---- 10. PLAYER TOOLBAR (BELOW CANVAS) ----
     function renderPlayerToolbar() {
         const container = document.getElementById('reelsPlayerToolbarContainer');
         if (!container) return;
@@ -1104,7 +1382,7 @@ window.ReelsEngine = (function() {
         updatePlayerUi();
     }
 
-    // ---- 10. EXPORTERS (VIDEO & SLIDES) ----
+    // ---- 11. EXPORTERS (VIDEO & SLIDES) ----
     async function exportReelVideo() {
         const btn = document.getElementById('btnExportVideo');
         if (btn) {
@@ -1117,6 +1395,7 @@ window.ReelsEngine = (function() {
         const prevDrag = state.dragEnabled;
         state.showSafeZone = false;
         state.dragEnabled = false;
+        hideMagnetGuides();
 
         try {
             if (window.showCopyToast) {
@@ -1228,6 +1507,7 @@ window.ReelsEngine = (function() {
         const prevDrag = state.dragEnabled;
         state.showSafeZone = false;
         state.dragEnabled = false;
+        hideMagnetGuides();
         pausePlayback();
 
         if (window.showCopyToast) {
@@ -1260,10 +1540,15 @@ window.ReelsEngine = (function() {
         const prevDrag = state.dragEnabled;
         state.showSafeZone = false;
         state.dragEnabled = false;
+        hideMagnetGuides();
         renderCanvas();
         await new Promise(r => setTimeout(r, 200));
 
-        const caption = `🎬 ريلز FC 27 جاهز للنشر:\n${state.title}\n${state.subtitle}\n\n@shop_coin15`;
+        const caption = `🎬 ريلز FC 27 جاهز للنشر:
+${state.title}
+${state.subtitle}
+
+@shop_coin15`;
         await window.TelegramManager.sendDesignInternal('exportCanvas', caption);
 
         state.showSafeZone = prevSafe;
@@ -1288,6 +1573,11 @@ window.ReelsEngine = (function() {
         setSlideDuration,
         toggleSafeZone,
         toggleDragLock,
+        toggleMagnet,
+        centerSelectedElement,
+        nudgeSelected,
+        setSelectedElement,
+        setScaleSelected,
         saveLayoutPositions,
         resetLayoutPositions,
         addPlayerSlide,
