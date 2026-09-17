@@ -2990,6 +2990,13 @@ window.fetchPlayerForTrio = async function(cardNum) {
 
     try {
         const res = await fetch(`/api/fetch-futgg?url=${encodeURIComponent(val)}`);
+        if (!res.ok) {
+            if (window.location.hostname.includes('github.io')) {
+                alert('💡 تنبيه:\nصفحة GitHub Pages هي واجهة استعراض وتصميم ثابتة (بدون خادم Node.js خلفها).\n\n⚡ لسحب الكروت تلقائياً بالرابط واستخدام محرك 4K الكامل:\n1. افتح الاستوديو عبر شبكة منزلك: http://192.168.1.2:3000\n2. أو يمكنك رفع صورة أي كرت فوراً من هاتفك بالضغط على زر المجلد (📁)\n3. أو اختر من الكروت الجاهزة السريعة المقترحة بالأسفل.');
+                return;
+            }
+            throw new Error(`استجابة غير صالحة من السيرفر (${res.status})`);
+        }
         const data = await res.json();
         if (data.success && data.cardImage) {
             const displayName = `${data.playerName}${data.rating ? ' (' + data.rating + ')' : ''}`;
@@ -3000,7 +3007,11 @@ window.fetchPlayerForTrio = async function(cardNum) {
             alert(data.error || 'تعذر سحب كرت اللاعب. تأكد من صحة الرابط أو الـ ID');
         }
     } catch (err) {
-        alert('حدث خطأ في الاتصال بالسيرفر: ' + err.message);
+        if (window.location.hostname.includes('github.io')) {
+            alert('💡 تنبيه:\nصفحة GitHub Pages هي واجهة تصميم ثابتة.\n• لسحب الكروت تلقائياً ومحرك 4K، استخدم الرابط المحلي: http://192.168.1.2:3000\n• أو ارفع صورة الكرت مباشرة من هاتفك عبر زر المجلد 📁');
+        } else {
+            alert('حدث خطأ في الاتصال بالسيرفر: ' + err.message);
+        }
     } finally {
         if (btn) {
             btn.disabled = false;
@@ -4038,6 +4049,13 @@ async function fetchFutGGCard(url) {
 
     try {
         const response = await fetch(`/api/fetch-futgg?url=${encodeURIComponent(url.trim())}`);
+        if (!response.ok) {
+            if (window.location.hostname.includes('github.io')) {
+                alert('💡 تنبيه:\nصفحة GitHub Pages هي واجهة استعراض وتصميم ثابتة (بدون خادم Node.js خلفها).\n\n⚡ لسحب الكروت تلقائياً بالرابط:\n• افتح الاستوديو عبر شبكة المنزل: http://192.168.1.2:3000\n• أو يمكنك رفع صورة أي كرت مباشرة بالضغط على زر المجلد 📁');
+                return;
+            }
+            throw new Error(`استجابة غير صالحة من السيرفر (${response.status})`);
+        }
         const data = await response.json();
 
         if (data.success && data.cardImage) {
@@ -4065,7 +4083,11 @@ async function fetchFutGGCard(url) {
         }
     } catch (err) {
         console.error('Error fetching FUT.GG card:', err);
-        alert('حدث خطأ أثناء سحب البطاقة: ' + err.message);
+        if (window.location.hostname.includes('github.io')) {
+            alert('💡 تنبيه:\nأنت تتصفح من GitHub Pages (واجهة ثابتة).\n• لسحب الكروت تلقائياً: افتح http://192.168.1.2:3000\n• أو ارفع صورة الكرت مباشرة 📁');
+        } else {
+            alert('حدث خطأ أثناء سحب البطاقة: ' + err.message);
+        }
     } finally {
         if (btn) {
             btn.innerHTML = originalText;
