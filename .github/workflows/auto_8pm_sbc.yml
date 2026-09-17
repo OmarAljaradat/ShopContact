@@ -1,0 +1,47 @@
+name: EA FC 8PM Auto-Watcher & Designer
+
+on:
+  schedule:
+    # 17:00 UTC (8:00 PM Jordan/KSA BST summer time)
+    - cron: '0,3,7,12 17 * * *'
+    # 18:00 UTC (9:00 PM Jordan/KSA GMT winter time)
+    - cron: '0,3,7,12 18 * * *'
+  workflow_dispatch: # Allows manual 1-click trigger from GitHub Actions tab
+
+permissions:
+  contents: write
+
+jobs:
+  check-and-design:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm install --omit=dev
+
+      - name: Verify Google Chrome Installation
+        run: |
+          google-chrome --version || which google-chrome
+
+      - name: Run 8PM Auto-Watcher & Telegram Publisher
+        run: node scripts/cloud-auto-8pm.js
+
+      - name: Commit and Push Seen SBCs
+        run: |
+          git config --global user.name "ShopCoin15 Bot"
+          git config --global user.email "bot@shopcoin15.com"
+          git add data/seen_sbcs.json
+          git diff-index --quiet HEAD || git commit -m "Auto-update seen SBCs [skip ci]"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

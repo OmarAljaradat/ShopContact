@@ -1,0 +1,55 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@400;600;700;800;900&family=Cairo:wght@600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="js/html-to-image.min.js"></script>
+    <script src="js/assets-data.js"></script>
+    <script src="js/templates.js"></script>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body { background: #070709; color: white; margin: 0; padding: 20px; font-family: 'Alexandria', sans-serif; }
+    </style>
+</head>
+<body>
+    <div id="exportCanvas" class="canvas-story"></div>
+    <div id="status">INIT</div>
+    <script>
+        window.addEventListener('load', async () => {
+            try {
+                const canvasEl = document.getElementById('exportCanvas');
+                const tpl = DesignTemplates.sbc.render({
+                    tag: '🔥 حصرياً لأول مرة في الشرق الأوسط',
+                    sbcTitle: 'تحدي غوليت 94 Prime SBC',
+                    priceOriginal: '1,850,000',
+                    priceDiscounted: '1,390,000',
+                    cashPrice: '38',
+                    sbcExpiry: 'ينتهي خلال 3 أيام',
+                    playerUrl: '',
+                    badgeTitle: 'وفر 460 ألف كوينز بضمان التصفير الكامل',
+                    playerRating: '94',
+                    playerPosition: 'CF',
+                    playerRarity: 'ICON',
+                    cardImg: window.EMBEDDED_ASSETS.COIN_HERO
+                });
+                canvasEl.innerHTML = tpl;
+
+                await document.fonts.ready;
+                await new Promise(r => setTimeout(r, 500));
+
+                const dataUrl = await htmlToImage.toPng(canvasEl, {
+                    pixelRatio: 2,
+                    quality: 0.95
+                });
+
+                document.getElementById('status').innerText = 'SUCCESS:' + dataUrl.substring(0, 100);
+                window.__EXPORT_DATA__ = dataUrl;
+            } catch(err) {
+                document.getElementById('status').innerText = 'ERROR:' + err.message + ' STACK:' + err.stack;
+            }
+        });
+    </script>
+</body>
+</html>

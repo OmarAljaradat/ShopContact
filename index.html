@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>استوديو تصاميم متجر كوينز فيفا | shop_coin15</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- html2canvas CDN for high-res PNG export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- Google Fonts Preload -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@400;600;700;800;900&family=Cairo:wght@600;700;800;900&family=Zain:ital,wght@0,300;0,400;0,700;0,800;0,900;1,300;1,400;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="css/style.css?v=11.0">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        gold: {
+                            400: '#F59E0B',
+                            500: '#D97706',
+                            600: '#B45309'
+                        },
+                        emerald: {
+                            400: '#34D399',
+                            500: '#10B981',
+                            600: '#059669',
+                            700: '#047857'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-[#F8FAFC] text-slate-900 selection:bg-emerald-500 selection:text-white">
+
+    <!-- Top Navigation Header (Light Luxury Floating Bar) -->
+    <header class="border-b border-slate-200/80 bg-white/90 backdrop-blur-xl sticky top-0 z-50 shadow-xs">
+        <div class="max-w-7xl mx-auto px-4 lg:px-8 h-20 flex items-center justify-between">
+            <!-- Brand & Tagline -->
+            <div class="flex items-center gap-3.5">
+                <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-amber-400 via-emerald-500 to-cyan-500 p-[2px] shadow-md shadow-emerald-500/15">
+                    <div class="w-full h-full rounded-[14px] bg-white flex items-center justify-center font-black text-amber-500 text-lg shadow-inner">
+                        ⚡
+                    </div>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="font-black text-lg tracking-wide text-slate-900">SHOPCOIN15 STUDIO</span>
+                        <span class="px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[10px] font-black">بطاقات أصلية 100%</span>
+                    </div>
+                    <p class="text-xs text-slate-500 font-medium">استوديو أتمتة تصاميم متجر الكوينز لإنستغرام بدقة 4K الفائقة</p>
+                </div>
+            </div>
+
+            <!-- Quick Action: Direct Instagram link & Download Buttons -->
+            <div class="flex items-center gap-2.5">
+                <a href="https://www.instagram.com/shop_coin15/" target="_blank" class="hidden lg:flex items-center gap-2 px-3.5 py-2 rounded-full bg-slate-100 hover:bg-slate-200/80 border border-slate-200 text-xs font-bold text-slate-700 transition">
+                    <span>حساب المتجر: @shop_coin15</span>
+                    <span class="text-pink-500">↗</span>
+                </a>
+
+                <!-- Primary: Native 4K Ultra Engine -->
+                <button id="btnDownloadJpg" class="btn-download-action btn-luxury bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-500 hover:brightness-105 text-white font-black shadow-lg shadow-emerald-600/20 text-xs py-2 px-4.5" title="استخراج فوري بجودة 4K بمحرك المتصفح الأصلي (Native Engine) لضمان تطابق 100% بدون أي فرق بكسل واحد">
+                    <span id="btnDownloadJpgLabel">👑 تحميل أصلي 100% (Native 4K)</span>
+                    <div class="btn-icon-pill bg-black/20 text-white">
+                        <span>⬇</span>
+                    </div>
+                </button>
+
+                <!-- Telegram 4K Instant Direct Send -->
+                <div class="flex items-center gap-1 bg-sky-50 p-1 rounded-full border border-sky-200 shadow-xs">
+                    <button id="btnSendTelegram" onclick="TelegramManager.sendCurrentDesign()" class="btn-download-action btn-telegram-action px-3.5 py-1.5 rounded-full bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600 hover:brightness-105 text-white font-black text-xs transition flex items-center gap-1.5 shadow-sm shadow-sky-500/25" title="إرسال التصميم والكابشن مباشرة إلى هاتفك عبر التليجرام لتنزيله ستوري فوراً">
+                        <span>🚀 إرسال للتليجرام (Telegram 4K)</span>
+                    </button>
+                    <button onclick="TelegramManager.openSettingsModal()" class="w-7 h-7 rounded-full bg-white hover:bg-sky-100 text-sky-700 text-xs font-black transition flex items-center justify-center border border-sky-200" title="إعدادات توكن البوت والـ Chat ID">
+                        ⚙️
+                    </button>
+                </div>
+
+                <!-- 8:00 PM Auto-Watcher Button -->
+                <button id="btnTriggerAutoWatcher" onclick="triggerAutoWatcher()" class="btn-download-action px-3.5 py-2 rounded-full bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:brightness-105 text-white font-black text-xs transition flex items-center gap-1.5 shadow-sm shadow-amber-500/20" title="فحص وتصميم أحدث محتوى وتحدي نزل اليوم في اللعبة وإرساله فوراً للتليجرام">
+                    <span>🤖 محتوى الساعة 8 (Auto)</span>
+                    <span class="w-2 h-2 rounded-full bg-emerald-300 animate-ping"></span>
+                </button>
+
+                <!-- Fullscreen Save As / Modal -->
+                <button id="btnOpenModal" class="btn-download-action px-3 py-2 rounded-full bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-800 font-bold text-xs transition flex items-center gap-1 shadow-xs" title="معاينة كاملة بدقة فائقة وحفظ بالزر الأيمن أو نافذة جديدة">
+                    <span id="btnOpenModalLabel">🖼️ حفظ باسم</span>
+                </button>
+
+                <!-- Secondary: PNG -->
+                <button id="btnDownloadPng" class="btn-download-action px-3.5 py-2 rounded-full bg-white hover:bg-slate-50 border border-slate-200 text-slate-800 font-bold text-xs transition flex items-center gap-1.5 shadow-xs" title="تحميل بصيغة PNG الأصلية">
+                    <span>PNG</span>
+                    <span>💎</span>
+                </button>
+
+                <!-- Copy to Clipboard -->
+                <button id="btnCopyImage" class="btn-download-action px-3 py-2 rounded-full bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 hover:text-slate-900 font-bold text-xs transition flex items-center gap-1 shadow-xs" title="نسخ الصورة مباشرة للصقها">
+                    <span>نسخ</span>
+                    <span>📋</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 lg:px-8 py-8 space-y-8">
+        
+        <!-- Template Selection Bar -->
+        <div>
+            <div class="text-xs uppercase tracking-wider text-slate-500 font-bold mb-3 flex items-center justify-between">
+                <span>اختر قالب التصميم لمتجر الكوينز (ستوري المتجر الأصلية + قوالب البوستات الاحترافية):</span>
+                <span class="text-[11px] text-emerald-600 font-black">جاهز للتحميل بجودة 4K فائق النقاء ✨</span>
+            </div>
+            <div id="templateSelector" class="flex flex-wrap gap-2.5">
+                <!-- Dynamically generated 3 buttons -->
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            
+            <!-- Left Column: Controls & Editing Form (col-span-5) -->
+            <div class="lg:col-span-5 space-y-6">
+                
+                <!-- Aspect Ratio & Resolution Bar -->
+                <div class="double-bezel">
+                    <div class="double-bezel-inner p-4">
+                        <div class="text-xs text-slate-500 font-bold mb-2" id="ratioSectionTitle">أبعاد التصميم لإنستغرام:</div>
+                        <div class="grid grid-cols-3 gap-2">
+                            <button class="ratio-btn px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-center transition hover:border-emerald-500" data-ratio="portrait">
+                                <div class="text-slate-900 font-bold">بوست طولي (4:5)</div>
+                                <div class="text-[10px] text-slate-500" id="dim_portrait">1440x1800</div>
+                            </button>
+                            <button class="ratio-btn px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-center transition hover:border-emerald-500" data-ratio="square">
+                                <div class="text-slate-900 font-bold">مربع (1:1)</div>
+                                <div class="text-[10px] text-slate-500" id="dim_square">2048x2048</div>
+                            </button>
+                            <button class="ratio-btn active px-3 py-2 rounded-xl bg-emerald-50 border-2 border-emerald-500 text-xs font-bold text-center transition" data-ratio="story">
+                                <div class="text-emerald-950 font-black">ستوري (9:16)</div>
+                                <div class="text-[10px] text-emerald-700 font-black" id="dim_story">1440x2560 📱</div>
+                            </button>
+                        </div>
+
+                        <!-- Resolution Selector (2K QHD vs 1080p FHD) -->
+                        <div class="pt-3 mt-3 border-t border-slate-100 flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs text-slate-500 font-bold">دقة التصدير:</span>
+                                <span id="currentResBadge" class="text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 font-black">2K QHD فائقة الوضوح</span>
+                            </div>
+                            <div class="flex items-center gap-1.5" id="resSelector">
+                                <button class="res-btn active px-3 py-1 rounded-lg bg-emerald-600 text-white font-black text-xs transition shadow-sm shadow-emerald-600/20" data-res="2k" title="دقة 2K فائقة النقاء (1440p QHD)">
+                                    <span>2K QHD ⭐</span>
+                                </button>
+                                <button class="res-btn px-2.5 py-1 rounded-lg bg-slate-100 border border-slate-200 text-slate-700 font-bold text-xs hover:border-slate-300 transition" data-res="1080p" title="دقة Full HD 1080p قياسية">
+                                    <span>1080p FHD</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Smart Studio Assistant Card -->
+                <div class="double-bezel border-emerald-500/20 shadow-md shadow-emerald-950/5 relative overflow-hidden group">
+                    <div class="absolute top-0 right-0 left-0 h-1 bg-gradient-to-r from-emerald-500 via-teal-400 to-amber-400"></div>
+                    <div class="double-bezel-inner p-5">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center gap-2">
+                                <span class="w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-700 text-white flex items-center justify-center font-black text-sm shadow-sm shadow-emerald-500/30 animate-pulse">🤖</span>
+                                <div>
+                                    <h3 class="text-xs font-black text-slate-900 flex items-center gap-1.5">
+                                        المساعد الذكي لتوليد الأفكار والتصاميم
+                                        <span class="px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-extrabold text-[9.5px]">Gemini AI</span>
+                                    </h3>
+                                    <div class="flex items-center gap-1.5 mt-1">
+                                        <span class="text-[10px] text-slate-500 font-bold">القالب المستهدف:</span>
+                                        <span id="aiActiveTemplateBadge" class="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-extrabold text-[10px] border border-emerald-300 transition-all duration-200">📱 ستوري المتجر الأصلية</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="button" onclick="AiAssistant.openKeySettingsModal()" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-black transition flex items-center justify-center" title="إعدادات مفتاح Gemini API">
+                                ⚙️
+                            </button>
+                        </div>
+
+                        <!-- Idea Input -->
+                        <div class="space-y-2">
+                            <div class="relative">
+                                <textarea id="aiPromptInput" rows="2" placeholder="اكتب فكرة الستوري بلهجتك..." class="w-full p-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs font-medium resize-none focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 outline-none leading-relaxed placeholder:text-slate-400"></textarea>
+                            </div>
+
+                            <!-- Quick Viral Inspiration Chips -->
+                            <div class="flex items-start gap-1.5 flex-wrap">
+                                <span class="text-[10px] font-black text-slate-400 mt-1">أفكار سريعة:</span>
+                                <div id="aiQuickChips" class="flex items-center gap-1.5 flex-wrap flex-1">
+                                    <!-- Populated dynamically by AiAssistant.onTemplateChanged -->
+                                </div>
+                            </div>
+
+                            <!-- Action Button -->
+                            <button id="btnAiGenerate" type="button" onclick="AiAssistant.generate()" class="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-xs transition shadow-md shadow-emerald-600/25 flex items-center justify-center gap-2">
+                                <span>✨ صمم واكتب البوست بالذكاء الاصطناعي (1-Click)</span>
+                            </button>
+
+                            <!-- Marketing Angle Strategy Box (Injected / Shown dynamically) -->
+                            <div id="aiMarketingAngleResult" class="hidden p-3 rounded-xl bg-slate-900 text-white border border-slate-800 animate-in fade-in duration-200">
+                                <!-- Populated dynamically by AiAssistant -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Template Specific Controls -->
+                <div class="double-bezel">
+                    <div class="double-bezel-inner p-5" id="templateControls">
+                        <!-- Dynamically rendered inputs and presets -->
+                    </div>
+                </div>
+
+                <!-- AI Copywriter Box -->
+                <div class="double-bezel" id="captionSection">
+                    <div class="double-bezel-inner p-5">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center gap-2">
+                                <span class="text-base">✍️</span>
+                                <span class="text-sm font-black text-slate-900">الكابشن الإعلاني والهاشتاغات للمنشور</span>
+                            </div>
+                            <div class="flex gap-1">
+                                <button class="copy-style-btn active px-2.5 py-1 rounded-lg bg-slate-900 text-white text-[11px] font-bold" data-style="hype">حماسي</button>
+                                <button class="copy-style-btn px-2.5 py-1 rounded-lg bg-slate-100 border border-slate-200 text-[11px] font-bold text-slate-600" data-style="direct">مباشر</button>
+                                <button class="copy-style-btn px-2.5 py-1 rounded-lg bg-slate-100 border border-slate-200 text-[11px] font-bold text-slate-600" data-style="trust">أمان</button>
+                            </div>
+                        </div>
+
+                        <textarea id="captionText" rows="7" class="w-full p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs font-medium leading-relaxed resize-none focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 outline-none"></textarea>
+
+                        <div class="mt-3 flex justify-between items-center">
+                            <span class="text-[11px] text-slate-500 font-medium">جاهز مع الهاشتاغات للنسخ الفوري 📋</span>
+                            <button id="btnCopyCaption" class="px-4 py-2 rounded-xl bg-slate-900 hover:bg-emerald-600 text-white font-bold text-xs transition flex items-center gap-1.5 shadow-sm">
+                                <span>نسخ الكابشن</span>
+                                <span>📋</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Right Column: Live High-Fidelity Preview (col-span-7) -->
+            <div class="lg:col-span-7 flex flex-col items-center sticky top-28">
+                
+                <div class="w-full flex items-center justify-between mb-3 px-2">
+                    <div class="flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></span>
+                        <span class="text-xs font-black text-slate-700">المعاينة المباشرة (مطابقة 100% للتصدير):</span>
+                    </div>
+                    <!-- Direct Format Actions -->
+                    <div class="flex items-center gap-2 flex-wrap justify-end">
+                        <button onclick="TelegramManager.sendCurrentDesign()" class="btn-download-action btn-telegram-action px-3 py-1.5 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 hover:brightness-105 text-white font-black text-xs transition flex items-center gap-1 shadow-md shadow-sky-500/20" title="إرسال التصميم والكابشن لهاتفك مباشرة عبر تيليجرام بنقرة واحدة">
+                            <span>🚀 تيليجرام 4K</span>
+                        </button>
+                        <button onclick="CanvasExporter.downloadNative('exportCanvas', 'jpg')" class="btn-download-action px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs transition shadow-md shadow-emerald-600/20 flex items-center gap-1.5" title="استخراج فوري بجودة 4K بمحرك المتصفح الأصلي (Chrome Blink) لضمان تطابق 100% بدون أي فرق بكسل واحد">
+                            <span>👑 تحميل فائق الدقة (Native 100%)</span>
+                        </button>
+                        <button onclick="CanvasExporter.downloadPng('exportCanvas')" class="btn-download-action px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-slate-800 text-xs font-bold transition flex items-center gap-1 shadow-xs" title="صيغة PNG عالية النقاء">
+                            <span>PNG 💎</span>
+                        </button>
+                        <button onclick="CanvasExporter.openImageModal('exportCanvas')" class="btn-download-action px-2.5 py-1.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-xs font-bold transition flex items-center gap-1 shadow-xs" title="فتح نافذة المعاينة للحفظ بالزر الأيمن">
+                            <span>🖼️ حفظ باسم</span>
+                        </button>
+                        <button onclick="CanvasExporter.copyToClipboard('exportCanvas')" class="btn-download-action px-2.5 py-1.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-xs font-bold transition shadow-xs" title="نسخ الصورة للحافظة">
+                            <span>📋 نسخ</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Preview Frame Container (Auto-fitted, never cropped) -->
+                <div id="previewContainer" class="w-full p-4 rounded-3xl border border-slate-200 shadow-sm flex items-center justify-center min-h-[520px]">
+                    <!-- Scaled stage wrapper that fits full canvas on screen -->
+                    <div id="canvasScaleStage" class="relative">
+                        <!-- The Element Captured by html2canvas -->
+                        <div id="exportCanvas" class="canvas-story">
+                            <!-- Injected via JavaScript -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 text-center">
+                    <p class="text-[11px] text-slate-500 font-medium">
+                        💡 اسحب أي عنصر مباشرة على الكانفاس لتحريكه أو اضغط عليه لتكبيره وتصغيره.
+                    </p>
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Save Trio Preset Modal Dialog -->
+    <div id="saveTrioPresetModal" class="fixed inset-0 z-[9999] bg-slate-950/65 backdrop-blur-sm hidden flex items-center justify-center p-4 transition duration-200">
+        <div class="bg-white rounded-3xl p-6 max-w-md w-full border border-slate-200 shadow-2xl space-y-4 text-right animate-in fade-in zoom-in-95 duration-150" dir="rtl">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                <div class="flex items-center gap-2">
+                    <span class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 font-black text-base flex items-center justify-center border border-emerald-200">💾</span>
+                    <div>
+                        <h3 class="text-sm font-black text-slate-900">حفظ قالب جديد لثلاثي اللاعبين</h3>
+                        <p class="text-[11px] text-slate-500 font-medium">احفظ هؤلاء اللاعبين والنصوص كقالب مستقل</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeSaveTrioPresetModal()" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-500 text-xs font-black transition flex items-center justify-center">✕</button>
+            </div>
+
+            <!-- Current Selection Summary -->
+            <div class="p-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs space-y-1">
+                <div class="text-[10.5px] font-bold text-slate-500">اللاعبون المختارون حالياً:</div>
+                <div id="savePresetSummaryPill" class="text-xs font-black text-slate-800 flex items-center gap-1.5 flex-wrap">
+                    <!-- Injected by JS -->
+                </div>
+            </div>
+
+            <!-- Preset Name Input -->
+            <div>
+                <label for="input_new_preset_name" class="block text-xs font-black text-slate-700 mb-1.5">اسم القالب المخصص:</label>
+                <input type="text" id="input_new_preset_name" placeholder="مثال: ثلاثي الهجوم الخارق - عرض الويكند" 
+                       onkeydown="if(event.key==='Enter') confirmSaveNewTrioPreset()"
+                       class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500 focus:bg-white transition shadow-inner">
+                <p class="text-[10px] text-slate-400 mt-1">💡 يمكنك حفظ أي عدد من القوالب والتبديل بينها بنقرة واحدة دائماً.</p>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+                <button type="button" onclick="closeSaveTrioPresetModal()" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition">
+                    إلغاء
+                </button>
+                <button type="button" onclick="confirmSaveNewTrioPreset()" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black transition flex items-center gap-1.5 shadow-md shadow-emerald-600/25">
+                    <span>حفظ القالب الآن</span>
+                    <span>💾</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Save Store Promo Custom Preset Modal Dialog -->
+    <div id="savePromoPresetModal" class="fixed inset-0 z-[9999] bg-slate-950/65 backdrop-blur-sm hidden flex items-center justify-center p-4 transition duration-200">
+        <div class="bg-white rounded-3xl p-6 max-w-md w-full border border-slate-200 shadow-2xl space-y-4 text-right animate-in fade-in zoom-in-95 duration-150" dir="rtl">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                <div class="flex items-center gap-2">
+                    <span class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 font-black text-base flex items-center justify-center border border-emerald-200">🎨</span>
+                    <div>
+                        <h3 class="text-sm font-black text-slate-900">حفظ قالب ستوري مخصص جديد</h3>
+                        <p class="text-[11px] text-slate-500 font-medium">احفظ نصوص الشرائط والألوان والكروت كقالب خاص بك</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeSavePromoPresetModal()" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-500 text-xs font-black transition flex items-center justify-center">✕</button>
+            </div>
+
+            <!-- Current Banners Preview Summary -->
+            <div class="p-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs space-y-2">
+                <div class="text-[10.5px] font-bold text-slate-500">معاينة شرائط القالب الحالي:</div>
+                <div id="savePromoPresetSummaryBanners" class="space-y-1 max-h-40 overflow-y-auto pr-1">
+                    <!-- Injected by JS -->
+                </div>
+                <div id="savePromoPresetSummaryCards" class="text-[10.5px] font-bold text-slate-600 pt-1.5 border-t border-slate-200/70 flex items-center justify-between">
+                    <!-- Injected by JS -->
+                </div>
+            </div>
+
+            <!-- Preset Name Input -->
+            <div>
+                <label for="input_new_promo_preset_name" class="block text-xs font-black text-slate-700 mb-1.5">اسم القالب المخصص:</label>
+                <input type="text" id="input_new_promo_preset_name" placeholder="مثال: عرض الويكند - كروت التوتي" 
+                       onkeydown="if(event.key==='Enter') confirmSaveNewPromoPreset()"
+                       class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500 focus:bg-white transition shadow-inner">
+                <p class="text-[10px] text-slate-400 mt-1">💡 يُحفظ القالب بجهازك للرجوع إليه وتطبيقه بنقرة واحدة في أي وقت.</p>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+                <button type="button" onclick="closeSavePromoPresetModal()" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition">
+                    إلغاء
+                </button>
+                <button type="button" onclick="confirmSaveNewPromoPreset()" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black transition flex items-center gap-1.5 shadow-md shadow-emerald-600/25">
+                    <span>حفظ القالب الآن</span>
+                    <span>💾</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Telegram Bot Settings Modal -->
+    <div id="telegramSettingsModal" class="fixed inset-0 z-[9999] bg-slate-950/65 backdrop-blur-sm hidden flex items-center justify-center p-4 transition duration-200">
+        <div class="bg-white rounded-3xl p-6 max-w-lg w-full border border-slate-200 shadow-2xl space-y-4 text-right animate-in fade-in zoom-in-95 duration-150" dir="rtl">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                <div class="flex items-center gap-2.5">
+                    <span class="w-9 h-9 rounded-2xl bg-gradient-to-tr from-sky-400 to-blue-600 text-white font-black text-lg flex items-center justify-center shadow-md shadow-sky-500/20">🚀</span>
+                    <div>
+                        <h3 class="text-sm font-black text-slate-900">ربط بوت التليجرام (Telegram 4K Auto-Send)</h3>
+                        <p class="text-[11px] text-slate-500 font-medium">أرسل تصاميم الستوري فوراً لهاتفك بأعلى جودة لنشرها مباشرة</p>
+                    </div>
+                </div>
+                <button type="button" onclick="TelegramManager.closeSettingsModal()" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-500 text-xs font-black transition flex items-center justify-center">✕</button>
+            </div>
+
+            <!-- Fast 3-Step Setup Guide Box -->
+            <div class="p-3.5 rounded-2xl bg-sky-50/80 border border-sky-200 text-xs space-y-2 text-slate-700 leading-relaxed">
+                <div class="font-black text-sky-950 flex items-center gap-1.5">
+                    <span>💡 كيف تحصل على البيانات في 30 ثانية؟</span>
+                </div>
+                <div class="space-y-1.5 text-[11px]">
+                    <div class="flex items-start gap-1.5">
+                        <span class="font-black text-sky-600 bg-white w-4 h-4 rounded-full flex items-center justify-center shrink-0 border border-sky-300">1</span>
+                        <span>افتح تطبيق تيليجرام وابحث عن <a href="https://t.me/BotFather" target="_blank" class="text-blue-600 font-black underline">@BotFather</a> وأرسل له أمر <code class="bg-white px-1 py-0.5 rounded border border-sky-300 font-bold">/newbot</code> واختر اسماً للبوت، وسيعطيك الـ <b>Token</b>.</span>
+                    </div>
+                    <div class="flex items-start gap-1.5">
+                        <span class="font-black text-sky-600 bg-white w-4 h-4 rounded-full flex items-center justify-center shrink-0 border border-sky-300">2</span>
+                        <span>ابحث عن <a href="https://t.me/userinfobot" target="_blank" class="text-blue-600 font-black underline">@userinfobot</a> واضغط <b>Start</b> وسيعطيك رقم الـ <b>Id (Chat ID)</b> الخاص بك.</span>
+                    </div>
+                    <div class="flex items-start gap-1.5">
+                        <span class="font-black text-amber-600 bg-amber-100 w-4 h-4 rounded-full flex items-center justify-center shrink-0 border border-amber-300">⭐</span>
+                        <span class="font-black text-amber-900">خطوة ضرورية: ادخل على بوتك الجديد واضغط له <b>Start (/start)</b> لكي يتمكن من مراسلتك!</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Inputs -->
+            <div class="space-y-3">
+                <div>
+                    <label for="tgBotTokenInput" class="block text-xs font-black text-slate-700 mb-1">رمز البوت (Bot Token):</label>
+                    <input type="text" id="tgBotTokenInput" placeholder="مثال: 7123456789:AAFn_xY8Z..." 
+                           class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 text-xs font-mono font-medium outline-none focus:border-sky-500 focus:bg-white transition shadow-inner">
+                </div>
+
+                <!-- Direct Bot Link & 1-Click ID Fetcher -->
+                <div class="p-3 bg-sky-50/70 border border-sky-200 rounded-2xl flex items-center justify-between gap-2">
+                    <div>
+                        <div class="text-xs font-black text-slate-800 flex items-center gap-1.5">
+                            <span>بوت المتجر:</span>
+                            <a href="https://t.me/Contact_shopcoin15_bot" target="_blank" class="text-sky-600 font-mono font-black underline">@Contact_shopcoin15_bot ↗</a>
+                        </div>
+                        <p class="text-[10.5px] text-slate-600 font-medium mt-0.5">افتح البوت واضغط <b>Start</b>، ثم اضغط هذا الزر لجلب الـ Chat ID فوراً.</p>
+                    </div>
+                    <button id="tgBtnAutoDetect" type="button" onclick="TelegramManager.autoDetectChatId()" class="shrink-0 px-3 py-2 rounded-xl bg-gradient-to-r from-sky-600 to-blue-600 hover:brightness-105 text-white text-xs font-black transition flex items-center gap-1 shadow-sm">
+                        <span>⚡ جلب الـ ID تلقائياً</span>
+                    </button>
+                </div>
+
+                <div>
+                    <label for="tgChatIdInput" class="block text-xs font-black text-slate-700 mb-1">معرّف المحادثة الخاص بك (Chat ID):</label>
+                    <input type="text" id="tgChatIdInput" placeholder="مثال: 123456789" 
+                           class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 text-xs font-mono font-medium outline-none focus:border-sky-500 focus:bg-white transition shadow-inner">
+                </div>
+
+                <!-- Format Option -->
+                <div class="pt-1">
+                    <label class="flex items-center gap-2 cursor-pointer select-none">
+                        <input type="checkbox" id="tgAsDocumentCheckbox" class="w-4 h-4 rounded accent-sky-600">
+                        <span class="text-xs text-slate-700 font-bold">إرسال كملف غير مضغوط (Document) بدلاً من صورة عادية (لأقصى نقاء بدون أي ضغط)</span>
+                    </label>
+                    <p class="text-[10px] text-slate-400 mr-6 mt-0.5">💡 بدون تحديد هذا الخيار، سيتم الإرسال كصورة عادية يمكنك حفظها بلمسة واحدة في ألبوم صور الهاتف.</p>
+                </div>
+            </div>
+
+            <!-- Status Alert Message Area -->
+            <div id="tgStatusMessage" class="hidden"></div>
+
+            <!-- Actions -->
+            <div class="flex items-center justify-between pt-3 border-t border-slate-100">
+                <button id="tgBtnTest" type="button" onclick="TelegramManager.testConnection()" class="px-4 py-2 rounded-xl bg-sky-100 hover:bg-sky-200 text-sky-900 text-xs font-black transition flex items-center gap-1.5">
+                    <span>⚡ اختبار الاتصال الآن</span>
+                </button>
+                <div class="flex items-center gap-2">
+                    <button type="button" onclick="TelegramManager.closeSettingsModal()" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition">
+                        إلغاء
+                    </button>
+                    <button type="button" onclick="TelegramManager.saveSettings()" class="px-5 py-2 rounded-xl bg-gradient-to-r from-sky-600 to-blue-600 hover:brightness-105 text-white text-xs font-black transition flex items-center gap-1.5 shadow-md shadow-sky-600/25">
+                        <span>حفظ الإعدادات 💾</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Copy Toast Floating Notification -->
+    <div id="copyToast" class="copy-toast">
+        تم النسخ بنجاح! 🚀
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/assets-data.js?v=12.0"></script>
+    <script src="js/templates.js?v=12.0"></script>
+    <script src="js/copywriter.js?v=12.0"></script>
+    <script src="js/canvas-export.js?v=12.0"></script>
+    <script src="js/telegram.js?v=12.0"></script>
+    <script src="js/app.js?v=12.0"></script>
+    <script src="js/ai-assistant.js?v=12.0"></script>
+</body>
+</html>
