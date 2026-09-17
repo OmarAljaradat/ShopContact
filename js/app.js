@@ -802,7 +802,32 @@ window.setFontFamily = function(fontKey) {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
-    initState();
+    // Check URL parameters for direct deep-linking from Telegram buttons (e.g. ?template=sbc&sbcTitle=...&sbcUrl=...)
+    try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const tmplParam = urlParams.get('template');
+        if (tmplParam && TEMPLATES[tmplParam]) {
+            currentTemplate = tmplParam;
+        }
+        initState();
+        const sbcTitleParam = urlParams.get('sbcTitle');
+        if (sbcTitleParam) {
+            appState.sbcTitle = sbcTitleParam;
+            if (appState.banners && appState.banners[0]) {
+                appState.banners[0].text = `نزل تحدي ${sbcTitleParam} رسميـاً 🔥`;
+            }
+        }
+        const sbcUrlParam = urlParams.get('sbcUrl');
+        if (sbcUrlParam) {
+            setTimeout(() => {
+                if (typeof fetchFutGGCard === 'function') {
+                    fetchFutGGCard(sbcUrlParam);
+                }
+            }, 350);
+        }
+    } catch(e) {
+        initState();
+    }
     initTemplateSelector();
     initRatioSelector();
     initResolutionSelector();

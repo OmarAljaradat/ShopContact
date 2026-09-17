@@ -1,6 +1,7 @@
 /**
  * Auto-Watcher & Auto-Designer Engine for EA FC Daily 8:00 PM Content
- * - Periodically watches FUT.GG for new SBC releases
+ * - Watches FUT.GG for new SBC releases
+ * - Sends interactive Telegram notifications with Approval / Studio Edit / Ignore buttons
  * - Generates 100% WYSIWYG 4K Story designs with shop_coin15 store branding & banners
  * - Formulates marketing captions and sends directly to Telegram
  */
@@ -11,9 +12,11 @@ const https = require('https');
 
 const DATA_DIR = path.join(__dirname, 'data');
 const SEEN_FILE = path.join(DATA_DIR, 'seen_sbcs.json');
+const PENDING_FILE = path.join(DATA_DIR, 'pending_sbcs.json');
 
 const DEFAULT_BOT_TOKEN = '8903974669:AAGv7_Wpb-0ujiNVTpnhdrXOXOOzOi8rHFg';
 const DEFAULT_CHAT_ID = '1965859902';
+const STUDIO_BASE_URL = 'https://shopcoin15-studio.onrender.com';
 
 function ensureDataDir() {
     if (!fs.existsSync(DATA_DIR)) {
@@ -21,6 +24,9 @@ function ensureDataDir() {
     }
     if (!fs.existsSync(SEEN_FILE)) {
         fs.writeFileSync(SEEN_FILE, '[]', 'utf8');
+    }
+    if (!fs.existsSync(PENDING_FILE)) {
+        fs.writeFileSync(PENDING_FILE, '{}', 'utf8');
     }
 }
 
@@ -41,6 +47,23 @@ function addSeenUrl(url) {
         list.push(url);
         fs.writeFileSync(SEEN_FILE, JSON.stringify(list, null, 2), 'utf8');
     }
+}
+
+function getPendingMap() {
+    ensureDataDir();
+    try {
+        const raw = fs.readFileSync(PENDING_FILE, 'utf8');
+        return JSON.parse(raw || '{}');
+    } catch (e) {
+        return {};
+    }
+}
+
+function savePendingSbc(id, data) {
+    ensureDataDir();
+    const map = getPendingMap();
+    map[id] = data;
+    fs.writeFileSync(PENDING_FILE, JSON.stringify(map, null, 2), 'utf8');
 }
 
 // Scrape active SBC links from FUT.GG
@@ -100,14 +123,13 @@ class AutoWatcherEngine {
         if (this.timer) clearInterval(this.timer);
         this.isRunning = true;
 
-        // Run interval every 60 seconds
+        // Check every 60 seconds
         this.timer = setInterval(() => {
             this.checkScheduleWindow();
         }, 60 * 1000);
     }
 
     checkScheduleWindow() {
-        // Jordan / KSA timezone is UTC+3
         const now = new Date();
         const utcHour = now.getUTCHours();
         const utcMin = now.getUTCMinutes();
@@ -116,7 +138,6 @@ class AutoWatcherEngine {
         // Peak 8 PM window: between 19:55 and 20:30 (Jordan/KSA time)
         const isPeakWindow = (jordanHour === 19 && utcMin >= 55) || (jordanHour === 20 && utcMin <= 30);
 
-        // Check during peak window every minute, or every 10 minutes during the rest of the day
         if (isPeakWindow || utcMin % 10 === 0) {
             this.checkAndProcessNewSbc(false).catch(err => {
                 console.warn('[Auto-Watcher Periodic Notice]', err.message);
@@ -124,13 +145,192 @@ class AutoWatcherEngine {
         }
     }
 
+    // Send interactive prompt to Telegram with Approval, Studio link, and Ignore buttons
+    async promptUserForSbc(targetUrl) {
+        console.log(`🤖 [Auto-Watcher] تجهيز تنبيه تفاعلي للتحدي: ${targetUrl}`);
+        const sbcData = await this.resolveSbcOrPlayer(targetUrl);
+        let cleanTitle = (sbcData.title || sbcData.playerName || 'تحدي SBC جديد')
+            .replace(/ - EA SPORTS.*$/i, '')
+            .replace(/ - FUT\.GG.*$/i, '')
+            .replace(/^New/i, '')
+            .trim();
+
+        if (cleanTitle.toLowerCase().includes('marquee')) {
+            cleanTitle = 'مباريات القمة (Marquee Matchups)';
+        } else if (cleanTitle.toLowerCase().includes('gold upgrade')) {
+            cleanTitle = 'ترقية ذهبية (Gold Upgrade)';
+        }
+
+        const sbcId = 'sbc_' + Math.random().toString(36).substring(2, 9);
+        savePendingSbc(sbcId, { url: targetUrl, title: cleanTitle });
+        addSeenUrl(targetUrl);
+
+        const promptText = `🚨 <b>رصد محتوى / تحدي جديد في FC 27!</b>\n\n📌 <b>اسم التحدي:</b> ${cleanTitle}\n🌐 <b>المصدر:</b> FUT.GG\n\n<b>هل ترغب في إنشاء وتصميم ستوري إنستغرام لهذا المحتوى؟</b>`;
+
+        const studioUrl = `${STUDIO_BASE_URL}/?template=sbc&sbcTitle=${encodeURIComponent(cleanTitle)}&sbcUrl=${encodeURIComponent(targetUrl)}`;
+
+        await this.sendTelegramRequest({
+            botToken: DEFAULT_BOT_TOKEN,
+            endpoint: 'sendMessage',
+            fields: {
+                chat_id: DEFAULT_CHAT_ID,
+                text: promptText,
+                parse_mode: 'HTML',
+                reply_markup: JSON.stringify({
+                    inline_keyboard: [
+                        [
+                            { text: '🎨 صمم الستوري الآن (4K)', callback_data: `act:design:${sbcId}` }
+                        ],
+                        [
+                            { text: '✏️ فتح في الاستوديو وتعديل النصوص', url: studioUrl }
+                        ],
+                        [
+                            { text: '❌ تجاهل هذا التحدي', callback_data: `act:ignore:${sbcId}` }
+                        ]
+                    ]
+                })
+            }
+        });
+
+        console.log(`📢 [Auto-Watcher] تم إرسال تنبيه طلب الموافقة لتحدي ${cleanTitle} إلى التيليجرام بنجاح!`);
+        return { success: true, title: cleanTitle, sbcId, targetUrl };
+    }
+
+    // Handles incoming updates from Telegram Webhook (button clicks & messages)
+    async handleTelegramUpdate(update) {
+        if (!update) return;
+
+        // 1. Handle Callback Queries from Interactive Buttons
+        if (update.callback_query) {
+            const cq = update.callback_query;
+            const data = cq.data || '';
+            const chatId = cq.message?.chat?.id || DEFAULT_CHAT_ID;
+            const messageId = cq.message?.message_id;
+
+            if (data.startsWith('act:design:')) {
+                const sbcId = data.replace('act:design:', '');
+                const sbcMap = getPendingMap();
+                const sbcInfo = sbcMap[sbcId];
+
+                if (!sbcInfo) {
+                    await this.sendTelegramRequest({
+                        botToken: DEFAULT_BOT_TOKEN,
+                        endpoint: 'answerCallbackQuery',
+                        fields: { callback_query_id: cq.id, text: 'عذراً، لم يتم العثور على بيانات هذا التحدي' }
+                    });
+                    return;
+                }
+
+                await this.sendTelegramRequest({
+                    botToken: DEFAULT_BOT_TOKEN,
+                    endpoint: 'answerCallbackQuery',
+                    fields: { callback_query_id: cq.id, text: 'جاري تصميم الستوري الآن بدقة 4K... ⏳' }
+                });
+
+                if (messageId) {
+                    await this.sendTelegramRequest({
+                        botToken: DEFAULT_BOT_TOKEN,
+                        endpoint: 'editMessageText',
+                        fields: {
+                            chat_id: chatId,
+                            message_id: messageId,
+                            text: `⏳ <b>جاري تصميم ستوري 4K للتحدي:</b>\n📌 <b>${sbcInfo.title}</b>\nيرجى الانتظار ثوانٍ معدودة...`,
+                            parse_mode: 'HTML'
+                        }
+                    }).catch(() => {});
+                }
+
+                try {
+                    await this.autoDesignAndSend(sbcInfo.url, true);
+
+                    if (messageId) {
+                        await this.sendTelegramRequest({
+                            botToken: DEFAULT_BOT_TOKEN,
+                            endpoint: 'editMessageText',
+                            fields: {
+                                chat_id: chatId,
+                                message_id: messageId,
+                                text: `✅ <b>تم تصميم وإرسال ستوري التحدي بنجاح!</b>\n📌 <b>${sbcInfo.title}</b>\nتحقق من الصورة والكابشن في الأسفل ⬇️`,
+                                parse_mode: 'HTML'
+                            }
+                        }).catch(() => {});
+                    }
+                } catch (err) {
+                    console.error('[Design Error]', err);
+                    await this.sendTelegramRequest({
+                        botToken: DEFAULT_BOT_TOKEN,
+                        endpoint: 'sendMessage',
+                        fields: {
+                            chat_id: chatId,
+                            text: `⚠️ حدث خطأ أثناء التصميم: ${err.message}`
+                        }
+                    });
+                }
+            } else if (data.startsWith('act:ignore:')) {
+                const sbcId = data.replace('act:ignore:', '');
+                const sbcMap = getPendingMap();
+                const sbcInfo = sbcMap[sbcId];
+                const title = sbcInfo ? sbcInfo.title : 'التحدي';
+
+                await this.sendTelegramRequest({
+                    botToken: DEFAULT_BOT_TOKEN,
+                    endpoint: 'answerCallbackQuery',
+                    fields: { callback_query_id: cq.id, text: 'تم تجاهل هذا التحدي 👍' }
+                });
+
+                if (messageId) {
+                    await this.sendTelegramRequest({
+                        botToken: DEFAULT_BOT_TOKEN,
+                        endpoint: 'editMessageText',
+                        fields: {
+                            chat_id: chatId,
+                            message_id: messageId,
+                            text: `❌ <b>تم تجاهل:</b> ${title}\n(لن يتم إنشاء ستوري لهذا المحتوى بناءً على اختيارك).`,
+                            parse_mode: 'HTML'
+                        }
+                    }).catch(() => {});
+                }
+            }
+            return;
+        }
+
+        // 2. Handle Text Messages from Omar (Links or Commands)
+        if (update.message && update.message.text) {
+            const text = update.message.text.trim();
+            const chatId = update.message.chat.id;
+
+            if (text.includes('fut.gg')) {
+                const urlMatch = text.match(/https?:\/\/[^\s]+/);
+                if (urlMatch) {
+                    await this.promptUserForSbc(urlMatch[0]);
+                }
+            } else if (text === '/check' || text === 'فحص') {
+                await this.sendTelegramRequest({
+                    botToken: DEFAULT_BOT_TOKEN,
+                    endpoint: 'sendMessage',
+                    fields: {
+                        chat_id: chatId,
+                        text: '🔍 جاري فحص تحديات ومحتوى FUT.GG الآن...'
+                    }
+                });
+                const res = await this.checkAndProcessNewSbc(false);
+                if (!res.newFound) {
+                    await this.sendTelegramRequest({
+                        botToken: DEFAULT_BOT_TOKEN,
+                        endpoint: 'sendMessage',
+                        fields: {
+                            chat_id: chatId,
+                            text: '✅ لا توجد تحديات جديدة حالياً، كل المحتوى تم رصده مسبقاً.'
+                        }
+                    });
+                }
+            }
+        }
+    }
+
+    // High-Resolution 4K Story Designer and Dispatcher
     async autoDesignAndSend(targetUrl, forceSend = false) {
         if (!targetUrl) throw new Error('رابط التحدي مطلوب');
-
-        const seenList = getSeenList();
-        if (seenList.includes(targetUrl) && !forceSend) {
-            return { skipped: true, reason: 'تمت معالجة هذا التحدي مسبقاً' };
-        }
 
         console.log(`🤖 [Auto-Watcher] جاري معالجة وتصميم التحدي: ${targetUrl}`);
 
@@ -146,7 +346,6 @@ class AutoWatcherEngine {
             .replace(/^New/i, '')
             .trim();
 
-        // Arabic title enhancer
         if (cleanTitle.toLowerCase().includes('marquee')) {
             cleanTitle = 'مباريات القمة (Marquee Matchups)';
         } else if (cleanTitle.toLowerCase().includes('gold upgrade')) {
@@ -155,7 +354,7 @@ class AutoWatcherEngine {
 
         const sbcImg = sbcData.sbcImage || sbcData.cardImage;
 
-        // 2. Render 4K Story via persistent Native Chrome Page
+        // 2. Render 4K Story via Native Chrome Page
         const page = await this.ensureNativePage(this.port);
         if (!page) throw new Error('محرك المتصفح غير جاهز لتصيير الصورة');
 
@@ -165,12 +364,12 @@ class AutoWatcherEngine {
             deviceScaleFactor: 2
         });
 
+        // 4 Clean, Punchy Banners with Optimal Proportions & Breathing Space
         const banners = [
-            { text: `نزل تحدي ${cleanTitle} رسميـاً 🔥🤩`, bg: '#0084FF', color: '#FFFFFF' },
-            { text: 'شامل الكوينز وتنفيذ التحديات بالكامل 👌', bg: '#E50914', color: '#FFFFFF' },
-            { text: 'وضمان كامل للنادي وسرعة خيالية ⚡', bg: '#38B000', color: '#FFFFFF' },
-            { text: 'متوفر شحن جميع المنصات بأفضل الأسعار 🥳', bg: '#0084FF', color: '#FFFFFF' },
-            { text: 'للطلب على الخاص حياكم ⬇️⬇️', bg: '#FCE4EC', color: '#880E4F' }
+            { text: `نزل تحدي ${cleanTitle} رسميـاً 🔥`, bg: '#0084FF', color: '#FFFFFF' },
+            { text: 'نوفر لك الكوينز ونحل التحدي بحسابك 👌', bg: '#E50914', color: '#FFFFFF' },
+            { text: 'سرعة تنفيذ وضمان كامل للنادي بدون بان 🔒⚡', bg: '#38B000', color: '#FFFFFF' },
+            { text: 'للطلب والاستفسار بالخاص حياكم ⬇️⬇️', bg: '#E1F5FE', color: '#1E293B' }
         ];
 
         // Evaluate inside page to construct 100% genuine studio DOM
@@ -186,6 +385,17 @@ class AutoWatcherEngine {
                 appState.sbcImageUrl = imgUrl;
             }
             appState.banners = bannerItems;
+
+            // Optimize layer spacing for aesthetic balance
+            appState.layers = appState.layers || {};
+            if (appState.layers.layer_sbc_banners) {
+                appState.layers.layer_sbc_banners.y = 45;
+                appState.layers.layer_sbc_banners.scale = 1.0;
+            }
+            if (appState.layers.layer_sbc_asset) {
+                appState.layers.layer_sbc_asset.y = 350;
+                appState.layers.layer_sbc_asset.scale = 1.05;
+            }
 
             if (typeof renderControls === 'function') renderControls();
             if (typeof renderCanvas === 'function') renderCanvas();
@@ -213,7 +423,7 @@ class AutoWatcherEngine {
             quality: 96
         });
 
-        // 3. Marketing Caption formulation
+        // 3. Formulate Marketing Caption
         const caption = `⚡ نزل رسميـاً تحدي: ${cleanTitle} في FC 27! 👑
 
 نوفر لك الكوينز المطلوبة وننفذ لك التحدي بحسابك بأمان وضمان كامل للنادي 🛡️🔥
@@ -241,17 +451,6 @@ class AutoWatcherEngine {
             fileName: `sbc_auto_${Date.now()}.jpg`,
             fileMime: 'image/jpeg'
         });
-
-        // 5. Send Alert ping message
-        await this.sendTelegramRequest({
-            botToken: DEFAULT_BOT_TOKEN,
-            endpoint: 'sendMessage',
-            fields: {
-                chat_id: DEFAULT_CHAT_ID,
-                text: `🚨 <b>رصد محتوى الساعة 8 الجديد:</b>\nتم رصد وتصميم ستوري تحدي <b>${cleanTitle}</b> بدقة 4K وإرسالها لك بنجاح! 🚀📱`,
-                parse_mode: 'HTML'
-            }
-        }).catch(e => console.warn('[Auto-Watcher Alert notice]', e.message));
 
         // Save to seen list
         addSeenUrl(targetUrl);
@@ -296,8 +495,8 @@ class AutoWatcherEngine {
                 return { success: true, message: 'كافة التحديات الحالية تمت معالجتها مسبقاً', newFound: false };
             }
 
-            const res = await this.autoDesignAndSend(target, forceSend);
-            return { success: true, newFound: true, result: res };
+            const res = await this.promptUserForSbc(target);
+            return { success: true, newFound: true, prompted: true, result: res };
         } finally {
             this.isProcessing = false;
         }

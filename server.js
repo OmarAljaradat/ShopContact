@@ -882,6 +882,26 @@ const server = http.createServer((req, res) => {
         return;
     }
 
+    // API: Telegram Webhook (Callback queries from inline buttons & chat messages)
+    if (reqPath === '/api/telegram-webhook' && req.method === 'POST') {
+        let body = '';
+        req.on('data', chunk => body += chunk);
+        req.on('end', async () => {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ ok: true }));
+
+            try {
+                const update = JSON.parse(body || '{}');
+                if (autoWatcher && typeof autoWatcher.handleTelegramUpdate === 'function') {
+                    await autoWatcher.handleTelegramUpdate(update);
+                }
+            } catch (err) {
+                console.error('[Telegram Webhook Error]', err.message);
+            }
+        });
+        return;
+    }
+
     // API: Auto-detect Telegram Chat ID from getUpdates
     if (reqPath === '/api/telegram-get-chat-id') {
         const botToken = (parsedUrl.searchParams.get('botToken') || '8903974669:AAGv7_Wpb-0ujiNVTpnhdrXOXOOzOi8rHFg').trim();
