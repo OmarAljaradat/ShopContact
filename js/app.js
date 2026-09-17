@@ -1013,6 +1013,8 @@ window.switchStudioSuite = function(suiteKey) {
     const ratioContainer = document.getElementById('ratioSectionTitle')?.closest('.double-bezel');
     const aiAssistantCard = document.getElementById('aiPromptInput')?.closest('.double-bezel');
 
+    const reelsToolbar = document.getElementById('reelsPlayerToolbarContainer');
+
     if (suiteKey === 'suite_stories') {
         if (templateSection) templateSection.style.display = '';
         if (templateTitle) templateTitle.textContent = 'اختر قالب الستوري (ستوري المتجر الأصلية أو تحديات الـ SBC):';
@@ -1020,6 +1022,7 @@ window.switchStudioSuite = function(suiteKey) {
         if (carouselPanel) carouselPanel.classList.add('hidden');
         if (reelsPanel) reelsPanel.classList.add('hidden');
         if (filmstripContainer) filmstripContainer.classList.add('hidden');
+        if (reelsToolbar) reelsToolbar.classList.add('hidden');
         if (captionSection) captionSection.style.display = 'none';
         if (ratioContainer) ratioContainer.style.display = '';
         if (aiAssistantCard) aiAssistantCard.style.display = '';
@@ -1043,6 +1046,7 @@ window.switchStudioSuite = function(suiteKey) {
         if (carouselPanel) carouselPanel.classList.add('hidden');
         if (reelsPanel) reelsPanel.classList.add('hidden');
         if (filmstripContainer) filmstripContainer.classList.add('hidden');
+        if (reelsToolbar) reelsToolbar.classList.add('hidden');
         if (captionSection) captionSection.style.display = '';
         if (ratioContainer) ratioContainer.style.display = '';
         if (aiAssistantCard) aiAssistantCard.style.display = '';
@@ -1069,6 +1073,7 @@ window.switchStudioSuite = function(suiteKey) {
         if (carouselPanel) carouselPanel.classList.remove('hidden');
         if (reelsPanel) reelsPanel.classList.add('hidden');
         if (filmstripContainer) filmstripContainer.classList.remove('hidden');
+        if (reelsToolbar) reelsToolbar.classList.add('hidden');
         if (ratioContainer) ratioContainer.style.display = 'none';
         if (aiAssistantCard) aiAssistantCard.style.display = 'none';
 
@@ -1081,16 +1086,18 @@ window.switchStudioSuite = function(suiteKey) {
     } else if (suiteKey === 'suite_reels') {
         if (templateSection) templateSection.style.display = 'none';
         if (templateControlsBox) templateControlsBox.style.display = 'none';
-        if (captionSection) captionSection.style.display = 'none';
+        if (captionSection) captionSection.style.display = '';
         if (carouselPanel) carouselPanel.classList.add('hidden');
         if (reelsPanel) reelsPanel.classList.remove('hidden');
         if (filmstripContainer) filmstripContainer.classList.add('hidden');
+        if (reelsToolbar) reelsToolbar.classList.remove('hidden');
         if (ratioContainer) ratioContainer.style.display = 'none';
         if (aiAssistantCard) aiAssistantCard.style.display = 'none';
 
         setRatio('story'); // 9:16 for Reels
         if (window.ReelsEngine) {
             window.ReelsEngine.renderEditorControls();
+            window.ReelsEngine.renderPlayerToolbar();
             window.ReelsEngine.renderCanvas();
         }
     }
