@@ -59,17 +59,20 @@ async function ensureNativePage(port) {
     if (!execPath) return null;
 
     if (!nativeBrowser || !nativeBrowser.isConnected()) {
-        const launchArgs = sparticuzChromium ? sparticuzChromium.args : [
+        const launchArgs = [
+            ...(sparticuzChromium ? sparticuzChromium.args : []),
             '--no-sandbox',
             '--disable-setuid-sandbox',
             '--disable-gpu',
             '--disable-dev-shm-usage',
-            '--hide-scrollbars'
+            '--hide-scrollbars',
+            '--disable-web-security'
         ];
         nativeBrowser = await puppeteer.launch({
             executablePath: execPath,
             headless: sparticuzChromium ? sparticuzChromium.headless : 'new',
-            args: launchArgs
+            args: [...new Set(launchArgs)],
+            protocolTimeout: 180000
         });
     }
 

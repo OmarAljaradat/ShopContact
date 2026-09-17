@@ -361,7 +361,7 @@ class AutoWatcherEngine {
         await page.setViewport({
             width: 1080,
             height: 1920,
-            deviceScaleFactor: 2
+            deviceScaleFactor: 1
         });
 
         // 4 Clean, Punchy Banners with Optimal Proportions & Breathing Space
@@ -408,6 +408,25 @@ class AutoWatcherEngine {
             if (typeof renderCanvas === 'function') renderCanvas();
             if (typeof updateCaption === 'function') updateCaption();
 
+            // Reset transform matrices for pristine 1:1 hardware capture
+            const stage = document.getElementById('canvasScaleStage');
+            if (stage) {
+                stage.style.width = '1080px';
+                stage.style.height = '1920px';
+                stage.style.transform = 'none';
+                stage.style.borderRadius = '0px';
+                stage.style.boxShadow = 'none';
+                stage.style.border = 'none';
+            }
+            const canvasEl = document.getElementById('exportCanvas');
+            if (canvasEl) {
+                canvasEl.style.transform = 'none';
+                canvasEl.style.borderRadius = '0px';
+                canvasEl.style.boxShadow = 'none';
+                canvasEl.style.border = 'none';
+                canvasEl.style.margin = '0px';
+            }
+
             // Wait for images & fonts
             if (document.fonts) await document.fonts.ready;
             const imgs = Array.from(document.querySelectorAll('#exportCanvas img'));
@@ -416,10 +435,10 @@ class AutoWatcherEngine {
                 return new Promise(res => {
                     img.addEventListener('load', res, { once: true });
                     img.addEventListener('error', res, { once: true });
-                    setTimeout(res, 3000);
+                    setTimeout(res, 2500);
                 });
             }));
-            await new Promise(r => setTimeout(r, 120));
+            await new Promise(r => setTimeout(r, 100));
         }, { title: cleanTitle, imgUrl: sbcImg, bannerItems: banners });
 
         const cardEl = await page.evaluateHandle(() => document.getElementById('exportCanvas'));
@@ -427,7 +446,7 @@ class AutoWatcherEngine {
 
         const screenshotBuffer = await cardEl.screenshot({
             type: 'jpeg',
-            quality: 96
+            quality: 92
         });
 
         // 3. Formulate Marketing Caption
