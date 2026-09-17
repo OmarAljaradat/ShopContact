@@ -180,10 +180,10 @@ const TelegramManager = {
         statusEl.innerHTML = msg;
     },
 
-    async sendCurrentDesign() {
+    async sendDesignInternal(elementId = 'exportCanvas', captionOverride = null) {
         if (!this.isConfigured()) {
             this.openSettingsModal();
-            this.showStatus('info', '💡 يرجى إدخال رمز البوت والـ Chat ID مرة واحدة فقط لتفعيل الإرسال السريع بهاتفك!');
+            this.showStatus('info', '💡 يرجى إدخال رمز البوت والـ Chat ID مرة واحدة لتفعيل الإرسال لتليجرام!');
             return;
         }
 
@@ -191,19 +191,93 @@ const TelegramManager = {
         const chatId = this.getChatId();
         const asDoc = this.getAsDocument();
 
-        // Get caption
-        const captionEl = document.getElementById('captionText');
-        let caption = captionEl ? captionEl.value : '';
-        if (!caption && typeof CopywriterEngine !== 'undefined') {
-            caption = CopywriterEngine.generate(currentTemplate, appState, currentCopyStyle);
+        let caption = captionOverride;
+        if (!caption) {
+            const captionEl = document.getElementById('captionText');
+            caption = captionEl ? captionEl.value : '';
+            if (!caption && typeof CopywriterEngine !== 'undefined') {
+                caption = CopywriterEngine.generate(currentTemplate, appState, currentCopyStyle);
+            }
         }
 
-        // Show toast
+        const source = document.getElementById(elementId);
+        if (!source) throw new Error('لم يتم العثور على عنصر التصميم!');
+
+        let dataUrl = null;
+        try {
+            const clone = source.cloneNode(true);
+            clone.querySelectorAll('.layer-toolbar, .layer-resize-handle, .snap-guide').forEach(el => el.remove());
+
+            const activeFont = (typeof appState !== 'undefined' && appState.fontFamily) || 'alexandria';
+            const fontClass = `font-family-${activeFont}`;
+            const targetClassName = (source.className || '').replace(/font-family-\w+/g, '').trim() + ` ${fontClass}`;
+
+            const fontCssString = activeFont === 'thmanyah' 
+                ? "'Thmanyah Sans', Alexandria, sans-serif" 
+                : (activeFont === 'zain' ? "'Zain', Cairo, sans-serif" : "'Alexandria', Cairo, sans-serif");
+            const fontStyleRule = `<style>#${elementId}, #${elementId} * { font-family: ${fontCssString} !important; }</style>`;
+
+            const res = await fetch('/api/render-native', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    html: fontStyleRule + clone.innerHTML,
+                    className: targetClassName,
+                    filename: 'telegram_design.jpg',
+                    format: 'jpg',
+                    quality: 98
+                })
+            });
+
+            if (res.ok) {
+                const blob = await res.blob();
+                dataUrl = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => resolve(reader.result);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(blob);
+                });
+            }
+        } catch (err) {
+            console.warn('[Telegram Native Render Fallback]', err.message);
+        }
+
+        if (!dataUrl && typeof CanvasExporter !== 'undefined') {
+            const canvas = await CanvasExporter.renderToCanvas(elementId, true);
+            dataUrl = canvas.toDataURL('image/jpeg', 0.98);
+        }
+
+        if (!dataUrl) throw new Error('تعذر إنشاء صورة التصميم بدقة فائقة');
+
+        const sendRes = await fetch('/api/telegram-send', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                botToken: token,
+                chatId: chatId,
+                dataUrl: dataUrl,
+                caption: caption,
+                asDocument: asDoc
+            })
+        });
+
+        const sendData = await sendRes.json();
+        if (!sendRes.ok || !sendData.success) {
+            throw new Error(sendData.error || 'تعذر الإرسال إلى تيليجرام');
+        }
+    },
+
+    async sendCurrentDesign() {
+        if (!this.isConfigured()) {
+            this.openSettingsModal();
+            this.showStatus('info', '💡 يرجى إدخال رمز البوت والـ Chat ID مرة واحدة فقط لتفعيل الإرسال السريع بهاتفك!');
+            return;
+        }
+
         if (window.showCopyToast) {
             window.showCopyToast('جاري تجهيز التصميم 4K وإرساله للتليجرام... 🚀⏳');
         }
 
-        // Disable send buttons
         const btns = document.querySelectorAll('.btn-telegram-action');
         btns.forEach(b => {
             b.disabled = true;
@@ -211,77 +285,7 @@ const TelegramManager = {
         });
 
         try {
-            const source = document.getElementById('exportCanvas');
-            if (!source) throw new Error('لم يتم العثور على عنصر التصميم!');
-
-            // 1. Try Native Chrome Render Engine for 100% WYSIWYG matching
-            let dataUrl = null;
-            try {
-                const clone = source.cloneNode(true);
-                clone.querySelectorAll('.layer-toolbar, .layer-resize-handle, .snap-guide').forEach(el => el.remove());
-
-                const activeFont = (typeof appState !== 'undefined' && appState.fontFamily) || 'alexandria';
-                const fontClass = `font-family-${activeFont}`;
-                const targetClassName = (source.className || '').replace(/font-family-\w+/g, '').trim() + ` ${fontClass}`;
-
-                const fontCssString = activeFont === 'thmanyah' 
-                    ? "'Thmanyah Sans', Alexandria, sans-serif" 
-                    : (activeFont === 'zain' ? "'Zain', Cairo, sans-serif" : "'Alexandria', Cairo, sans-serif");
-                const fontStyleRule = `<style>#exportCanvas, #exportCanvas * { font-family: ${fontCssString} !important; }</style>`;
-
-                const res = await fetch('/api/render-native', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        html: fontStyleRule + clone.innerHTML,
-                        className: targetClassName,
-                        filename: 'telegram_design.jpg',
-                        format: 'jpg',
-                        quality: 98
-                    })
-                });
-
-                if (res.ok) {
-                    const blob = await res.blob();
-                    dataUrl = await new Promise((resolve, reject) => {
-                        const reader = new FileReader();
-                        reader.onloadend = () => resolve(reader.result);
-                        reader.onerror = reject;
-                        reader.readAsDataURL(blob);
-                    });
-                }
-            } catch (err) {
-                console.warn('[Telegram Native Render Fallback]', err.message);
-            }
-
-            // Fallback to client canvas render
-            if (!dataUrl && typeof CanvasExporter !== 'undefined') {
-                const canvas = await CanvasExporter.renderToCanvas('exportCanvas', true);
-                dataUrl = canvas.toDataURL('image/jpeg', 0.98);
-            }
-
-            if (!dataUrl) {
-                throw new Error('تعذر إنشاء صورة التصميم بدقة فائقة');
-            }
-
-            // 2. Send to Telegram API
-            const sendRes = await fetch('/api/telegram-send', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    botToken: token,
-                    chatId: chatId,
-                    dataUrl: dataUrl,
-                    caption: caption,
-                    asDocument: asDoc
-                })
-            });
-
-            const sendData = await sendRes.json();
-            if (!sendRes.ok || !sendData.success) {
-                throw new Error(sendData.error || 'تعذر الإرسال إلى تيليجرام');
-            }
-
+            await this.sendDesignInternal('exportCanvas', null);
             if (window.showCopyToast) {
                 window.showCopyToast('تم إرسال التصميم والكابشن إلى تيليجرام بنجاح! 🚀📱 افتح المحادثة الآن');
             }

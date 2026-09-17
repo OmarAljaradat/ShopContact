@@ -13,7 +13,7 @@ let currentCopyStyle = 'hype';
 let appState = {};
 let selectedLayerKey = null;
 window.activeTrioPresetId = null;
-
+window.currentStudioSuite = 'suite_stories';
 window.currentFitScale = 1.0;
 
 function getDefaultLayers() {
@@ -805,9 +805,18 @@ document.addEventListener('DOMContentLoaded', () => {
     // Check URL parameters for direct deep-linking from Telegram buttons (e.g. ?template=sbc&sbcTitle=...&sbcUrl=...)
     try {
         const urlParams = new URLSearchParams(window.location.search);
+        const suiteParam = urlParams.get('suite');
+        if (suiteParam && ['suite_stories', 'suite_posts', 'suite_carousel', 'suite_reels'].includes(suiteParam)) {
+            window.currentStudioSuite = suiteParam;
+        }
         const tmplParam = urlParams.get('template');
         if (tmplParam && TEMPLATES[tmplParam]) {
             currentTemplate = tmplParam;
+            if (['trio', 'market_drop', 'potm'].includes(tmplParam)) {
+                window.currentStudioSuite = 'suite_posts';
+            } else {
+                window.currentStudioSuite = 'suite_stories';
+            }
         }
         initState();
         const sbcTitleParam = urlParams.get('sbcTitle');
@@ -828,17 +837,12 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch(e) {
         initState();
     }
-    initTemplateSelector();
     initRatioSelector();
     initResolutionSelector();
     initCopywriterControls();
-    updateRatioSelectorForTemplate();
-    updateCaptionVisibility();
-    renderControls();
-    renderCanvas();
-    updateCaption();
-    if (window.AiAssistant && typeof window.AiAssistant.onTemplateChanged === 'function') {
-        window.AiAssistant.onTemplateChanged(currentTemplate);
+    switchStudioSuite(window.currentStudioSuite || 'suite_stories');
+    if (window.innerWidth < 1024) {
+        window.setMobileViewMode('preview');
     }
     setTimeout(window.updateCanvasViewportScale, 100);
 
@@ -956,8 +960,16 @@ function initTemplateSelector() {
     if (!container) return;
 
     container.innerHTML = '';
-    Object.keys(TEMPLATES).forEach(key => {
+    
+    // Filter templates based on current active studio suite
+    let availableKeys = ['store_promo', 'sbc'];
+    if (window.currentStudioSuite === 'suite_posts') {
+        availableKeys = ['trio', 'market_drop', 'potm'];
+    }
+
+    availableKeys.forEach(key => {
         const tmpl = TEMPLATES[key];
+        if (!tmpl) return;
         const btn = document.createElement('button');
         const isActive = key === currentTemplate;
         btn.className = `tab-btn flex items-center gap-2 px-5 py-2.5 text-xs font-black transition ${isActive ? 'active' : ''}`;
@@ -968,6 +980,169 @@ function initTemplateSelector() {
         container.appendChild(btn);
     });
 }
+
+window.switchStudioSuite = function(suiteKey) {
+    window.currentStudioSuite = suiteKey;
+
+    // 1. Update Suite Navigation Buttons UI
+    const suiteMap = {
+        suite_stories: { id: 'suiteTab_stories', tabClass: 'suite-tab-stories' },
+        suite_posts: { id: 'suiteTab_posts', tabClass: 'suite-tab-posts' },
+        suite_carousel: { id: 'suiteTab_carousel', tabClass: 'suite-tab-carousel' },
+        suite_reels: { id: 'suiteTab_reels', tabClass: 'suite-tab-reels' }
+    };
+
+    Object.keys(suiteMap).forEach(key => {
+        const btn = document.getElementById(suiteMap[key].id);
+        if (btn) {
+            if (key === suiteKey) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        }
+    });
+
+    const templateSection = document.getElementById('suiteTemplateSelectorSection');
+    const templateTitle = document.getElementById('suiteTemplateSectionTitle');
+    const templateControlsBox = document.getElementById('templateControlsBox');
+    const carouselPanel = document.getElementById('suite_carousel_panel');
+    const reelsPanel = document.getElementById('suite_reels_panel');
+    const filmstripContainer = document.getElementById('carouselFilmstripContainer');
+    const captionSection = document.getElementById('captionSection');
+    const ratioContainer = document.getElementById('ratioSectionTitle')?.closest('.double-bezel');
+    const aiAssistantCard = document.getElementById('aiPromptInput')?.closest('.double-bezel');
+
+    if (suiteKey === 'suite_stories') {
+        if (templateSection) templateSection.style.display = '';
+        if (templateTitle) templateTitle.textContent = 'اختر قالب الستوري (ستوري المتجر الأصلية أو تحديات الـ SBC):';
+        if (templateControlsBox) templateControlsBox.style.display = '';
+        if (carouselPanel) carouselPanel.classList.add('hidden');
+        if (reelsPanel) reelsPanel.classList.add('hidden');
+        if (filmstripContainer) filmstripContainer.classList.add('hidden');
+        if (captionSection) captionSection.style.display = 'none';
+        if (ratioContainer) ratioContainer.style.display = '';
+        if (aiAssistantCard) aiAssistantCard.style.display = '';
+
+        if (currentTemplate !== 'store_promo' && currentTemplate !== 'sbc') {
+            currentTemplate = 'store_promo';
+            initState();
+        }
+        setRatio('story');
+        initTemplateSelector();
+        updateRatioSelectorForTemplate();
+        renderControls();
+        renderCanvas();
+        if (window.AiAssistant && typeof window.AiAssistant.onTemplateChanged === 'function') {
+            window.AiAssistant.onTemplateChanged(currentTemplate);
+        }
+    } else if (suiteKey === 'suite_posts') {
+        if (templateSection) templateSection.style.display = '';
+        if (templateTitle) templateTitle.textContent = 'اختر قالب البوست (ثلاثي النجوم، هبوط الأسعار، أو لاعب الشهر):';
+        if (templateControlsBox) templateControlsBox.style.display = '';
+        if (carouselPanel) carouselPanel.classList.add('hidden');
+        if (reelsPanel) reelsPanel.classList.add('hidden');
+        if (filmstripContainer) filmstripContainer.classList.add('hidden');
+        if (captionSection) captionSection.style.display = '';
+        if (ratioContainer) ratioContainer.style.display = '';
+        if (aiAssistantCard) aiAssistantCard.style.display = '';
+
+        if (currentTemplate !== 'trio' && currentTemplate !== 'market_drop' && currentTemplate !== 'potm') {
+            currentTemplate = 'trio';
+            initState();
+        }
+        if (currentRatio === 'story') {
+            setRatio('portrait');
+        }
+        initTemplateSelector();
+        updateRatioSelectorForTemplate();
+        renderControls();
+        renderCanvas();
+        updateCaption();
+        if (window.AiAssistant && typeof window.AiAssistant.onTemplateChanged === 'function') {
+            window.AiAssistant.onTemplateChanged(currentTemplate);
+        }
+    } else if (suiteKey === 'suite_carousel') {
+        if (templateSection) templateSection.style.display = 'none';
+        if (templateControlsBox) templateControlsBox.style.display = 'none';
+        if (captionSection) captionSection.style.display = 'none';
+        if (carouselPanel) carouselPanel.classList.remove('hidden');
+        if (reelsPanel) reelsPanel.classList.add('hidden');
+        if (filmstripContainer) filmstripContainer.classList.remove('hidden');
+        if (ratioContainer) ratioContainer.style.display = 'none';
+        if (aiAssistantCard) aiAssistantCard.style.display = 'none';
+
+        setRatio('portrait'); // 4:5 for Instagram Carousels
+        if (window.CarouselEngine) {
+            window.CarouselEngine.renderFilmstrip();
+            window.CarouselEngine.renderEditorControls();
+            window.CarouselEngine.renderSlideToMainCanvas();
+        }
+    } else if (suiteKey === 'suite_reels') {
+        if (templateSection) templateSection.style.display = 'none';
+        if (templateControlsBox) templateControlsBox.style.display = 'none';
+        if (captionSection) captionSection.style.display = 'none';
+        if (carouselPanel) carouselPanel.classList.add('hidden');
+        if (reelsPanel) reelsPanel.classList.remove('hidden');
+        if (filmstripContainer) filmstripContainer.classList.add('hidden');
+        if (ratioContainer) ratioContainer.style.display = 'none';
+        if (aiAssistantCard) aiAssistantCard.style.display = 'none';
+
+        setRatio('story'); // 9:16 for Reels
+        if (window.ReelsEngine) {
+            window.ReelsEngine.renderEditorControls();
+            window.ReelsEngine.renderCanvas();
+        }
+    }
+
+    if (window.showCopyToast) {
+        const names = {
+            suite_stories: 'استوديو الستوري (Stories 9:16) 📱',
+            suite_posts: 'استوديو البوستات والفيد (Posts 4:5 & 1:1) 🖼️',
+            suite_carousel: 'استوديو الكاروسيل متعدد السلايدات (Carousel 4:5) 📚',
+            suite_reels: 'استوديو الريلز وهوكات الفيديو (Reels 9:16) 🎬'
+        };
+        window.showCopyToast(`تم فتح ${names[suiteKey]}! ✨`);
+    }
+};
+
+window.setMobileViewMode = function(mode) {
+    const leftCol = document.getElementById('leftControlColumn');
+    const rightCol = document.getElementById('rightPreviewColumn');
+    const btnPrev = document.getElementById('mobileBtnPreview');
+    const btnCtrl = document.getElementById('mobileBtnControls');
+
+    if (!leftCol || !rightCol) return;
+
+    if (mode === 'preview') {
+        rightCol.classList.remove('hidden');
+        rightCol.classList.add('flex');
+        leftCol.classList.add('hidden');
+        leftCol.classList.remove('block');
+        
+        if (btnPrev) {
+            btnPrev.className = 'flex-1 py-2 rounded-xl text-xs font-black transition bg-white text-slate-900 shadow-xs text-center flex items-center justify-center gap-1.5';
+        }
+        if (btnCtrl) {
+            btnCtrl.className = 'flex-1 py-2 rounded-xl text-xs font-bold transition text-slate-600 text-center flex items-center justify-center gap-1.5';
+        }
+        setTimeout(() => {
+            if (window.updateCanvasViewportScale) window.updateCanvasViewportScale();
+        }, 60);
+    } else {
+        leftCol.classList.remove('hidden');
+        leftCol.classList.add('block');
+        rightCol.classList.add('hidden');
+        rightCol.classList.remove('flex');
+
+        if (btnCtrl) {
+            btnCtrl.className = 'flex-1 py-2 rounded-xl text-xs font-black transition bg-white text-slate-900 shadow-xs text-center flex items-center justify-center gap-1.5';
+        }
+        if (btnPrev) {
+            btnPrev.className = 'flex-1 py-2 rounded-xl text-xs font-bold transition text-slate-600 text-center flex items-center justify-center gap-1.5';
+        }
+    }
+};
 
 function updateRatioSelectorForTemplate() {
     const isStoryOnly = currentTemplate === 'store_promo' || currentTemplate === 'sbc';
@@ -1011,10 +1186,10 @@ function updateRatioSelectorForTemplate() {
 function updateCaptionVisibility() {
     const captionSection = document.getElementById('captionSection');
     if (!captionSection) return;
-    if (currentTemplate === 'store_promo' || currentTemplate === 'sbc') {
-        captionSection.style.display = 'none';
-    } else {
+    if (window.currentStudioSuite === 'suite_posts') {
         captionSection.style.display = '';
+    } else {
+        captionSection.style.display = 'none';
     }
 }
 
@@ -1028,7 +1203,10 @@ window.selectTemplate = function(key) {
         window.AiAssistant.onTemplateChanged(key);
     }
     document.querySelectorAll('#templateSelector .tab-btn').forEach((b, i) => {
-        b.classList.toggle('active', Object.keys(TEMPLATES)[i] === key);
+        const availableKeys = window.currentStudioSuite === 'suite_posts' 
+            ? ['trio', 'market_drop', 'potm'] 
+            : ['store_promo', 'sbc'];
+        b.classList.toggle('active', availableKeys[i] === key);
     });
     renderControls();
     renderCanvas();
@@ -1046,7 +1224,11 @@ function initRatioSelector() {
 }
 
 function setRatio(ratio) {
-    if (currentTemplate === 'store_promo' || currentTemplate === 'sbc') {
+    if (window.currentStudioSuite === 'suite_stories' || currentTemplate === 'store_promo' || currentTemplate === 'sbc') {
+        ratio = 'story';
+    } else if (window.currentStudioSuite === 'suite_carousel') {
+        ratio = 'portrait';
+    } else if (window.currentStudioSuite === 'suite_reels') {
         ratio = 'story';
     }
     currentRatio = ratio;
@@ -1358,6 +1540,15 @@ window.deleteLayer = function(layerKey) {
 };
 
 function renderControls() {
+    if (window.currentStudioSuite === 'suite_carousel') {
+        if (window.CarouselEngine) window.CarouselEngine.renderEditorControls();
+        return;
+    }
+    if (window.currentStudioSuite === 'suite_reels') {
+        if (window.ReelsEngine) window.ReelsEngine.renderEditorControls();
+        return;
+    }
+
     const container = document.getElementById('templateControls');
     if (!container) return;
 
@@ -3314,6 +3505,15 @@ function getCostBoxStyle() {
 }
 
 function renderCanvas() {
+    if (window.currentStudioSuite === 'suite_carousel') {
+        if (window.CarouselEngine) window.CarouselEngine.renderSlideToMainCanvas();
+        return;
+    }
+    if (window.currentStudioSuite === 'suite_reels') {
+        if (window.ReelsEngine) window.ReelsEngine.renderCanvas();
+        return;
+    }
+
     const canvas = document.getElementById('exportCanvas');
     if (!canvas) return;
 

@@ -39,37 +39,37 @@
         }
     </script>
 </head>
-<body class="bg-[#F8FAFC] text-slate-900 selection:bg-emerald-500 selection:text-white">
+<body class="bg-[#F8FAFC] text-slate-900 selection:bg-emerald-500 selection:text-white overflow-x-hidden">
 
     <!-- Top Navigation Header (Light Luxury Floating Bar) -->
     <header class="border-b border-slate-200/80 bg-white/90 backdrop-blur-xl sticky top-0 z-50 shadow-xs">
-        <div class="max-w-7xl mx-auto px-4 lg:px-8 h-20 flex items-center justify-between">
+        <div class="max-w-7xl mx-auto px-4 lg:px-8 h-20 flex items-center justify-between gap-2">
             <!-- Brand & Tagline -->
-            <div class="flex items-center gap-3.5">
-                <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-amber-400 via-emerald-500 to-cyan-500 p-[2px] shadow-md shadow-emerald-500/15">
-                    <div class="w-full h-full rounded-[14px] bg-white flex items-center justify-center font-black text-amber-500 text-lg shadow-inner">
+            <div class="flex items-center gap-2.5 sm:gap-3.5 shrink-0">
+                <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-tr from-amber-400 via-emerald-500 to-cyan-500 p-[2px] shadow-md shadow-emerald-500/15 shrink-0">
+                    <div class="w-full h-full rounded-[14px] bg-white flex items-center justify-center font-black text-amber-500 text-base sm:text-lg shadow-inner">
                         ⚡
                     </div>
                 </div>
                 <div>
-                    <div class="flex items-center gap-2">
-                        <span class="font-black text-lg tracking-wide text-slate-900">SHOPCOIN15 STUDIO</span>
-                        <span class="px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[10px] font-black">بطاقات أصلية 100%</span>
+                    <div class="flex items-center gap-1.5">
+                        <span class="font-black text-base sm:text-lg tracking-wide text-slate-900">SHOPCOIN15</span>
+                        <span class="hidden sm:inline-block px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[10px] font-black">4K Studio</span>
                     </div>
-                    <p class="text-xs text-slate-500 font-medium">استوديو أتمتة تصاميم متجر الكوينز لإنستغرام بدقة 4K الفائقة</p>
+                    <p class="hidden sm:block text-[11px] text-slate-500 font-medium">استوديو أتمتة تصاميم متجر الكوينز بدقة 4K</p>
                 </div>
             </div>
 
             <!-- Quick Action: Direct Instagram link & Download Buttons -->
-            <div class="flex items-center gap-2.5">
-                <a href="https://www.instagram.com/shop_coin15/" target="_blank" class="hidden lg:flex items-center gap-2 px-3.5 py-2 rounded-full bg-slate-100 hover:bg-slate-200/80 border border-slate-200 text-xs font-bold text-slate-700 transition">
-                    <span>حساب المتجر: @shop_coin15</span>
+            <div class="flex items-center gap-1.5 sm:gap-2">
+                <a href="https://www.instagram.com/shop_coin15/" target="_blank" class="hidden xl:flex items-center gap-2 px-3 py-2 rounded-full bg-slate-100 hover:bg-slate-200/80 border border-slate-200 text-xs font-bold text-slate-700 transition">
+                    <span>@shop_coin15</span>
                     <span class="text-pink-500">↗</span>
                 </a>
 
                 <!-- Primary: Native 4K Ultra Engine -->
-                <button id="btnDownloadJpg" class="btn-download-action btn-luxury bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-500 hover:brightness-105 text-white font-black shadow-lg shadow-emerald-600/20 text-xs py-2 px-4.5" title="استخراج فوري بجودة 4K بمحرك المتصفح الأصلي (Native Engine) لضمان تطابق 100% بدون أي فرق بكسل واحد">
-                    <span id="btnDownloadJpgLabel">👑 تحميل أصلي 100% (Native 4K)</span>
+                <button id="btnDownloadJpg" class="btn-download-action btn-luxury bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-500 hover:brightness-105 text-white font-black shadow-md shadow-emerald-600/20 text-xs py-2 px-3 sm:px-4" title="استخراج فوري بجودة 4K بمحرك المتصفح الأصلي (Native Engine)">
+                    <span id="btnDownloadJpgLabel">👑 4K</span>
                     <div class="btn-icon-pill bg-black/20 text-white">
                         <span>⬇</span>
                     </div>
@@ -77,58 +77,101 @@
 
                 <!-- Telegram 4K Instant Direct Send -->
                 <div class="flex items-center gap-1 bg-sky-50 p-1 rounded-full border border-sky-200 shadow-xs">
-                    <button id="btnSendTelegram" onclick="TelegramManager.sendCurrentDesign()" class="btn-download-action btn-telegram-action px-3.5 py-1.5 rounded-full bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600 hover:brightness-105 text-white font-black text-xs transition flex items-center gap-1.5 shadow-sm shadow-sky-500/25" title="إرسال التصميم والكابشن مباشرة إلى هاتفك عبر التليجرام لتنزيله ستوري فوراً">
-                        <span>🚀 إرسال للتليجرام (Telegram 4K)</span>
+                    <button id="btnSendTelegram" onclick="TelegramManager.sendCurrentDesign()" class="btn-download-action btn-telegram-action px-2.5 sm:px-3.5 py-1.5 rounded-full bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600 hover:brightness-105 text-white font-black text-xs transition flex items-center gap-1 shadow-sm shadow-sky-500/25" title="إرسال التصميم والكابشن مباشرة إلى هاتفك عبر التليجرام">
+                        <span>🚀 تليجرام</span>
                     </button>
                     <button onclick="TelegramManager.openSettingsModal()" class="w-7 h-7 rounded-full bg-white hover:bg-sky-100 text-sky-700 text-xs font-black transition flex items-center justify-center border border-sky-200" title="إعدادات توكن البوت والـ Chat ID">
                         ⚙️
                     </button>
                 </div>
 
-                <!-- 8:00 PM Auto-Watcher Button -->
-                <button id="btnTriggerAutoWatcher" onclick="triggerAutoWatcher()" class="btn-download-action px-3.5 py-2 rounded-full bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:brightness-105 text-white font-black text-xs transition flex items-center gap-1.5 shadow-sm shadow-amber-500/20" title="فحص وتصميم أحدث محتوى وتحدي نزل اليوم في اللعبة وإرساله فوراً للتليجرام">
-                    <span>🤖 محتوى الساعة 8 (Auto)</span>
-                    <span class="w-2 h-2 rounded-full bg-emerald-300 animate-ping"></span>
-                </button>
-
-                <!-- Fullscreen Save As / Modal -->
-                <button id="btnOpenModal" class="btn-download-action px-3 py-2 rounded-full bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-800 font-bold text-xs transition flex items-center gap-1 shadow-xs" title="معاينة كاملة بدقة فائقة وحفظ بالزر الأيمن أو نافذة جديدة">
-                    <span id="btnOpenModalLabel">🖼️ حفظ باسم</span>
-                </button>
-
-                <!-- Secondary: PNG -->
-                <button id="btnDownloadPng" class="btn-download-action px-3.5 py-2 rounded-full bg-white hover:bg-slate-50 border border-slate-200 text-slate-800 font-bold text-xs transition flex items-center gap-1.5 shadow-xs" title="تحميل بصيغة PNG الأصلية">
-                    <span>PNG</span>
-                    <span>💎</span>
-                </button>
-
-                <!-- Copy to Clipboard -->
-                <button id="btnCopyImage" class="btn-download-action px-3 py-2 rounded-full bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 hover:text-slate-900 font-bold text-xs transition flex items-center gap-1 shadow-xs" title="نسخ الصورة مباشرة للصقها">
-                    <span>نسخ</span>
-                    <span>📋</span>
-                </button>
+                <!-- Secondary desktop buttons -->
+                <div class="hidden sm:flex items-center gap-1.5">
+                    <button id="btnTriggerAutoWatcher" onclick="triggerAutoWatcher()" class="btn-download-action px-3 py-2 rounded-full bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:brightness-105 text-white font-black text-xs transition flex items-center gap-1 shadow-sm shadow-amber-500/20" title="فحص وتصميم أحدث محتوى وتحدي نزل اليوم">
+                        <span>🤖 8:00</span>
+                    </button>
+                    <button id="btnOpenModal" class="btn-download-action px-2.5 py-2 rounded-full bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-800 font-bold text-xs transition flex items-center gap-1 shadow-xs" title="معاينة كاملة بدقة فائقة">
+                        <span>🖼️</span>
+                    </button>
+                    <button id="btnDownloadPng" class="btn-download-action px-2.5 py-2 rounded-full bg-white hover:bg-slate-50 border border-slate-200 text-slate-800 font-bold text-xs transition flex items-center gap-1 shadow-xs" title="تحميل بصيغة PNG">
+                        <span>PNG</span>
+                    </button>
+                </div>
             </div>
         </div>
     </header>
 
     <!-- Main Content -->
-    <main class="max-w-7xl mx-auto px-4 lg:px-8 py-8 space-y-8">
+    <main class="max-w-7xl mx-auto px-4 lg:px-8 py-6 space-y-6">
         
-        <!-- Template Selection Bar -->
-        <div>
-            <div class="text-xs uppercase tracking-wider text-slate-500 font-bold mb-3 flex items-center justify-between">
-                <span>اختر قالب التصميم لمتجر الكوينز (ستوري المتجر الأصلية + قوالب البوستات الاحترافية):</span>
+        <!-- Top Studio Suite Switcher (4 Isolated Workspaces) -->
+        <div class="space-y-2.5">
+            <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span class="text-xs font-black text-slate-800">اختر مساحة العمل المطلوبة (مفصولة ومنظمة بالكامل):</span>
+            </div>
+
+            <!-- 4 Suite Switcher Tab Buttons -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-2.5" id="suiteNavigation">
+                <button type="button" onclick="switchStudioSuite('suite_stories')" id="suiteTab_stories" class="suite-tab-btn suite-tab-stories active p-3 rounded-2xl border-2 transition text-right flex items-center gap-3 bg-white border-emerald-500">
+                    <span class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg shrink-0 border border-emerald-200">📱</span>
+                    <div>
+                        <div class="text-xs font-black text-slate-900">استوديو الستوري</div>
+                        <div class="text-[10.5px] text-slate-500 font-medium">شرائط المتجر، تحديات SBC، و 8:00</div>
+                    </div>
+                </button>
+
+                <button type="button" onclick="switchStudioSuite('suite_posts')" id="suiteTab_posts" class="suite-tab-btn suite-tab-posts p-3 rounded-2xl border-2 transition text-right flex items-center gap-3 bg-white border-slate-200 hover:border-violet-400">
+                    <span class="w-10 h-10 rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center text-lg shrink-0 border border-violet-200">🖼️</span>
+                    <div>
+                        <div class="text-xs font-black text-slate-900">استوديو البوستات</div>
+                        <div class="text-[10.5px] text-slate-500 font-medium">هبوط الأسعار، ثلاثي النجوم، و POTM</div>
+                    </div>
+                </button>
+
+                <button type="button" onclick="switchStudioSuite('suite_carousel')" id="suiteTab_carousel" class="suite-tab-btn suite-tab-carousel p-3 rounded-2xl border-2 transition text-right flex items-center gap-3 bg-white border-slate-200 hover:border-blue-400">
+                    <span class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-lg shrink-0 border border-blue-200">📚</span>
+                    <div>
+                        <div class="text-xs font-black text-slate-900">استوديو الكاروسيل</div>
+                        <div class="text-[10.5px] text-slate-500 font-medium">سلايدات تعليمية متعددة وتصدير 4K</div>
+                    </div>
+                </button>
+
+                <button type="button" onclick="switchStudioSuite('suite_reels')" id="suiteTab_reels" class="suite-tab-btn suite-tab-reels p-3 rounded-2xl border-2 transition text-right flex items-center gap-3 bg-white border-slate-200 hover:border-rose-400">
+                    <span class="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-lg shrink-0 border border-rose-200">🎬</span>
+                    <div>
+                        <div class="text-xs font-black text-slate-900">استوديو الريلز</div>
+                        <div class="text-[10.5px] text-slate-500 font-medium">أغلفة وهوكات فيديو Safe Zone</div>
+                    </div>
+                </button>
+            </div>
+
+            <!-- Mobile View Mode Toggle (Full-width segmented bar on mobile) -->
+            <div class="lg:hidden w-full flex items-center bg-slate-200/90 p-1 rounded-2xl shadow-xs" id="mobileViewToggle">
+                <button type="button" onclick="setMobileViewMode('preview')" id="mobileBtnPreview" class="flex-1 py-2 rounded-xl text-xs font-black transition bg-white text-slate-900 shadow-xs text-center flex items-center justify-center gap-1.5">
+                    <span>🎨 شاشة المعاينة والتصدير</span>
+                </button>
+                <button type="button" onclick="setMobileViewMode('controls')" id="mobileBtnControls" class="flex-1 py-2 rounded-xl text-xs font-bold transition text-slate-600 text-center flex items-center justify-center gap-1.5">
+                    <span>🛠️ لوحة التعديل والخيارات</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Sub-header for Templates (Filtered per Suite) -->
+        <div id="suiteTemplateSelectorSection">
+            <div class="text-xs uppercase tracking-wider text-slate-500 font-bold mb-2 flex items-center justify-between">
+                <span id="suiteTemplateSectionTitle">اختر قالب الستوري:</span>
                 <span class="text-[11px] text-emerald-600 font-black">جاهز للتحميل بجودة 4K فائق النقاء ✨</span>
             </div>
             <div id="templateSelector" class="flex flex-wrap gap-2.5">
-                <!-- Dynamically generated 3 buttons -->
+                <!-- Dynamically generated buttons for active suite -->
             </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             
             <!-- Left Column: Controls & Editing Form (col-span-5) -->
-            <div class="lg:col-span-5 space-y-6">
+            <div id="leftControlColumn" class="hidden lg:block lg:col-span-5 space-y-6">
                 
                 <!-- Aspect Ratio & Resolution Bar -->
                 <div class="double-bezel">
@@ -218,9 +261,23 @@
                 </div>
 
                 <!-- Template Specific Controls -->
-                <div class="double-bezel">
+                <div class="double-bezel" id="templateControlsBox">
                     <div class="double-bezel-inner p-5" id="templateControls">
                         <!-- Dynamically rendered inputs and presets -->
+                    </div>
+                </div>
+
+                <!-- Suite Carousel Dedicated Controls Panel -->
+                <div id="suite_carousel_panel" class="hidden double-bezel">
+                    <div class="double-bezel-inner p-5">
+                        <!-- Populated by CarouselEngine.renderEditorControls() -->
+                    </div>
+                </div>
+
+                <!-- Suite Reels Dedicated Controls Panel -->
+                <div id="suite_reels_panel" class="hidden double-bezel">
+                    <div class="double-bezel-inner p-5">
+                        <!-- Populated by ReelsEngine.renderEditorControls() -->
                     </div>
                 </div>
 
@@ -254,7 +311,7 @@
             </div>
 
             <!-- Right Column: Live High-Fidelity Preview (col-span-7) -->
-            <div class="lg:col-span-7 flex flex-col items-center sticky top-28">
+            <div id="rightPreviewColumn" class="lg:col-span-7 flex flex-col items-center sticky top-28">
                 
                 <div class="w-full flex items-center justify-between mb-3 px-2">
                     <div class="flex items-center gap-2">
@@ -282,7 +339,7 @@
                 </div>
 
                 <!-- Preview Frame Container (Auto-fitted, never cropped) -->
-                <div id="previewContainer" class="w-full p-4 rounded-3xl border border-slate-200 shadow-sm flex items-center justify-center min-h-[520px]">
+                <div id="previewContainer" class="w-full p-2 sm:p-4 rounded-3xl border border-slate-200 shadow-sm flex items-center justify-center min-h-[440px] sm:min-h-[520px] overflow-hidden">
                     <!-- Scaled stage wrapper that fits full canvas on screen -->
                     <div id="canvasScaleStage" class="relative">
                         <!-- The Element Captured by html2canvas -->
@@ -291,6 +348,9 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Carousel Filmstrip Container (Shown when in Carousel suite) -->
+                <div id="carouselFilmstripContainer" class="w-full mt-3 hidden"></div>
 
                 <div class="mt-4 text-center">
                     <p class="text-[11px] text-slate-500 font-medium">
@@ -494,12 +554,14 @@
     </div>
 
     <!-- Scripts -->
-    <script src="js/assets-data.js?v=12.0"></script>
-    <script src="js/templates.js?v=12.0"></script>
-    <script src="js/copywriter.js?v=12.0"></script>
-    <script src="js/canvas-export.js?v=12.0"></script>
-    <script src="js/telegram.js?v=12.0"></script>
-    <script src="js/app.js?v=12.0"></script>
-    <script src="js/ai-assistant.js?v=12.0"></script>
+    <script src="js/assets-data.js?v=13.0"></script>
+    <script src="js/templates.js?v=13.0"></script>
+    <script src="js/copywriter.js?v=13.0"></script>
+    <script src="js/canvas-export.js?v=13.0"></script>
+    <script src="js/telegram.js?v=13.0"></script>
+    <script src="js/carousel-engine.js?v=13.0"></script>
+    <script src="js/reels-engine.js?v=13.0"></script>
+    <script src="js/app.js?v=13.0"></script>
+    <script src="js/ai-assistant.js?v=13.0"></script>
 </body>
 </html>
