@@ -1303,18 +1303,19 @@ server.listen(PORT, '0.0.0.0', () => {
     console.log(`👑 محرك التصدير الجذري (Native 1:1 Chrome Engine) مفعّل!`);
     console.log(`====================================================`);
 
+    // Initialize 8:00 PM Auto-Watcher immediately so it is always operational
+    autoWatcher.init({
+        port: PORT,
+        ensureNativePage,
+        sendTelegramRequest,
+        resolveSbcOrPlayer
+    });
+
     // Pre-warm native browser in background for lightning-fast exports
     ensureNativePage(PORT).then(p => {
         if (p) {
             console.log(`✅ [Native Engine] محرك المتصفح جاهز في الذاكرة لاستخراج صور 100% متطابقة وفورية!`);
         }
-        // Initialize 8:00 PM Auto-Watcher
-        autoWatcher.init({
-            port: PORT,
-            ensureNativePage,
-            sendTelegramRequest,
-            resolveSbcOrPlayer
-        });
     }).catch(err => {
         console.warn(`⚠️ [Native Engine Warmup Notice] ${err.message}`);
     });
