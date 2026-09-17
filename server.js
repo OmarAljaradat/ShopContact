@@ -12,6 +12,13 @@ try {
     console.warn('[Native Engine] puppeteer-core not loaded:', e.message);
 }
 
+let sparticuzChromium = null;
+try {
+    sparticuzChromium = require('@sparticuz/chromium');
+} catch (e) {
+    // Optional on Windows
+}
+
 // Known browser paths on Windows & Linux Cloud environments
 const POSSIBLE_BROWSER_PATHS = [
     '/usr/bin/google-chrome',
@@ -24,9 +31,17 @@ const POSSIBLE_BROWSER_PATHS = [
     'C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe'
 ];
 
-function getBrowserExecutable() {
+async function getBrowserExecutable() {
     for (const p of POSSIBLE_BROWSER_PATHS) {
         if (fs.existsSync(p)) return p;
+    }
+    if (sparticuzChromium) {
+        try {
+            const p = await sparticuzChromium.executablePath();
+            if (p) return p;
+        } catch (e) {
+            console.warn('[Sparticuz Chromium Notice]', e.message);
+        }
     }
     return null;
 }
@@ -40,20 +55,21 @@ async function ensureNativePage(port) {
         return nativePage;
     }
     if (!puppeteer) return null;
-    const execPath = getBrowserExecutable();
+    const execPath = await getBrowserExecutable();
     if (!execPath) return null;
 
     if (!nativeBrowser || !nativeBrowser.isConnected()) {
+        const launchArgs = sparticuzChromium ? sparticuzChromium.args : [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-gpu',
+            '--disable-dev-shm-usage',
+            '--hide-scrollbars'
+        ];
         nativeBrowser = await puppeteer.launch({
             executablePath: execPath,
-            headless: 'new',
-            args: [
-                '--no-sandbox',
-                '--disable-setuid-sandbox',
-                '--disable-gpu',
-                '--disable-dev-shm-usage',
-                '--hide-scrollbars'
-            ]
+            headless: sparticuzChromium ? sparticuzChromium.headless : 'new',
+            args: launchArgs
         });
     }
 
