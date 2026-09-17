@@ -18,6 +18,56 @@ const DEFAULT_BOT_TOKEN = '8903974669:AAGv7_Wpb-0ujiNVTpnhdrXOXOOzOi8rHFg';
 const DEFAULT_CHAT_ID = '1965859902';
 const STUDIO_BASE_URL = 'https://shopcoin15-studio.onrender.com';
 
+let twemoji = null;
+try {
+    twemoji = require('@twemoji/api');
+} catch (e) {
+    // Optional
+}
+
+const ARABIC_NAMES_MAP = {
+    'kylian mbappé': 'كيليان مبابي',
+    'kylian mbappe': 'كيليان مبابي',
+    'mbappé': 'كيليان مبابي',
+    'mbappe': 'كيليان مبابي',
+    'cristiano ronaldo': 'كريستيانو رونالدو',
+    'ronaldo': 'رونالدو',
+    'lionel messi': 'ليونيل ميسي',
+    'messi': 'ميسي',
+    'erling haaland': 'إيرلينغ هالاند',
+    'haaland': 'هالاند',
+    'jude bellingham': 'جود بيلينجهام',
+    'bellingham': 'بيلينجهام',
+    'vinicius jr': 'فينيسيوس جونيور',
+    'vinicius': 'فينيسيوس جونيور',
+    'saka': 'بوكايو ساكا',
+    'bukayo saka': 'بوكايو ساكا',
+    'palmer': 'كول بالمر',
+    'cole palmer': 'كول بالمر',
+    'yamal': 'لامين يامال',
+    'lamine yamal': 'لامين يامال',
+    'salah': 'محمد صلاح',
+    'mohamed salah': 'محمد صلاح',
+    'marquee matchups': 'مباريات القمة (Marquee Matchups)',
+    'marquee': 'مباريات القمة (Marquee Matchups)',
+    'gold upgrade': 'ترقية ذهبية (Gold Upgrade)'
+};
+
+function toArabicTitle(rawTitle) {
+    let clean = (rawTitle || 'تحدي جديد')
+        .replace(/ - EA SPORTS.*$/i, '')
+        .replace(/ - FUT\.GG.*$/i, '')
+        .replace(/^New/i, '')
+        .trim();
+    const lower = clean.toLowerCase();
+    for (const [eng, arb] of Object.entries(ARABIC_NAMES_MAP)) {
+        if (lower.includes(eng)) {
+            return arb;
+        }
+    }
+    return clean;
+}
+
 function ensureDataDir() {
     if (!fs.existsSync(DATA_DIR)) {
         fs.mkdirSync(DATA_DIR, { recursive: true });
@@ -149,17 +199,7 @@ class AutoWatcherEngine {
     async promptUserForSbc(targetUrl) {
         console.log(`🤖 [Auto-Watcher] تجهيز تنبيه تفاعلي للتحدي: ${targetUrl}`);
         const sbcData = await this.resolveSbcOrPlayer(targetUrl);
-        let cleanTitle = (sbcData.title || sbcData.playerName || 'تحدي SBC جديد')
-            .replace(/ - EA SPORTS.*$/i, '')
-            .replace(/ - FUT\.GG.*$/i, '')
-            .replace(/^New/i, '')
-            .trim();
-
-        if (cleanTitle.toLowerCase().includes('marquee')) {
-            cleanTitle = 'مباريات القمة (Marquee Matchups)';
-        } else if (cleanTitle.toLowerCase().includes('gold upgrade')) {
-            cleanTitle = 'ترقية ذهبية (Gold Upgrade)';
-        }
+        let cleanTitle = toArabicTitle(sbcData.title || sbcData.playerName || 'تحدي SBC جديد');
 
         const sbcId = 'sbc_' + Math.random().toString(36).substring(2, 9);
         savePendingSbc(sbcId, { url: targetUrl, title: cleanTitle });
@@ -340,18 +380,7 @@ class AutoWatcherEngine {
             throw new Error('تعذر سحب بيانات وبطاقة التحدي من FUT.GG');
         }
 
-        let cleanTitle = (sbcData.title || sbcData.playerName || 'تحدي SBC جديد')
-            .replace(/ - EA SPORTS.*$/i, '')
-            .replace(/ - FUT\.GG.*$/i, '')
-            .replace(/^New/i, '')
-            .trim();
-
-        if (cleanTitle.toLowerCase().includes('marquee')) {
-            cleanTitle = 'مباريات القمة (Marquee Matchups)';
-        } else if (cleanTitle.toLowerCase().includes('gold upgrade')) {
-            cleanTitle = 'ترقية ذهبية (Gold Upgrade)';
-        }
-
+        let cleanTitle = toArabicTitle(sbcData.title || sbcData.playerName || 'تحدي SBC جديد');
         const sbcImg = sbcData.sbcImage || sbcData.cardImage;
 
         // 2. Render 4K Story via Native Chrome Page
@@ -361,16 +390,31 @@ class AutoWatcherEngine {
         await page.setViewport({
             width: 1080,
             height: 1920,
-            deviceScaleFactor: 1
+            deviceScaleFactor: 2
         });
 
-        // 4 Clean, Punchy Banners with Optimal Proportions & Breathing Space
-        const banners = [
+        // 4 Clean, Punchy Single-Line Banners with authentic Twemoji vector art
+        const rawBanners = [
             { text: `نزل تحدي ${cleanTitle} رسميـاً 🔥`, bg: '#0084FF', color: '#FFFFFF' },
             { text: 'نوفر لك الكوينز ونحل التحدي بحسابك 👌', bg: '#E50914', color: '#FFFFFF' },
-            { text: 'سرعة تنفيذ وضمان كامل للنادي بدون بان 🔒⚡', bg: '#38B000', color: '#FFFFFF' },
-            { text: 'للطلب والاستفسار بالخاص حياكم ⬇️⬇️', bg: '#E1F5FE', color: '#1E293B' }
+            { text: 'ضمان كامل للنادي وسرعة تنفيذ فوريـة 🔒⚡', bg: '#38B000', color: '#FFFFFF' },
+            { text: 'للطلب والاستفسار تواصل معنا خاص ⬇️📩', bg: '#E1F5FE', color: '#1E293B' }
         ];
+
+        const banners = rawBanners.map(b => {
+            let parsed = b.text;
+            if (twemoji && typeof twemoji.parse === 'function') {
+                parsed = twemoji.parse(b.text, {
+                    folder: 'svg',
+                    ext: '.svg',
+                    base: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/'
+                });
+            }
+            return {
+                ...b,
+                text: parsed
+            };
+        });
 
         // Ensure studio DOM is fully loaded and ready
         const hasStudio = await page.evaluate(() => typeof window.selectTemplate === 'function').catch(() => false);
@@ -396,7 +440,7 @@ class AutoWatcherEngine {
             // Optimize layer spacing for aesthetic balance
             appState.layers = appState.layers || {};
             if (appState.layers.layer_sbc_banners) {
-                appState.layers.layer_sbc_banners.y = 45;
+                appState.layers.layer_sbc_banners.y = 40;
                 appState.layers.layer_sbc_banners.scale = 1.0;
             }
             if (appState.layers.layer_sbc_asset) {
@@ -407,25 +451,6 @@ class AutoWatcherEngine {
             if (typeof renderControls === 'function') renderControls();
             if (typeof renderCanvas === 'function') renderCanvas();
             if (typeof updateCaption === 'function') updateCaption();
-
-            // Reset transform matrices for pristine 1:1 hardware capture
-            const stage = document.getElementById('canvasScaleStage');
-            if (stage) {
-                stage.style.width = '1080px';
-                stage.style.height = '1920px';
-                stage.style.transform = 'none';
-                stage.style.borderRadius = '0px';
-                stage.style.boxShadow = 'none';
-                stage.style.border = 'none';
-            }
-            const canvasEl = document.getElementById('exportCanvas');
-            if (canvasEl) {
-                canvasEl.style.transform = 'none';
-                canvasEl.style.borderRadius = '0px';
-                canvasEl.style.boxShadow = 'none';
-                canvasEl.style.border = 'none';
-                canvasEl.style.margin = '0px';
-            }
 
             // Wait for images & fonts
             if (document.fonts) await document.fonts.ready;
@@ -438,7 +463,7 @@ class AutoWatcherEngine {
                     setTimeout(res, 2500);
                 });
             }));
-            await new Promise(r => setTimeout(r, 100));
+            await new Promise(r => setTimeout(r, 200));
         }, { title: cleanTitle, imgUrl: sbcImg, bannerItems: banners });
 
         const cardEl = await page.evaluateHandle(() => document.getElementById('exportCanvas'));
@@ -446,7 +471,7 @@ class AutoWatcherEngine {
 
         const screenshotBuffer = await cardEl.screenshot({
             type: 'jpeg',
-            quality: 92
+            quality: 95
         });
 
         // 3. Formulate Marketing Caption

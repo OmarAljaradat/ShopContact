@@ -3338,6 +3338,16 @@ function renderCanvas() {
         const layerKey = layer.id;
         makeDraggable(layer, layerKey);
     });
+
+    if (window.twemoji && typeof window.twemoji.parse === 'function') {
+        try {
+            window.twemoji.parse(canvas, {
+                folder: 'svg',
+                ext: '.svg',
+                base: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/'
+            });
+        } catch(e) {}
+    }
 }
 
 function getLayerStyle(layerKey, defaultTop = 0, defaultLeft = '50%', transform = 'translateX(-50%)') {
@@ -3408,7 +3418,7 @@ function renderStorePromoTemplate() {
         const bg = b.bg || '#0084FF';
         const color = b.color || '#FFFFFF';
         return `
-            <div style="display: inline-block; background-color: ${bg}; color: ${color}; padding: 7px 18px; border-radius: 6px; font-weight: 800; font-size: 16.5px; line-height: 1.35; text-align: center; max-width: 86%; box-shadow: 0 4px 12px rgba(0,0,0,0.15); margin: 0 auto; word-break: break-word;">
+            <div style="display: inline-block; background-color: ${bg}; color: ${color}; padding: 6px 16px; border-radius: 6px; font-weight: 800; font-size: 15px; line-height: 1.35; text-align: center; white-space: nowrap; max-width: 95%; box-shadow: 0 4px 12px rgba(0,0,0,0.15); margin: 0 auto;">
                 ${b.text}
             </div>
         `;
@@ -3796,7 +3806,7 @@ function renderSbcTemplate() {
         const bg = b.bg || '#0084FF';
         const color = b.color || '#FFFFFF';
         return `
-            <div style="display: inline-block; background-color: ${bg}; color: ${color}; padding: 7px 18px; border-radius: 6px; font-weight: 800; font-size: 16.5px; line-height: 1.35; text-align: center; max-width: 86%; box-shadow: 0 4px 12px rgba(0,0,0,0.18); margin: 0 auto; word-break: break-word;">
+            <div style="display: inline-block; background-color: ${bg}; color: ${color}; padding: 6px 16px; border-radius: 6px; font-weight: 800; font-size: 15px; line-height: 1.35; text-align: center; white-space: nowrap; max-width: 95%; box-shadow: 0 4px 12px rgba(0,0,0,0.18); margin: 0 auto;">
                 ${b.text}
             </div>
         `;

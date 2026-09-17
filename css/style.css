@@ -1,5 +1,51 @@
 @import url('https://fonts.googleapis.com/css2?family=Alexandria:wght@300;400;500;600;700;800;900&family=Cairo:wght@400;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Zain:ital,wght@0,300;0,400;0,700;0,800;0,900;1,300;1,400;1,700;1,800;1,900&display=swap');
 
+/* Local Font-Face Fallbacks for Offline & Linux Environments */
+@font-face {
+    font-family: 'Thmanyah Sans';
+    src: url('../fonts/thmanyah-sans-Bold.woff2') format('woff2');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'Thmanyah Sans';
+    src: url('../fonts/thmanyah-sans-Black.woff2') format('woff2');
+    font-weight: 900;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'Zain';
+    src: url('../fonts/zain-Bold.ttf') format('truetype');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'Zain';
+    src: url('../fonts/zain-ExtraBold.ttf') format('truetype');
+    font-weight: 800;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'Zain';
+    src: url('../fonts/zain-Black.ttf') format('truetype');
+    font-weight: 900;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* Twemoji universal vector emoji styling for 100% cross-platform parity */
+img.emoji {
+    height: 1.18em !important;
+    width: 1.18em !important;
+    margin: 0 0.18em 0.1em 0.18em !important;
+    vertical-align: -0.18em !important;
+    display: inline-block !important;
+}
+
 :root {
     --bg-body: #F8FAFC;
     --bg-card: #FFFFFF;

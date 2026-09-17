@@ -6,6 +6,7 @@
   },
   "dependencies": {
     "@sparticuz/chromium": "^126.0.0",
+    "@twemoji/api": "^17.0.3",
     "puppeteer-core": "^25.11.0"
   }
 }
