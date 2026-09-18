@@ -208,7 +208,9 @@ const TelegramManager = {
             const clone = source.cloneNode(true);
             clone.querySelectorAll('.layer-toolbar, .layer-resize-handle, .snap-guide').forEach(el => el.remove());
 
-            const activeFont = (typeof appState !== 'undefined' && appState.fontFamily) || 'alexandria';
+            const activeFont = (window.currentStudioSuite === 'suite_reels' && window.ReelsEngine && window.ReelsEngine.getState)
+                ? (window.ReelsEngine.getState().fontFamily || 'thmanyah')
+                : ((typeof appState !== 'undefined' && appState.fontFamily) || 'alexandria');
             const fontClass = `font-family-${activeFont}`;
             const targetClassName = (source.className || '').replace(/font-family-\w+/g, '').trim() + ` ${fontClass}`;
 

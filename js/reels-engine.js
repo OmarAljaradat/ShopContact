@@ -72,6 +72,18 @@ window.ReelsEngine = (function() {
         return JSON.parse(JSON.stringify(DEFAULT_LAYOUTS));
     }
 
+    const FONT_STORAGE_KEY = 'shopcoin15_reel_font_v1';
+
+    function loadSavedFontFamily() {
+        try {
+            const saved = localStorage.getItem(FONT_STORAGE_KEY);
+            if (saved && ['thmanyah', 'zain', 'alexandria'].includes(saved)) {
+                return saved;
+            }
+        } catch (e) {}
+        return 'thmanyah';
+    }
+
     // ---- 2. CURATED VIRAL IDEAS (Hooks ONLY - User picks players) ----
     const VIRAL_IDEAS = {
         countdown: [
@@ -168,6 +180,7 @@ window.ReelsEngine = (function() {
     let state = {
         activeSection: 'countdown',
         theme: 'ea_marble_clean',
+        fontFamily: loadSavedFontFamily(),
         title: 'أفضل 5 مهاجمين للبدايات في FC 27 ⚽🔥',
         subtitle: 'كروت اقتصادية تصنع لك الفارق من أول أسبوع!',
         badge: '🔥 مهاجمين البدايات',
@@ -189,6 +202,24 @@ window.ReelsEngine = (function() {
             return window.EMBEDDED_ASSETS[key];
         }
         return fallbackPath;
+    }
+
+    function setFontFamily(fontKey) {
+        if (!['thmanyah', 'zain', 'alexandria'].includes(fontKey)) fontKey = 'thmanyah';
+        state.fontFamily = fontKey;
+        try {
+            localStorage.setItem(FONT_STORAGE_KEY, fontKey);
+        } catch (e) {}
+        renderCanvas();
+        renderEditorControls();
+        const names = {
+            thmanyah: 'خط ثمانية (Thmanyah Sans)',
+            zain: 'خط زين (Zain Google Font)',
+            alexandria: 'خط الإسكندرية (Alexandria)'
+        };
+        if (window.showCopyToast) {
+            window.showCopyToast(`تم تفعيل ${names[fontKey] || fontKey} في الريلز بنجاح! 🔤✨`);
+        }
     }
 
     function initSection(sectionKey) {
@@ -886,9 +917,15 @@ window.ReelsEngine = (function() {
         const currentSuite = window.currentStudioSuite || 'suite_stories';
         if (currentSuite !== 'suite_reels') return;
 
-        canvas.className = 'canvas-story relative overflow-hidden select-none';
+        const activeFont = state.fontFamily || 'thmanyah';
+        const fontCssFamily = (activeFont === 'thmanyah')
+            ? "'Thmanyah Sans', 'Alexandria', sans-serif"
+            : ((activeFont === 'zain') ? "'Zain', 'Cairo', sans-serif" : "'Alexandria', 'Cairo', sans-serif");
+
+        canvas.className = `canvas-story relative overflow-hidden select-none font-family-${activeFont}`;
         canvas.setAttribute('data-canvas-ratio', 'story');
         canvas.style.direction = 'ltr'; // Forces LTR coordinates: moving right never shrinks elements!
+        canvas.style.fontFamily = fontCssFamily;
 
         if (!state.slides || state.slides.length === 0) {
             initSection(state.activeSection);
@@ -957,10 +994,10 @@ window.ReelsEngine = (function() {
                     <div class="mb-4 inline-block px-4 py-1.5 rounded-full bg-slate-900 text-white text-xs font-black shadow-sm tracking-wide">
                         ${currentSlide.badge || state.badge}
                     </div>
-                    <h1 class="text-4xl md:text-5xl font-black text-slate-950 leading-snug font-['Alexandria'] drop-shadow-sm max-w-md">
+                    <h1 class="text-4xl md:text-5xl font-black text-slate-950 leading-snug drop-shadow-sm max-w-md">
                         ${currentSlide.title || state.title}
                     </h1>
-                    <p class="mt-5 text-sm md:text-base font-bold text-slate-600 max-w-sm leading-relaxed font-['Cairo']">
+                    <p class="mt-5 text-sm md:text-base font-bold text-slate-600 max-w-sm leading-relaxed">
                         ${currentSlide.subtitle || state.subtitle}
                     </p>
                     <div class="mt-8 flex items-center gap-2 px-5 py-2 rounded-2xl bg-white/90 border border-slate-200 backdrop-blur-md shadow-xs animate-bounce">
@@ -975,7 +1012,7 @@ window.ReelsEngine = (function() {
             bodyHtml = `
                 <!-- 1. Rank Block -->
                 <div data-drag-id="rank" class="z-20 flex flex-col items-center text-center select-none relative ${dragCursor} ${selectRing('rank')}" style="${posStyle(layout.rank)}">
-                    <div class="text-6xl md:text-7xl font-black text-[#0E382B] font-['Alexandria'] drop-shadow-md leading-none pointer-events-none">
+                    <div class="text-6xl md:text-7xl font-black text-[#0E382B] drop-shadow-md leading-none pointer-events-none">
                         ${currentSlide.rank || '1'}
                     </div>
                     ${renderResizeHandle('rank')}
@@ -984,7 +1021,7 @@ window.ReelsEngine = (function() {
                 <!-- 2. Title Block (Fixed 340px width container to prevent text reflow on move) -->
                 <div data-drag-id="title" class="z-20 select-none relative ${dragCursor} ${selectRing('title')}" style="${posStyle(layout.title)}">
                     <div class="w-[340px] text-center px-4" dir="rtl">
-                        <div class="text-base md:text-lg font-black text-slate-950 font-['Alexandria'] leading-tight drop-shadow-xs pointer-events-none">
+                        <div class="text-base md:text-lg font-black text-slate-950 leading-tight drop-shadow-xs pointer-events-none">
                             ${state.title}
                         </div>
                     </div>
@@ -1013,7 +1050,7 @@ window.ReelsEngine = (function() {
                 <!-- 4. Player Name Block (Fixed 340px width container) -->
                 <div data-drag-id="playerName" class="z-20 select-none relative ${dragCursor} ${selectRing('playerName')}" style="${posStyle(layout.playerName)}">
                     <div class="w-[340px] text-center px-4" dir="rtl">
-                        <div class="text-2xl md:text-3xl font-black text-slate-950 font-['Alexandria'] drop-shadow-sm pointer-events-none">
+                        <div class="text-2xl md:text-3xl font-black text-slate-950 drop-shadow-sm pointer-events-none">
                             ${currentSlide.playerArName || currentSlide.playerName}
                         </div>
                         <div class="text-xs font-black text-[#00A84D] mt-0.5 pointer-events-none">
@@ -1034,7 +1071,7 @@ window.ReelsEngine = (function() {
                         <span class="inline-block px-3 py-1 rounded-full bg-slate-900 text-white text-[10px] font-black mb-1 shadow-xs pointer-events-none">
                             ${state.badge || '⚔️ صراع العمالقة'}
                         </span>
-                        <h2 class="text-xl md:text-2xl font-black text-slate-950 font-['Alexandria'] leading-snug drop-shadow-xs pointer-events-none">
+                        <h2 class="text-xl md:text-2xl font-black text-slate-950 leading-snug drop-shadow-xs pointer-events-none">
                             ${currentSlide.title || state.title}
                         </h2>
                     </div>
@@ -1048,7 +1085,7 @@ window.ReelsEngine = (function() {
                             <img src="${pA.cardUrl}" alt="${pA.name}" class="max-h-[230px] w-auto object-contain drop-shadow-2xl pointer-events-none">
                         </div>
                         <div class="mt-2 text-center pointer-events-none">
-                            <div class="text-sm font-black text-slate-950 font-['Alexandria']">${pA.arName || pA.name}</div>
+                            <div class="text-sm font-black text-slate-950">${pA.arName || pA.name}</div>
                             <div class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-200 mt-1">${pA.statHighlight || ''}</div>
                         </div>
                     </div>
@@ -1070,7 +1107,7 @@ window.ReelsEngine = (function() {
                             <img src="${pB.cardUrl}" alt="${pB.name}" class="max-h-[230px] w-auto object-contain drop-shadow-2xl pointer-events-none">
                         </div>
                         <div class="mt-2 text-center pointer-events-none">
-                            <div class="text-sm font-black text-slate-950 font-['Alexandria']">${pB.arName || pB.name}</div>
+                            <div class="text-sm font-black text-slate-950">${pB.arName || pB.name}</div>
                             <div class="text-[10px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-lg border border-blue-200 mt-1">${pB.statHighlight || ''}</div>
                         </div>
                     </div>
@@ -1080,7 +1117,7 @@ window.ReelsEngine = (function() {
                 <!-- 5. Bottom Interactive Question Hook -->
                 <div data-drag-id="question" class="z-20 select-none relative ${dragCursor} ${selectRing('question')}" style="${posStyle(layout.question)}">
                     <div class="w-[340px] text-center px-4" dir="rtl">
-                        <div class="inline-block px-5 py-2.5 rounded-2xl bg-white/95 border border-slate-200 text-slate-950 font-black text-xs md:text-sm shadow-md font-['Alexandria'] pointer-events-none">
+                        <div class="inline-block px-5 py-2.5 rounded-2xl bg-white/95 border border-slate-200 text-slate-950 font-black text-xs md:text-sm shadow-md pointer-events-none">
                             ${currentSlide.question || 'صوت بالتعليقات: من تختار لفريقك؟ 👇'}
                         </div>
                     </div>
@@ -1091,7 +1128,7 @@ window.ReelsEngine = (function() {
             bodyHtml = `
                 <div class="absolute inset-0 flex flex-col items-center justify-center px-8 text-center z-20" dir="rtl">
                     <img src="${scLogoUrl}" alt="ShopCoin15" class="w-20 h-auto object-contain mb-3 drop-shadow-lg animate-pulse">
-                    <h2 class="text-3xl md:text-4xl font-black text-slate-950 leading-snug font-['Alexandria']">
+                    <h2 class="text-3xl md:text-4xl font-black text-slate-950 leading-snug">
                         متجر ShopCoin15
                     </h2>
                     <div class="text-sm font-bold text-emerald-700 mt-1">
@@ -1191,7 +1228,54 @@ window.ReelsEngine = (function() {
                     </button>
                 </div>
 
-                <!-- 2. NATURAL POSITION & SIZE CONTROLS (THE COMPLETE FIX) -->
+                <!-- 2. ARABIC TYPOGRAPHY / FONT SELECTOR -->
+                <div class="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-2.5">
+                    <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                        <div class="flex items-center gap-2">
+                            <span class="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs font-black">🔤</span>
+                            <span class="text-xs font-black text-slate-900">نوع الخط العربي في الريلز:</span>
+                        </div>
+                        <span class="text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-black border border-emerald-200">
+                            ${state.fontFamily === 'thmanyah' ? 'خط ثمانية مفعّل ✓' : (state.fontFamily === 'zain' ? 'خط زين مفعّل ✓' : 'الإسكندرية مفعّل ✓')}
+                        </span>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <!-- 1. Thmanyah Font -->
+                        <button type="button" onclick="ReelsEngine.setFontFamily('thmanyah')" 
+                                class="p-2.5 rounded-xl border text-right transition flex flex-col justify-between cursor-pointer ${state.fontFamily === 'thmanyah' ? 'bg-emerald-50/90 border-emerald-500 ring-2 ring-emerald-500/25 shadow-xs' : 'bg-slate-50/80 hover:bg-white border-slate-200 text-slate-700'}">
+                            <div class="flex items-center justify-between w-full mb-1">
+                                <span class="text-xs font-black text-slate-900 font-preview-thmanyah">خط ثمانية</span>
+                                ${state.fontFamily === 'thmanyah' ? '<span class="text-xs text-emerald-600 font-black">✓</span>' : ''}
+                            </div>
+                            <div class="text-[10px] text-slate-500 font-preview-thmanyah mb-1">Thmanyah Sans</div>
+                            <div class="text-[11px] font-black text-emerald-700 font-preview-thmanyah truncate">أفضل 5 مهاجمين ⚽🔥</div>
+                        </button>
+
+                        <!-- 2. Zain Font -->
+                        <button type="button" onclick="ReelsEngine.setFontFamily('zain')" 
+                                class="p-2.5 rounded-xl border text-right transition flex flex-col justify-between cursor-pointer ${state.fontFamily === 'zain' ? 'bg-emerald-50/90 border-emerald-500 ring-2 ring-emerald-500/25 shadow-xs' : 'bg-slate-50/80 hover:bg-white border-slate-200 text-slate-700'}">
+                            <div class="flex items-center justify-between w-full mb-1">
+                                <span class="text-xs font-black text-slate-900 font-preview-zain">خط زين (Zain)</span>
+                                ${state.fontFamily === 'zain' ? '<span class="text-xs text-emerald-600 font-black">✓</span>' : ''}
+                            </div>
+                            <div class="text-[10px] text-slate-500 font-preview-zain mb-1">Google Zain</div>
+                            <div class="text-[11px] font-black text-emerald-700 font-preview-zain truncate">أفضل 5 مهاجمين ⚽🔥</div>
+                        </button>
+
+                        <!-- 3. Alexandria Font -->
+                        <button type="button" onclick="ReelsEngine.setFontFamily('alexandria')" 
+                                class="p-2.5 rounded-xl border text-right transition flex flex-col justify-between cursor-pointer ${state.fontFamily === 'alexandria' ? 'bg-emerald-50/90 border-emerald-500 ring-2 ring-emerald-500/25 shadow-xs' : 'bg-slate-50/80 hover:bg-white border-slate-200 text-slate-700'}">
+                            <div class="flex items-center justify-between w-full mb-1">
+                                <span class="text-xs font-black text-slate-900 font-preview-alexandria">الإسكندرية</span>
+                                ${state.fontFamily === 'alexandria' ? '<span class="text-xs text-emerald-600 font-black">✓</span>' : ''}
+                            </div>
+                            <div class="text-[10px] text-slate-500 font-preview-alexandria mb-1">Alexandria Classic</div>
+                            <div class="text-[11px] font-black text-emerald-700 font-preview-alexandria truncate">أفضل 5 مهاجمين ⚽🔥</div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 3. NATURAL POSITION & SIZE CONTROLS (THE COMPLETE FIX) -->
                 <div class="p-3.5 rounded-2xl bg-gradient-to-br from-emerald-50 via-teal-50 to-emerald-50 border border-emerald-200 shadow-xs space-y-3">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-1.5">
@@ -1605,6 +1689,12 @@ window.ReelsEngine = (function() {
             const totalSlides = state.slides.length;
             const msPerSlide = (state.slideDuration || 2.5) * 1000;
 
+            try {
+                if (document.fonts && document.fonts.ready) {
+                    await document.fonts.ready;
+                }
+            } catch (e) {}
+
             for (let i = 0; i < totalSlides; i++) {
                 state.currentSlideIndex = i;
                 renderCanvas();
@@ -1729,6 +1819,7 @@ ${state.subtitle}
     return {
         getState: () => state,
         switchSection,
+        setFontFamily,
         applyIdea,
         loadIdeaById,
         playPlayback,

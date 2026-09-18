@@ -786,6 +786,10 @@ function initState() {
 
 window.setFontFamily = function(fontKey) {
     if (!['alexandria', 'thmanyah', 'zain'].includes(fontKey)) fontKey = 'alexandria';
+    if (window.currentStudioSuite === 'suite_reels' && window.ReelsEngine && window.ReelsEngine.setFontFamily) {
+        window.ReelsEngine.setFontFamily(fontKey);
+        return;
+    }
     appState.fontFamily = fontKey;
     renderCanvas();
     renderControls();

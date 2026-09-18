@@ -40,12 +40,14 @@ const CanvasExporter = {
         sandbox.style.pointerEvents = 'none';
         sandbox.style.overflow = 'hidden';
         sandbox.style.background = '#0B0D13';
-        sandbox.style.direction = 'rtl';
+        sandbox.style.direction = (window.currentStudioSuite === 'suite_reels') ? 'ltr' : 'rtl';
         sandbox.style.borderRadius = '0px';
         sandbox.style.boxShadow = 'none';
         sandbox.style.border = 'none';
         sandbox.id = 'export_sandbox_runtime';
-        const activeFont = (typeof appState !== 'undefined' && appState.fontFamily) || 'alexandria';
+        const activeFont = (window.currentStudioSuite === 'suite_reels' && window.ReelsEngine && window.ReelsEngine.getState)
+            ? (window.ReelsEngine.getState().fontFamily || 'thmanyah')
+            : ((typeof appState !== 'undefined' && appState.fontFamily) || 'alexandria');
         const fontClass = `font-family-${activeFont}`;
         sandbox.className = (source.className || '').replace(/font-family-\w+/g, '').trim() + ` ${fontClass}`;
 
@@ -188,7 +190,9 @@ const CanvasExporter = {
             const clone = source.cloneNode(true);
             clone.querySelectorAll('.layer-toolbar, .layer-resize-handle, .snap-guide').forEach(el => el.remove());
 
-            const activeFont = (typeof appState !== 'undefined' && appState.fontFamily) || 'alexandria';
+            const activeFont = (window.currentStudioSuite === 'suite_reels' && window.ReelsEngine && window.ReelsEngine.getState)
+                ? (window.ReelsEngine.getState().fontFamily || 'thmanyah')
+                : ((typeof appState !== 'undefined' && appState.fontFamily) || 'alexandria');
             const fontClass = `font-family-${activeFont}`;
             const targetClassName = (source.className || '').replace(/font-family-\w+/g, '').trim() + ` ${fontClass}`;
 
