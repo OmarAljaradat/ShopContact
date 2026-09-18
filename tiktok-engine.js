@@ -263,11 +263,18 @@ async function publishVideo(videoBuffer, caption, privacyLevel = 'SELF_ONLY') {
         throw new Error('ملف الفيديو غير موجود أو فارغ.');
     }
 
-    // Step 1: Initialize Video Publish
-    const initPayload = JSON.stringify({
+    const token = getToken();
+    const hasDirectPublish = token && token.scope && token.scope.includes('video.publish');
+
+    // Choose endpoint: direct post or inbox draft (official for video.upload)
+    const initPath = hasDirectPublish 
+        ? '/v2/post/publish/video/init/' 
+        : '/v2/post/publish/inbox/video/init/';
+
+    const initPayload = hasDirectPublish ? JSON.stringify({
         post_info: {
             title: caption || 'ريلز جديد من متجر shop_coin15 ⚽⚡ #fc27 #fifa #eafc',
-            privacy_level: privacyLevel, // In Sandbox/Draft, SELF_ONLY is guaranteed to work immediately
+            privacy_level: privacyLevel,
             disable_duet: false,
             disable_stitch: false,
             disable_comment: false,
@@ -279,14 +286,21 @@ async function publishVideo(videoBuffer, caption, privacyLevel = 'SELF_ONLY') {
             chunk_size: videoBuffer.length,
             total_chunk_count: 1
         }
+    }) : JSON.stringify({
+        source_info: {
+            source: 'FILE_UPLOAD',
+            video_size: videoBuffer.length,
+            chunk_size: videoBuffer.length,
+            total_chunk_count: 1
+        }
     });
 
-    console.log(`[TikTok Engine] Initializing publish (${(videoBuffer.length / (1024 * 1024)).toFixed(2)} MB)...`);
+    console.log(`[TikTok Engine] Initializing publish via ${initPath} (${(videoBuffer.length / (1024 * 1024)).toFixed(2)} MB)...`);
 
     const initResult = await new Promise((resolve, reject) => {
         const req = https.request({
             hostname: 'open.tiktokapis.com',
-            path: '/v2/post/publish/video/init/',
+            path: initPath,
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${accessToken}`,
@@ -299,8 +313,9 @@ async function publishVideo(videoBuffer, caption, privacyLevel = 'SELF_ONLY') {
             res.on('end', () => {
                 try {
                     const json = JSON.parse(body);
-                    if (json.data && json.data.upload_url) {
-                        resolve(json.data);
+                    const d = json.data;
+                    if (d && (d.upload_url || d.publish_id)) {
+                        resolve(d);
                     } else {
                         const msg = json.error ? `${json.error.code}: ${json.error.message}` : body;
                         reject(new Error(msg));
