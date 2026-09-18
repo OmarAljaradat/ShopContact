@@ -2244,12 +2244,59 @@ window.ReelsEngine = (function() {
         hideMagnetGuides();
 
         try {
+            const domNode = document.getElementById('exportCanvas');
+            const totalSlides = state.slides.length;
+
+            try {
+                if (document.fonts && document.fonts.ready) {
+                    await document.fonts.ready;
+                }
+            } catch (e) {}
+
+            // =========================================================================
+            // PHASE 1: PRE-CAPTURE ALL SLIDES (1080x1920) IN MEMORY FIRST
+            // Performing DOM capture BEFORE recording starts eliminates all lag & freezes!
+            // =========================================================================
+            const preloadedSlides = [];
+            for (let i = 0; i < totalSlides; i++) {
+                if (progressCallback) {
+                    progressCallback(i + 1, totalSlides, `معالجة وتجهيز السلايد ${i + 1}/${totalSlides}...`);
+                }
+                state.currentSlideIndex = i;
+                renderCanvas();
+                await new Promise(r => setTimeout(r, 120));
+
+                const imgDataUrl = await captureSlideImage(domNode);
+                if (!imgDataUrl) {
+                    throw new Error(`تعذر تصوير السلايد رقم ${i + 1}`);
+                }
+
+                const slideImg = new Image();
+                slideImg.src = imgDataUrl;
+                await new Promise((res, rej) => {
+                    slideImg.onload = res;
+                    slideImg.onerror = () => rej(new Error(`فشل تحميل صورة السلايد رقم ${i + 1}`));
+                });
+
+                const curSlideObj = state.slides[i];
+                const slideSec = Math.max(0.5, (curSlideObj && typeof curSlideObj.duration === 'number') ? curSlideObj.duration : (state.slideDuration || 2.5));
+                preloadedSlides.push({ img: slideImg, duration: slideSec });
+            }
+
+            // =========================================================================
+            // PHASE 2: INITIALIZE 1080x1920 CANVAS & MEDIARECORDER
+            // =========================================================================
             const recordCanvas = document.createElement('canvas');
             recordCanvas.width = 1080;
             recordCanvas.height = 1920;
             const ctx = recordCanvas.getContext('2d');
             ctx.fillStyle = '#070709';
             ctx.fillRect(0, 0, 1080, 1920);
+
+            // Draw slide 0 immediately so initial frame is already active
+            if (preloadedSlides.length > 0) {
+                ctx.drawImage(preloadedSlides[0].img, 0, 0, 1080, 1920);
+            }
 
             // Select best supported MIME type
             let mimeType = 'video/mp4';
@@ -2261,7 +2308,7 @@ window.ReelsEngine = (function() {
             }
 
             const stream = recordCanvas.captureStream(30);
-            const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 6000000 });
+            const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 8000000 });
             const chunks = [];
             recorder.ondataavailable = e => { 
                 if (e.data && e.data.size > 0) chunks.push(e.data); 
@@ -2280,57 +2327,57 @@ window.ReelsEngine = (function() {
                 recorder.onerror = e => reject(new Error('خطأ في مسجل الفيديو: ' + (e.error?.message || 'MediaRecorder error')));
             });
 
-            recorder.start(200);
+            // Start recording
+            recorder.start(100);
+            // Brief pause to establish first keyframe
+            await new Promise(r => setTimeout(r, 60));
 
-            const domNode = document.getElementById('exportCanvas');
-            const totalSlides = state.slides.length;
+            // =========================================================================
+            // PHASE 3: REAL-TIME FRAME PUMPING STRICTLY GOVERNED BY SLIDE DURATION
+            // High-precision timing via performance.now() ensures exact slide seconds
+            // =========================================================================
+            for (let i = 0; i < preloadedSlides.length; i++) {
+                const item = preloadedSlides[i];
+                const targetDurationMs = item.duration * 1000;
 
-            try {
-                if (document.fonts && document.fonts.ready) {
-                    await document.fonts.ready;
+                if (progressCallback) {
+                    progressCallback(i + 1, totalSlides, `تسجيل السلايد ${i + 1}/${totalSlides} (${item.duration.toFixed(1)} ثانية)...`);
                 }
-            } catch (e) {}
 
-            for (let i = 0; i < totalSlides; i++) {
-                if (progressCallback) progressCallback(i + 1, totalSlides);
-                state.currentSlideIndex = i;
-                renderCanvas();
-                await new Promise(r => setTimeout(r, 220));
+                const startTime = performance.now();
 
-                const imgDataUrl = await captureSlideImage(domNode);
+                while (true) {
+                    const now = performance.now();
+                    const elapsed = now - startTime;
+                    const progress = Math.min(1.0, elapsed / targetDurationMs);
 
-                if (imgDataUrl) {
-                    const slideImg = new Image();
-                    slideImg.src = imgDataUrl;
-                    await new Promise(res => { slideImg.onload = res; slideImg.onerror = res; });
+                    // Dynamic subtle cinematic zoom (1.000 -> 1.018)
+                    const scale = 1.0 + (progress * 0.018);
+                    const w = 1080 * scale;
+                    const h = 1920 * scale;
+                    const x = (1080 - w) / 2;
+                    const y = (1920 - h) / 2;
 
-                    const curSlideObj = state.slides[i];
-                    const curSlideSec = (curSlideObj && curSlideObj.duration) || state.slideDuration || 2.5;
-                    const msThisSlide = curSlideSec * 1000;
-                    const framesCount = Math.max(15, Math.floor(curSlideSec * 30));
-                    const frameInterval = msThisSlide / framesCount;
+                    ctx.clearRect(0, 0, 1080, 1920);
+                    ctx.drawImage(item.img, x, y, w, h);
 
-                    for (let f = 0; f < framesCount; f++) {
-                        const progress = f / framesCount;
-                        const scale = 1.0 + (progress * 0.015);
-                        const w = 1080 * scale;
-                        const h = 1920 * scale;
-                        const x = (1080 - w) / 2;
-                        const y = (1920 - h) / 2;
-
-                        ctx.clearRect(0, 0, 1080, 1920);
-                        ctx.drawImage(slideImg, x, y, w, h);
-                        await new Promise(r => setTimeout(r, frameInterval));
+                    if (elapsed >= targetDurationMs) {
+                        break;
                     }
-                } else {
-                    console.warn(`[Reels Video] Could not capture slide image for slide ${i + 1}`);
+
+                    const remaining = targetDurationMs - (performance.now() - startTime);
+                    if (remaining <= 0) break;
+
+                    const step = Math.min(20, remaining);
+                    await new Promise(r => setTimeout(r, step));
                 }
             }
 
-            // Request any remaining buffered data and stop
+            // Flush remaining data and stop cleanly
             try { recorder.requestData(); } catch(e) {}
-            await new Promise(r => setTimeout(r, 200));
+            await new Promise(r => setTimeout(r, 120));
             recorder.stop();
+
             const result = await recordingComplete;
             return result;
         } finally {
@@ -2345,16 +2392,16 @@ window.ReelsEngine = (function() {
         const btn = document.getElementById('btnExportVideo');
         if (btn) {
             btn.disabled = true;
-            btn.innerHTML = '<span>⏳ جاري تسجيل الفيديو بدقة 60FPS...</span>';
+            btn.innerHTML = '<span>⏳ جاري معالجة وتجهيز السلايدات...</span>';
         }
 
         try {
             if (window.showCopyToast) {
-                window.showCopyToast('بدأ تسجيل فيديو الريل.. يرجى الانتظار ثوانٍ! 🎬⚡');
+                window.showCopyToast('بدأ تسجيل فيديو الريل بالسرعة المحددة لكل سلايد.. 🎬⚡');
             }
 
-            const { blob, mimeType } = await recordReelVideoBlob((cur, total) => {
-                if (btn) btn.innerHTML = `<span>⏳ معالجة سلايد ${cur}/${total}...</span>`;
+            const { blob, mimeType } = await recordReelVideoBlob((cur, total, msg) => {
+                if (btn) btn.innerHTML = `<span>⏳ ${msg || `معالجة سلايد ${cur}/${total}...`}</span>`;
             });
 
             const url = URL.createObjectURL(blob);
@@ -2501,9 +2548,9 @@ window.ReelsEngine = (function() {
         }
 
         try {
-            const { blob } = await recordReelVideoBlob((cur, total) => {
-                if (btn) btn.innerHTML = `<span>⏳ معالجة سلايد ${cur}/${total}...</span>`;
-                if (statusBox) statusBox.textContent = `⏳ جاري معالجة السلايد ${cur} من ${total}...`;
+            const { blob } = await recordReelVideoBlob((cur, total, msg) => {
+                if (btn) btn.innerHTML = `<span>⏳ ${msg || `معالجة سلايد ${cur}/${total}...`}</span>`;
+                if (statusBox) statusBox.textContent = `⏳ ${msg || `جاري معالجة السلايد ${cur} من ${total}...`}`;
             });
 
             if (btn) btn.innerHTML = '<span>🚀 جاري رفع الفيديو لتيك توك...</span>';
