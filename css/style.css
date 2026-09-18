@@ -594,3 +594,91 @@ body {
     background: #94A3B8;
 }
 
+/* CAROUSEL DESIGN COMPOSITOR (SANDBOX) STYLES */
+.sandbox-element {
+    position: absolute;
+    user-select: none;
+    touch-action: none;
+    transition: box-shadow 0.15s ease;
+}
+.sandbox-element:not(.is-locked) {
+    cursor: move;
+}
+.sandbox-element.is-locked {
+    cursor: default;
+}
+.sandbox-element.is-selected:not(.is-locked) {
+    outline: 2px dashed rgba(6, 182, 212, 0.85);
+    outline-offset: 4px;
+}
+.sandbox-handle-dot {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 9999px;
+    background: #06b6d4;
+    border: 1.5px solid #ffffff;
+    box-shadow: 0 0 6px rgba(6, 182, 212, 0.8);
+    pointer-events: none;
+}
+.sandbox-handle-tl { top: -7px; left: -7px; }
+.sandbox-handle-tr { top: -7px; right: -7px; }
+.sandbox-handle-bl { bottom: -7px; left: -7px; }
+.sandbox-handle-br { bottom: -7px; right: -7px; }
+
+.sandbox-quick-bar {
+    position: absolute;
+    top: -42px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 6px;
+    background: rgba(15, 23, 42, 0.92);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 9999px;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+    z-index: 10000;
+    white-space: nowrap;
+}
+.sandbox-quick-btn {
+    padding: 3px 6px;
+    border-radius: 6px;
+    background: transparent;
+    border: none;
+    color: #e2e8f0;
+    font-size: 11px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.12s;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+.sandbox-quick-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: #38bdf8;
+}
+.sandbox-lock-badge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    width: 20px;
+    height: 20px;
+    border-radius: 9999px;
+    background: #ef4444;
+    color: white;
+    font-size: 10px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    z-index: 10;
+    pointer-events: auto;
+    cursor: pointer;
+}
+
+
