@@ -2425,6 +2425,7 @@ window.ReelsEngine = (function() {
             if (btn) {
                 btn.disabled = false;
                 btn.innerHTML = `<span>🚀 نشر الريل على تيك توك (@${tiktokStatus.username || 'shop_coin15'})</span>`;
+            }
         }
     }
 
