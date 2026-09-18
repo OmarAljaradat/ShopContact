@@ -2166,34 +2166,72 @@ window.ReelsEngine = (function() {
 
     // ---- 11. VIDEO RECORDER HELPER ----
     async function captureSlideImage(domNode) {
-        if (window.htmlToImage && typeof window.htmlToImage.toPng === 'function') {
-            try {
-                return await window.htmlToImage.toPng(domNode, {
-                    pixelRatio: 1,
-                    width: 1080,
-                    height: 1920,
-                    cacheBust: true
-                });
-            } catch (e) {
-                console.warn('[Reels Video] htmlToImage warning, trying fallback:', e.message);
+        if (!domNode) return '';
+
+        // 1. Temporarily unscale domNode so its native layout is pure 450x800
+        const prevTransform = domNode.style.transform;
+        const prevOrigin = domNode.style.transformOrigin;
+        domNode.style.transform = 'none';
+        domNode.style.transformOrigin = '0 0';
+
+        // 2. Hide any interactive handles / borders from the recording
+        const handles = domNode.querySelectorAll('.layer-toolbar, .layer-resize-handle, .snap-guide');
+        handles.forEach(h => h.style.setProperty('display', 'none', 'important'));
+        const draggables = domNode.querySelectorAll('.draggable-layer');
+        draggables.forEach(d => {
+            d.style.outline = 'none';
+            d.style.boxShadow = 'none';
+        });
+
+        let resultUrl = '';
+
+        try {
+            // 3. Capture at native 450x800 with pixelRatio 2.4 => EXACTLY 1080x1920 Full HD!
+            if (window.htmlToImage && typeof window.htmlToImage.toPng === 'function') {
+                try {
+                    resultUrl = await window.htmlToImage.toPng(domNode, {
+                        pixelRatio: 2.4,
+                        width: 450,
+                        height: 800,
+                        cacheBust: false,
+                        style: {
+                            transform: 'none',
+                            transformOrigin: '0 0',
+                            margin: '0',
+                            left: '0',
+                            top: '0'
+                        }
+                    });
+                } catch (e) {
+                    console.warn('[Reels Video] htmlToImage note:', e.message);
+                }
             }
-        }
-        if (window.html2canvas) {
-            try {
-                const c = await window.html2canvas(domNode, {
-                    scale: 1,
-                    width: 1080,
-                    height: 1920,
-                    useCORS: true,
-                    allowTaint: true,
-                    backgroundColor: '#070709'
-                });
-                return c.toDataURL('image/png');
-            } catch (e) {
-                console.warn('[Reels Video] html2canvas warning:', e.message);
+
+            if (!resultUrl && window.html2canvas) {
+                try {
+                    const c = await window.html2canvas(domNode, {
+                        scale: 2.4,
+                        width: 450,
+                        height: 800,
+                        x: 0,
+                        y: 0,
+                        useCORS: true,
+                        allowTaint: true,
+                        logging: false
+                    });
+                    resultUrl = c.toDataURL('image/png');
+                } catch (e) {
+                    console.warn('[Reels Video] html2canvas fallback note:', e.message);
+                }
             }
+        } finally {
+            // 4. Restore original viewport transform and handles
+            domNode.style.transform = prevTransform;
+            domNode.style.transformOrigin = prevOrigin;
+            handles.forEach(h => h.style.display = '');
         }
-        return '';
+
+        return resultUrl;
     }
 
     async function recordReelVideoBlob(progressCallback) {
