@@ -1785,23 +1785,52 @@ function renderControls() {
                         </button>
                     </div>
 
+                    <!-- Quick Emoji Bar -->
+                    <div class="flex items-center gap-1 overflow-x-auto py-1 px-1.5 bg-slate-100/90 rounded-xl border border-slate-200 text-sm no-scrollbar">
+                        <span class="text-[9.5px] font-black text-slate-500 shrink-0 ml-1">إيموجي سريع:</span>
+                        ${['🔥','⚡','👑','🤩','🥳','👏','💰','🪙','⬇️','🔒','🎮','⚽','📩','✨','🏆','💯','🚀','💎','🎯','💥'].map(em => `
+                            <button type="button" onclick="insertEmojiIntoActiveBanner('${em}')" class="w-6 h-6 rounded-md bg-white hover:bg-emerald-100 hover:scale-115 active:scale-90 text-sm flex items-center justify-center transition shadow-2xs cursor-pointer shrink-0" title="إدراج ${em}">
+                                ${em}
+                            </button>
+                        `).join('')}
+                    </div>
+
                     <div class="space-y-2">
                         ${banners.map((b, idx) => `
-                            <div class="p-2.5 rounded-xl bg-slate-50/70 border border-slate-200 flex items-center gap-1.5 transition hover:border-slate-300">
-                                <div class="flex items-center gap-1 shrink-0">
-                                    <span class="w-5 h-5 rounded-full bg-slate-200 text-slate-700 text-[10px] font-black flex items-center justify-center shrink-0 shadow-2xs">${idx + 1}</span>
-                                    <div class="flex flex-col gap-0.5">
-                                        <button type="button" onclick="movePromoBannerUp(${idx})" ${idx === 0 ? 'disabled class="w-4 h-3 rounded bg-slate-100 text-slate-300 text-[8px] flex items-center justify-center cursor-not-allowed"' : 'class="w-4 h-3 rounded bg-slate-200 hover:bg-emerald-500 hover:text-white text-slate-700 text-[8px] font-black flex items-center justify-center transition cursor-pointer active:scale-90"'} title="رفع الشريط للأعلى (تقديم)">▲</button>
-                                        <button type="button" onclick="movePromoBannerDown(${idx})" ${idx === banners.length - 1 ? 'disabled class="w-4 h-3 rounded bg-slate-100 text-slate-300 text-[8px] flex items-center justify-center cursor-not-allowed"' : 'class="w-4 h-3 rounded bg-slate-200 hover:bg-emerald-500 hover:text-white text-slate-700 text-[8px] font-black flex items-center justify-center transition cursor-pointer active:scale-90"'} title="تنزيل الشريط للأسفل (تأخير)">▼</button>
+                            <div class="space-y-1.5">
+                                <div class="p-2.5 rounded-xl bg-slate-50/70 border border-slate-200 flex items-center gap-1.5 transition hover:border-slate-300">
+                                    <div class="flex items-center gap-1 shrink-0">
+                                        <span class="w-5 h-5 rounded-full bg-slate-200 text-slate-700 text-[10px] font-black flex items-center justify-center shrink-0 shadow-2xs">${idx + 1}</span>
+                                        <div class="flex flex-col gap-0.5">
+                                            <button type="button" onclick="movePromoBannerUp(${idx})" ${idx === 0 ? 'disabled class="w-4 h-3 rounded bg-slate-100 text-slate-300 text-[8px] flex items-center justify-center cursor-not-allowed"' : 'class="w-4 h-3 rounded bg-slate-200 hover:bg-emerald-500 hover:text-white text-slate-700 text-[8px] font-black flex items-center justify-center transition cursor-pointer active:scale-90"'} title="رفع الشريط للأعلى (تقديم)">▲</button>
+                                            <button type="button" onclick="movePromoBannerDown(${idx})" ${idx === banners.length - 1 ? 'disabled class="w-4 h-3 rounded bg-slate-100 text-slate-300 text-[8px] flex items-center justify-center cursor-not-allowed"' : 'class="w-4 h-3 rounded bg-slate-200 hover:bg-emerald-500 hover:text-white text-slate-700 text-[8px] font-black flex items-center justify-center transition cursor-pointer active:scale-90"'} title="تنزيل الشريط للأسفل (تأخير)">▼</button>
+                                        </div>
                                     </div>
+                                    <div class="relative flex-1 flex items-center">
+                                        <input type="text" id="promoBannerInput_${idx}" value="${(b.text || '').replace(/"/g, '&quot;')}" oninput="updatePromoBannerText(${idx}, this.value)" onfocus="window.lastFocusedBannerIdx = ${idx}" placeholder="نص الشريط..." class="w-full pl-7 pr-2 py-1 rounded-lg bg-white border border-slate-200 text-xs font-bold text-slate-900 outline-none focus:border-emerald-500">
+                                        <button type="button" onclick="toggleEmojiPickerForBanner(${idx})" class="absolute left-1.5 p-0.5 rounded hover:bg-slate-100 text-slate-500 hover:text-amber-500 text-xs transition cursor-pointer" title="لوحة الإيموجي">😀</button>
+                                    </div>
+                                    <input type="color" value="${b.bg || '#0084FF'}" oninput="updatePromoBannerBg(${idx}, this.value)" class="w-7 h-7 rounded cursor-pointer border-0 p-0 shrink-0 shadow-2xs" title="لون خلفية الشريط">
+                                    <button type="button" onclick="togglePromoBannerColor(${idx})" class="px-2 py-1 rounded text-[10px] font-bold border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 shrink-0 shadow-2xs" title="تبديل لون الخط بين الأبيض والأسود">
+                                        ${(b.color || '').toUpperCase() === '#FFFFFF' ? '⚪' : '⚫'}
+                                    </button>
+                                    ${banners.length > 1 ? `
+                                    <button type="button" onclick="removePromoBanner(${idx})" class="w-6 h-6 rounded bg-red-50 hover:bg-red-500 hover:text-white text-red-600 text-xs font-black transition flex items-center justify-center shrink-0" title="حذف الشريط">✕</button>
+                                    ` : ''}
                                 </div>
-                                <input type="text" value="${(b.text || '').replace(/"/g, '&quot;')}" oninput="updatePromoBannerText(${idx}, this.value)" placeholder="نص الشريط..." class="flex-1 px-2 py-1 rounded-lg bg-white border border-slate-200 text-xs font-bold text-slate-900 outline-none focus:border-emerald-500">
-                                <input type="color" value="${b.bg || '#0084FF'}" oninput="updatePromoBannerBg(${idx}, this.value)" class="w-7 h-7 rounded cursor-pointer border-0 p-0 shrink-0 shadow-2xs" title="لون خلفية الشريط">
-                                <button type="button" onclick="togglePromoBannerColor(${idx})" class="px-2 py-1 rounded text-[10px] font-bold border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 shrink-0 shadow-2xs" title="تبديل لون الخط بين الأبيض والأسود">
-                                    ${(b.color || '').toUpperCase() === '#FFFFFF' ? '⚪' : '⚫'}
-                                </button>
-                                ${banners.length > 1 ? `
-                                <button type="button" onclick="removePromoBanner(${idx})" class="w-6 h-6 rounded bg-red-50 hover:bg-red-500 hover:text-white text-red-600 text-xs font-black transition flex items-center justify-center shrink-0" title="حذف الشريط">✕</button>
+
+                                ${window.activeEmojiPickerIdx === idx ? `
+                                <div class="p-2 rounded-xl bg-white border border-amber-300 shadow-md flex flex-wrap gap-1 items-center animate-fadeIn">
+                                    <div class="w-full flex items-center justify-between pb-1 border-b border-slate-100 mb-0.5">
+                                        <span class="text-[10px] font-black text-amber-900">اختر إيموجي للشريط (${idx + 1}):</span>
+                                        <button type="button" onclick="toggleEmojiPickerForBanner(${idx})" class="text-[9.5px] font-bold text-slate-400 hover:text-red-500 px-1">إغلاق ✕</button>
+                                    </div>
+                                    ${['🔥','⚡','👑','🤩','🥳','👏','💰','🪙','⬇️','🔒','🎮','⚽','📩','✨','🏆','💯','🚀','💎','🎯','💥','📦','🛡️','🤝','💬','📢','🏷️','🚨','⏳','💪','👀','🤍','🖤','💙','💚','💛','❤️'].map(em => `
+                                        <button type="button" onclick="insertEmojiIntoBanner(${idx}, '${em}')" class="w-7 h-7 rounded-lg hover:bg-amber-100 hover:scale-115 active:scale-95 text-base flex items-center justify-center transition cursor-pointer" title="إدراج ${em}">
+                                            ${em}
+                                        </button>
+                                    `).join('')}
+                                </div>
                                 ` : ''}
                             </div>
                         `).join('')}
@@ -2589,23 +2618,52 @@ function renderControls() {
                             </button>
                         </div>
 
+                        <!-- Quick Emoji Bar -->
+                        <div class="flex items-center gap-1 overflow-x-auto py-1 px-1.5 bg-slate-100/90 rounded-xl border border-slate-200 text-sm no-scrollbar">
+                            <span class="text-[9.5px] font-black text-slate-500 shrink-0 ml-1">إيموجي سريع:</span>
+                            ${['🔥','⚡','👑','🤩','🥳','👏','💰','🪙','⬇️','🔒','🎮','⚽','📩','✨','🏆','💯','🚀','💎','🎯','💥'].map(em => `
+                                <button type="button" onclick="insertEmojiIntoActiveBanner('${em}')" class="w-6 h-6 rounded-md bg-white hover:bg-emerald-100 hover:scale-115 active:scale-90 text-sm flex items-center justify-center transition shadow-2xs cursor-pointer shrink-0" title="إدراج ${em}">
+                                    ${em}
+                                </button>
+                            `).join('')}
+                        </div>
+
                         <div class="space-y-2">
                             ${banners.map((b, idx) => `
-                                <div class="p-2.5 rounded-xl bg-slate-50/70 border border-slate-200 flex items-center gap-1.5 transition hover:border-slate-300">
-                                    <div class="flex items-center gap-1 shrink-0">
-                                        <span class="w-5 h-5 rounded-full bg-slate-200 text-slate-700 text-[10px] font-black flex items-center justify-center shrink-0 shadow-2xs">${idx + 1}</span>
-                                        <div class="flex flex-col gap-0.5">
-                                            <button type="button" onclick="movePromoBannerUp(${idx})" ${idx === 0 ? 'disabled class="w-4 h-3 rounded bg-slate-100 text-slate-300 text-[8px] flex items-center justify-center cursor-not-allowed"' : 'class="w-4 h-3 rounded bg-slate-200 hover:bg-emerald-500 hover:text-white text-slate-700 text-[8px] font-black flex items-center justify-center transition cursor-pointer active:scale-90"'} title="رفع الشريط للأعلى (تقديم)">▲</button>
-                                            <button type="button" onclick="movePromoBannerDown(${idx})" ${idx === banners.length - 1 ? 'disabled class="w-4 h-3 rounded bg-slate-100 text-slate-300 text-[8px] flex items-center justify-center cursor-not-allowed"' : 'class="w-4 h-3 rounded bg-slate-200 hover:bg-emerald-500 hover:text-white text-slate-700 text-[8px] font-black flex items-center justify-center transition cursor-pointer active:scale-90"'} title="تنزيل الشريط للأسفل (تأخير)">▼</button>
+                                <div class="space-y-1.5">
+                                    <div class="p-2.5 rounded-xl bg-slate-50/70 border border-slate-200 flex items-center gap-1.5 transition hover:border-slate-300">
+                                        <div class="flex items-center gap-1 shrink-0">
+                                            <span class="w-5 h-5 rounded-full bg-slate-200 text-slate-700 text-[10px] font-black flex items-center justify-center shrink-0 shadow-2xs">${idx + 1}</span>
+                                            <div class="flex flex-col gap-0.5">
+                                                <button type="button" onclick="movePromoBannerUp(${idx})" ${idx === 0 ? 'disabled class="w-4 h-3 rounded bg-slate-100 text-slate-300 text-[8px] flex items-center justify-center cursor-not-allowed"' : 'class="w-4 h-3 rounded bg-slate-200 hover:bg-emerald-500 hover:text-white text-slate-700 text-[8px] font-black flex items-center justify-center transition cursor-pointer active:scale-90"'} title="رفع الشريط للأعلى (تقديم)">▲</button>
+                                                <button type="button" onclick="movePromoBannerDown(${idx})" ${idx === banners.length - 1 ? 'disabled class="w-4 h-3 rounded bg-slate-100 text-slate-300 text-[8px] flex items-center justify-center cursor-not-allowed"' : 'class="w-4 h-3 rounded bg-slate-200 hover:bg-emerald-500 hover:text-white text-slate-700 text-[8px] font-black flex items-center justify-center transition cursor-pointer active:scale-90"'} title="تنزيل الشريط للأسفل (تأخير)">▼</button>
+                                            </div>
                                         </div>
+                                        <div class="relative flex-1 flex items-center">
+                                            <input type="text" id="sbcBannerInput_${idx}" value="${(b.text || '').replace(/"/g, '&quot;')}" oninput="updatePromoBannerText(${idx}, this.value)" onfocus="window.lastFocusedBannerIdx = ${idx}" placeholder="نص شريط التحدي..." class="w-full pl-7 pr-2 py-1 rounded-lg bg-white border border-slate-200 text-xs font-bold text-slate-900 outline-none focus:border-emerald-500">
+                                            <button type="button" onclick="toggleEmojiPickerForBanner(${idx})" class="absolute left-1.5 p-0.5 rounded hover:bg-slate-100 text-slate-500 hover:text-amber-500 text-xs transition cursor-pointer" title="لوحة الإيموجي">😀</button>
+                                        </div>
+                                        <input type="color" value="${b.bg || '#0084FF'}" oninput="updatePromoBannerBg(${idx}, this.value)" class="w-7 h-7 rounded cursor-pointer border-0 p-0 shrink-0 shadow-2xs" title="لون خلفية الشريط">
+                                        <button type="button" onclick="togglePromoBannerColor(${idx})" class="px-2 py-1 rounded text-[10px] font-bold border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 shrink-0 shadow-2xs" title="تبديل لون الخط بين الأبيض والأسود">
+                                            ${(b.color || '').toUpperCase() === '#FFFFFF' ? '⚪' : '⚫'}
+                                        </button>
+                                        ${banners.length > 1 ? `
+                                        <button type="button" onclick="removePromoBanner(${idx})" class="w-6 h-6 rounded bg-red-50 hover:bg-red-500 hover:text-white text-red-600 text-xs font-black transition flex items-center justify-center shrink-0" title="حذف الشريط">✕</button>
+                                        ` : ''}
                                     </div>
-                                    <input type="text" value="${(b.text || '').replace(/"/g, '&quot;')}" oninput="updatePromoBannerText(${idx}, this.value)" placeholder="نص شريط التحدي..." class="flex-1 px-2 py-1 rounded-lg bg-white border border-slate-200 text-xs font-bold text-slate-900 outline-none focus:border-emerald-500">
-                                    <input type="color" value="${b.bg || '#0084FF'}" oninput="updatePromoBannerBg(${idx}, this.value)" class="w-7 h-7 rounded cursor-pointer border-0 p-0 shrink-0 shadow-2xs" title="لون خلفية الشريط">
-                                    <button type="button" onclick="togglePromoBannerColor(${idx})" class="px-2 py-1 rounded text-[10px] font-bold border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 shrink-0 shadow-2xs" title="تبديل لون الخط بين الأبيض والأسود">
-                                        ${(b.color || '').toUpperCase() === '#FFFFFF' ? '⚪' : '⚫'}
-                                    </button>
-                                    ${banners.length > 1 ? `
-                                    <button type="button" onclick="removePromoBanner(${idx})" class="w-6 h-6 rounded bg-red-50 hover:bg-red-500 hover:text-white text-red-600 text-xs font-black transition flex items-center justify-center shrink-0" title="حذف الشريط">✕</button>
+
+                                    ${window.activeEmojiPickerIdx === idx ? `
+                                    <div class="p-2 rounded-xl bg-white border border-amber-300 shadow-md flex flex-wrap gap-1 items-center animate-fadeIn">
+                                        <div class="w-full flex items-center justify-between pb-1 border-b border-slate-100 mb-0.5">
+                                            <span class="text-[10px] font-black text-amber-900">اختر إيموجي للشريط (${idx + 1}):</span>
+                                            <button type="button" onclick="toggleEmojiPickerForBanner(${idx})" class="text-[9.5px] font-bold text-slate-400 hover:text-red-500 px-1">إغلاق ✕</button>
+                                        </div>
+                                        ${['🔥','⚡','👑','🤩','🥳','👏','💰','🪙','⬇️','🔒','🎮','⚽','📩','✨','🏆','💯','🚀','💎','🎯','💥','📦','🛡️','🤝','💬','📢','🏷️','🚨','⏳','💪','👀','🤍','🖤','💙','💚','💛','❤️'].map(em => `
+                                            <button type="button" onclick="insertEmojiIntoBanner(${idx}, '${em}')" class="w-7 h-7 rounded-lg hover:bg-amber-100 hover:scale-115 active:scale-95 text-base flex items-center justify-center transition cursor-pointer" title="إدراج ${em}">
+                                                ${em}
+                                            </button>
+                                        `).join('')}
+                                    </div>
                                     ` : ''}
                                 </div>
                             `).join('')}
@@ -3060,6 +3118,45 @@ window.resetLayerY = function(layerKey, defaultY) {
     if (!appState.layers[layerKey]) appState.layers[layerKey] = {};
     appState.layers[layerKey].y = defaultY;
     renderCanvas();
+};
+
+window.lastFocusedBannerIdx = 0;
+window.activeEmojiPickerIdx = null;
+
+window.toggleEmojiPickerForBanner = function(index) {
+    window.activeEmojiPickerIdx = window.activeEmojiPickerIdx === index ? null : index;
+    renderControls();
+};
+
+window.insertEmojiIntoBanner = function(index, emoji) {
+    if (!appState.banners) appState.banners = [];
+    if (!appState.banners[index]) return;
+
+    window.lastFocusedBannerIdx = index;
+    const input = document.getElementById(`promoBannerInput_${index}`) || document.getElementById(`sbcBannerInput_${index}`);
+    if (input) {
+        const start = (typeof input.selectionStart === 'number') ? input.selectionStart : input.value.length;
+        const end = (typeof input.selectionEnd === 'number') ? input.selectionEnd : input.value.length;
+        const val = input.value;
+        const newVal = val.substring(0, start) + emoji + val.substring(end);
+        input.value = newVal;
+        appState.banners[index].text = newVal;
+        input.focus();
+        const nextPos = start + emoji.length;
+        try {
+            input.setSelectionRange(nextPos, nextPos);
+        } catch(e) {}
+    } else {
+        appState.banners[index].text = (appState.banners[index].text || '') + emoji;
+    }
+    renderCanvas();
+};
+
+window.insertEmojiIntoActiveBanner = function(emoji) {
+    const idx = (typeof window.lastFocusedBannerIdx === 'number' && window.lastFocusedBannerIdx >= 0 && window.lastFocusedBannerIdx < (appState.banners || []).length)
+        ? window.lastFocusedBannerIdx
+        : 0;
+    window.insertEmojiIntoBanner(idx, emoji);
 };
 
 /* =========================================================================
