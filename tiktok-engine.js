@@ -391,18 +391,11 @@ async function publishVideo(videoBuffer, caption, privacyLevel = 'PUBLIC_TO_EVER
         const r = await initPublish('/v2/post/publish/video/init/', directPayload);
         initResult = r.data;
     } catch (err) {
-        console.warn('[TikTok Engine] Direct publish attempt 1 note:', err.message);
-        if (targetPrivacy !== 'SELF_ONLY' && (err.message.includes('privacy') || err.message.includes('unaudited') || err.message.includes('permission'))) {
-            console.log('[TikTok Engine] Retrying direct publish with SELF_ONLY (Sandbox restriction)...');
-            const fallbackPayload = {
-                post_info: {
-                    title: caption || 'ريلز جديد من متجر shop_coin15 ⚽⚡ #fc27 #fifa #eafc #shopcoin15',
-                    privacy_level: 'SELF_ONLY',
-                    disable_duet: false,
-                    disable_stitch: false,
-                    disable_comment: false,
-                    video_cover_timestamp_ms: 1000
-                },
+        console.warn('[TikTok Engine] Direct publish attempt failed:', err.message);
+        // If TikTok restricts unaudited app from posting to public accounts
+        if (err.message.includes('unaudited') || err.message.includes('private_account') || err.message.includes('permission')) {
+            console.log('[TikTok Engine] Sandbox public account limitation detected. Falling back to Inbox publish...');
+            const inboxPayload = {
                 source_info: {
                     source: 'FILE_UPLOAD',
                     video_size: videoBuffer.length,
@@ -410,9 +403,9 @@ async function publishVideo(videoBuffer, caption, privacyLevel = 'PUBLIC_TO_EVER
                     total_chunk_count: 1
                 }
             };
-            const r = await initPublish('/v2/post/publish/video/init/', fallbackPayload);
+            const r = await initPublish('/v2/post/publish/inbox/video/init/', inboxPayload);
             initResult = r.data;
-            finalPrivacy = 'SELF_ONLY';
+            finalPrivacy = 'INBOX_DRAFT';
         } else {
             throw err;
         }
@@ -454,12 +447,14 @@ async function publishVideo(videoBuffer, caption, privacyLevel = 'PUBLIC_TO_EVER
     let msg = 'تم نشر الفيديو على حسابك في تيك توك بنجاح! 🚀🎉';
     if (finalPrivacy === 'SELF_ONLY') {
         msg = 'تم نشر الفيديو على حسابك مباشرة! 🔒 (مضبوط على "أنا فقط" لحماية الخصوصية في وضع Sandbox، يمكنك تحويله للعامة بلمسة واحدة داخل تيك توك)';
+    } else if (finalPrivacy === 'INBOX_DRAFT') {
+        msg = 'تم إرسال الفيديو لتطبيق تيك توك بنجاح! 📱✨ (نظراً لأن حسابك عام وتطبيق المطورين قيد المراجعة، وصل الفيديو لمسودتك لتنشره للعامة بلمسة واحدة)';
     }
 
     return {
         success: true,
         publishId: initResult.publish_id,
-        direct: true,
+        direct: finalPrivacy !== 'INBOX_DRAFT',
         privacy: finalPrivacy,
         message: msg
     };
