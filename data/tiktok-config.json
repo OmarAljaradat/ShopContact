@@ -2,5 +2,5 @@
   "client_key": "awb5gan9v91zepu5",
   "client_secret": "hGm1tiRWkQ9OQEH0HIXc3STUganfP28m",
   "redirect_uri": "https://shopcoin15-studio.onrender.com/api/tiktok/callback",
-  "scopes": "user.info.basic,video.upload,video.publish"
+  "scopes": "user.info.basic,video.upload"
 }
