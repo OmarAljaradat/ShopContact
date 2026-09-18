@@ -49,6 +49,12 @@
       "skillPath": "skills/soft-skill/SKILL.md",
       "computedHash": "f730e4132775f13eea19e3dc39afc6bb453cfc0498872b127ad8f0d47cfd802d"
     },
+    "instagram-carousel": {
+      "source": "marcolang/marketing-skills",
+      "sourceType": "github",
+      "skillPath": "instagram-carousel/SKILL.md",
+      "computedHash": "faf1562f25d67301b1349eb335b41c4ebc56e0f7065a0787c0110c76685da820"
+    },
     "instagram-research": {
       "source": "bradautomates/head-of-content",
       "sourceType": "github",
