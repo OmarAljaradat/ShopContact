@@ -415,13 +415,18 @@ async function publishVideo(videoBuffer, caption, privacyLevel = 'PUBLIC_TO_EVER
     console.log(`[TikTok Engine] Uploading binary to TikTok upload endpoint...`);
     const uploadUrl = new URL(initResult.upload_url);
 
+    // Auto-detect container from binary magic bytes (EBML = WebM, ftyp = MP4)
+    const isWebm = videoBuffer.length > 4 && videoBuffer[0] === 0x1A && videoBuffer[1] === 0x45;
+    const uploadContentType = isWebm ? 'video/webm' : 'video/mp4';
+    console.log(`[TikTok Engine] Detected video format: ${uploadContentType} (${videoBuffer.length} bytes)`);
+
     await new Promise((resolve, reject) => {
         const req = https.request({
             hostname: uploadUrl.hostname,
             path: uploadUrl.pathname + uploadUrl.search,
             method: 'PUT',
             headers: {
-                'Content-Type': 'video/mp4',
+                'Content-Type': uploadContentType,
                 'Content-Range': `bytes 0-${videoBuffer.length - 1}/${videoBuffer.length}`,
                 'Content-Length': videoBuffer.length
             }

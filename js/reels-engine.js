@@ -2234,6 +2234,34 @@ window.ReelsEngine = (function() {
         return resultUrl;
     }
 
+    function createSilentAudioTrack() {
+        try {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            if (!AudioCtx) return null;
+            const ctx = new AudioCtx();
+            const dest = ctx.createMediaStreamDestination();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            // Virtually silent audio anchors timestamps for TikTok & Insta Reels transcoding
+            gain.gain.value = 0.0001;
+            osc.connect(gain);
+            gain.connect(dest);
+            osc.start();
+            return {
+                track: dest.stream.getAudioTracks()[0],
+                stop: () => {
+                    try {
+                        osc.stop();
+                        ctx.close();
+                    } catch (e) {}
+                }
+            };
+        } catch (e) {
+            console.warn('[Reels Video] Silent audio track note:', e.message);
+            return null;
+        }
+    }
+
     async function recordReelVideoBlob(progressCallback) {
         pausePlayback();
         const prevSafe = state.showSafeZone;
@@ -2284,7 +2312,7 @@ window.ReelsEngine = (function() {
             }
 
             // =========================================================================
-            // PHASE 2: INITIALIZE 1080x1920 CANVAS & MEDIARECORDER
+            // PHASE 2: INITIALIZE 1080x1920 CANVAS, SILENT AUDIO & MEDIARECORDER
             // =========================================================================
             const recordCanvas = document.createElement('canvas');
             recordCanvas.width = 1080;
@@ -2298,16 +2326,33 @@ window.ReelsEngine = (function() {
                 ctx.drawImage(preloadedSlides[0].img, 0, 0, 1080, 1920);
             }
 
+            const fps = 30;
+            const frameIntervalMs = 1000 / fps; // 33.333ms
+
+            const canvasStream = recordCanvas.captureStream(fps);
+            const silentAudioObj = createSilentAudioTrack();
+
+            const combinedTracks = [...canvasStream.getVideoTracks()];
+            if (silentAudioObj && silentAudioObj.track) {
+                combinedTracks.push(silentAudioObj.track);
+            }
+            const stream = new MediaStream(combinedTracks);
+
             // Select best supported MIME type
-            let mimeType = 'video/mp4';
+            let mimeType = 'video/mp4;codecs=avc1,mp4a.40.2';
             if (!MediaRecorder.isTypeSupported(mimeType)) {
-                mimeType = 'video/webm;codecs=vp9';
+                mimeType = 'video/mp4';
                 if (!MediaRecorder.isTypeSupported(mimeType)) {
-                    mimeType = 'video/webm';
+                    mimeType = 'video/webm;codecs=vp9,opus';
+                    if (!MediaRecorder.isTypeSupported(mimeType)) {
+                        mimeType = 'video/webm;codecs=vp8,opus';
+                        if (!MediaRecorder.isTypeSupported(mimeType)) {
+                            mimeType = 'video/webm';
+                        }
+                    }
                 }
             }
 
-            const stream = recordCanvas.captureStream(30);
             const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 8000000 });
             const chunks = [];
             recorder.ondataavailable = e => { 
@@ -2329,27 +2374,26 @@ window.ReelsEngine = (function() {
 
             // Start recording
             recorder.start(100);
-            // Brief pause to establish first keyframe
             await new Promise(r => setTimeout(r, 60));
 
             // =========================================================================
-            // PHASE 3: REAL-TIME FRAME PUMPING STRICTLY GOVERNED BY SLIDE DURATION
-            // High-precision timing via performance.now() ensures exact slide seconds
+            // PHASE 3: DETERMINISTIC FRAME PUMPING WITH EXACT FRAME COUNTS
+            // totalFrames = Math.max(15, Math.round(item.duration * 30))
+            // Each frame rendered at exactly 33.3ms => 100% exact in TikTok & all players!
             // =========================================================================
+            let totalExpectedMs = 0;
             for (let i = 0; i < preloadedSlides.length; i++) {
                 const item = preloadedSlides[i];
-                const targetDurationMs = item.duration * 1000;
+                const totalFrames = Math.max(15, Math.round(item.duration * fps));
+                totalExpectedMs += (totalFrames / fps) * 1000;
 
                 if (progressCallback) {
                     progressCallback(i + 1, totalSlides, `تسجيل السلايد ${i + 1}/${totalSlides} (${item.duration.toFixed(1)} ثانية)...`);
                 }
 
-                const startTime = performance.now();
-
-                while (true) {
-                    const now = performance.now();
-                    const elapsed = now - startTime;
-                    const progress = Math.min(1.0, elapsed / targetDurationMs);
+                for (let f = 0; f < totalFrames; f++) {
+                    const frameStart = performance.now();
+                    const progress = f / totalFrames;
 
                     // Dynamic subtle cinematic zoom (1.000 -> 1.018)
                     const scale = 1.0 + (progress * 0.018);
@@ -2361,15 +2405,9 @@ window.ReelsEngine = (function() {
                     ctx.clearRect(0, 0, 1080, 1920);
                     ctx.drawImage(item.img, x, y, w, h);
 
-                    if (elapsed >= targetDurationMs) {
-                        break;
-                    }
-
-                    const remaining = targetDurationMs - (performance.now() - startTime);
-                    if (remaining <= 0) break;
-
-                    const step = Math.min(20, remaining);
-                    await new Promise(r => setTimeout(r, step));
+                    const elapsedThisFrame = performance.now() - frameStart;
+                    const sleepTime = Math.max(1, frameIntervalMs - elapsedThisFrame);
+                    await new Promise(r => setTimeout(r, sleepTime));
                 }
             }
 
@@ -2377,9 +2415,27 @@ window.ReelsEngine = (function() {
             try { recorder.requestData(); } catch(e) {}
             await new Promise(r => setTimeout(r, 120));
             recorder.stop();
+            if (silentAudioObj) silentAudioObj.stop();
 
-            const result = await recordingComplete;
-            return result;
+            let { blob, mimeType: recordedMime } = await recordingComplete;
+
+            // If recorded in WebM, patch the duration header so TikTok & players know exact duration
+            if (typeof window.ysFixWebmDuration === 'function' && recordedMime.includes('webm')) {
+                try {
+                    console.log(`[Reels Video] Patching WebM duration to ${totalExpectedMs}ms...`);
+                    const fixedBlob = await new Promise((res) => {
+                        window.ysFixWebmDuration(blob, totalExpectedMs, fixed => res(fixed));
+                    });
+                    if (fixedBlob && fixedBlob.size > 0) {
+                        blob = fixedBlob;
+                        console.log('[Reels Video] WebM duration patched successfully!');
+                    }
+                } catch (fixErr) {
+                    console.warn('[Reels Video] fix-webm-duration note:', fixErr.message);
+                }
+            }
+
+            return { blob, mimeType: recordedMime };
         } finally {
             state.showSafeZone = prevSafe;
             state.dragEnabled = prevDrag;
