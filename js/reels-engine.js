@@ -13,7 +13,7 @@
  */
 
 window.ReelsEngine = (function() {
-    const STORAGE_KEY = 'shopcoin15_reel_layouts_v4';
+    const STORAGE_KEY = 'shopcoin15_reel_layouts_v5';
 
     // ---- 1. DEFAULT PERFECT-ALIGNED LAYOUTS (Percentages) ----
     const DEFAULT_LAYOUTS = {
@@ -23,7 +23,18 @@ window.ReelsEngine = (function() {
             card: { top: 28.5, left: 50, scale: 1.0 },
             playerName: { top: 78.5, left: 50, scale: 1.0 },
             fcLogo: { top: 4, left: 88, scale: 1.0 },
-            scLogo: { top: 91, left: 50, scale: 1.0 }
+            scLogo: { top: 91, left: 50, scale: 1.0 },
+            // Intro slide elements
+            introBadge: { top: 20, left: 50, scale: 1.0 },
+            introTitle: { top: 28, left: 50, scale: 1.0 },
+            introSubtitle: { top: 56, left: 50, scale: 1.0 },
+            introCta: { top: 66, left: 50, scale: 1.0 },
+            // Outro slide elements
+            outroLogo: { top: 16, left: 50, scale: 1.0 },
+            outroTitle: { top: 28, left: 50, scale: 1.0 },
+            outroSubtitle: { top: 35, left: 50, scale: 1.0 },
+            outroFeatures: { top: 44, left: 50, scale: 1.0 },
+            outroCta: { top: 75, left: 50, scale: 1.0 }
         },
         versus: {
             title: { top: 12.5, left: 50, scale: 1.0 },
@@ -32,29 +43,79 @@ window.ReelsEngine = (function() {
             vsBadge: { top: 45, left: 50, scale: 1.0 },
             question: { top: 77, left: 50, scale: 1.0 },
             fcLogo: { top: 4, left: 88, scale: 1.0 },
-            scLogo: { top: 91, left: 50, scale: 1.0 }
+            scLogo: { top: 91, left: 50, scale: 1.0 },
+            // Intro slide elements
+            introBadge: { top: 20, left: 50, scale: 1.0 },
+            introTitle: { top: 28, left: 50, scale: 1.0 },
+            introSubtitle: { top: 56, left: 50, scale: 1.0 },
+            introCta: { top: 66, left: 50, scale: 1.0 },
+            // Outro slide elements
+            outroLogo: { top: 16, left: 50, scale: 1.0 },
+            outroTitle: { top: 28, left: 50, scale: 1.0 },
+            outroSubtitle: { top: 35, left: 50, scale: 1.0 },
+            outroFeatures: { top: 44, left: 50, scale: 1.0 },
+            outroCta: { top: 75, left: 50, scale: 1.0 }
         }
     };
 
-    const ELEMENT_LABELS = {
-        countdown: [
-            { id: 'card', name: '🃏 كرت اللاعب والشارات' },
-            { id: 'rank', name: '🏆 رقم الرانك (الترتيب)' },
-            { id: 'title', name: '🏷️ عنوان الريل المانشيت' },
-            { id: 'playerName', name: '⚽ اسم اللاعب' },
-            { id: 'fcLogo', name: '⚡ شعار EA FC 27 الرسمي' },
-            { id: 'scLogo', name: '👑 شعار المتجر ShopCoin15' }
-        ],
-        versus: [
-            { id: 'cardA', name: '🃏 كرت اللاعب الأول (اليمين)' },
-            { id: 'cardB', name: '🃏 كرت اللاعب الثاني (اليسار)' },
-            { id: 'vsBadge', name: '⚔️ شعار VS المضيء' },
-            { id: 'title', name: '🏷️ عنوان المقارنة' },
-            { id: 'question', name: '💬 سؤال التفاعل بالأسفل' },
-            { id: 'fcLogo', name: '⚡ شعار EA FC 27 الرسمي' },
-            { id: 'scLogo', name: '👑 شعار المتجر ShopCoin15' }
-        ]
-    };
+    function getCurrentSlideElements() {
+        const currentSlide = state.slides[state.currentSlideIndex];
+        if (!currentSlide) return [];
+
+        if (currentSlide.type === 'intro') {
+            return [
+                { id: 'introTitle', name: '📢 مانشيت البداية (Hook Title)' },
+                { id: 'introBadge', name: '🏷️ شارة العنوان (Badge)' },
+                { id: 'introSubtitle', name: '📝 الوصف والتحفيز (Subtitle)' },
+                { id: 'introCta', name: '👇 زر الدعوة للإجراء (CTA Button)' },
+                { id: 'fcLogo', name: '⚡ شعار EA FC 27 الرسمي' },
+                { id: 'scLogo', name: '👑 شعار المتجر ShopCoin15' }
+            ];
+        } else if (currentSlide.type === 'player_card') {
+            return [
+                { id: 'card', name: '🃏 كرت اللاعب والشارات' },
+                { id: 'rank', name: '🏆 رقم الرانك (الترتيب)' },
+                { id: 'title', name: '🏷️ عنوان الريل المانشيت' },
+                { id: 'playerName', name: '⚽ اسم اللاعب' },
+                { id: 'fcLogo', name: '⚡ شعار EA FC 27 الرسمي' },
+                { id: 'scLogo', name: '👑 شعار المتجر ShopCoin15' }
+            ];
+        } else if (currentSlide.type === 'versus_card') {
+            return [
+                { id: 'cardA', name: '🃏 كرت اللاعب الأول (اليمين)' },
+                { id: 'cardB', name: '🃏 كرت اللاعب الثاني (اليسار)' },
+                { id: 'vsBadge', name: '⚔️ شعار VS المضيء' },
+                { id: 'title', name: '🏷️ عنوان المقارنة' },
+                { id: 'question', name: '💬 سؤال التفاعل بالأسفل' },
+                { id: 'fcLogo', name: '⚡ شعار EA FC 27 الرسمي' },
+                { id: 'scLogo', name: '👑 شعار المتجر ShopCoin15' }
+            ];
+        } else if (currentSlide.type === 'outro') {
+            return [
+                { id: 'outroLogo', name: '👑 لوجو المتجر الرئيسي' },
+                { id: 'outroTitle', name: '🏷️ عنوان الخاتمة' },
+                { id: 'outroSubtitle', name: '✨ شريط الميزات الذهبي' },
+                { id: 'outroFeatures', name: '🔒 بطاقات الضمان والسرعة' },
+                { id: 'outroCta', name: '📩 زر الطلب والتواصل' },
+                { id: 'fcLogo', name: '⚡ شعار EA FC 27 الرسمي' },
+                { id: 'scLogo', name: '👑 شعار المتجر ShopCoin15' }
+            ];
+        }
+        return [
+            { id: 'title', name: '🏷️ العنوان' },
+            { id: 'fcLogo', name: '⚡ شعار EA FC 27' },
+            { id: 'scLogo', name: '👑 شعار المتجر' }
+        ];
+    }
+
+    function ensureSelectedDragElement() {
+        const elements = getCurrentSlideElements();
+        if (elements.length === 0) return;
+        const exists = elements.some(e => e.id === state.selectedDragElement);
+        if (!exists) {
+            state.selectedDragElement = elements[0].id;
+        }
+    }
 
     function loadSavedLayouts() {
         try {
@@ -252,7 +313,13 @@ window.ReelsEngine = (function() {
                 type: 'intro',
                 title: ideaObj.title,
                 subtitle: ideaObj.subtitle,
-                badge: ideaObj.badge
+                badge: ideaObj.badge,
+                ctaText: 'شاهد الترتيب بالكامل',
+                duration: 1.5,
+                hideBadge: false,
+                hideTitle: false,
+                hideSubtitle: false,
+                hideCta: false
             });
 
             ranks.forEach((rankNum) => {
@@ -264,7 +331,8 @@ window.ReelsEngine = (function() {
                     rating: '85',
                     position: 'ST',
                     cardUrl: 'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=600/2027/futgg-player-item-card/27-253072.b01bd10077579d6ac45096ea658f3725f2951793cc9543ab9775cd0e7b909ede.webp',
-                    badges: ['⚡ سرعة 90', '🔥 ميتّا', '💰 كوينز مناسبة']
+                    badges: ['⚡ سرعة 90', '🔥 ميتّا', '💰 كوينز مناسبة'],
+                    duration: 2.8
                 });
             });
 
@@ -272,7 +340,9 @@ window.ReelsEngine = (function() {
                 type: 'outro',
                 title: 'متجر ShopCoin15 - كوينز فورية ⚡',
                 subtitle: 'شحن آمن 100% مع ضمان نادي كامل وبأفضل الأسعار',
-                badge: '👑 متجر الكوينز المعتمد'
+                badge: '👑 متجر الكوينز المعتمد',
+                ctaText: 'للطلب حياك على الخاص: @shop_coin15 📩',
+                duration: 2.0
             });
 
             state.slides = newSlides;
@@ -282,25 +352,35 @@ window.ReelsEngine = (function() {
                     type: 'intro',
                     title: ideaObj.title,
                     subtitle: ideaObj.subtitle,
-                    badge: ideaObj.badge
+                    badge: ideaObj.badge,
+                    ctaText: 'شاهد المقارنة المباشرة',
+                    duration: 1.5,
+                    hideBadge: false,
+                    hideTitle: false,
+                    hideSubtitle: false,
+                    hideCta: false
                 },
                 {
                     type: 'versus_card',
                     title: ideaObj.title,
                     playerA: ideaObj.playerA || { name: 'Player A', arName: 'اللاعب الأول', rating: '90', statHighlight: 'طاقات 90', cardUrl: 'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=600/2027/futgg-player-item-card/27-252371.49e4acdf2d78496f4951f41725cd17fb8efb118d99a69ba074ab76fc62d70735.webp' },
                     playerB: ideaObj.playerB || { name: 'Player B', arName: 'اللاعب الثاني', rating: '88', statHighlight: 'طاقات 88', cardUrl: 'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=600/2027/futgg-player-item-card/27-246669.cab7c7f82f8442d8ba57fc15e5f49728247141eac35add86238cdc54e7916495.webp' },
-                    question: ideaObj.question || 'صوت بالتعليقات: من تختار لفريقك؟ 👇'
+                    question: ideaObj.question || 'صوت بالتعليقات: من تختار لفريقك؟ 👇',
+                    duration: 3.5
                 },
                 {
                     type: 'outro',
                     title: 'متجر ShopCoin15 - كوينز فورية ⚡',
                     subtitle: 'شحن آمن 100% مع ضمان نادي كامل وبأفضل الأسعار',
-                    badge: '👑 متجر الكوينز المعتمد'
+                    badge: '👑 متجر الكوينز المعتمد',
+                    ctaText: 'للطلب حياك على الخاص: @shop_coin15 📩',
+                    duration: 2.0
                 }
             ];
         }
 
         state.currentSlideIndex = 0;
+        ensureSelectedDragElement();
         pausePlayback();
         renderEditorControls();
         renderCanvas();
@@ -730,7 +810,8 @@ window.ReelsEngine = (function() {
             rating: '86',
             position: 'ST',
             cardUrl: 'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=600/2027/futgg-player-item-card/27-253072.b01bd10077579d6ac45096ea658f3725f2951793cc9543ab9775cd0e7b909ede.webp',
-            badges: ['⚡ سرعة', '🔥 ميتّا']
+            badges: ['⚡ سرعة', '🔥 ميتّا'],
+            duration: 2.8
         };
 
         const outroIdx = state.slides.findIndex(s => s.type === 'outro');
@@ -742,23 +823,127 @@ window.ReelsEngine = (function() {
             state.currentSlideIndex = state.slides.length - 1;
         }
 
+        ensureSelectedDragElement();
         renderEditorControls();
         renderCanvas();
+        if (typeof renderPlayerToolbar === 'function') renderPlayerToolbar();
         if (window.showCopyToast) window.showCopyToast('تمت إضافة بطاقة لاعب جديدة! يمكنك تعديلها الآن ➕');
     }
 
-    function deleteCurrentSlide() {
-        if (state.slides.length <= 2) {
-            alert('لا يمكن حذف المزيد من السلايدات.');
+    function addSlide(type = 'player_card') {
+        if (type === 'intro') {
+            const hasIntro = state.slides.some(s => s.type === 'intro');
+            if (hasIntro) {
+                if (window.showCopyToast) window.showCopyToast('سلايد البداية موجود بالفعل! 📢');
+                return;
+            }
+            state.slides.unshift({
+                type: 'intro',
+                title: state.title || 'عنوان الريل المانشيت',
+                subtitle: state.subtitle || 'الوصف الجذاب للريل',
+                badge: state.badge || '🔥 فكرة ريلز',
+                ctaText: 'شاهد الترتيب بالكامل',
+                duration: 1.5,
+                hideBadge: false,
+                hideTitle: false,
+                hideSubtitle: false,
+                hideCta: false
+            });
+            state.currentSlideIndex = 0;
+        } else if (type === 'outro') {
+            const hasOutro = state.slides.some(s => s.type === 'outro');
+            if (hasOutro) {
+                if (window.showCopyToast) window.showCopyToast('سلايد الختام موجود بالفعل! 👑');
+                return;
+            }
+            state.slides.push({
+                type: 'outro',
+                title: 'متجر ShopCoin15 - كوينز فورية ⚡',
+                subtitle: 'شحن آمن 100% مع ضمان نادي كامل وبأفضل الأسعار',
+                badge: '👑 متجر الكوينز المعتمد',
+                ctaText: 'للطلب حياك على الخاص: @shop_coin15 📩',
+                duration: 2.0
+            });
+            state.currentSlideIndex = state.slides.length - 1;
+        } else {
+            addPlayerSlide();
             return;
         }
+
+        ensureSelectedDragElement();
+        renderEditorControls();
+        renderCanvas();
+        if (typeof renderPlayerToolbar === 'function') renderPlayerToolbar();
+        if (window.showCopyToast) window.showCopyToast('تمت إضافة السلايد بنجاح! ➕');
+    }
+
+    function deleteCurrentSlide() {
+        if (state.slides.length <= 1) {
+            alert('يجب أن يحتوي الريل على سلايد واحد على الأقل.');
+            return;
+        }
+        const slide = state.slides[state.currentSlideIndex];
+        const typeName = (slide.type === 'intro') ? 'سلايد البداية' : ((slide.type === 'outro') ? 'سلايد الختام' : ((slide.type === 'versus_card') ? 'سلايد المقارنة' : `كرت اللاعب #${slide.rank || ''}`));
+
         state.slides.splice(state.currentSlideIndex, 1);
         if (state.currentSlideIndex >= state.slides.length) {
             state.currentSlideIndex = state.slides.length - 1;
         }
-        renderEditorControls();
+
+        ensureSelectedDragElement();
         renderCanvas();
-        if (window.showCopyToast) window.showCopyToast('تم حذف السلايد 🗑️');
+        renderEditorControls();
+        if (typeof renderPlayerToolbar === 'function') renderPlayerToolbar();
+        if (window.showCopyToast) window.showCopyToast(`تم حذف ${typeName} بنجاح 🗑️`);
+    }
+
+    function toggleElementVisibility(field) {
+        const slide = state.slides[state.currentSlideIndex];
+        if (!slide) return;
+        slide[field] = !slide[field];
+        renderCanvas();
+        renderEditorControls();
+        if (window.showCopyToast) {
+            window.showCopyToast(slide[field] ? 'تم إخفاء/حذف العنصر من التصميم 🗑️' : 'تم استعادة العنصر إلى التصميم 👁️');
+        }
+    }
+
+    function setCurrentSlideDuration(val) {
+        const slide = state.slides[state.currentSlideIndex];
+        if (!slide) return;
+        slide.duration = Math.round(parseFloat(val) * 10) / 10 || 2.5;
+        renderCanvas();
+        renderEditorControls();
+        const badge = document.getElementById('currentSlideDurationBadge');
+        if (badge) badge.textContent = `${slide.duration.toFixed(1)} ثانية`;
+    }
+
+    function adjustCurrentSlideDuration(delta) {
+        const slide = state.slides[state.currentSlideIndex];
+        if (!slide) return;
+        let newDur = Math.round(((slide.duration || 2.5) + delta) * 10) / 10;
+        if (newDur < 0.8) newDur = 0.8;
+        if (newDur > 6.0) newDur = 6.0;
+        slide.duration = newDur;
+        renderCanvas();
+        renderEditorControls();
+    }
+
+    function applyDurationToAllPlayerCards() {
+        const slide = state.slides[state.currentSlideIndex];
+        if (!slide) return;
+        const dur = slide.duration || 2.5;
+        let count = 0;
+        state.slides.forEach(s => {
+            if (s.type === 'player_card') {
+                s.duration = dur;
+                count++;
+            }
+        });
+        if (window.showCopyToast) {
+            window.showCopyToast(`تم تطبيق سرعة (${dur} ثانية) على كافة كروت اللاعبين (${count} كروت) ⏱️⚡`);
+        }
+        renderEditorControls();
     }
 
     function updateCurrentSlideField(field, val) {
@@ -784,18 +969,23 @@ window.ReelsEngine = (function() {
 
         const tickMs = 50;
         let elapsed = 0;
-        const totalMs = (state.slideDuration || 2.5) * 1000;
+
+        const getCurSlideMs = () => {
+            const slide = state.slides[state.currentSlideIndex];
+            return ((slide && slide.duration) || state.slideDuration || 2.5) * 1000;
+        };
 
         if (state.playbackTimer) clearInterval(state.playbackTimer);
 
         state.playbackTimer = setInterval(() => {
             elapsed += tickMs;
-            state.timelineProgress = Math.min(100, (elapsed / totalMs) * 100);
+            const curSlideMs = getCurSlideMs();
+            state.timelineProgress = Math.min(100, (elapsed / curSlideMs) * 100);
 
             const bars = [document.getElementById('reelTimelineBar'), document.getElementById('toolbarTimelineBar')];
             bars.forEach(b => { if (b) b.style.width = `${state.timelineProgress}%`; });
 
-            if (elapsed >= totalMs) {
+            if (elapsed >= curSlideMs) {
                 elapsed = 0;
                 state.timelineProgress = 0;
                 if (state.currentSlideIndex < state.slides.length - 1) {
@@ -803,7 +993,9 @@ window.ReelsEngine = (function() {
                 } else {
                     state.currentSlideIndex = 0;
                 }
+                ensureSelectedDragElement();
                 renderCanvas();
+                renderEditorControls();
                 updatePlayerUi();
             }
         }, tickMs);
@@ -829,14 +1021,18 @@ window.ReelsEngine = (function() {
     function nextSlide() {
         pausePlayback();
         state.currentSlideIndex = (state.currentSlideIndex < state.slides.length - 1) ? state.currentSlideIndex + 1 : 0;
+        ensureSelectedDragElement();
         renderCanvas();
+        renderEditorControls();
         updatePlayerUi();
     }
 
     function prevSlide() {
         pausePlayback();
         state.currentSlideIndex = (state.currentSlideIndex > 0) ? state.currentSlideIndex - 1 : state.slides.length - 1;
+        ensureSelectedDragElement();
         renderCanvas();
+        renderEditorControls();
         updatePlayerUi();
     }
 
@@ -844,7 +1040,9 @@ window.ReelsEngine = (function() {
         pausePlayback();
         if (idx >= 0 && idx < state.slides.length) {
             state.currentSlideIndex = idx;
+            ensureSelectedDragElement();
             renderCanvas();
+            renderEditorControls();
             updatePlayerUi();
         }
     }
@@ -990,75 +1188,114 @@ window.ReelsEngine = (function() {
 
         if (currentSlide.type === 'intro') {
             bodyHtml = `
-                <div class="absolute inset-0 flex flex-col items-center justify-center px-10 text-center z-20" dir="rtl">
-                    <div class="mb-4 inline-block px-4 py-1.5 rounded-full bg-slate-900 text-white text-xs font-black shadow-sm tracking-wide">
-                        ${currentSlide.badge || state.badge}
+                <!-- 1. Intro Badge -->
+                ${!currentSlide.hideBadge ? `
+                    <div data-drag-id="introBadge" class="z-20 select-none relative ${dragCursor} ${selectRing('introBadge')}" style="${posStyle(layout.introBadge)}">
+                        <div class="px-4 py-1.5 rounded-full bg-slate-900 text-white text-xs font-black shadow-sm tracking-wide pointer-events-none" dir="rtl">
+                            ${currentSlide.badge || state.badge}
+                        </div>
+                        ${renderResizeHandle('introBadge')}
                     </div>
-                    <h1 class="text-4xl md:text-5xl font-black text-slate-950 leading-snug drop-shadow-sm max-w-md">
-                        ${currentSlide.title || state.title}
-                    </h1>
-                    <p class="mt-5 text-sm md:text-base font-bold text-slate-600 max-w-sm leading-relaxed">
-                        ${currentSlide.subtitle || state.subtitle}
-                    </p>
-                    <div class="mt-8 flex items-center gap-2 px-5 py-2 rounded-2xl bg-white/90 border border-slate-200 backdrop-blur-md shadow-xs animate-bounce">
-                        <span class="text-base">👇</span>
-                        <span class="text-xs font-black text-slate-800">
-                            ${state.activeSection === 'versus' ? 'شاهد المقارنة المباشرة' : 'شاهد الترتيب بالكامل'}
-                        </span>
+                ` : ''}
+
+                <!-- 2. Intro Title -->
+                ${!currentSlide.hideTitle ? `
+                    <div data-drag-id="introTitle" class="z-20 select-none relative ${dragCursor} ${selectRing('introTitle')}" style="${posStyle(layout.introTitle)}">
+                        <div class="w-[360px] text-center px-4" dir="rtl">
+                            <h1 class="text-4xl md:text-5xl font-black text-slate-950 leading-snug drop-shadow-sm pointer-events-none">
+                                ${currentSlide.title || state.title}
+                            </h1>
+                        </div>
+                        ${renderResizeHandle('introTitle')}
                     </div>
-                </div>
+                ` : ''}
+
+                <!-- 3. Intro Subtitle -->
+                ${!currentSlide.hideSubtitle ? `
+                    <div data-drag-id="introSubtitle" class="z-20 select-none relative ${dragCursor} ${selectRing('introSubtitle')}" style="${posStyle(layout.introSubtitle)}">
+                        <div class="w-[360px] text-center px-4" dir="rtl">
+                            <p class="text-sm md:text-base font-bold text-slate-600 leading-relaxed pointer-events-none">
+                                ${currentSlide.subtitle || state.subtitle}
+                            </p>
+                        </div>
+                        ${renderResizeHandle('introSubtitle')}
+                    </div>
+                ` : ''}
+
+                <!-- 4. Intro CTA Button -->
+                ${!currentSlide.hideCta ? `
+                    <div data-drag-id="introCta" class="z-20 select-none relative ${dragCursor} ${selectRing('introCta')}" style="${posStyle(layout.introCta)}">
+                        <div class="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-white/95 border border-slate-200 backdrop-blur-md shadow-xs animate-bounce pointer-events-none" dir="rtl">
+                            <span class="text-base">👇</span>
+                            <span class="text-xs font-black text-slate-800">
+                                ${currentSlide.ctaText || (state.activeSection === 'versus' ? 'شاهد المقارنة المباشرة' : 'شاهد الترتيب بالكامل')}
+                            </span>
+                        </div>
+                        ${renderResizeHandle('introCta')}
+                    </div>
+                ` : ''}
             `;
         } else if (currentSlide.type === 'player_card') {
             bodyHtml = `
                 <!-- 1. Rank Block -->
-                <div data-drag-id="rank" class="z-20 flex flex-col items-center text-center select-none relative ${dragCursor} ${selectRing('rank')}" style="${posStyle(layout.rank)}">
-                    <div class="text-6xl md:text-7xl font-black text-[#0E382B] drop-shadow-md leading-none pointer-events-none">
-                        ${currentSlide.rank || '1'}
+                ${!currentSlide.hideRank ? `
+                    <div data-drag-id="rank" class="z-20 flex flex-col items-center text-center select-none relative ${dragCursor} ${selectRing('rank')}" style="${posStyle(layout.rank)}">
+                        <div class="text-6xl md:text-7xl font-black text-[#0E382B] drop-shadow-md leading-none pointer-events-none">
+                            ${currentSlide.rank || '1'}
+                        </div>
+                        ${renderResizeHandle('rank')}
                     </div>
-                    ${renderResizeHandle('rank')}
-                </div>
+                ` : ''}
 
                 <!-- 2. Title Block (Fixed 340px width container to prevent text reflow on move) -->
-                <div data-drag-id="title" class="z-20 select-none relative ${dragCursor} ${selectRing('title')}" style="${posStyle(layout.title)}">
-                    <div class="w-[340px] text-center px-4" dir="rtl">
-                        <div class="text-base md:text-lg font-black text-slate-950 leading-tight drop-shadow-xs pointer-events-none">
-                            ${state.title}
+                ${!currentSlide.hideTitle ? `
+                    <div data-drag-id="title" class="z-20 select-none relative ${dragCursor} ${selectRing('title')}" style="${posStyle(layout.title)}">
+                        <div class="w-[340px] text-center px-4" dir="rtl">
+                            <div class="text-base md:text-lg font-black text-slate-950 leading-tight drop-shadow-xs pointer-events-none">
+                                ${state.title}
+                            </div>
                         </div>
+                        ${renderResizeHandle('title')}
                     </div>
-                    ${renderResizeHandle('title')}
-                </div>
+                ` : ''}
 
                 <!-- 3. Card & Badges Block -->
-                <div data-drag-id="card" class="z-20 flex flex-col items-center justify-center select-none relative ${dragCursor} ${selectRing('card')}" style="${posStyle(layout.card)}">
-                    <div class="relative flex flex-col items-center justify-center">
-                        <div class="absolute -inset-6 bg-emerald-500/15 blur-3xl rounded-full pointer-events-none"></div>
-                        <img src="${currentSlide.cardUrl}" alt="${currentSlide.playerName}" 
-                             class="w-64 md:w-72 h-auto max-h-[400px] object-contain drop-shadow-[0_20px_35px_rgba(0,0,0,0.4)] pointer-events-none">
-                    </div>
+                ${!currentSlide.hideCard ? `
+                    <div data-drag-id="card" class="z-20 flex flex-col items-center justify-center select-none relative ${dragCursor} ${selectRing('card')}" style="${posStyle(layout.card)}">
+                        <div class="relative flex flex-col items-center justify-center">
+                            <div class="absolute -inset-6 bg-emerald-500/15 blur-3xl rounded-full pointer-events-none"></div>
+                            <img src="${currentSlide.cardUrl}" alt="${currentSlide.playerName}" 
+                                 class="w-64 md:w-72 h-auto max-h-[400px] object-contain drop-shadow-[0_20px_35px_rgba(0,0,0,0.4)] pointer-events-none">
+                        </div>
 
-                    <!-- Badges -->
-                    <div class="mt-3 flex items-center justify-center gap-1.5 flex-wrap max-w-xs pointer-events-none" dir="rtl">
-                        ${(currentSlide.badges || []).map(b => `
-                            <span class="px-2.5 py-1 rounded-xl bg-white/95 text-slate-900 border border-slate-200 text-[11px] font-black shadow-xs">
-                                ${b}
-                            </span>
-                        `).join('')}
+                        <!-- Badges -->
+                        ${!currentSlide.hideBadges && currentSlide.badges && currentSlide.badges.length ? `
+                            <div class="mt-3 flex items-center justify-center gap-1.5 flex-wrap max-w-xs pointer-events-none" dir="rtl">
+                                ${currentSlide.badges.map(b => `
+                                    <span class="px-2.5 py-1 rounded-xl bg-white/95 text-slate-900 border border-slate-200 text-[11px] font-black shadow-xs">
+                                        ${b}
+                                    </span>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                        ${renderResizeHandle('card')}
                     </div>
-                    ${renderResizeHandle('card')}
-                </div>
+                ` : ''}
 
                 <!-- 4. Player Name Block (Fixed 340px width container) -->
-                <div data-drag-id="playerName" class="z-20 select-none relative ${dragCursor} ${selectRing('playerName')}" style="${posStyle(layout.playerName)}">
-                    <div class="w-[340px] text-center px-4" dir="rtl">
-                        <div class="text-2xl md:text-3xl font-black text-slate-950 drop-shadow-sm pointer-events-none">
-                            ${currentSlide.playerArName || currentSlide.playerName}
+                ${!currentSlide.hidePlayerName ? `
+                    <div data-drag-id="playerName" class="z-20 select-none relative ${dragCursor} ${selectRing('playerName')}" style="${posStyle(layout.playerName)}">
+                        <div class="w-[340px] text-center px-4" dir="rtl">
+                            <div class="text-2xl md:text-3xl font-black text-slate-950 drop-shadow-sm pointer-events-none">
+                                ${currentSlide.playerArName || currentSlide.playerName}
+                            </div>
+                            <div class="text-xs font-black text-[#00A84D] mt-0.5 pointer-events-none">
+                                في FC 27
+                            </div>
                         </div>
-                        <div class="text-xs font-black text-[#00A84D] mt-0.5 pointer-events-none">
-                            في FC 27
-                        </div>
+                        ${renderResizeHandle('playerName')}
                     </div>
-                    ${renderResizeHandle('playerName')}
-                </div>
+                ` : ''}
             `;
         } else if (currentSlide.type === 'versus_card') {
             const pA = currentSlide.playerA || {};
@@ -1066,94 +1303,138 @@ window.ReelsEngine = (function() {
 
             bodyHtml = `
                 <!-- 1. Title Header -->
-                <div data-drag-id="title" class="z-20 select-none relative ${dragCursor} ${selectRing('title')}" style="${posStyle(layout.title)}">
-                    <div class="w-[340px] text-center px-4" dir="rtl">
-                        <span class="inline-block px-3 py-1 rounded-full bg-slate-900 text-white text-[10px] font-black mb-1 shadow-xs pointer-events-none">
-                            ${state.badge || '⚔️ صراع العمالقة'}
-                        </span>
-                        <h2 class="text-xl md:text-2xl font-black text-slate-950 leading-snug drop-shadow-xs pointer-events-none">
-                            ${currentSlide.title || state.title}
-                        </h2>
+                ${!currentSlide.hideTitle ? `
+                    <div data-drag-id="title" class="z-20 select-none relative ${dragCursor} ${selectRing('title')}" style="${posStyle(layout.title)}">
+                        <div class="w-[340px] text-center px-4" dir="rtl">
+                            <span class="inline-block px-3 py-1 rounded-full bg-slate-900 text-white text-[10px] font-black mb-1 shadow-xs pointer-events-none">
+                                ${state.badge || '⚔️ صراع العمالقة'}
+                            </span>
+                            <h2 class="text-xl md:text-2xl font-black text-slate-950 leading-snug drop-shadow-xs pointer-events-none">
+                                ${currentSlide.title || state.title}
+                            </h2>
+                        </div>
+                        ${renderResizeHandle('title')}
                     </div>
-                    ${renderResizeHandle('title')}
-                </div>
+                ` : ''}
 
                 <!-- 2. Player Card A (Right side in RTL) -->
-                <div data-drag-id="cardA" class="z-20 select-none relative ${dragCursor} ${selectRing('cardA')}" style="${posStyle(layout.cardA)}">
-                    <div class="w-[190px] flex flex-col items-center" dir="rtl">
-                        <div class="relative h-[230px] flex items-center justify-center">
-                            <img src="${pA.cardUrl}" alt="${pA.name}" class="max-h-[230px] w-auto object-contain drop-shadow-2xl pointer-events-none">
+                ${!currentSlide.hideCardA ? `
+                    <div data-drag-id="cardA" class="z-20 select-none relative ${dragCursor} ${selectRing('cardA')}" style="${posStyle(layout.cardA)}">
+                        <div class="w-[190px] flex flex-col items-center" dir="rtl">
+                            <div class="relative h-[230px] flex items-center justify-center">
+                                <img src="${pA.cardUrl}" alt="${pA.name}" class="max-h-[230px] w-auto object-contain drop-shadow-2xl pointer-events-none">
+                            </div>
+                            <div class="mt-2 text-center pointer-events-none">
+                                <div class="text-sm font-black text-slate-950">${pA.arName || pA.name}</div>
+                                <div class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-200 mt-1">${pA.statHighlight || ''}</div>
+                            </div>
                         </div>
-                        <div class="mt-2 text-center pointer-events-none">
-                            <div class="text-sm font-black text-slate-950">${pA.arName || pA.name}</div>
-                            <div class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-200 mt-1">${pA.statHighlight || ''}</div>
-                        </div>
+                        ${renderResizeHandle('cardA')}
                     </div>
-                    ${renderResizeHandle('cardA')}
-                </div>
+                ` : ''}
 
                 <!-- 3. VS Badge Center (Centered X & Y) -->
-                <div data-drag-id="vsBadge" class="z-25 flex items-center justify-center select-none relative ${dragCursor} ${selectRing('vsBadge')}" style="${posStyle(layout.vsBadge, 'translateY(-50%)')}">
-                    <div class="w-13 h-13 rounded-full bg-gradient-to-tr from-rose-600 via-red-600 to-amber-500 text-white font-black text-base flex items-center justify-center shadow-xl border-2 border-white animate-pulse pointer-events-none">
-                        VS
+                ${!currentSlide.hideVsBadge ? `
+                    <div data-drag-id="vsBadge" class="z-25 flex items-center justify-center select-none relative ${dragCursor} ${selectRing('vsBadge')}" style="${posStyle(layout.vsBadge, 'translateY(-50%)')}">
+                        <div class="w-13 h-13 rounded-full bg-gradient-to-tr from-rose-600 via-red-600 to-amber-500 text-white font-black text-base flex items-center justify-center shadow-xl border-2 border-white animate-pulse pointer-events-none">
+                            VS
+                        </div>
+                        ${renderResizeHandle('vsBadge')}
                     </div>
-                    ${renderResizeHandle('vsBadge')}
-                </div>
+                ` : ''}
 
                 <!-- 4. Player Card B (Left side in RTL) -->
-                <div data-drag-id="cardB" class="z-20 select-none relative ${dragCursor} ${selectRing('cardB')}" style="${posStyle(layout.cardB)}">
-                    <div class="w-[190px] flex flex-col items-center" dir="rtl">
-                        <div class="relative h-[230px] flex items-center justify-center">
-                            <img src="${pB.cardUrl}" alt="${pB.name}" class="max-h-[230px] w-auto object-contain drop-shadow-2xl pointer-events-none">
+                ${!currentSlide.hideCardB ? `
+                    <div data-drag-id="cardB" class="z-20 select-none relative ${dragCursor} ${selectRing('cardB')}" style="${posStyle(layout.cardB)}">
+                        <div class="w-[190px] flex flex-col items-center" dir="rtl">
+                            <div class="relative h-[230px] flex items-center justify-center">
+                                <img src="${pB.cardUrl}" alt="${pB.name}" class="max-h-[230px] w-auto object-contain drop-shadow-2xl pointer-events-none">
+                            </div>
+                            <div class="mt-2 text-center pointer-events-none">
+                                <div class="text-sm font-black text-slate-950">${pB.arName || pB.name}</div>
+                                <div class="text-[10px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-lg border border-blue-200 mt-1">${pB.statHighlight || ''}</div>
+                            </div>
                         </div>
-                        <div class="mt-2 text-center pointer-events-none">
-                            <div class="text-sm font-black text-slate-950">${pB.arName || pB.name}</div>
-                            <div class="text-[10px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-lg border border-blue-200 mt-1">${pB.statHighlight || ''}</div>
-                        </div>
+                        ${renderResizeHandle('cardB')}
                     </div>
-                    ${renderResizeHandle('cardB')}
-                </div>
+                ` : ''}
 
                 <!-- 5. Bottom Interactive Question Hook -->
-                <div data-drag-id="question" class="z-20 select-none relative ${dragCursor} ${selectRing('question')}" style="${posStyle(layout.question)}">
-                    <div class="w-[340px] text-center px-4" dir="rtl">
-                        <div class="inline-block px-5 py-2.5 rounded-2xl bg-white/95 border border-slate-200 text-slate-950 font-black text-xs md:text-sm shadow-md pointer-events-none">
-                            ${currentSlide.question || 'صوت بالتعليقات: من تختار لفريقك؟ 👇'}
+                ${!currentSlide.hideQuestion ? `
+                    <div data-drag-id="question" class="z-20 select-none relative ${dragCursor} ${selectRing('question')}" style="${posStyle(layout.question)}">
+                        <div class="w-[340px] text-center px-4" dir="rtl">
+                            <div class="inline-block px-5 py-2.5 rounded-2xl bg-white/95 border border-slate-200 text-slate-950 font-black text-xs md:text-sm shadow-md pointer-events-none">
+                                ${currentSlide.question || 'صوت بالتعليقات: من تختار لفريقك؟ 👇'}
+                            </div>
                         </div>
+                        ${renderResizeHandle('question')}
                     </div>
-                    ${renderResizeHandle('question')}
-                </div>
+                ` : ''}
             `;
         } else if (currentSlide.type === 'outro') {
             bodyHtml = `
-                <div class="absolute inset-0 flex flex-col items-center justify-center px-8 text-center z-20" dir="rtl">
-                    <img src="${scLogoUrl}" alt="ShopCoin15" class="w-20 h-auto object-contain mb-3 drop-shadow-lg animate-pulse">
-                    <h2 class="text-3xl md:text-4xl font-black text-slate-950 leading-snug">
-                        متجر ShopCoin15
-                    </h2>
-                    <div class="text-sm font-bold text-emerald-700 mt-1">
-                        شحن كوينز فوري وآمن 100% ⚡
+                <!-- 1. Outro Logo -->
+                ${!currentSlide.hideLogo ? `
+                    <div data-drag-id="outroLogo" class="z-20 select-none relative ${dragCursor} ${selectRing('outroLogo')}" style="${posStyle(layout.outroLogo)}">
+                        <img src="${scLogoUrl}" alt="ShopCoin15" class="w-20 h-auto object-contain drop-shadow-lg animate-pulse pointer-events-none">
+                        ${renderResizeHandle('outroLogo')}
                     </div>
-                    <div class="mt-6 space-y-2.5 w-full max-w-sm text-right">
-                        <div class="flex items-center gap-3 p-3 rounded-2xl bg-white border border-slate-200 shadow-xs">
-                            <span class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 font-black flex items-center justify-center text-sm shrink-0">🔒</span>
-                            <div>
-                                <div class="text-xs font-black text-slate-900">ضمان نادي كامل</div>
-                                <div class="text-[10.5px] text-slate-500">حماية تامة من التصفير ببروتوكول تحويل آمن</div>
+                ` : ''}
+
+                <!-- 2. Outro Title -->
+                ${!currentSlide.hideTitle ? `
+                    <div data-drag-id="outroTitle" class="z-20 select-none relative ${dragCursor} ${selectRing('outroTitle')}" style="${posStyle(layout.outroTitle)}">
+                        <div class="w-[340px] text-center px-4" dir="rtl">
+                            <h2 class="text-3xl md:text-4xl font-black text-slate-950 leading-snug pointer-events-none">
+                                ${currentSlide.title || 'متجر ShopCoin15'}
+                            </h2>
+                        </div>
+                        ${renderResizeHandle('outroTitle')}
+                    </div>
+                ` : ''}
+
+                <!-- 3. Outro Subtitle -->
+                ${!currentSlide.hideSubtitle ? `
+                    <div data-drag-id="outroSubtitle" class="z-20 select-none relative ${dragCursor} ${selectRing('outroSubtitle')}" style="${posStyle(layout.outroSubtitle)}">
+                        <div class="text-sm font-bold text-emerald-700 pointer-events-none" dir="rtl">
+                            ${currentSlide.subtitle || 'شحن كوينز فوري وآمن 100% ⚡'}
+                        </div>
+                        ${renderResizeHandle('outroSubtitle')}
+                    </div>
+                ` : ''}
+
+                <!-- 4. Outro Features Box -->
+                ${!currentSlide.hideFeatures ? `
+                    <div data-drag-id="outroFeatures" class="z-20 select-none relative ${dragCursor} ${selectRing('outroFeatures')}" style="${posStyle(layout.outroFeatures)}">
+                        <div class="space-y-2.5 w-[330px] text-right pointer-events-none" dir="rtl">
+                            <div class="flex items-center gap-3 p-3 rounded-2xl bg-white border border-slate-200 shadow-xs">
+                                <span class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 font-black flex items-center justify-center text-sm shrink-0">🔒</span>
+                                <div>
+                                    <div class="text-xs font-black text-slate-900">ضمان نادي كامل</div>
+                                    <div class="text-[10.5px] text-slate-500">حماية تامة من التصفير ببروتوكول تحويل آمن</div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3 p-3 rounded-2xl bg-white border border-slate-200 shadow-xs">
+                                <span class="w-8 h-8 rounded-xl bg-blue-100 text-blue-700 font-black flex items-center justify-center text-sm shrink-0">⚡</span>
+                                <div>
+                                    <div class="text-xs font-black text-slate-900">سرعة تنفيذ قياسية</div>
+                                    <div class="text-[10.5px] text-slate-500">المليون ينشحن خلال دقيقة واحدة بس</div>
+                                </div>
                             </div>
                         </div>
-                        <div class="flex items-center gap-3 p-3 rounded-2xl bg-white border border-slate-200 shadow-xs">
-                            <span class="w-8 h-8 rounded-xl bg-blue-100 text-blue-700 font-black flex items-center justify-center text-sm shrink-0">⚡</span>
-                            <div>
-                                <div class="text-xs font-black text-slate-900">سرعة تنفيذ قياسية</div>
-                                <div class="text-[10.5px] text-slate-500">المليون ينشحن خلال دقيقة واحدة بس</div>
-                            </div>
+                        ${renderResizeHandle('outroFeatures')}
+                    </div>
+                ` : ''}
+
+                <!-- 5. Outro CTA -->
+                ${!currentSlide.hideCta ? `
+                    <div data-drag-id="outroCta" class="z-20 select-none relative ${dragCursor} ${selectRing('outroCta')}" style="${posStyle(layout.outroCta)}">
+                        <div class="px-6 py-3 rounded-2xl bg-slate-900 text-white font-black text-xs shadow-lg pointer-events-none" dir="rtl">
+                            ${currentSlide.ctaText || 'للطلب حياك على الخاص: @shop_coin15 📩'}
                         </div>
+                        ${renderResizeHandle('outroCta')}
                     </div>
-                    <div class="mt-7 px-6 py-3 rounded-2xl bg-slate-900 text-white font-black text-xs shadow-lg">
-                        للطلب حياك على الخاص: @shop_coin15 📩
-                    </div>
-                </div>
+                ` : ''}
             `;
         }
 
@@ -1200,8 +1481,9 @@ window.ReelsEngine = (function() {
         const currentSlide = state.slides[state.currentSlideIndex];
 
         const secLayout = state.layouts[state.activeSection] || DEFAULT_LAYOUTS[state.activeSection];
-        const elementsList = ELEMENT_LABELS[state.activeSection] || [];
-        const selectedId = state.selectedDragElement || elementsList[0].id;
+        const elementsList = getCurrentSlideElements();
+        ensureSelectedDragElement();
+        const selectedId = state.selectedDragElement || (elementsList[0] && elementsList[0].id) || 'card';
         const curCfg = secLayout[selectedId] || {};
         const curLeft = (curCfg.left !== undefined) ? curCfg.left : 50;
         const curTop = (curCfg.top !== undefined) ? curCfg.top : 30;
@@ -1212,6 +1494,9 @@ window.ReelsEngine = (function() {
                 ${item.name}
             </option>
         `).join('');
+
+        const hasIntro = state.slides.some(s => s.type === 'intro');
+        const hasOutro = state.slides.some(s => s.type === 'outro');
 
         let html = `
             <div class="space-y-4">
@@ -1284,7 +1569,7 @@ window.ReelsEngine = (function() {
                         </div>
                         <div class="flex items-center gap-1.5">
                             <button type="button" onclick="ReelsEngine.toggleMagnet()" 
-                                    class="px-2.5 py-1 rounded-lg ${state.magnetEnabled !== false ? 'bg-emerald-600 text-white shadow-xs' : 'bg-slate-300 text-slate-700'} text-[10.5px] font-black transition flex items-center gap-1" title="تفعيل/تعطيل المغناطيس للالتصاق بالمنتصف">
+                                     class="px-2.5 py-1 rounded-lg ${state.magnetEnabled !== false ? 'bg-emerald-600 text-white shadow-xs' : 'bg-slate-300 text-slate-700'} text-[10.5px] font-black transition flex items-center gap-1" title="تفعيل/تعطيل المغناطيس للالتصاق بالمنتصف">
                                 <span>${state.magnetEnabled !== false ? '🧲 مغناطيس: شغال' : '🧲 مغناطيس: مطفأ'}</span>
                             </button>
                             <button type="button" id="btnToggleDragLock" onclick="ReelsEngine.toggleDragLock()" 
@@ -1424,15 +1709,27 @@ window.ReelsEngine = (function() {
 
                 <!-- 4. SLIDE & PLAYER CUSTOMIZER -->
                 <div class="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-3">
-                    <div class="flex items-center justify-between">
+                    <div class="flex items-center justify-between flex-wrap gap-2">
                         <span class="text-xs font-black text-slate-900">
                             تعديل السلايد الحالي (${state.currentSlideIndex + 1}/${state.slides.length}):
                         </span>
-                        ${isCountdown ? `
-                            <button type="button" onclick="ReelsEngine.addPlayerSlide()" class="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 text-[10.5px] font-black transition flex items-center gap-1">
-                                <span>➕ إضافة كرت</span>
-                            </button>
-                        ` : ''}
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                            ${!hasIntro ? `
+                                <button type="button" onclick="ReelsEngine.addSlide('intro')" class="px-2.5 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 text-[10.5px] font-black transition flex items-center gap-1 shadow-2xs">
+                                    <span>➕ سلايد بداية</span>
+                                </button>
+                            ` : ''}
+                            ${isCountdown ? `
+                                <button type="button" onclick="ReelsEngine.addSlide('player_card')" class="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 text-[10.5px] font-black transition flex items-center gap-1 shadow-2xs">
+                                    <span>➕ كرت لاعب</span>
+                                </button>
+                            ` : ''}
+                            ${!hasOutro ? `
+                                <button type="button" onclick="ReelsEngine.addSlide('outro')" class="px-2.5 py-1 rounded-lg bg-purple-50 hover:bg-purple-100 text-purple-800 border border-purple-200 text-[10.5px] font-black transition flex items-center gap-1 shadow-2xs">
+                                    <span>➕ سلايد ختام</span>
+                                </button>
+                            ` : ''}
+                        </div>
                     </div>
 
                     ${renderSlideForm(currentSlide)}
@@ -1475,56 +1772,182 @@ window.ReelsEngine = (function() {
     function renderSlideForm(slide) {
         if (!slide) return '';
 
+        const curDuration = Math.round((slide.duration || 2.5) * 10) / 10;
+        const isPlayerCard = slide.type === 'player_card';
+
+        // 1. Duration / Speed Control Bar for EVERY slide
+        const durationControlHtml = `
+            <div class="p-2.5 rounded-xl bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 border border-amber-200 space-y-2">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-sm">⏱️</span>
+                        <span class="text-[11px] font-black text-amber-950">سرعة ومدة عرض هذا السلايد:</span>
+                    </div>
+                    <span id="currentSlideDurationBadge" class="text-[11px] font-mono font-black text-amber-900 bg-white px-2 py-0.5 rounded-md border border-amber-300 shadow-2xs">
+                        ${curDuration.toFixed(1)} ثانية
+                    </span>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <button type="button" onclick="ReelsEngine.adjustCurrentSlideDuration(-0.2)" 
+                            class="w-7 h-7 rounded-lg bg-white hover:bg-amber-100 text-amber-900 font-black text-xs border border-amber-200 flex items-center justify-center transition active:scale-95 shadow-2xs" title="تقليل 0.2 ثانية (تسريع السلايد)">
+                        ⚡
+                    </button>
+                    <input type="range" min="0.8" max="6.0" step="0.1" value="${curDuration}" 
+                           oninput="ReelsEngine.setCurrentSlideDuration(this.value)" class="flex-1 accent-amber-600 cursor-pointer">
+                    <button type="button" onclick="ReelsEngine.adjustCurrentSlideDuration(0.2)" 
+                            class="w-7 h-7 rounded-lg bg-white hover:bg-amber-100 text-amber-900 font-black text-xs border border-amber-200 flex items-center justify-center transition active:scale-95 shadow-2xs" title="زيادة 0.2 ثانية (إبطاء السلايد)">
+                        ⏳
+                    </button>
+                </div>
+
+                <!-- Quick Presets -->
+                <div class="grid grid-cols-4 gap-1 pt-0.5">
+                    <button type="button" onclick="ReelsEngine.setCurrentSlideDuration(1.2)" class="py-1 rounded-md bg-white hover:bg-amber-100 text-slate-800 text-[10px] font-bold border border-amber-200 transition ${curDuration === 1.2 ? 'ring-2 ring-amber-500 font-black' : ''}">
+                        سريع 1.2s
+                    </button>
+                    <button type="button" onclick="ReelsEngine.setCurrentSlideDuration(1.8)" class="py-1 rounded-md bg-white hover:bg-amber-100 text-slate-800 text-[10px] font-bold border border-amber-200 transition ${curDuration === 1.8 ? 'ring-2 ring-amber-500 font-black' : ''}">
+                        خاطف 1.8s
+                    </button>
+                    <button type="button" onclick="ReelsEngine.setCurrentSlideDuration(2.6)" class="py-1 rounded-md bg-white hover:bg-amber-100 text-slate-800 text-[10px] font-bold border border-amber-200 transition ${curDuration === 2.6 ? 'ring-2 ring-amber-500 font-black' : ''}">
+                        متوازن 2.6s
+                    </button>
+                    <button type="button" onclick="ReelsEngine.setCurrentSlideDuration(3.5)" class="py-1 rounded-md bg-white hover:bg-amber-100 text-slate-800 text-[10px] font-bold border border-amber-200 transition ${curDuration === 3.5 ? 'ring-2 ring-amber-500 font-black' : ''}">
+                        هادئ 3.5s
+                    </button>
+                </div>
+
+                ${isPlayerCard ? `
+                    <div class="pt-1 border-t border-amber-200/60">
+                        <button type="button" onclick="ReelsEngine.applyDurationToAllPlayerCards()" 
+                                class="w-full py-1.5 px-2 rounded-lg bg-white hover:bg-amber-100 text-amber-900 border border-amber-300 font-black text-[10.5px] transition flex items-center justify-center gap-1 shadow-2xs active:scale-[0.98]">
+                            <span>🔄 تعميم هذه السرعة (${curDuration.toFixed(1)}s) على كافة كروت اللاعبين</span>
+                        </button>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+
+        // 2. Global Delete button for ANY slide
+        const deleteSlideButtonHtml = `
+            <div class="pt-2 border-t border-slate-100">
+                <button type="button" onclick="ReelsEngine.deleteCurrentSlide()" 
+                        class="w-full py-2 px-3 rounded-xl bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 font-black text-xs transition flex items-center justify-center gap-1.5 shadow-2xs active:scale-[0.98]">
+                    <span>🗑️ حذف هذا السلايد بالكامل من الريل</span>
+                </button>
+            </div>
+        `;
+
         if (slide.type === 'intro') {
             return `
                 <div class="space-y-2.5">
-                    <div>
-                        <label class="block text-[11px] font-black text-slate-700 mb-1">عنوان الريل المانشيت (Hook Title):</label>
+                    ${durationControlHtml}
+
+                    <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5">
+                        <div class="flex items-center justify-between">
+                            <label class="text-[11px] font-black text-slate-800">شارة العنوان (Badge):</label>
+                            <button type="button" onclick="ReelsEngine.toggleElementVisibility('hideBadge')" class="text-[10px] font-bold px-2 py-0.5 rounded ${slide.hideBadge ? 'bg-slate-200 text-slate-600' : 'bg-rose-50 text-rose-600 border border-rose-200'}">
+                                ${slide.hideBadge ? '👁️ إظهار' : '🗑️ إخفاء/حذف'}
+                            </button>
+                        </div>
+                        <input type="text" value="${(slide.badge || state.badge || '').replace(/"/g, '&quot;')}" 
+                               oninput="ReelsEngine.updateCurrentSlideField('badge', this.value); state.badge = this.value; ReelsEngine.renderCanvas();"
+                               class="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+                    </div>
+
+                    <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5">
+                        <div class="flex items-center justify-between">
+                            <label class="text-[11px] font-black text-slate-800">عنوان الريل المانشيت (Hook Title):</label>
+                            <button type="button" onclick="ReelsEngine.toggleElementVisibility('hideTitle')" class="text-[10px] font-bold px-2 py-0.5 rounded ${slide.hideTitle ? 'bg-slate-200 text-slate-600' : 'bg-rose-50 text-rose-600 border border-rose-200'}">
+                                ${slide.hideTitle ? '👁️ إظهار' : '🗑️ إخفاء/حذف'}
+                            </button>
+                        </div>
                         <textarea rows="2" oninput="ReelsEngine.updateCurrentSlideField('title', this.value); ReelsEngine.updateTitle(this.value);"
-                                  class="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs font-black resize-none leading-relaxed outline-none focus:border-emerald-500">${slide.title || ''}</textarea>
+                                  class="w-full p-2.5 rounded-xl bg-white border border-slate-200 text-slate-900 text-xs font-black resize-none leading-relaxed outline-none focus:border-emerald-500">${slide.title || ''}</textarea>
                     </div>
-                    <div>
-                        <label class="block text-[11px] font-black text-slate-700 mb-1">الوصف والتحفيز (Subtitle):</label>
+
+                    <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5">
+                        <div class="flex items-center justify-between">
+                            <label class="text-[11px] font-black text-slate-800">الوصف والتحفيز (Subtitle):</label>
+                            <button type="button" onclick="ReelsEngine.toggleElementVisibility('hideSubtitle')" class="text-[10px] font-bold px-2 py-0.5 rounded ${slide.hideSubtitle ? 'bg-slate-200 text-slate-600' : 'bg-rose-50 text-rose-600 border border-rose-200'}">
+                                ${slide.hideSubtitle ? '👁️ إظهار' : '🗑️ إخفاء/حذف'}
+                            </button>
+                        </div>
                         <input type="text" value="${(slide.subtitle || '').replace(/"/g, '&quot;')}" 
-                                oninput="ReelsEngine.updateCurrentSlideField('subtitle', this.value)"
-                                class="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs font-medium outline-none focus:border-emerald-500">
+                               oninput="ReelsEngine.updateCurrentSlideField('subtitle', this.value)"
+                               class="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-900 text-xs font-medium outline-none focus:border-emerald-500">
                     </div>
+
+                    <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5">
+                        <div class="flex items-center justify-between">
+                            <label class="text-[11px] font-black text-slate-800">نص زر الإجراء (CTA):</label>
+                            <button type="button" onclick="ReelsEngine.toggleElementVisibility('hideCta')" class="text-[10px] font-bold px-2 py-0.5 rounded ${slide.hideCta ? 'bg-slate-200 text-slate-600' : 'bg-rose-50 text-rose-600 border border-rose-200'}">
+                                ${slide.hideCta ? '👁️ إظهار' : '🗑️ إخفاء/حذف'}
+                            </button>
+                        </div>
+                        <input type="text" value="${(slide.ctaText || 'شاهد الترتيب بالكامل').replace(/"/g, '&quot;')}" 
+                               oninput="ReelsEngine.updateCurrentSlideField('ctaText', this.value)"
+                               class="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+                    </div>
+
+                    ${deleteSlideButtonHtml}
                 </div>
             `;
         } else if (slide.type === 'player_card') {
             return `
                 <div class="space-y-2.5">
+                    ${durationControlHtml}
+
                     <div class="grid grid-cols-2 gap-2">
-                        <div>
-                            <label class="block text-[11px] font-black text-slate-700 mb-1">رقم الرانك (الترتيب):</label>
+                        <div class="p-2 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+                            <div class="flex items-center justify-between">
+                                <label class="text-[10.5px] font-black text-slate-700">رقم الرانك:</label>
+                                <button type="button" onclick="ReelsEngine.toggleElementVisibility('hideRank')" class="text-[9.5px] font-bold px-1.5 py-0.5 rounded ${slide.hideRank ? 'bg-slate-200 text-slate-600' : 'bg-rose-50 text-rose-600'}">
+                                    ${slide.hideRank ? '👁️ إظهار' : '🗑️ إخفاء'}
+                                </button>
+                            </div>
                             <input type="text" value="${slide.rank || '1'}" 
                                    oninput="ReelsEngine.updateCurrentSlideField('rank', this.value)"
-                                   class="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs font-black text-center outline-none focus:border-emerald-500">
+                                   class="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-900 text-xs font-black text-center outline-none focus:border-emerald-500">
                         </div>
-                        <div>
-                            <label class="block text-[11px] font-black text-slate-700 mb-1">اسم اللاعب بالعربي:</label>
+                        <div class="p-2 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+                            <div class="flex items-center justify-between">
+                                <label class="text-[10.5px] font-black text-slate-700">اسم اللاعب:</label>
+                                <button type="button" onclick="ReelsEngine.toggleElementVisibility('hidePlayerName')" class="text-[9.5px] font-bold px-1.5 py-0.5 rounded ${slide.hidePlayerName ? 'bg-slate-200 text-slate-600' : 'bg-rose-50 text-rose-600'}">
+                                    ${slide.hidePlayerName ? '👁️ إظهار' : '🗑️ إخفاء'}
+                                </button>
+                            </div>
                             <input type="text" value="${(slide.playerArName || '').replace(/"/g, '&quot;')}" 
                                    oninput="ReelsEngine.updateCurrentSlideField('playerArName', this.value)"
-                                   class="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+                                   class="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
                         </div>
                     </div>
-                    <div>
-                        <label class="block text-[11px] font-black text-slate-700 mb-1">رابط صورة كرت اللاعب (FUT.GG WebP أو رابط مباشر):</label>
+
+                    <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+                        <div class="flex items-center justify-between">
+                            <label class="text-[11px] font-black text-slate-700">كرت اللاعب (صورة FUT.GG WebP):</label>
+                            <button type="button" onclick="ReelsEngine.toggleElementVisibility('hideCard')" class="text-[10px] font-bold px-2 py-0.5 rounded ${slide.hideCard ? 'bg-slate-200 text-slate-600' : 'bg-rose-50 text-rose-600'}">
+                                ${slide.hideCard ? '👁️ إظهار' : '🗑️ إخفاء'}
+                            </button>
+                        </div>
                         <input type="text" value="${(slide.cardUrl || '').replace(/"/g, '&quot;')}" 
                                onchange="ReelsEngine.updateCurrentSlideField('cardUrl', this.value)"
-                               class="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-[10.5px] font-mono outline-none focus:border-emerald-500">
+                               class="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-900 text-[10.5px] font-mono outline-none focus:border-emerald-500">
                     </div>
-                    <div>
-                        <label class="block text-[11px] font-black text-slate-700 mb-1">شارات ومميزات الكرت (افصل بينها بفاصلة):</label>
+
+                    <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+                        <div class="flex items-center justify-between">
+                            <label class="text-[11px] font-black text-slate-700">شارات ومميزات الكرت (افصل بفاصلة):</label>
+                            <button type="button" onclick="ReelsEngine.toggleElementVisibility('hideBadges')" class="text-[10px] font-bold px-2 py-0.5 rounded ${slide.hideBadges ? 'bg-slate-200 text-slate-600' : 'bg-rose-50 text-rose-600'}">
+                                ${slide.hideBadges ? '👁️ إظهار' : '🗑️ إخفاء'}
+                            </button>
+                        </div>
                         <input type="text" value="${(slide.badges || []).join(' , ')}" 
                                onchange="ReelsEngine.updateBadges(this.value)"
-                               class="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs font-medium outline-none focus:border-emerald-500">
+                               class="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-800 text-xs font-medium outline-none focus:border-emerald-500">
                     </div>
-                    <div class="pt-1 flex justify-end">
-                        <button type="button" onclick="ReelsEngine.deleteCurrentSlide()" class="text-rose-600 hover:text-rose-800 font-bold text-[10.5px] transition flex items-center gap-1">
-                            <span>🗑️ حذف هذا السلايد</span>
-                        </button>
-                    </div>
+
+                    ${deleteSlideButtonHtml}
                 </div>
             `;
         } else if (slide.type === 'versus_card') {
@@ -1532,8 +1955,27 @@ window.ReelsEngine = (function() {
             const pB = slide.playerB || {};
             return `
                 <div class="space-y-3">
+                    ${durationControlHtml}
+
+                    <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+                        <div class="flex items-center justify-between">
+                            <label class="text-[11px] font-black text-slate-900">عنوان المقارنة:</label>
+                            <button type="button" onclick="ReelsEngine.toggleElementVisibility('hideTitle')" class="text-[10px] font-bold px-2 py-0.5 rounded ${slide.hideTitle ? 'bg-slate-200 text-slate-600' : 'bg-rose-50 text-rose-600'}">
+                                ${slide.hideTitle ? '👁️ إظهار' : '🗑️ إخفاء'}
+                            </button>
+                        </div>
+                        <input type="text" value="${(slide.title || state.title || '').replace(/"/g, '&quot;')}" 
+                               oninput="ReelsEngine.updateCurrentSlideField('title', this.value); ReelsEngine.updateTitle(this.value);"
+                               class="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs font-black">
+                    </div>
+
                     <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
-                        <span class="text-[11px] font-black text-slate-900 block">اللاعب الأول (اليمين):</span>
+                        <div class="flex items-center justify-between">
+                            <span class="text-[11px] font-black text-slate-900">اللاعب الأول (اليمين):</span>
+                            <button type="button" onclick="ReelsEngine.toggleElementVisibility('hideCardA')" class="text-[10px] font-bold px-2 py-0.5 rounded ${slide.hideCardA ? 'bg-slate-200 text-slate-600' : 'bg-rose-50 text-rose-600'}">
+                                ${slide.hideCardA ? '👁️ إظهار' : '🗑️ إخفاء'}
+                            </button>
+                        </div>
                         <div class="grid grid-cols-2 gap-2">
                             <input type="text" placeholder="الاسم بالعربي" value="${(pA.arName || '').replace(/"/g, '&quot;')}" 
                                    oninput="ReelsEngine.updateVersusField('playerA', 'arName', this.value)"
@@ -1548,7 +1990,12 @@ window.ReelsEngine = (function() {
                     </div>
 
                     <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
-                        <span class="text-[11px] font-black text-slate-900 block">اللاعب الثاني (اليسار):</span>
+                        <div class="flex items-center justify-between">
+                            <span class="text-[11px] font-black text-slate-900">اللاعب الثاني (اليسار):</span>
+                            <button type="button" onclick="ReelsEngine.toggleElementVisibility('hideCardB')" class="text-[10px] font-bold px-2 py-0.5 rounded ${slide.hideCardB ? 'bg-slate-200 text-slate-600' : 'bg-rose-50 text-rose-600'}">
+                                ${slide.hideCardB ? '👁️ إظهار' : '🗑️ إخفاء'}
+                            </button>
+                        </div>
                         <div class="grid grid-cols-2 gap-2">
                             <input type="text" placeholder="الاسم بالعربي" value="${(pB.arName || '').replace(/"/g, '&quot;')}" 
                                    oninput="ReelsEngine.updateVersusField('playerB', 'arName', this.value)"
@@ -1562,18 +2009,63 @@ window.ReelsEngine = (function() {
                                class="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-[10.5px] font-mono">
                     </div>
 
-                    <div>
-                        <label class="block text-[11px] font-black text-slate-700 mb-1">سؤال التفاعل أسفل المقارنة:</label>
+                    <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+                        <div class="flex items-center justify-between">
+                            <label class="text-[11px] font-black text-slate-700">سؤال التفاعل أسفل المقارنة:</label>
+                            <button type="button" onclick="ReelsEngine.toggleElementVisibility('hideQuestion')" class="text-[10px] font-bold px-2 py-0.5 rounded ${slide.hideQuestion ? 'bg-slate-200 text-slate-600' : 'bg-rose-50 text-rose-600'}">
+                                ${slide.hideQuestion ? '👁️ إظهار' : '🗑️ إخفاء'}
+                            </button>
+                        </div>
                         <input type="text" value="${(slide.question || '').replace(/"/g, '&quot;')}" 
                                oninput="ReelsEngine.updateCurrentSlideField('question', this.value)"
-                               class="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold outline-none focus:border-emerald-500">
+                               class="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs font-bold outline-none focus:border-emerald-500">
                     </div>
+
+                    ${deleteSlideButtonHtml}
                 </div>
             `;
         } else {
             return `
-                <div class="text-xs font-bold text-slate-500 leading-relaxed">
-                    سلايد الختام يعرض شعار متجر ShopCoin15 وضمان النادي ورابط الطلب عبر الخاص @shop_coin15.
+                <div class="space-y-2.5">
+                    ${durationControlHtml}
+
+                    <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5">
+                        <div class="flex items-center justify-between">
+                            <label class="text-[11px] font-black text-slate-800">عنوان الختام:</label>
+                            <button type="button" onclick="ReelsEngine.toggleElementVisibility('hideTitle')" class="text-[10px] font-bold px-2 py-0.5 rounded ${slide.hideTitle ? 'bg-slate-200 text-slate-600' : 'bg-rose-50 text-rose-600'}">
+                                ${slide.hideTitle ? '👁️ إظهار' : '🗑️ إخفاء'}
+                            </button>
+                        </div>
+                        <input type="text" value="${(slide.title || 'متجر ShopCoin15').replace(/"/g, '&quot;')}" 
+                               oninput="ReelsEngine.updateCurrentSlideField('title', this.value)"
+                               class="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs font-black">
+                    </div>
+
+                    <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5">
+                        <div class="flex items-center justify-between">
+                            <label class="text-[11px] font-black text-slate-800">الوصف الترويجي:</label>
+                            <button type="button" onclick="ReelsEngine.toggleElementVisibility('hideSubtitle')" class="text-[10px] font-bold px-2 py-0.5 rounded ${slide.hideSubtitle ? 'bg-slate-200 text-slate-600' : 'bg-rose-50 text-rose-600'}">
+                                ${slide.hideSubtitle ? '👁️ إظهار' : '🗑️ إخفاء'}
+                            </button>
+                        </div>
+                        <input type="text" value="${(slide.subtitle || 'شحن كوينز فوري وآمن 100% ⚡').replace(/"/g, '&quot;')}" 
+                               oninput="ReelsEngine.updateCurrentSlideField('subtitle', this.value)"
+                               class="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs font-bold text-emerald-700">
+                    </div>
+
+                    <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5">
+                        <div class="flex items-center justify-between">
+                            <label class="text-[11px] font-black text-slate-800">زر الطلب والتواصل:</label>
+                            <button type="button" onclick="ReelsEngine.toggleElementVisibility('hideCta')" class="text-[10px] font-bold px-2 py-0.5 rounded ${slide.hideCta ? 'bg-slate-200 text-slate-600' : 'bg-rose-50 text-rose-600'}">
+                                ${slide.hideCta ? '👁️ إظهار' : '🗑️ إخفاء'}
+                            </button>
+                        </div>
+                        <input type="text" value="${(slide.ctaText || 'للطلب حياك على الخاص: @shop_coin15 📩').replace(/"/g, '&quot;')}" 
+                               oninput="ReelsEngine.updateCurrentSlideField('ctaText', this.value)"
+                               class="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs font-bold">
+                    </div>
+
+                    ${deleteSlideButtonHtml}
                 </div>
             `;
         }
@@ -1715,8 +2207,11 @@ window.ReelsEngine = (function() {
                     slideImg.src = imgDataUrl;
                     await new Promise(res => { slideImg.onload = res; slideImg.onerror = res; });
 
-                    const framesCount = Math.floor((msPerSlide / 1000) * 30);
-                    const frameInterval = msPerSlide / framesCount;
+                    const curSlideObj = state.slides[i];
+                    const curSlideSec = (curSlideObj && curSlideObj.duration) || state.slideDuration || 2.5;
+                    const msThisSlide = curSlideSec * 1000;
+                    const framesCount = Math.max(15, Math.floor(curSlideSec * 30));
+                    const frameInterval = msThisSlide / framesCount;
 
                     for (let f = 0; f < framesCount; f++) {
                         const progress = f / framesCount;
@@ -1840,7 +2335,12 @@ ${state.subtitle}
         saveLayoutPositions,
         resetLayoutPositions,
         addPlayerSlide,
+        addSlide,
         deleteCurrentSlide,
+        toggleElementVisibility,
+        setCurrentSlideDuration,
+        adjustCurrentSlideDuration,
+        applyDurationToAllPlayerCards,
         updateCurrentSlideField,
         updateVersusField,
         updateTitle,
