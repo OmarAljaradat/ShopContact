@@ -1787,18 +1787,42 @@ function renderControls() {
 
                     <div class="space-y-2">
                         ${banners.map((b, idx) => `
-                            <div class="p-2.5 rounded-xl bg-slate-50/70 border border-slate-200 flex items-center gap-2">
-                                <span class="w-5 h-5 rounded-full bg-slate-200 text-slate-700 text-[10px] font-black flex items-center justify-center shrink-0">${idx + 1}</span>
+                            <div class="p-2.5 rounded-xl bg-slate-50/70 border border-slate-200 flex items-center gap-1.5 transition hover:border-slate-300">
+                                <div class="flex items-center gap-1 shrink-0">
+                                    <span class="w-5 h-5 rounded-full bg-slate-200 text-slate-700 text-[10px] font-black flex items-center justify-center shrink-0 shadow-2xs">${idx + 1}</span>
+                                    <div class="flex flex-col gap-0.5">
+                                        <button type="button" onclick="movePromoBannerUp(${idx})" ${idx === 0 ? 'disabled class="w-4 h-3 rounded bg-slate-100 text-slate-300 text-[8px] flex items-center justify-center cursor-not-allowed"' : 'class="w-4 h-3 rounded bg-slate-200 hover:bg-emerald-500 hover:text-white text-slate-700 text-[8px] font-black flex items-center justify-center transition cursor-pointer active:scale-90"'} title="رفع الشريط للأعلى (تقديم)">▲</button>
+                                        <button type="button" onclick="movePromoBannerDown(${idx})" ${idx === banners.length - 1 ? 'disabled class="w-4 h-3 rounded bg-slate-100 text-slate-300 text-[8px] flex items-center justify-center cursor-not-allowed"' : 'class="w-4 h-3 rounded bg-slate-200 hover:bg-emerald-500 hover:text-white text-slate-700 text-[8px] font-black flex items-center justify-center transition cursor-pointer active:scale-90"'} title="تنزيل الشريط للأسفل (تأخير)">▼</button>
+                                    </div>
+                                </div>
                                 <input type="text" value="${(b.text || '').replace(/"/g, '&quot;')}" oninput="updatePromoBannerText(${idx}, this.value)" placeholder="نص الشريط..." class="flex-1 px-2 py-1 rounded-lg bg-white border border-slate-200 text-xs font-bold text-slate-900 outline-none focus:border-emerald-500">
-                                <input type="color" value="${b.bg || '#0084FF'}" oninput="updatePromoBannerBg(${idx}, this.value)" class="w-7 h-7 rounded cursor-pointer border-0 p-0 shrink-0" title="لون خلفية الشريط">
-                                <button type="button" onclick="togglePromoBannerColor(${idx})" class="px-2 py-1 rounded text-[10px] font-bold border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 shrink-0" title="تبديل لون الخط بين الأبيض والأسود">
+                                <input type="color" value="${b.bg || '#0084FF'}" oninput="updatePromoBannerBg(${idx}, this.value)" class="w-7 h-7 rounded cursor-pointer border-0 p-0 shrink-0 shadow-2xs" title="لون خلفية الشريط">
+                                <button type="button" onclick="togglePromoBannerColor(${idx})" class="px-2 py-1 rounded text-[10px] font-bold border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 shrink-0 shadow-2xs" title="تبديل لون الخط بين الأبيض والأسود">
                                     ${(b.color || '').toUpperCase() === '#FFFFFF' ? '⚪' : '⚫'}
                                 </button>
                                 ${banners.length > 1 ? `
-                                <button type="button" onclick="removePromoBanner(${idx})" class="w-6 h-6 rounded bg-red-50 hover:bg-red-100 text-red-600 text-xs font-black transition flex items-center justify-center shrink-0" title="حذف الشريط">✕</button>
+                                <button type="button" onclick="removePromoBanner(${idx})" class="w-6 h-6 rounded bg-red-50 hover:bg-red-500 hover:text-white text-red-600 text-xs font-black transition flex items-center justify-center shrink-0" title="حذف الشريط">✕</button>
                                 ` : ''}
                             </div>
                         `).join('')}
+                    </div>
+
+                    <div class="flex items-center justify-between pt-2 border-t border-slate-100 text-[11px] text-slate-500">
+                        <span class="font-bold flex items-center gap-1 text-slate-700">
+                            <span>↕️</span>
+                            <span>موضع قسم الشرائط على التصميم:</span>
+                        </span>
+                        <div class="flex items-center gap-1.5">
+                            <button type="button" onclick="nudgeLayerY('layer_store_banners', -15)" class="px-2 py-0.5 rounded-lg bg-slate-100 hover:bg-emerald-100 text-slate-700 hover:text-emerald-900 font-bold text-[10.5px] border border-slate-200 transition active:scale-95" title="رفع قسم الشرائط للأعلى">
+                                ⬆️ رفع للأعلى
+                            </button>
+                            <button type="button" onclick="nudgeLayerY('layer_store_banners', 15)" class="px-2 py-0.5 rounded-lg bg-slate-100 hover:bg-emerald-100 text-slate-700 hover:text-emerald-900 font-bold text-[10.5px] border border-slate-200 transition active:scale-95" title="تنزيل قسم الشرائط للأسفل">
+                                ⬇️ تنزيل للأسفل
+                            </button>
+                            <button type="button" onclick="resetLayerY('layer_store_banners', 45)" class="px-1.5 py-0.5 rounded-lg bg-slate-50 hover:bg-slate-200 text-slate-500 font-bold text-[10px] border border-slate-200 transition" title="إعادة الموضع الافتراضي">
+                                ↺
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -2567,18 +2591,42 @@ function renderControls() {
 
                         <div class="space-y-2">
                             ${banners.map((b, idx) => `
-                                <div class="p-2.5 rounded-xl bg-slate-50/70 border border-slate-200 flex items-center gap-2">
-                                    <span class="w-5 h-5 rounded-full bg-slate-200 text-slate-700 text-[10px] font-black flex items-center justify-center shrink-0">${idx + 1}</span>
+                                <div class="p-2.5 rounded-xl bg-slate-50/70 border border-slate-200 flex items-center gap-1.5 transition hover:border-slate-300">
+                                    <div class="flex items-center gap-1 shrink-0">
+                                        <span class="w-5 h-5 rounded-full bg-slate-200 text-slate-700 text-[10px] font-black flex items-center justify-center shrink-0 shadow-2xs">${idx + 1}</span>
+                                        <div class="flex flex-col gap-0.5">
+                                            <button type="button" onclick="movePromoBannerUp(${idx})" ${idx === 0 ? 'disabled class="w-4 h-3 rounded bg-slate-100 text-slate-300 text-[8px] flex items-center justify-center cursor-not-allowed"' : 'class="w-4 h-3 rounded bg-slate-200 hover:bg-emerald-500 hover:text-white text-slate-700 text-[8px] font-black flex items-center justify-center transition cursor-pointer active:scale-90"'} title="رفع الشريط للأعلى (تقديم)">▲</button>
+                                            <button type="button" onclick="movePromoBannerDown(${idx})" ${idx === banners.length - 1 ? 'disabled class="w-4 h-3 rounded bg-slate-100 text-slate-300 text-[8px] flex items-center justify-center cursor-not-allowed"' : 'class="w-4 h-3 rounded bg-slate-200 hover:bg-emerald-500 hover:text-white text-slate-700 text-[8px] font-black flex items-center justify-center transition cursor-pointer active:scale-90"'} title="تنزيل الشريط للأسفل (تأخير)">▼</button>
+                                        </div>
+                                    </div>
                                     <input type="text" value="${(b.text || '').replace(/"/g, '&quot;')}" oninput="updatePromoBannerText(${idx}, this.value)" placeholder="نص شريط التحدي..." class="flex-1 px-2 py-1 rounded-lg bg-white border border-slate-200 text-xs font-bold text-slate-900 outline-none focus:border-emerald-500">
-                                    <input type="color" value="${b.bg || '#0084FF'}" oninput="updatePromoBannerBg(${idx}, this.value)" class="w-7 h-7 rounded cursor-pointer border-0 p-0 shrink-0" title="لون خلفية الشريط">
-                                    <button type="button" onclick="togglePromoBannerColor(${idx})" class="px-2 py-1 rounded text-[10px] font-bold border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 shrink-0" title="تبديل لون الخط بين الأبيض والأسود">
+                                    <input type="color" value="${b.bg || '#0084FF'}" oninput="updatePromoBannerBg(${idx}, this.value)" class="w-7 h-7 rounded cursor-pointer border-0 p-0 shrink-0 shadow-2xs" title="لون خلفية الشريط">
+                                    <button type="button" onclick="togglePromoBannerColor(${idx})" class="px-2 py-1 rounded text-[10px] font-bold border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 shrink-0 shadow-2xs" title="تبديل لون الخط بين الأبيض والأسود">
                                         ${(b.color || '').toUpperCase() === '#FFFFFF' ? '⚪' : '⚫'}
                                     </button>
                                     ${banners.length > 1 ? `
-                                    <button type="button" onclick="removePromoBanner(${idx})" class="w-6 h-6 rounded bg-red-50 hover:bg-red-100 text-red-600 text-xs font-black transition flex items-center justify-center shrink-0" title="حذف الشريط">✕</button>
+                                    <button type="button" onclick="removePromoBanner(${idx})" class="w-6 h-6 rounded bg-red-50 hover:bg-red-500 hover:text-white text-red-600 text-xs font-black transition flex items-center justify-center shrink-0" title="حذف الشريط">✕</button>
                                     ` : ''}
                                 </div>
                             `).join('')}
+                        </div>
+
+                        <div class="flex items-center justify-between pt-2 border-t border-slate-100 text-[11px] text-slate-500">
+                            <span class="font-bold flex items-center gap-1 text-slate-700">
+                                <span>↕️</span>
+                                <span>موضع قسم الشرائط على التصميم:</span>
+                            </span>
+                            <div class="flex items-center gap-1.5">
+                                <button type="button" onclick="nudgeLayerY('layer_sbc_banners', -15)" class="px-2 py-0.5 rounded-lg bg-slate-100 hover:bg-emerald-100 text-slate-700 hover:text-emerald-900 font-bold text-[10.5px] border border-slate-200 transition active:scale-95" title="رفع قسم الشرائط للأعلى">
+                                    ⬆️ رفع للأعلى
+                                </button>
+                                <button type="button" onclick="nudgeLayerY('layer_sbc_banners', 15)" class="px-2 py-0.5 rounded-lg bg-slate-100 hover:bg-emerald-100 text-slate-700 hover:text-emerald-900 font-bold text-[10.5px] border border-slate-200 transition active:scale-95" title="تنزيل قسم الشرائط للأسفل">
+                                    ⬇️ تنزيل للأسفل
+                                </button>
+                                <button type="button" onclick="resetLayerY('layer_sbc_banners', 40)" class="px-1.5 py-0.5 rounded-lg bg-slate-50 hover:bg-slate-200 text-slate-500 font-bold text-[10px] border border-slate-200 transition" title="إعادة الموضع الافتراضي">
+                                    ↺
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -2978,6 +3026,40 @@ window.removePromoBanner = function(index) {
     appState.banners.splice(index, 1);
     renderCanvas();
     renderControls();
+};
+
+window.movePromoBannerUp = function(index) {
+    if (!appState.banners || index <= 0 || index >= appState.banners.length) return;
+    const item = appState.banners.splice(index, 1)[0];
+    appState.banners.splice(index - 1, 0, item);
+    renderCanvas();
+    renderControls();
+};
+
+window.movePromoBannerDown = function(index) {
+    if (!appState.banners || index < 0 || index >= appState.banners.length - 1) return;
+    const item = appState.banners.splice(index, 1)[0];
+    appState.banners.splice(index + 1, 0, item);
+    renderCanvas();
+    renderControls();
+};
+
+window.nudgeLayerY = function(layerKey, delta) {
+    if (!appState.layers) appState.layers = {};
+    if (!appState.layers[layerKey]) {
+        const defaultTop = layerKey === 'layer_sbc_banners' ? 40 : 45;
+        appState.layers[layerKey] = { y: defaultTop };
+    }
+    const curY = typeof appState.layers[layerKey].y === 'number' ? appState.layers[layerKey].y : 45;
+    appState.layers[layerKey].y = Math.max(0, curY + delta);
+    renderCanvas();
+};
+
+window.resetLayerY = function(layerKey, defaultY) {
+    if (!appState.layers) appState.layers = {};
+    if (!appState.layers[layerKey]) appState.layers[layerKey] = {};
+    appState.layers[layerKey].y = defaultY;
+    renderCanvas();
 };
 
 /* =========================================================================
