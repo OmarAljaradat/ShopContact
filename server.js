@@ -250,6 +250,44 @@ async function fetchFutGGSbcPage(targetUrl) {
     });
 }
 
+// Helper to search FUT.GG global player API
+function searchFutGGPlayer(query) {
+    return new Promise((resolve) => {
+        const cleanQuery = (query || '').replace(/[-_]/g, ' ').trim();
+        if (!cleanQuery) return resolve(null);
+        
+        const years = ['27', '26', '25'];
+        let currentYearIndex = 0;
+
+        function tryNext() {
+            if (currentYearIndex >= years.length) return resolve(null);
+            const year = years[currentYearIndex++];
+            const apiUrl = `https://www.fut.gg/api/fut/global-search/${year}/players/?q=${encodeURIComponent(cleanQuery)}`;
+
+            https.get(apiUrl, {
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                    'Accept': 'application/json'
+                }
+            }, (res) => {
+                let data = '';
+                res.on('data', chunk => data += chunk);
+                res.on('end', () => {
+                    try {
+                        const json = JSON.parse(data);
+                        if (json && json.data && json.data.results && json.data.results.length > 0) {
+                            return resolve(json.data.results[0]);
+                        }
+                    } catch(e) {}
+                    tryNext();
+                });
+            }).on('error', () => tryNext());
+        }
+
+        tryNext();
+    });
+}
+
 // Helper to fetch FUT.GG player page data
 function fetchFutGGPage(targetUrl) {
     return new Promise((resolve, reject) => {
@@ -276,13 +314,18 @@ function fetchFutGGPage(targetUrl) {
                                          data.match(/https:\/\/game-assets\.fut\.gg\/cdn-cgi\/image\/[^"'\s]+player-item\/[^"'\s]+/i);
                     
                     if (cardImgMatch) {
-                        cardImage = cardImgMatch[0].replace(/width=\d+/, 'width=500');
+                        cardImage = cardImgMatch[0].replace(/width=\d+/, 'width=600');
                     }
 
                     const titleMatch = data.match(/<title>([^<]+)<\/title>/i);
                     let playerName = 'اللاعب';
                     if (titleMatch) {
-                        playerName = titleMatch[1].replace(/ EA FC.*$/i, '').replace(/ - FUT\.GG.*$/i, '').trim();
+                        playerName = titleMatch[1]
+                            .replace(/ EA FC.*$/i, '')
+                            .replace(/ - FUT\.GG.*$/i, '')
+                            .replace(/\s*FC\s*\d+.*$/i, '')
+                            .replace(/\s*Rating.*$/i, '')
+                            .trim();
                     }
 
                     const descMatch = data.match(/<meta\s+name=["']description["']\s+content=["']([^"']+)["']/i);
@@ -302,6 +345,13 @@ function fetchFutGGPage(targetUrl) {
                                 rating = versionMatch[1].trim();
                                 position = versionMatch[2].trim();
                             }
+                        }
+
+                        const realPosMatch = descMatch[1].match(/\b(GK|CB|LB|RB|LWB|RWB|CDM|CM|CAM|LM|RM|LW|RW|CF|ST)\b/i);
+                        if (realPosMatch) {
+                            position = realPosMatch[1].toUpperCase();
+                        } else if (position === 'OVR' || position.length > 3) {
+                            position = 'CM';
                         }
                     }
 
@@ -328,71 +378,121 @@ function fetchFutGGPage(targetUrl) {
     });
 }
 
-// Universal Player & SBC Resolver (Supports FUTBIN, FUT.GG SBC & Players, ID, direct URL, Base64)
-function resolveSbcOrPlayer(rawInput) {
-    return new Promise((resolve, reject) => {
-        let input = (rawInput || '').trim();
-        if (!input) {
-            return reject(new Error('يرجى وضع رابط من futbin أو fut.gg أو رقم ID اللاعب'));
-        }
+// Universal Player & SBC Resolver (Supports FUTBIN, FUT.GG SBC & Players, ID, direct URL, Base64, Player Name)
+async function resolveSbcOrPlayer(rawInput) {
+    let input = (rawInput || '').trim();
+    if (!input) {
+        throw new Error('يرجى وضع رابط من futbin أو fut.gg أو اسم أو ID اللاعب');
+    }
 
-        // 1. Direct Base64 Data URL
-        if (input.startsWith('data:image/')) {
-            return resolve({
-                success: true,
-                title: 'صورة مخصصة',
-                playerName: 'تحدي SBC',
-                rating: '',
-                position: '',
-                rarity: '',
-                cardImage: input,
-                sbcImage: input
-            });
-        }
+    // 1. Direct Base64 Data URL
+    if (input.startsWith('data:image/')) {
+        return {
+            success: true,
+            title: 'صورة مخصصة',
+            playerName: 'صورة مخصصة',
+            rating: '',
+            position: '',
+            rarity: '',
+            cardImage: input,
+            sbcImage: input
+        };
+    }
 
-        // 2. Direct Image URL
-        if (input.match(/^https?:\/\/.*\.(png|webp|jpg|jpeg)(\?.*)?$/i)) {
-            const proxied = `/api/image-proxy?url=${encodeURIComponent(input)}`;
-            return resolve({
-                success: true,
-                title: 'صورة من رابط',
-                playerName: 'تحدي SBC',
-                rating: '',
-                position: '',
-                rarity: '',
-                cardImage: proxied,
-                sbcImage: proxied
-            });
-        }
+    // 2. Direct Image URL
+    if (input.match(/^https?:\/\/.*\.(png|webp|jpg|jpeg)(\?.*)?$/i)) {
+        const proxied = `/api/image-proxy?url=${encodeURIComponent(input)}`;
+        return {
+            success: true,
+            title: 'صورة من رابط',
+            playerName: 'صورة من رابط',
+            rating: '',
+            position: '',
+            rarity: '',
+            cardImage: proxied,
+            sbcImage: proxied
+        };
+    }
 
-        // 3. Extract Player ID from FUTBIN, FUT.GG, or direct digits
-        let playerId = null;
-        const idInUrl = input.match(/(?:player|players)\/(\d+)/i) || input.match(/^(\d{4,8})$/);
-        if (idInUrl) {
-            playerId = idInUrl[1];
-        }
+    // 3. FUT.GG SBC challenge page
+    if (input.includes('fut.gg/sbc/')) {
+        let targetUrl = input.startsWith('http') ? input : `https://${input}`;
+        return await fetchFutGGSbcPage(targetUrl);
+    }
 
-        let targetUrl = input;
-        if (playerId) {
-            targetUrl = `https://www.fut.gg/players/${playerId}/`;
-        } else if (input.includes('futbin.com')) {
-            const anyDigits = input.match(/\/(\d{4,8})/);
-            if (anyDigits) {
-                targetUrl = `https://www.fut.gg/players/${anyDigits[1]}/`;
+    // 4. FUTBIN Player URL
+    // e.g. https://www.futbin.com/27/player/22923/ayyoub-bouaddi or /player/22923/ayyoub-bouaddi
+    if (input.includes('futbin.com')) {
+        const slugMatch = input.match(/\/player\/\d+\/([^\/\?#]+)/i) ||
+                          input.match(/\/player\/([^\/\?#]+)/i) ||
+                          input.match(/\/([a-z0-9-]+)\/?$/i);
+
+        const slug = slugMatch ? slugMatch[1].replace(/-/g, ' ').trim() : '';
+
+        if (slug) {
+            const searchResult = await searchFutGGPlayer(slug);
+            if (searchResult && searchResult.meta) {
+                if (searchResult.meta.url) {
+                    try {
+                        const futggUrl = `https://www.fut.gg${searchResult.meta.url}`;
+                        return await fetchFutGGPage(futggUrl);
+                    } catch (e) {
+                        // Fallback to meta image below
+                    }
+                }
+                const rawImg = searchResult.meta.imageUrl ? searchResult.meta.imageUrl.replace(/width=\d+/, 'width=600') : '';
+                const proxiedImg = rawImg ? `/api/image-proxy?url=${encodeURIComponent(rawImg)}` : '';
+                const pName = `${searchResult.meta.firstName || ''} ${searchResult.meta.lastName || ''}`.trim() || slug;
+                return {
+                    success: true,
+                    title: pName,
+                    playerName: pName,
+                    rating: String(searchResult.meta.overall || '84'),
+                    position: searchResult.meta.position || 'ST',
+                    rarity: searchResult.meta.isDynamic ? 'Special' : 'Gold Rare',
+                    cardImage: proxiedImg,
+                    sbcImage: proxiedImg
+                };
             }
         }
+    }
 
-        // If targetUrl doesn't have protocol, add https://
-        if (!targetUrl.startsWith('http://') && !targetUrl.startsWith('https://')) {
-            targetUrl = `https://${targetUrl}`;
+    // 5. Direct FUT.GG Player URL
+    if (input.includes('fut.gg')) {
+        let targetUrl = input.startsWith('http') ? input : `https://${input}`;
+        return await fetchFutGGPage(targetUrl);
+    }
+
+    // 6. Direct EA Player ID (digits)
+    if (/^\d{4,8}$/.test(input)) {
+        return await fetchFutGGPage(`https://www.fut.gg/players/${input}/`);
+    }
+
+    // 7. General Player Name or Text Search (e.g. "bouaddi", "مبابي", "Kylian Mbappe")
+    const searchResult = await searchFutGGPlayer(input);
+    if (searchResult && searchResult.meta) {
+        if (searchResult.meta.url) {
+            try {
+                const futggUrl = `https://www.fut.gg${searchResult.meta.url}`;
+                return await fetchFutGGPage(futggUrl);
+            } catch (e) {}
         }
+        const rawImg = searchResult.meta.imageUrl ? searchResult.meta.imageUrl.replace(/width=\d+/, 'width=600') : '';
+        const proxiedImg = rawImg ? `/api/image-proxy?url=${encodeURIComponent(rawImg)}` : '';
+        const pName = `${searchResult.meta.firstName || ''} ${searchResult.meta.lastName || ''}`.trim() || input;
+        return {
+            success: true,
+            title: pName,
+            playerName: pName,
+            rating: String(searchResult.meta.overall || '84'),
+            position: searchResult.meta.position || 'ST',
+            rarity: searchResult.meta.isDynamic ? 'Special' : 'Gold Rare',
+            cardImage: proxiedImg,
+            sbcImage: proxiedImg
+        };
+    }
 
-        if (targetUrl.includes('fut.gg/sbc/')) {
-            return fetchFutGGSbcPage(targetUrl).then(resolve).catch(reject);
-        }
-
-        fetchFutGGPage(targetUrl).then(resolve).catch(reject);
-    });
+    throw new Error('تعذر العثور على بطاقة هذا اللاعب تلقائياً. تأكد من صحة الرابط أو اسم اللاعب، أو ارفع صورة الكرت مباشرة بضغطة زر 📁');
 }
 const resolvePlayerCard = resolveSbcOrPlayer;
 
@@ -877,11 +977,11 @@ const server = http.createServer((req, res) => {
                             res.end(JSON.stringify(result));
                         })
                         .catch(err => {
-                            res.writeHead(500, { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*' });
+                            res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*' });
                             res.end(JSON.stringify({ success: false, error: err.message }));
                         });
                 } catch (e) {
-                    res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*' });
+                    res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*' });
                     res.end(JSON.stringify({ success: false, error: e.message }));
                 }
             });
@@ -904,7 +1004,7 @@ const server = http.createServer((req, res) => {
                 res.end(JSON.stringify(result));
             })
             .catch(err => {
-                res.writeHead(500, { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*' });
+                res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*' });
                 res.end(JSON.stringify({ success: false, error: err.message }));
             });
         return;

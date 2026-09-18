@@ -2276,23 +2276,34 @@ function renderControls() {
                 <div class="flex items-center justify-between mb-2">
                     <span class="text-xs font-black text-emerald-900 flex items-center gap-1.5">
                         <span>⚡</span>
-                        <span>سحب كرت اللاعب الأصلي من FUT.GG:</span>
+                        <span>سحب كرت اللاعب (FUTBIN / FUT.GG):</span>
                     </span>
                     <span class="px-2 py-0.5 rounded bg-emerald-600 text-white text-[9px] font-black">FC 27 الرسمي</span>
                 </div>
                 <div class="flex gap-2">
-                    <input type="text" id="futUrlInput" placeholder="ضع رابط اللاعب من fut.gg (مثال: https://www.fut.gg/players/...)" class="flex-1 px-3 py-2 rounded-xl bg-white border border-emerald-300 text-slate-900 text-xs outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/20 shadow-xs">
-                    <button id="btnFetchFut" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs transition flex items-center gap-1 shrink-0 shadow-sm">
+                    <input type="text" id="futUrlInput" 
+                           onkeydown="if(event.key==='Enter') document.getElementById('btnFetchFut').click()"
+                           placeholder="الصق رابط FUTBIN أو FUT.GG أو اسم اللاعب (مثلاً: bouaddi)" 
+                           class="flex-1 px-3 py-2 rounded-xl bg-white border border-emerald-300 text-slate-900 text-xs outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/20 shadow-xs">
+                    <button id="btnFetchFut" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs transition flex items-center gap-1 shrink-0 shadow-sm cursor-pointer">
                         <span>سحب الكرت</span>
                         <span>⚡</span>
                     </button>
                 </div>
 
-                <div class="mt-3">
+                <div class="flex items-center justify-between pt-2 mt-2 border-t border-emerald-200/60">
+                    <span class="text-[11px] font-bold text-slate-600">أو رفع صورة الكرت مباشرة:</span>
+                    <label class="px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 border border-emerald-300 text-emerald-800 text-xs font-black cursor-pointer transition flex items-center gap-1.5 shadow-xs">
+                        <span>📁 رفع صورة كرت</span>
+                        <input type="file" id="directCardFileInput" accept="image/*" class="hidden" onchange="handleSingleCardUpload(this)">
+                    </label>
+                </div>
+
+                <div class="mt-3 pt-2 border-t border-emerald-200/60">
                     <div class="text-[11px] text-slate-600 font-bold mb-1.5">أبرز نجوم FC 27 بنقرة واحدة:</div>
                     <div class="flex flex-wrap gap-1.5">
                         ${POPULAR_FUTGG_STARS.map(star => `
-                            <button class="quick-star-btn px-2.5 py-1 rounded-lg bg-white hover:bg-emerald-600 hover:text-white border border-slate-200 text-[11px] font-bold text-slate-700 transition shadow-xs" data-url="${star.url}">
+                            <button class="quick-star-btn px-2.5 py-1 rounded-lg bg-white hover:bg-emerald-600 hover:text-white border border-slate-200 text-[11px] font-bold text-slate-700 transition shadow-xs cursor-pointer" data-url="${star.url}">
                                 ${star.name}
                             </button>
                         `).join('')}
@@ -4458,10 +4469,26 @@ function renderPotmTemplate() {
     `;
 }
 
-// Scrape FUT.GG Card
+// Direct single card upload helper
+window.handleSingleCardUpload = function(input) {
+    if (!input || !input.files || !input.files[0]) return;
+    const file = input.files[0];
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        appState.cardImageUrl = e.target.result;
+        renderControls();
+        renderCanvas();
+        if (window.showCopyToast) {
+            window.showCopyToast('تم رفع صورة الكرت بنجاح! 📸⚡');
+        }
+    };
+    reader.readAsDataURL(file);
+};
+
+// Scrape FUT.GG / FUTBIN Card or Search by Name
 async function fetchFutGGCard(url) {
-    if (!url || (!url.includes('fut.gg') && !url.includes('futbin.com') && !url.match(/^\d+$/) && !url.startsWith('http'))) {
-        alert('يرجى إدخال رابط صالح من موقع FUTBIN أو FUT.GG أو رقم ID اللاعب');
+    if (!url || !url.trim()) {
+        alert('يرجى إدخال رابط اللاعب من FUTBIN أو FUT.GG أو اسمه أو رقم ID');
         return;
     }
 
@@ -4474,14 +4501,22 @@ async function fetchFutGGCard(url) {
 
     try {
         const response = await fetch(`/api/fetch-futgg?url=${encodeURIComponent(url.trim())}`);
-        if (!response.ok) {
+        let data = null;
+        try {
+            data = await response.json();
+        } catch (jsonErr) {
             if (window.location.hostname.includes('github.io')) {
-                alert('💡 تنبيه:\nصفحة GitHub Pages هي واجهة استعراض وتصميم ثابتة (بدون خادم Node.js خلفها).\n\n⚡ لسحب الكروت تلقائياً بالرابط:\n• افتح الاستوديو عبر شبكة المنزل: http://192.168.1.2:3000\n• أو يمكنك رفع صورة أي كرت مباشرة بالضغط على زر المجلد 📁');
+                alert('💡 تنبيه:\nصفحة GitHub Pages هي واجهة استعراض وتصميم ثابتة (بدون خادم Node.js خلفها).\n\n⚡ لسحب الكروت تلقائياً بالرابط:\n• افتح الاستوديو عبر سيرفر Render الرسمي\n• أو يمكنك رفع صورة أي كرت مباشرة بالضغط على زر "📁 رفع صورة كرت"');
                 return;
             }
             throw new Error(`استجابة غير صالحة من السيرفر (${response.status})`);
         }
-        const data = await response.json();
+
+        if (!response.ok || !data || !data.success) {
+            const msg = (data && data.error) || 'تعذر سحب صورة البطاقة من هذا الرابط، تأكد من صحة رابط اللاعب.';
+            alert(`💡 ${msg}\n\nنصيحة سريعة: يمكنك رفع صورة الكرت مباشرة من جهازك بالضغط على زر "📁 رفع صورة كرت"`);
+            return;
+        }
 
         if (data.success && data.cardImage) {
             appState.cardImageUrl = data.cardImage;
@@ -4503,15 +4538,13 @@ async function fetchFutGGCard(url) {
             renderCanvas();
             updateCaption();
             if (window.showCopyToast) window.showCopyToast(`تم سحب كرت ${data.playerName} (${data.rating}) لـ FC 27! ⚡`);
-        } else {
-            alert('تعذر سحب صورة البطاقة من هذا الرابط، تأكد من صحة رابط اللاعب.');
         }
     } catch (err) {
-        console.error('Error fetching FUT.GG card:', err);
+        console.error('Error fetching card:', err);
         if (window.location.hostname.includes('github.io')) {
-            alert('💡 تنبيه:\nأنت تتصفح من GitHub Pages (واجهة ثابتة).\n• لسحب الكروت تلقائياً: افتح http://192.168.1.2:3000\n• أو ارفع صورة الكرت مباشرة 📁');
+            alert('💡 تنبيه:\nأنت تتصفح من GitHub Pages (واجهة ثابتة).\n• لسحب الكروت تلقائياً: استخدم رابط السيرفر المباشر\n• أو ارفع صورة الكرت مباشرة 📁');
         } else {
-            alert('حدث خطأ أثناء سحب البطاقة: ' + err.message);
+            alert('حدث خطأ أثناء سحب البطاقة: ' + err.message + '\n\nيمكنك رفع صورة الكرت مباشرة بالضغط على "📁 رفع صورة كرت"');
         }
     } finally {
         if (btn) {

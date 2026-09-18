@@ -51,6 +51,15 @@ const POPULAR_FUTGG_STARS = [
         rating: '91',
         position: 'CDM',
         price: '~180,000 كوينز'
+    },
+    {
+        name: '🇲🇦 بوعدي FC 27 (83)',
+        url: 'https://www.fut.gg/players/278901-ayyoub-bouaddi/',
+        arName: 'أيوب بوعدي',
+        imageUrl: '/api/image-proxy?url=https%3A%2F%2Fgame-assets.fut.gg%2Fcdn-cgi%2Fimage%2Fquality%3D85%2Cformat%3Dauto%2Cwidth%3D600%2F2025%2Ffutgg-player-item-card%2F25-278901.18e50b70ffbcadf1f0621d40662f9b33875362637e894aa202b27166ee9e0da5.webp',
+        rating: '83',
+        position: 'CDM',
+        price: '~25,000 كوينز'
     }
 ];
 
