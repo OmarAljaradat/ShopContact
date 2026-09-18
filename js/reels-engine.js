@@ -2165,6 +2165,37 @@ window.ReelsEngine = (function() {
     }
 
     // ---- 11. VIDEO RECORDER HELPER ----
+    async function captureSlideImage(domNode) {
+        if (window.htmlToImage && typeof window.htmlToImage.toPng === 'function') {
+            try {
+                return await window.htmlToImage.toPng(domNode, {
+                    pixelRatio: 1,
+                    width: 1080,
+                    height: 1920,
+                    cacheBust: true
+                });
+            } catch (e) {
+                console.warn('[Reels Video] htmlToImage warning, trying fallback:', e.message);
+            }
+        }
+        if (window.html2canvas) {
+            try {
+                const c = await window.html2canvas(domNode, {
+                    scale: 1,
+                    width: 1080,
+                    height: 1920,
+                    useCORS: true,
+                    allowTaint: true,
+                    backgroundColor: '#070709'
+                });
+                return c.toDataURL('image/png');
+            } catch (e) {
+                console.warn('[Reels Video] html2canvas warning:', e.message);
+            }
+        }
+        return '';
+    }
+
     async function recordReelVideoBlob(progressCallback) {
         pausePlayback();
         const prevSafe = state.showSafeZone;
@@ -2179,24 +2210,39 @@ window.ReelsEngine = (function() {
             recordCanvas.width = 1080;
             recordCanvas.height = 1920;
             const ctx = recordCanvas.getContext('2d');
+            ctx.fillStyle = '#070709';
+            ctx.fillRect(0, 0, 1080, 1920);
 
-            const stream = recordCanvas.captureStream(60);
-            let mimeType = 'video/webm;codecs=vp9';
-            if (!MediaRecorder.isTypeSupported(mimeType)) mimeType = 'video/webm';
-            if (MediaRecorder.isTypeSupported('video/mp4;codecs=avc1')) mimeType = 'video/mp4;codecs=avc1';
+            // Select best supported MIME type
+            let mimeType = 'video/mp4';
+            if (!MediaRecorder.isTypeSupported(mimeType)) {
+                mimeType = 'video/webm;codecs=vp9';
+                if (!MediaRecorder.isTypeSupported(mimeType)) {
+                    mimeType = 'video/webm';
+                }
+            }
 
-            const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 8000000 });
+            const stream = recordCanvas.captureStream(30);
+            const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 6000000 });
             const chunks = [];
-            recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+            recorder.ondataavailable = e => { 
+                if (e.data && e.data.size > 0) chunks.push(e.data); 
+            };
 
-            const recordingComplete = new Promise(resolve => {
+            const recordingComplete = new Promise((resolve, reject) => {
                 recorder.onstop = () => {
                     const blob = new Blob(chunks, { type: mimeType });
-                    resolve({ blob, mimeType });
+                    console.log(`[Reels Video] Recording finished: ${(blob.size / (1024 * 1024)).toFixed(2)} MB (${blob.size} bytes), chunks: ${chunks.length}`);
+                    if (blob.size === 0) {
+                        reject(new Error('فشل تسجيل الفيديو (الحجم 0 بايت). تأكد من اكتمال تحميل عناصر التصميم.'));
+                    } else {
+                        resolve({ blob, mimeType });
+                    }
                 };
+                recorder.onerror = e => reject(new Error('خطأ في مسجل الفيديو: ' + (e.error?.message || 'MediaRecorder error')));
             });
 
-            recorder.start();
+            recorder.start(200);
 
             const domNode = document.getElementById('exportCanvas');
             const totalSlides = state.slides.length;
@@ -2211,17 +2257,9 @@ window.ReelsEngine = (function() {
                 if (progressCallback) progressCallback(i + 1, totalSlides);
                 state.currentSlideIndex = i;
                 renderCanvas();
-                await new Promise(r => setTimeout(r, 200));
+                await new Promise(r => setTimeout(r, 220));
 
-                let imgDataUrl = '';
-                if (window.htmlToImage && typeof window.htmlToImage.toPng === 'function') {
-                    imgDataUrl = await window.htmlToImage.toPng(domNode, {
-                        pixelRatio: 1,
-                        width: 1080,
-                        height: 1920,
-                        cacheBust: true
-                    });
-                }
+                const imgDataUrl = await captureSlideImage(domNode);
 
                 if (imgDataUrl) {
                     const slideImg = new Image();
@@ -2246,9 +2284,14 @@ window.ReelsEngine = (function() {
                         ctx.drawImage(slideImg, x, y, w, h);
                         await new Promise(r => setTimeout(r, frameInterval));
                     }
+                } else {
+                    console.warn(`[Reels Video] Could not capture slide image for slide ${i + 1}`);
                 }
             }
 
+            // Request any remaining buffered data and stop
+            try { recorder.requestData(); } catch(e) {}
+            await new Promise(r => setTimeout(r, 200));
             recorder.stop();
             const result = await recordingComplete;
             return result;
@@ -2269,11 +2312,11 @@ window.ReelsEngine = (function() {
 
         try {
             if (window.showCopyToast) {
-                window.showCopyToast('بدأ تسجيل فيديو الريل بدقة 60FPS.. يرجى الانتظار ثوانٍ! 🎬⚡');
+                window.showCopyToast('بدأ تسجيل فيديو الريل.. يرجى الانتظار ثوانٍ! 🎬⚡');
             }
 
             const { blob, mimeType } = await recordReelVideoBlob((cur, total) => {
-                if (btn) btn.innerHTML = `<span>⏳ معالجة سلايد ${cur}/${total} (60FPS)...</span>`;
+                if (btn) btn.innerHTML = `<span>⏳ معالجة سلايد ${cur}/${total}...</span>`;
             });
 
             const url = URL.createObjectURL(blob);
@@ -2283,15 +2326,19 @@ window.ReelsEngine = (function() {
             a.download = `Reel_FC27_ShopCoin15_${Date.now()}.${ext}`;
             document.body.appendChild(a);
             a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
+
+            // Retain URL for 60 seconds so Chrome download manager has ample time to write to disk
+            setTimeout(() => {
+                if (document.body.contains(a)) document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }, 60000);
 
             if (window.showCopyToast) {
                 window.showCopyToast('تم تحميل فيديو الريل بنجاح! جاهز للنشر مع موسيقاك 🚀🎉');
             }
         } catch (err) {
             console.error('Video export error:', err);
-            alert('تعذر تصدير الفيديو مباشرة: ' + err.message);
+            alert('تعذر تصدير الفيديو: ' + err.message);
         } finally {
             if (btn) {
                 btn.disabled = false;
