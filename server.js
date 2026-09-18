@@ -799,7 +799,8 @@ const server = http.createServer((req, res) => {
             connected: isConnected,
             username: token ? (token.username || token.display_name || 'shop_coin15') : null,
             avatarUrl: token ? token.avatar_url : null,
-            expiresAt: token ? token.expires_at : null
+            expiresAt: token ? token.expires_at : null,
+            scope: token ? token.scope : null
         }));
         return;
     }
