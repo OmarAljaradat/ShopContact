@@ -105,7 +105,8 @@ const MIME_TYPES = {
     '.ico': 'image/x-icon',
     '.woff2': 'font/woff2',
     '.woff': 'font/woff',
-    '.ttf': 'font/ttf'
+    '.ttf': 'font/ttf',
+    '.txt': 'text/plain; charset=utf-8'
 };
 
 // Helper to fetch FUT.GG SBC page data (Captures COMPLETE card element directly from the site)
