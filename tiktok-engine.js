@@ -88,14 +88,21 @@ async function exchangeCodeForToken(code) {
             res.on('end', async () => {
                 try {
                     const json = JSON.parse(body);
-                    if (json.data && json.data.access_token) {
+                    const accessToken = (json.data && json.data.access_token) || json.access_token;
+                    const refreshToken = (json.data && json.data.refresh_token) || json.refresh_token;
+                    const openId = (json.data && json.data.open_id) || json.open_id;
+                    const scope = (json.data && json.data.scope) || json.scope;
+                    const expiresIn = (json.data && json.data.expires_in) || json.expires_in || 86400;
+                    const refreshExpiresIn = (json.data && json.data.refresh_expires_in) || json.refresh_expires_in || 31536000;
+
+                    if (accessToken) {
                         const tokenRecord = {
-                            access_token: json.data.access_token,
-                            refresh_token: json.data.refresh_token,
-                            open_id: json.data.open_id,
-                            scope: json.data.scope,
-                            expires_at: Date.now() + ((json.data.expires_in || 86400) * 1000),
-                            refresh_expires_at: Date.now() + ((json.data.refresh_expires_in || 31536000) * 1000),
+                            access_token: accessToken,
+                            refresh_token: refreshToken,
+                            open_id: openId,
+                            scope: scope,
+                            expires_at: Date.now() + (expiresIn * 1000),
+                            refresh_expires_at: Date.now() + (refreshExpiresIn * 1000),
                             updated_at: new Date().toISOString()
                         };
 
@@ -106,9 +113,12 @@ async function exchangeCodeForToken(code) {
                                 tokenRecord.username = profile.username || profile.display_name || 'shop_coin15';
                                 tokenRecord.display_name = profile.display_name || 'ShopCoin15';
                                 tokenRecord.avatar_url = profile.avatar_url || '';
+                            } else {
+                                tokenRecord.username = 'shop_coin15';
                             }
                         } catch (pErr) {
                             console.warn('[TikTok Engine] Profile lookup notice:', pErr.message);
+                            tokenRecord.username = 'shop_coin15';
                         }
 
                         saveToken(tokenRecord);
@@ -164,15 +174,19 @@ async function refreshAccessToken() {
             res.on('end', () => {
                 try {
                     const json = JSON.parse(body);
-                    if (json.data && json.data.access_token) {
-                        token.access_token = json.data.access_token;
-                        if (json.data.refresh_token) token.refresh_token = json.data.refresh_token;
-                        token.expires_at = Date.now() + ((json.data.expires_in || 86400) * 1000);
+                    const newAccess = (json.data && json.data.access_token) || json.access_token;
+                    const newRefresh = (json.data && json.data.refresh_token) || json.refresh_token;
+                    const newExpires = (json.data && json.data.expires_in) || json.expires_in || 86400;
+
+                    if (newAccess) {
+                        token.access_token = newAccess;
+                        if (newRefresh) token.refresh_token = newRefresh;
+                        token.expires_at = Date.now() + (newExpires * 1000);
                         token.updated_at = new Date().toISOString();
                         saveToken(token);
                         resolve(token);
                     } else {
-                        reject(new Error(json.error ? json.error.message : 'فشل تجديد رمز الدخول'));
+                        reject(new Error(json.error ? (json.error.message || json.error.code) : 'فشل تجديد رمز الدخول'));
                     }
                 } catch (e) {
                     reject(new Error('خطأ في استجابة تيك توك للتجديد: ' + body.slice(0, 100)));
