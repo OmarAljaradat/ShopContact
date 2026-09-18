@@ -25,8 +25,8 @@ function getConfig() {
         console.error('[TikTok Engine] Failed to read config:', e.message);
     }
     return {
-        client_key: 'awb5gan9v91zepu5',
-        client_secret: 'hGm1tiRWkQ9OQEH0HIXc3STUganfP28m',
+        client_key: 'sbaw2mu1xu5lx5kicv',
+        client_secret: 'p9SewTw0o45ZMprFGSSxpM6nA0yRq8Ef',
         redirect_uri: 'https://shopcoin15-studio.onrender.com/api/tiktok/callback',
         scopes: 'user.info.basic,video.upload'
     };
