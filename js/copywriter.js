@@ -17,13 +17,17 @@ const CopywriterEngine = {
         if (templateId === 'showcase') {
             const player = state.playerName || 'النجم';
             const rating = state.rating || '90';
-            const headline = state.headline || 'ضبط تشكيلتك مع المتجر الأفضل 🔥';
+            const headline = state.headline || 'قفل كرتك بأرخص سعر وأسرع شحن كوينز ⚡';
             const promo = state.promoCode || 'كود خصم: SC15';
+            const priceLine = state.marketPrice ? `💰 سعر الكرت بالسوق: ${state.marketPrice}\n` : '';
+            const offerLine = state.storeOffer ? `⚡ ${state.storeOffer}\n` : '';
 
             if (style === 'hype') {
                 return `${headline}\n\n` +
                     `نزل كرت ${player} (${rating}) رسميـاً في FC 27! 🌟👑\n` +
+                    (priceLine ? `${priceLine}` : '') +
                     `بدل ما تعتمد على الحظ والبكجات.. امتلك الكرت بـ كوينز صافية ومضمونة من متجرنا بأفضل سعر في السوق!\n\n` +
+                    (offerLine ? `${offerLine}` : '') +
                     `⚡ نقل آمن 100% بدون أي تصفير أو بان\n` +
                     `⚡ شامل ضريبة EA بالكامل (تستلم كوينزك صافية)\n` +
                     `⚡ سرعة تنفيذ وتسليم فوري لجميع المنصات (PS5 / Xbox / PC)\n` +
@@ -32,14 +36,16 @@ const CopywriterEngine = {
                     `${hashtags}`;
             } else if (style === 'direct') {
                 return `متوفر الآن شحن كوينز FC 27 لشراء ${player} أو أي لاعب ببالك فوراً ⚡\n\n` +
+                    (priceLine ? `• ${priceLine}` : '') +
                     `• أسعار منافسة وسرعة خيالية بالتنفيذ\n` +
-                    `• ضمان شامل وأمان كامل لحسابك\n` +
+                    `• ضمان شامل وأمان كامل لحسابك 100%\n` +
                     `• ${promo}\n\n` +
                     `للطلب والاستفسار تواصل معنا عبر الخاص DM 📩\n\n` +
                     `${hashtags}`;
             } else { // trust
                 return `ضمان وأمان حسابك في أيدٍ أمينة مع متجر @shop_coin15 🛡️\n\n` +
                     `نوفر لك كوينز شراء كرت ${player} بأحدث طرق النقل الآمنة 100% وبدون أي مخاطر على ناديك.\n` +
+                    (priceLine ? `${priceLine}` : '') +
                     `تقييمات وثقة مئات العملاء على مدار المواسم.\n\n` +
                     `تواصل معنا على الخاص DM وابدأ اللعب بنجومك المفضلين 👑\n\n` +
                     `${hashtags}`;
