@@ -253,8 +253,8 @@ async function fetchUserInfo(accessToken) {
  * @param {string} caption - Post title & hashtags
  * @param {string} privacyLevel - 'PUBLIC_TO_EVERYONE' | 'MUTUAL_FOLLOW_FRIENDS' | 'SELF_ONLY'
  */
-async function publishVideo(videoBuffer, caption, privacyLevel = 'SELF_ONLY') {
-    const accessToken = await getValidAccessToken();
+async function publishVideo(videoBuffer, caption, privacyLevel = 'SELF_ONLY', overrideToken = null) {
+    const accessToken = overrideToken || (await getValidAccessToken());
     if (!accessToken) {
         throw new Error('حساب تيك توك غير مربوط بعد. يرجى الضغط على زر ربط تيك توك أولاً!');
     }

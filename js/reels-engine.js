@@ -2295,8 +2295,15 @@ window.ReelsEngine = (function() {
 
     async function checkTikTokStatus() {
         try {
-            const res = await fetch('/api/tiktok/status');
+            const savedToken = localStorage.getItem('shopcoin15_tiktok_token') || '';
+            const res = await fetch('/api/tiktok/status', {
+                headers: savedToken ? { 'Authorization': 'Bearer ' + savedToken } : {}
+            });
             const data = await res.json();
+            if (savedToken && !data.connected) {
+                data.connected = true;
+                data.username = localStorage.getItem('shopcoin15_tiktok_user') || 'shop_coin15';
+            }
             tiktokStatus = data;
 
             const badge = document.getElementById('tiktokStatusBadge');
@@ -2346,6 +2353,8 @@ window.ReelsEngine = (function() {
     async function disconnectTikTok() {
         if (!confirm('هل تريد بالتأكيد إلغاء ربط حساب تيك توك؟')) return;
         try {
+            localStorage.removeItem('shopcoin15_tiktok_token');
+            localStorage.removeItem('shopcoin15_tiktok_user');
             await fetch('/api/tiktok/disconnect', { method: 'POST' });
             if (window.showCopyToast) window.showCopyToast('تم إلغاء ربط الحساب بنجاح.');
             await checkTikTokStatus();
@@ -2392,13 +2401,18 @@ window.ReelsEngine = (function() {
             // Prepare Caption
             const caption = `${state.title || 'أقوى كروت EA FC 27'} ⚡\n\nمتجر ShopCoin15 لشحن كوينز فيفا بأمان وسرعة 100% 👑\nللطلب حياك عبر الرابط بالبايو! 📩\n\n#eafc27 #fc27 #fifa #fut #shopcoin15 #gaming`;
 
+            const savedToken = localStorage.getItem('shopcoin15_tiktok_token') || '';
             const res = await fetch('/api/tiktok/publish', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    ...(savedToken ? { 'Authorization': 'Bearer ' + savedToken } : {})
+                },
                 body: JSON.stringify({
                     videoBase64,
                     caption,
-                    privacyLevel: 'SELF_ONLY' // draft/private for preview
+                    privacyLevel: 'SELF_ONLY',
+                    accessToken: savedToken
                 })
             });
 
@@ -2495,6 +2509,12 @@ ${state.subtitle}
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('tiktok_connected') === '1') {
             const u = urlParams.get('username') || '';
+            const t = urlParams.get('token') || '';
+            const r = urlParams.get('refresh') || '';
+            if (t) localStorage.setItem('shopcoin15_tiktok_token', t);
+            if (r) localStorage.setItem('shopcoin15_tiktok_refresh', r);
+            if (u) localStorage.setItem('shopcoin15_tiktok_user', u);
+
             setTimeout(() => {
                 if (window.showCopyToast) {
                     window.showCopyToast(`🎉 تم ربط حساب تيك توك بنجاح (@${u || 'shop_coin15'})! جاهز للنشر التلقائي 👑`);

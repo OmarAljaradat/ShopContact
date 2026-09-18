@@ -780,7 +780,8 @@ const server = http.createServer((req, res) => {
         tiktokEngine.exchangeCodeForToken(code)
             .then(tokenData => {
                 console.log(`[TikTok Engine] Account linked successfully! User: @${tokenData.username || 'user'}`);
-                res.writeHead(302, { 'Location': `/?suite=suite_reels&tiktok_connected=1&username=${encodeURIComponent(tokenData.username || '')}` });
+                const redirectUrl = `/?suite=suite_reels&tiktok_connected=1&username=${encodeURIComponent(tokenData.username || '')}&token=${encodeURIComponent(tokenData.access_token || '')}&refresh=${encodeURIComponent(tokenData.refresh_token || '')}`;
+                res.writeHead(302, { 'Location': redirectUrl });
                 res.end();
             })
             .catch(err => {
@@ -792,8 +793,12 @@ const server = http.createServer((req, res) => {
     }
 
     if (reqPath === '/api/tiktok/status') {
-        const token = tiktokEngine.getToken();
+        const authHeader = req.headers.authorization || '';
+        const clientToken = authHeader.replace(/^Bearer\s+/i, '').trim();
+        const serverToken = tiktokEngine.getToken();
+        const token = clientToken ? { access_token: clientToken, username: 'shop_coin15' } : serverToken;
         const isConnected = !!(token && token.access_token);
+
         res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*' });
         res.end(JSON.stringify({
             connected: isConnected,
@@ -824,17 +829,20 @@ const server = http.createServer((req, res) => {
         req.on('end', async () => {
             try {
                 const payload = JSON.parse(body || '{}');
-                const { videoBase64, caption, privacyLevel } = payload;
+                const { videoBase64, caption, privacyLevel, accessToken } = payload;
                 if (!videoBase64) {
                     res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*' });
                     res.end(JSON.stringify({ success: false, error: 'لم يتم استلام ملف الفيديو' }));
                     return;
                 }
 
+                const authHeader = req.headers.authorization || '';
+                const clientToken = (authHeader.replace(/^Bearer\s+/i, '') || accessToken || '').trim();
+
                 const cleanBase64 = videoBase64.replace(/^data:video\/[a-z0-9]+;base64,/, '');
                 const videoBuffer = Buffer.from(cleanBase64, 'base64');
 
-                const result = await tiktokEngine.publishVideo(videoBuffer, caption, privacyLevel || 'SELF_ONLY');
+                const result = await tiktokEngine.publishVideo(videoBuffer, caption, privacyLevel || 'SELF_ONLY', clientToken || null);
                 res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*' });
                 res.end(JSON.stringify(result));
             } catch (err) {
