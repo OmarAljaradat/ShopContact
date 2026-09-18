@@ -131,6 +131,33 @@ function getDefaultLayers() {
                 layer_cta_btn: { visible: true, x: null, y: 520, scale: 0.98, label: 'زر الطلب بالخاص (CTA)' }
             };
         }
+    } else if (currentTemplate === 'showcase') {
+        if (isSquare) {
+            return {
+                layer_showcase_header: { visible: true, x: null, y: 10, scale: 0.82, label: 'الشعارات وهوية المتجر' },
+                layer_showcase_badges: { visible: true, x: null, y: 42, scale: 0.82, label: 'شارة الحدث والعناوين' },
+                layer_showcase_player: { visible: true, x: null, y: 80, scale: 0.88, label: 'ريندر اللاعب والهالة الضوئية' },
+                layer_showcase_card: { visible: true, x: null, y: 88, scale: 0.85, label: 'بطاقة FC 27 والكوينز الذهبية' },
+                layer_showcase_footer: { visible: true, x: null, y: 360, scale: 0.82, label: 'شريط الضمان والدفع والوسم' }
+            };
+        } else if (isPortrait) {
+            return {
+                layer_showcase_header: { visible: true, x: null, y: 14, scale: 0.90, label: 'الشعارات وهوية المتجر' },
+                layer_showcase_badges: { visible: true, x: null, y: 52, scale: 0.90, label: 'شارة الحدث والعناوين' },
+                layer_showcase_player: { visible: true, x: null, y: 100, scale: 0.96, label: 'ريندر اللاعب والهالة الضوئية' },
+                layer_showcase_card: { visible: true, x: null, y: 110, scale: 0.92, label: 'بطاقة FC 27 والكوينز الذهبية' },
+                layer_showcase_footer: { visible: true, x: null, y: 450, scale: 0.90, label: 'شريط الضمان والدفع والوسم' }
+            };
+        } else {
+            // Story 9:16
+            return {
+                layer_showcase_header: { visible: true, x: null, y: 22, scale: 0.96, label: 'الشعارات وهوية المتجر' },
+                layer_showcase_badges: { visible: true, x: null, y: 68, scale: 0.96, label: 'شارة الحدث والعناوين' },
+                layer_showcase_player: { visible: true, x: null, y: 135, scale: 1.02, label: 'ريندر اللاعب والهالة الضوئية' },
+                layer_showcase_card: { visible: true, x: null, y: 155, scale: 0.98, label: 'بطاقة FC 27 والكوينز الذهبية' },
+                layer_showcase_footer: { visible: true, x: null, y: 535, scale: 0.96, label: 'شريط الضمان والدفع والوسم' }
+            };
+        }
     }
     return {};
 }
@@ -910,7 +937,15 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (window.showCopyToast) {
                             window.showCopyToast('تم لصق صورة الكرت من الحافظة! 📋✨');
                         }
+                    } else if (currentTemplate === 'showcase') {
+                        appState.cardImageUrl = evt.target.result;
+                        renderControls();
+                        renderCanvas();
+                        if (window.showCopyToast) {
+                            window.showCopyToast('تم لصق صورة البطاقة في الشوكيس! 📋✨');
+                        }
                     }
+
                 };
                 reader.readAsDataURL(blob);
                 e.preventDefault();
@@ -968,7 +1003,7 @@ function initTemplateSelector() {
     // Filter templates based on current active studio suite
     let availableKeys = ['store_promo', 'sbc'];
     if (window.currentStudioSuite === 'suite_posts') {
-        availableKeys = ['trio', 'market_drop', 'potm'];
+        availableKeys = ['showcase', 'trio', 'market_drop', 'potm'];
     }
 
     availableKeys.forEach(key => {
@@ -1045,7 +1080,7 @@ window.switchStudioSuite = function(suiteKey) {
         }
     } else if (suiteKey === 'suite_posts') {
         if (templateSection) templateSection.style.display = '';
-        if (templateTitle) templateTitle.textContent = 'اختر قالب البوست (ثلاثي النجوم، هبوط الأسعار، أو لاعب الشهر):';
+        if (templateTitle) templateTitle.textContent = 'اختر قالب البوست (شوكيس النجوم والحدث، ثلاثي النجوم، هبوط الأسعار، أو لاعب الشهر):';
         if (templateControlsBox) templateControlsBox.style.display = '';
         if (carouselPanel) carouselPanel.classList.add('hidden');
         if (reelsPanel) reelsPanel.classList.add('hidden');
@@ -1055,8 +1090,8 @@ window.switchStudioSuite = function(suiteKey) {
         if (ratioContainer) ratioContainer.style.display = '';
         if (aiAssistantCard) aiAssistantCard.style.display = '';
 
-        if (currentTemplate !== 'trio' && currentTemplate !== 'market_drop' && currentTemplate !== 'potm') {
-            currentTemplate = 'trio';
+        if (currentTemplate !== 'showcase' && currentTemplate !== 'trio' && currentTemplate !== 'market_drop' && currentTemplate !== 'potm') {
+            currentTemplate = 'showcase';
             initState();
         }
         if (currentRatio === 'story') {
@@ -1215,7 +1250,7 @@ window.selectTemplate = function(key) {
     }
     document.querySelectorAll('#templateSelector .tab-btn').forEach((b, i) => {
         const availableKeys = window.currentStudioSuite === 'suite_posts' 
-            ? ['trio', 'market_drop', 'potm'] 
+            ? ['showcase', 'trio', 'market_drop', 'potm'] 
             : ['store_promo', 'sbc'];
         b.classList.toggle('active', availableKeys[i] === key);
     });
@@ -1951,8 +1986,135 @@ function renderControls() {
         `;
     }
 
-    // Template Specific Player Selectors
-    if (currentTemplate === 'trio') {
+    // Template Specific Player Selectors & Controls
+    if (currentTemplate === 'showcase') {
+        const auraThemes = window.SHOWCASE_AURA_THEMES || {};
+        const starsPresets = window.SHOWCASE_STARS_PRESETS || [];
+        const curAuraKey = appState.auraTheme || 'emerald';
+        const curAura = auraThemes[curAuraKey] || auraThemes.emerald || {};
+
+        html += `
+            <div class="mb-5 p-4 rounded-2xl bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900 border border-emerald-500/40 shadow-xl space-y-4 text-white">
+                <div class="flex items-center justify-between pb-2.5 border-b border-slate-800">
+                    <div class="flex items-center gap-2.5">
+                        <span class="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 font-black text-sm flex items-center justify-center border border-emerald-500/30">⭐</span>
+                        <div>
+                            <div class="text-xs font-black text-white flex items-center gap-1.5">
+                                <span>شوكيس النجوم والحدث الفاخر</span>
+                                <span class="px-2 py-0.5 rounded-full bg-emerald-500/25 text-emerald-300 text-[10px] font-black font-mono">FC 27 VIP</span>
+                            </div>
+                            <div class="text-[10px] text-slate-400">ريندر اللاعب الحقيقي يساراً + كرت FC 27 وأكوام الكوينز يميناً</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 1. Star 1-Click Presets -->
+                <div class="p-3 rounded-xl bg-slate-900/90 border border-slate-800 space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-black text-slate-200 flex items-center gap-1.5">
+                            <span>🌟</span>
+                            <span>اختر نجم الحدث بنقرة واحدة (الريندر والكرت معاً):</span>
+                        </span>
+                        <span class="text-[10px] text-emerald-400 font-bold font-mono">${starsPresets.length} نجوم جاهزة</span>
+                    </div>
+                    <div class="grid grid-cols-3 gap-1.5">
+                        ${starsPresets.map((star, idx) => `
+                            <button type="button" onclick="applyShowcaseStar(${idx})" class="px-2 py-1.5 rounded-lg bg-slate-800/90 hover:bg-emerald-600/90 text-slate-200 hover:text-white border border-slate-700 hover:border-emerald-400 text-[11px] font-bold transition flex items-center justify-center gap-1 text-center shadow-xs cursor-pointer">
+                                <span class="truncate">${star.name}</span>
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <!-- 2. Player Cutout Management (Real Player) -->
+                <div class="p-3 rounded-xl bg-slate-900/90 border border-slate-800 space-y-2.5">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-black text-slate-200 flex items-center gap-1.5">
+                            <span>🏃</span>
+                            <span>ريندر اللاعب الحقيقي (يسار):</span>
+                        </span>
+                        <label class="px-2.5 py-1 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-[11px] font-black cursor-pointer transition flex items-center gap-1 shadow-sm">
+                            <span>📁 رفع ريندر مفرغ PNG</span>
+                            <input type="file" accept="image/*" class="hidden" onchange="handleShowcasePlayerUpload(this)">
+                        </label>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <input type="text" id="input_playerName" value="${appState.playerName || ''}" placeholder="اسم اللاعب (مثال: كيليان مبابي)" class="flex-1 px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-700 text-white text-xs outline-none focus:border-emerald-500">
+                        <input type="text" id="input_playerSub" value="${appState.playerSub || ''}" placeholder="النادي / التقييم (مثال: ريال مدريد • 91)" class="w-1/2 px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-700 text-white text-xs outline-none focus:border-emerald-500">
+                    </div>
+                </div>
+
+                <!-- 3. Official FC 27 Card Scraper / Upload (Right) -->
+                <div class="p-3 rounded-xl bg-slate-900/90 border border-slate-800 space-y-2.5">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-black text-slate-200 flex items-center gap-1.5">
+                            <span>🃏</span>
+                            <span>بطاقة FC 27 الأصلية (يمين):</span>
+                        </span>
+                        <label class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-[11px] font-bold cursor-pointer transition border border-slate-700 flex items-center gap-1">
+                            <span>📁 رفع صورة كرت</span>
+                            <input type="file" accept="image/*" class="hidden" onchange="handleSingleCardUpload(this)">
+                        </label>
+                    </div>
+                    <div class="flex gap-2">
+                        <input type="text" id="futUrlInput" 
+                               onkeydown="if(event.key==='Enter') document.getElementById('btnFetchFut').click()"
+                               placeholder="الصق رابط FUTBIN أو FUT.GG أو اسم اللاعب (مثلاً: yamal)" 
+                               class="flex-1 px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-700 text-white text-xs outline-none focus:border-emerald-500">
+                        <button id="btnFetchFut" class="px-3.5 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs transition flex items-center gap-1 shrink-0 cursor-pointer">
+                            <span>سحب الكرت ⚡</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 4. Aura Lighting Theme Selector -->
+                <div class="p-3 rounded-xl bg-slate-900/90 border border-slate-800 space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-black text-slate-200 flex items-center gap-1.5">
+                            <span>💫</span>
+                            <span>لون الهالة المتوهجة خلف اللاعب:</span>
+                        </span>
+                        <span class="text-[10px] text-slate-400 font-bold">Ambient Halo Ring</span>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2">
+                        ${Object.keys(auraThemes).map(k => {
+                            const a = auraThemes[k];
+                            const isActive = curAuraKey === k;
+                            return `
+                                <button type="button" onclick="setShowcaseAura('${k}')" class="p-2 rounded-xl text-center border transition cursor-pointer flex flex-col items-center gap-1 ${isActive ? 'bg-slate-800 border-emerald-400 ring-2 ring-emerald-500/40 text-white font-black' : 'bg-slate-950 border-slate-800 text-slate-400 hover:bg-slate-800/60'}">
+                                    <span class="w-4 h-4 rounded-full border border-white/20 shadow-sm" style="background: ${a.color}; box-shadow: 0 0 10px ${a.color};"></span>
+                                    <span class="text-[10px] truncate max-w-[80px]">${a.name.split('(')[0].trim()}</span>
+                                </button>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+
+                <!-- 5. Gold FC Coins Stack & Branding Toggles -->
+                <div class="p-3 rounded-xl bg-slate-900/90 border border-slate-800 space-y-2.5">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-black text-slate-200 flex items-center gap-1.5">
+                            <span>🪙</span>
+                            <span>كومة الكوينز الذهبية أسفل الكرت:</span>
+                        </span>
+                        <button type="button" onclick="toggleShowcaseCoins()" class="px-3 py-1 rounded-lg text-xs font-black transition cursor-pointer ${appState.showCoinsStack !== false ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40' : 'bg-slate-800 text-slate-500 border border-slate-700'}">
+                            ${appState.showCoinsStack !== false ? 'مفعلة 👁️ (ظاهرة)' : 'مخفية ✕'}
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 pt-1 border-t border-slate-800">
+                        <button type="button" onclick="toggleShowcaseFcLogo()" class="px-2.5 py-1.5 rounded-lg text-[11px] font-bold border transition ${appState.showFcLogo !== false ? 'bg-slate-800 text-white border-emerald-500/50' : 'bg-slate-950 text-slate-500 border-slate-800'}">
+                            ${appState.showFcLogo !== false ? '✓ شعار FC 27 ظاهر' : '✕ شعار FC 27 مخفي'}
+                        </button>
+                        <button type="button" onclick="toggleShowcaseStoreLogo()" class="px-2.5 py-1.5 rounded-lg text-[11px] font-bold border transition ${appState.showStoreLogo !== false ? 'bg-slate-800 text-white border-emerald-500/50' : 'bg-slate-950 text-slate-500 border-slate-800'}">
+                            ${appState.showStoreLogo !== false ? '✓ شعار المتجر SC ظاهر' : '✕ شعار المتجر مخفي'}
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        `;
+    } else if (currentTemplate === 'trio') {
+
         const starPresets = window.STARTER_BEASTS || [];
         const topPresets = window.POPULAR_FUTGG_STARS || [];
         const spreadVal = appState.trioSpread !== undefined ? appState.trioSpread : 18;
@@ -2314,21 +2476,24 @@ function renderControls() {
     }
 
     // Background Theme Selector
-    html += `
-        <div class="mb-4">
-            <label class="block text-xs text-slate-600 font-bold mb-1.5">خلفية التصميم:</label>
-            <div class="grid grid-cols-2 gap-2">
-                <button class="bg-theme-btn ${appState.bgTheme === 'store' ? 'active ring-2 ring-emerald-500 bg-emerald-50/50 border-emerald-400' : 'bg-white border-slate-200'} px-3 py-2 rounded-xl border text-xs font-bold transition text-center shadow-xs" data-theme="store">
-                    <div class="text-slate-900 font-black">🏛️ رخام المتجر الرسمي (SC)</div>
-                    <div class="text-[10px] text-emerald-700 font-bold">مع الشعار وFC 27</div>
-                </button>
-                <button class="bg-theme-btn ${appState.bgTheme === 'dark' ? 'active ring-2 ring-emerald-500 bg-emerald-50/50 border-emerald-400' : 'bg-white border-slate-200'} px-3 py-2 rounded-xl border text-xs font-bold transition text-center shadow-xs" data-theme="dark">
-                    <div class="text-slate-900 font-black">⚡ أرينا الجيمرز الداكنة</div>
-                    <div class="text-[10px] text-slate-500">ثيم ليزر ونيون</div>
-                </button>
+    if (currentTemplate !== 'showcase') {
+        html += `
+            <div class="mb-4">
+                <label class="block text-xs text-slate-600 font-bold mb-1.5">خلفية التصميم:</label>
+                <div class="grid grid-cols-2 gap-2">
+                    <button class="bg-theme-btn ${appState.bgTheme === 'store' ? 'active ring-2 ring-emerald-500 bg-emerald-50/50 border-emerald-400' : 'bg-white border-slate-200'} px-3 py-2 rounded-xl border text-xs font-bold transition text-center shadow-xs" data-theme="store">
+                        <div class="text-slate-900 font-black">🏛️ رخام المتجر الرسمي (SC)</div>
+                        <div class="text-[10px] text-emerald-700 font-bold">مع الشعار وFC 27</div>
+                    </button>
+                    <button class="bg-theme-btn ${appState.bgTheme === 'dark' ? 'active ring-2 ring-emerald-500 bg-emerald-50/50 border-emerald-400' : 'bg-white border-slate-200'} px-3 py-2 rounded-xl border text-xs font-bold transition text-center shadow-xs" data-theme="dark">
+                        <div class="text-slate-900 font-black">⚡ أرينا الجيمرز الداكنة</div>
+                        <div class="text-[10px] text-slate-500">ثيم ليزر ونيون</div>
+                    </button>
+                </div>
             </div>
-        </div>
-    `;
+        `;
+    }
+
 
     // Typography Font Family Selector (خط ثمانية / خط زين / خط الإسكندرية الافتراضي)
     const currentFont = appState.fontFamily || 'alexandria';
@@ -2394,7 +2559,33 @@ function renderControls() {
         <div class="space-y-4">
     `;
 
-    if (currentTemplate === 'trio') {
+    if (currentTemplate === 'showcase') {
+        html += `
+            <div>
+                <label class="block text-xs text-slate-600 font-bold mb-1">شارة الحدث العلوية (Badge Pill)</label>
+                <input type="text" id="input_badgeText" value="${appState.badgeText || ''}" class="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs font-medium focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 outline-none shadow-xs">
+            </div>
+            <div>
+                <label class="block text-xs text-slate-600 font-bold mb-1">العنوان التسويقي الرئيسي (Headline)</label>
+                <input type="text" id="input_headline" value="${appState.headline || ''}" class="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs font-medium focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 outline-none shadow-xs">
+            </div>
+            <div>
+                <label class="block text-xs text-slate-600 font-bold mb-1">العنوان الفرعي وتفاصيل العرض (Subheadline)</label>
+                <input type="text" id="input_subheadline" value="${appState.subheadline || ''}" class="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs font-medium focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 outline-none shadow-xs">
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+                <div>
+                    <label class="block text-xs text-slate-600 font-bold mb-1">🏷️ كود الخصم</label>
+                    <input type="text" id="input_promoCode" value="${appState.promoCode || 'كود خصم: SC15'}" class="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-amber-700 font-mono text-xs font-black focus:border-emerald-500 focus:bg-white outline-none shadow-xs">
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-600 font-bold mb-1">🛡️ نص شريط الضمان والأمان</label>
+                    <input type="text" id="input_safetyText" value="${appState.safetyText || 'ضمان شامل 100% من الباند • تسليم فوري'}" class="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs font-medium focus:border-emerald-500 focus:bg-white outline-none shadow-xs">
+                </div>
+            </div>
+        `;
+    } else if (currentTemplate === 'trio') {
+
         html += `
             <div>
                 <label class="block text-xs text-slate-600 font-bold mb-1">شارة الترويسة</label>
@@ -2844,7 +3035,7 @@ function renderControls() {
     }
 
     // Box & Button Customization Card (Only for templates with info box and CTA button like trio/market_drop)
-    if (currentTemplate !== 'store_promo' && currentTemplate !== 'sbc') {
+    if (currentTemplate !== 'store_promo' && currentTemplate !== 'sbc' && currentTemplate !== 'showcase') {
         html += `
             <div class="mt-4 p-4 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-3.5">
                 <div class="flex items-center justify-between pb-2 border-b border-slate-100">
@@ -3605,7 +3796,15 @@ window.applyFc27Theme = function() {
     appState.boxRadius = 20;
     appState.ctaScale = 1.05;
     appState.ctaPaddingX = 28;
-    if (currentTemplate === 'trio') {
+    if (currentTemplate === 'showcase') {
+        appState.auraTheme = 'emerald';
+        appState.badgeText = '▲ مع نزول لاعبي الحدث رسمياً • FC 27 ▲';
+        appState.headline = 'ضبط تشكيلتك وقفل كرتك بأرخص كوينز ⚡';
+        appState.subheadline = 'متوفر كوينز FC 27 لجميع المنصات بضمان شامل وضريبة مغطاة 100%';
+        appState.promoCode = 'كود خصم: SC15';
+        appState.safetyText = 'ضمان أمان 100% من الباند • شحن فوري لجميع المنصات';
+    } else if (currentTemplate === 'trio') {
+
         appState.badgeText = '▲ انطلاقة FC 27 الرسمية • شحن فوري وآمن 100% ▲';
         appState.headline = 'تبي تبدأ موسمك بأقوى تشكيلة في FC 27؟ 🔥';
         appState.subheadline = 'متوفر شحن كوينز FC 27 لجميع المنصات (PS5 • XBOX • PC) بأفضل سعر وضمان شامل الضريبة';
@@ -3733,7 +3932,10 @@ function renderCanvas() {
         canvas.innerHTML = renderSbcTemplate();
     } else if (currentTemplate === 'potm') {
         canvas.innerHTML = renderPotmTemplate();
+    } else if (currentTemplate === 'showcase') {
+        canvas.innerHTML = renderShowcaseTemplate();
     }
+
 
     canvas.querySelectorAll('.draggable-layer').forEach(layer => {
         const layerKey = layer.id;
@@ -4464,13 +4666,310 @@ function renderPotmTemplate() {
                 </div>
             </div>
             ${renderLayerToolbar('layer_cta_btn')}
+        ` : ''}
+    `;
+}
+
+
+/* =========================================================================
+   SHOWCASE TEMPLATE (⭐ شوكيس النجوم والحدث الفاخر)
+   ========================================================================= */
+
+function renderShowcaseTemplate() {
+    const auraThemes = window.SHOWCASE_AURA_THEMES || {};
+    const curAuraKey = appState.auraTheme || 'emerald';
+    const aura = auraThemes[curAuraKey] || auraThemes.emerald || {
+        color: '#00ff85',
+        subColor: '#059669',
+        glow: 'rgba(0, 255, 133, 0.45)',
+        haloBorder: 'rgba(0, 255, 133, 0.4)',
+        ringGlow: '0 0 55px rgba(0, 255, 133, 0.45)'
+    };
+
+    const starsPresets = window.SHOWCASE_STARS_PRESETS || [];
+    const defaultStar = starsPresets[0] || {};
+    const playerImg = appState.playerCutoutUrl || defaultStar.cutoutUrl || 'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=500/2024/players/231747.png';
+    const cardImg = appState.cardImageUrl || defaultStar.cardUrl || 'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=600/2027/futgg-player-item-card/27-231747.1b49b357729ba7dbf174dc4aa1e8519ce230b98ad399360e364a59f4b3477f07.webp';
+
+    const playerName = appState.playerName || defaultStar.arName || 'كيليان مبابي';
+    const playerSub = appState.playerSub || defaultStar.club || 'ريال مدريد • 91';
+
+    return `
+        <!-- Background Layer: Deep Obsidian Luxury Grid & Ambient Beams -->
+        <div class="absolute inset-0 w-full h-full overflow-hidden pointer-events-none" style="background: radial-gradient(ellipse at 32% 45%, #0e172a 0%, #070b16 50%, #03050a 100%);">
+            <!-- Subtle Dot Grid Texture -->
+            <div class="absolute inset-0 opacity-15" style="background-image: radial-gradient(rgba(255,255,255,0.25) 1px, transparent 1px); background-size: 22px 22px;"></div>
+            
+            <!-- Stadium Spotlight Ambient Beams -->
+            <div class="absolute -top-24 left-1/4 w-[450px] h-[300px] bg-gradient-to-b from-white/10 to-transparent blur-3xl -rotate-12 pointer-events-none"></div>
+            <div class="absolute -bottom-24 right-1/4 w-[450px] h-[300px] pointer-events-none blur-3xl" style="background: radial-gradient(circle, ${aura.glow} 0%, transparent 70%); opacity: 0.35;"></div>
+            <div class="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black/85 pointer-events-none"></div>
+        </div>
+
+        <div id="snapGuideV" class="snap-guide snap-guide-v"></div>
+        <div id="snapGuideH" class="snap-guide snap-guide-h"></div>
+
+        <!-- Layer 1: Official Header & Branding (Store SC + EA FC 27) -->
+        ${isLayerVisible('layer_showcase_header') ? `
+        <div id="layer_showcase_header" class="draggable-layer w-full max-w-[500px]" style="${getLayerStyle('layer_showcase_header', 14, '50%')};">
+            <div class="layer-scale-wrapper w-full flex items-center justify-between px-3" style="transform: scale(${getLayerScale('layer_showcase_header')});">
+                <!-- Store SC Branding -->
+                ${appState.showStoreLogo !== false ? `
+                <div class="flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-slate-950/85 border border-white/10 backdrop-blur-md shadow-xl">
+                    <div class="w-7 h-7 rounded-xl bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 flex items-center justify-center text-slate-950 font-black text-xs shadow-md border border-amber-200/50">
+                        SC
+                    </div>
+                    <div class="flex flex-col text-right">
+                        <div class="flex items-center gap-1">
+                            <span class="text-xs font-black text-white">ShopCoin15</span>
+                            <span class="text-amber-400 text-[10px] font-black">✓</span>
+                        </div>
+                        <span class="text-[9px] text-slate-400 font-medium">المتجر الأفضل والأسرع</span>
+                    </div>
+                </div>
+                ` : '<div></div>'}
+
+                <!-- EA SPORTS FC 27 Official Branding -->
+                ${appState.showFcLogo !== false ? `
+                <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-slate-950/85 border border-white/10 backdrop-blur-md shadow-xl">
+                    <span class="text-emerald-400 text-xs font-black">▲</span>
+                    <span class="text-xs font-black tracking-wider text-white font-mono">EA SPORTS FC 27</span>
+                </div>
+                ` : '<div></div>'}
+            </div>
+            ${renderLayerToolbar('layer_showcase_header')}
+        </div>
+        ` : ''}
+
+        <!-- Layer 2: Marketing Badges & Headlines (Double-Bezel Hardware Architecture) -->
+        ${isLayerVisible('layer_showcase_badges') ? `
+        <div id="layer_showcase_badges" class="draggable-layer w-full max-w-[480px] text-center flex flex-col items-center" style="${getLayerStyle('layer_showcase_badges', 52, '50%')};">
+            <div class="layer-scale-wrapper w-full flex flex-col items-center space-y-2 px-2" style="transform: scale(${getLayerScale('layer_showcase_badges')});">
+                <!-- Hardware Event Pill -->
+                <div class="px-3.5 py-1 rounded-full text-[11px] font-black tracking-wide text-center flex items-center gap-1.5 shadow-xl border backdrop-blur-md"
+                     style="background: linear-gradient(135deg, rgba(8, 12, 22, 0.96), rgba(15, 23, 42, 0.94)); border-color: ${aura.haloBorder}; color: ${aura.color}; box-shadow: 0 6px 22px ${aura.glow.replace('0.45', '0.25')};">
+                    <span>🔥</span>
+                    <span class="truncate">${appState.badgeText || 'مع نزول لاعبي الحدث رسمياً • FC 27'}</span>
+                    <span>🔥</span>
+                </div>
+
+                <!-- Main Marketing Headline -->
+                <h1 class="text-2xl font-black text-white leading-tight tracking-tight drop-shadow-[0_4px_18px_rgba(0,0,0,0.95)] max-w-[440px]">
+                    ${appState.headline || 'ضبط تشكيلتك وقفل كرتك بأرخص كوينز ⚡'}
+                </h1>
+
+                <!-- Subheadline & Promo Tag -->
+                <div class="flex items-center justify-center gap-2 flex-wrap max-w-[450px]">
+                    <p class="text-xs font-bold text-slate-300 leading-snug drop-shadow-md">
+                        ${appState.subheadline || 'شحن فوري لجميع المنصات (PS5 • XBOX • PC) بضمان شامل وضريبة مغطاة 100%'}
+                    </p>
+                    ${appState.promoCode ? `
+                    <div class="px-2.5 py-0.5 rounded-lg bg-amber-500/20 border border-amber-400/50 text-amber-300 text-[10px] font-black font-mono flex items-center gap-1 shadow-sm">
+                        <span>🏷️</span>
+                        <span>${appState.promoCode}</span>
+                    </div>
+                    ` : ''}
+                </div>
+            </div>
+            ${renderLayerToolbar('layer_showcase_badges')}
+        </div>
+        ` : ''}
+
+        <!-- Layer 3: Real-Life Player Cutout with Pedestal Halo & Rim Light (Left) -->
+        ${isLayerVisible('layer_showcase_player') ? `
+        <div id="layer_showcase_player" class="draggable-layer" style="${getLayerStyle('layer_showcase_player', 100, '28%')}; width: max-content;">
+            <div class="layer-scale-wrapper relative flex flex-col items-center justify-center" style="transform: scale(${getLayerScale('layer_showcase_player')});">
+                
+                <!-- Dynamic Ambient Spotlight behind Player -->
+                <div class="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[340px] h-[340px] rounded-full blur-3xl -z-10"
+                     style="background: radial-gradient(circle, ${aura.glow} 0%, rgba(0,0,0,0) 70%);"></div>
+
+                <!-- Outer Radiant Halo Ring -->
+                <div class="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[290px] h-[290px] rounded-full border border-white/10 -z-10"
+                     style="border-color: ${aura.haloBorder}; box-shadow: ${aura.ringGlow}; background: radial-gradient(circle, ${aura.glow.replace('0.45', '0.12')} 0%, transparent 75%);"></div>
+
+                <!-- Inner Orbital Concentric Ring -->
+                <div class="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[230px] h-[230px] rounded-full border border-dashed border-white/20 -z-10 opacity-30"></div>
+
+                <!-- Real Player Cutout Image -->
+                <div class="w-64 max-w-[270px] flex items-center justify-center">
+                    <img src="${playerImg}" class="max-h-[350px] object-contain pointer-events-none select-none"
+                         style="filter: drop-shadow(0 25px 35px rgba(0,0,0,0.92)) drop-shadow(0 0 20px ${aura.glow});" alt="Player Cutout">
+                </div>
+
+                <!-- Player Luxury Hardware Ribbon -->
+                <div class="mt-2 px-3.5 py-1 rounded-full text-[10px] font-black tracking-wider uppercase border backdrop-blur-md text-white flex items-center gap-1.5 shadow-xl"
+                     style="background: rgba(8, 12, 22, 0.94); border-color: ${aura.haloBorder}; box-shadow: 0 4px 16px rgba(0,0,0,0.6);">
+                    <span class="w-2 h-2 rounded-full" style="background: ${aura.color}; box-shadow: 0 0 8px ${aura.color};"></span>
+                    <span class="truncate max-w-[140px]">${playerName}</span>
+                    ${playerSub ? `<span class="text-slate-400 text-[9px] font-normal truncate max-w-[100px]">• ${playerSub}</span>` : ''}
+                </div>
+
+            </div>
+            ${renderLayerToolbar('layer_showcase_player')}
+        </div>
+        ` : ''}
+
+        <!-- Layer 4: Official FC 27 Card with 3D Tilt & Stacked Gold Coins (Right) -->
+        ${isLayerVisible('layer_showcase_card') ? `
+        <div id="layer_showcase_card" class="draggable-layer" style="${getLayerStyle('layer_showcase_card', 110, '73%')}; width: max-content;">
+            <div class="layer-scale-wrapper relative flex flex-col items-center justify-center" style="transform: scale(${getLayerScale('layer_showcase_card')});">
+                
+                <!-- Dynamic Ambient Glow behind Card -->
+                <div class="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[280px] h-[340px] blur-2xl -z-10"
+                     style="background: radial-gradient(ellipse at center, ${aura.glow.replace('0.45', '0.22')} 0%, rgba(0,0,0,0) 70%);"></div>
+
+                <!-- Official FC 27 Card with 3D Float -->
+                <div class="w-56 filter" style="filter: drop-shadow(0 22px 40px rgba(0,0,0,0.92)); transform: perspective(900px) rotateY(-4deg) rotateZ(1.5deg);">
+                    <img src="${cardImg}" class="w-full object-contain pointer-events-none animate-float" alt="FC 27 Card">
+                </div>
+
+                <!-- Glowing 3D FC Coins Stack -->
+                ${appState.showCoinsStack !== false ? `
+                <div class="mt-[-16px] flex flex-col items-center z-10">
+                    <!-- 3D Layered Gold Coins -->
+                    <div class="relative flex items-center justify-center -space-x-4">
+                        <!-- Coin 1 (Left) -->
+                        <div class="w-9 h-9 rounded-full border-2 border-amber-200/90 shadow-lg flex items-center justify-center relative overflow-hidden"
+                             style="background: linear-gradient(135deg, #FFE259 0%, #D97706 60%, #92400E 100%); box-shadow: 0 4px 15px rgba(245, 158, 11, 0.6), inset 0 2px 4px rgba(255,255,255,0.7); transform: rotate(-15deg);">
+                            <span class="text-[11px] font-black text-amber-950 font-mono">🪙</span>
+                        </div>
+                        <!-- Coin 2 (Center Front, Largest) -->
+                        <div class="w-11 h-11 rounded-full border-2 border-amber-100 shadow-xl flex items-center justify-center relative overflow-hidden z-10"
+                             style="background: linear-gradient(135deg, #FFF176 0%, #F59E0B 50%, #B45309 100%); box-shadow: 0 6px 20px rgba(245, 158, 11, 0.75), inset 0 2px 6px rgba(255,255,255,0.9); transform: translateY(-3px);">
+                            <div class="w-7 h-7 rounded-full border border-amber-200/80 flex items-center justify-center">
+                                <span class="text-xs font-black text-amber-950 font-mono">FC</span>
+                            </div>
+                        </div>
+                        <!-- Coin 3 (Right) -->
+                        <div class="w-9 h-9 rounded-full border-2 border-amber-200/90 shadow-lg flex items-center justify-center relative overflow-hidden"
+                             style="background: linear-gradient(135deg, #FFE259 0%, #D97706 60%, #92400E 100%); box-shadow: 0 4px 15px rgba(245, 158, 11, 0.6), inset 0 2px 4px rgba(255,255,255,0.7); transform: rotate(15deg);">
+                            <span class="text-[11px] font-black text-amber-950 font-mono">⚡</span>
+                        </div>
+                    </div>
+                    <!-- Gold Slogan Pill -->
+                    <div class="mt-1 px-3.5 py-1 rounded-full text-[10px] font-black tracking-wide border shadow-xl flex items-center gap-1.5 whitespace-nowrap"
+                         style="background: linear-gradient(135deg, rgba(20, 15, 5, 0.94), rgba(40, 30, 10, 0.96)); border-color: rgba(245, 158, 11, 0.65); color: #FDE68A; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.35);">
+                        <span class="text-amber-400">🪙</span>
+                        <span>كوينز فورية للتحدي والشراء ⚡</span>
+                    </div>
+                </div>
+                ` : ''}
+
+            </div>
+            ${renderLayerToolbar('layer_showcase_card')}
+        </div>
+        ` : ''}
+
+        <!-- Layer 5: Bottom Trust, Payment Chips & Handle -->
+        ${isLayerVisible('layer_showcase_footer') ? `
+        <div id="layer_showcase_footer" class="draggable-layer w-full max-w-[480px]" style="${getLayerStyle('layer_showcase_footer', 450, '50%')};">
+            <div class="layer-scale-wrapper w-full px-3" style="transform: scale(${getLayerScale('layer_showcase_footer')});">
+                <div class="px-4 py-2.5 rounded-2xl bg-slate-950/85 border border-white/10 backdrop-blur-md shadow-2xl flex flex-col items-center gap-2">
+                    <!-- Trust Line -->
+                    <div class="flex items-center justify-between w-full pb-1.5 border-b border-white/10 text-[11px] font-bold">
+                        <div class="flex items-center gap-1.5 text-emerald-400">
+                            <span>🛡️</span>
+                            <span>${appState.safetyText || 'ضمان شامل 100% من الباند • تسليم فوري'}</span>
+                        </div>
+                        <span class="text-[10px] text-slate-400 font-mono font-black">@shop_coin15</span>
+                    </div>
+
+                    <!-- Payment Chips -->
+                    <div class="flex items-center justify-center gap-2 flex-wrap text-[10px] font-black">
+                        <span class="px-2.5 py-0.5 rounded-lg bg-white/5 border border-white/10 text-slate-200"> Apple Pay</span>
+                        <span class="px-2.5 py-0.5 rounded-lg bg-emerald-500/20 border border-emerald-400/30 text-emerald-300">مدى Mada</span>
+                        <span class="px-2.5 py-0.5 rounded-lg bg-purple-500/20 border border-purple-400/30 text-purple-300">STC Pay</span>
+                        <span class="px-2.5 py-0.5 rounded-lg bg-cyan-500/20 border border-cyan-400/30 text-cyan-300">Visa / MCard</span>
+                    </div>
+                </div>
+            </div>
+            ${renderLayerToolbar('layer_showcase_footer')}
         </div>
         ` : ''}
     `;
 }
 
+// 1-Click Star Preset Applicator
+window.applyShowcaseStar = function(idx) {
+    const presets = window.SHOWCASE_STARS_PRESETS || [];
+    const star = presets[idx];
+    if (!star) return;
+
+    appState.playerCutoutUrl = star.cutoutUrl;
+    appState.cardImageUrl = star.cardUrl;
+    appState.playerName = star.arName || star.name;
+    appState.playerSub = star.club || `${star.rating} ${star.position}`;
+    appState.rating = star.rating;
+    appState.position = star.position;
+    if (star.aura) {
+        appState.auraTheme = star.aura;
+    }
+    appState.headline = `وصول بطاقة ${star.arName || star.name} (${star.rating}) رسمياً! 🔥`;
+    appState.badgeText = `🔥 مع نزول لاعبي الحدث رسمياً • FC 27`;
+
+    renderControls();
+    renderCanvas();
+    updateCaption();
+    if (window.showCopyToast) {
+        window.showCopyToast(`تم تطبيق نجم الحدث: ${star.arName || star.name} ⭐⚡`);
+    }
+};
+
+// Custom Cutout File Upload Handler
+window.handleShowcasePlayerUpload = function(input) {
+    if (!input || !input.files || !input.files[0]) return;
+    const file = input.files[0];
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        appState.playerCutoutUrl = e.target.result;
+        renderControls();
+        renderCanvas();
+        if (window.showCopyToast) {
+            window.showCopyToast('تم رفع ريندر اللاعب المفرغ بنجاح! 📸⚡');
+        }
+    };
+    reader.readAsDataURL(file);
+};
+
+// Aura Lighting Theme Selector
+window.setShowcaseAura = function(auraKey) {
+    appState.auraTheme = auraKey;
+    renderControls();
+    renderCanvas();
+    if (window.showCopyToast) {
+        const a = (window.SHOWCASE_AURA_THEMES && window.SHOWCASE_AURA_THEMES[auraKey]) || {};
+        window.showCopyToast(`تم تغيير لون الهالة إلى ${a.name || auraKey} 💫`);
+    }
+};
+
+// Gold FC Coins Stack Toggle
+window.toggleShowcaseCoins = function() {
+    appState.showCoinsStack = !(appState.showCoinsStack !== false);
+    renderControls();
+    renderCanvas();
+    if (window.showCopyToast) {
+        window.showCopyToast(appState.showCoinsStack !== false ? 'تم إظهار أكوام الكوينز الذهبية 🪙' : 'تم إخفاء أكوام الكوينز ✕');
+    }
+};
+
+// FC 27 Logo Toggle
+window.toggleShowcaseFcLogo = function() {
+    appState.showFcLogo = !(appState.showFcLogo !== false);
+    renderControls();
+    renderCanvas();
+};
+
+// ShopCoin15 Store Logo Toggle
+window.toggleShowcaseStoreLogo = function() {
+    appState.showStoreLogo = !(appState.showStoreLogo !== false);
+    renderControls();
+    renderCanvas();
+};
+
 // Direct single card upload helper
 window.handleSingleCardUpload = function(input) {
+
     if (!input || !input.files || !input.files[0]) return;
     const file = input.files[0];
     const reader = new FileReader();
@@ -4532,7 +5031,11 @@ async function fetchFutGGCard(url) {
             } else if (currentTemplate === 'potm') {
                 appState.headline = `نزل كرت ${data.playerName} لاعب الشهر رسمياً! 👑🔥`;
                 appState.badgeText = `🏆 رسميـاً: ${data.playerName} لاعب الشهر في FC 27`;
+            } else if (currentTemplate === 'showcase') {
+                appState.headline = `وصول بطاقة ${data.playerName} (${data.rating}) رسمياً! 🔥`;
+                appState.badgeText = `🔥 مع نزول كرت ${data.playerName} في FC 27 رسمياً`;
             }
+
 
             renderControls();
             renderCanvas();

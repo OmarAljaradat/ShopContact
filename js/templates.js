@@ -176,7 +176,197 @@ const STORE_BANNER_THEMES = {
     }
 };
 
+const SHOWCASE_AURA_THEMES = {
+    emerald: {
+        id: 'emerald',
+        name: '🟢 زمردي رسمي (SC Emerald)',
+        color: '#00ff85',
+        subColor: '#059669',
+        glow: 'rgba(0, 255, 133, 0.45)',
+        haloBorder: 'rgba(0, 255, 133, 0.4)',
+        ringGlow: '0 0 55px rgba(0, 255, 133, 0.45)'
+    },
+    gold: {
+        id: 'gold',
+        name: '🟡 ذهبي توتي (TOTY Gold)',
+        color: '#fbbf24',
+        subColor: '#d97706',
+        glow: 'rgba(251, 191, 36, 0.45)',
+        haloBorder: 'rgba(251, 191, 36, 0.4)',
+        ringGlow: '0 0 55px rgba(251, 191, 36, 0.45)'
+    },
+    cyan: {
+        id: 'cyan',
+        name: '🔵 أزرق توتس (TOTS Cyan)',
+        color: '#00f0ff',
+        subColor: '#0284c7',
+        glow: 'rgba(0, 240, 255, 0.45)',
+        haloBorder: 'rgba(0, 240, 255, 0.4)',
+        ringGlow: '0 0 55px rgba(0, 240, 255, 0.45)'
+    },
+    crimson: {
+        id: 'crimson',
+        name: '🔴 أحمر ناري (Crimson Fire)',
+        color: '#ff334b',
+        subColor: '#dc2626',
+        glow: 'rgba(255, 51, 75, 0.45)',
+        haloBorder: 'rgba(255, 51, 75, 0.4)',
+        ringGlow: '0 0 55px rgba(255, 51, 75, 0.45)'
+    },
+    purple: {
+        id: 'purple',
+        name: '🟣 بنفسجي فوت (FUT Purple)',
+        color: '#a855f7',
+        subColor: '#7c3aed',
+        glow: 'rgba(168, 85, 247, 0.45)',
+        haloBorder: 'rgba(168, 85, 247, 0.4)',
+        ringGlow: '0 0 55px rgba(168, 85, 247, 0.45)'
+    },
+    cyber: {
+        id: 'cyber',
+        name: '⚡ نيون ليموني (Cyber Neon)',
+        color: '#ccff00',
+        subColor: '#84cc16',
+        glow: 'rgba(204, 255, 0, 0.45)',
+        haloBorder: 'rgba(204, 255, 0, 0.4)',
+        ringGlow: '0 0 55px rgba(204, 255, 0, 0.45)'
+    }
+};
+
+const SHOWCASE_STARS_PRESETS = [
+    {
+        id: 'mbappe',
+        name: '🔥 مبابي (91 ST)',
+        arName: 'كيليان مبابي',
+        rating: '91',
+        position: 'ST',
+        club: 'ريال مدريد • فرنسا',
+        aura: 'emerald',
+        cutoutUrl: 'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=500/2024/players/231747.png',
+        cardUrl: 'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=600/2027/futgg-player-item-card/27-231747.1b49b357729ba7dbf174dc4aa1e8519ce230b98ad399360e364a59f4b3477f07.webp'
+    },
+    {
+        id: 'bellingham',
+        name: '👑 بيلينغهام (90 CAM)',
+        arName: 'جود بيلينغهام',
+        rating: '90',
+        position: 'CAM',
+        club: 'ريال مدريد • إنجلترا',
+        aura: 'gold',
+        cutoutUrl: 'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=500/2024/players/252371.png',
+        cardUrl: 'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=600/2027/futgg-player-item-card/27-252371.49e4acdf2d78496f4951f41725cd17fb8efb118d99a69ba074ab76fc62d70735.webp'
+    },
+    {
+        id: 'vinicius',
+        name: '⚡ فينيسيوس (90 LW)',
+        arName: 'فينيسيوس جونيور',
+        rating: '90',
+        position: 'LW',
+        club: 'ريال مدريد • البرازيل',
+        aura: 'cyber',
+        cutoutUrl: 'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=500/2024/players/238794.png',
+        cardUrl: 'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=600/2027/futgg-player-item-card/27-238794.6715e80f49fb5360b92261f8bd984f7178a47066cff3bfcd2c1b7dd57db13fbf.webp'
+    },
+    {
+        id: 'ronaldo',
+        name: '🐐 رونالدو (86 ST)',
+        arName: 'كريستيانو رونالدو',
+        rating: '86',
+        position: 'ST',
+        club: 'النصر • البرتغال',
+        aura: 'gold',
+        cutoutUrl: 'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=500/2024/players/20801.png',
+        cardUrl: 'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=600/2027/futgg-player-item-card/27-20801.120c1569e5bb38ec0139e728ec651b752945d8b88fc75b11116c478a2d1d0fc3.webp'
+    },
+    {
+        id: 'yamal',
+        name: '💎 يامال (90 RW)',
+        arName: 'لامين يامال',
+        rating: '90',
+        position: 'RW',
+        club: 'برشلونة • إسبانيا',
+        aura: 'cyan',
+        cutoutUrl: 'https://game-assets.fut.gg/cdn-cgi/image/quality=85,width=500,format=auto/2027/player-item/27-277643.79eb8666f877e2b9aa027eeb4a3911871d76c627a5439bf4733b842f466a667b.webp',
+        cardUrl: 'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=600/2027/futgg-player-item-card/27-277643.c7ad04ede93affc15cf5aa1cac07f2beecf1be5698bbe19c153263527208c357.webp'
+    },
+    {
+        id: 'haaland',
+        name: '🤖 هالاند (91 ST)',
+        arName: 'إرلينغ هالاند',
+        rating: '91',
+        position: 'ST',
+        club: 'مانشستر سيتي • النرويج',
+        aura: 'cyan',
+        cutoutUrl: 'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=500/2024/players/239085.png',
+        cardUrl: 'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=600/2027/futgg-player-item-card/27-239085.5302941a50a927b565c122945958880e418b56c6cf7a76f88179fa24ec510b57.webp'
+    },
+    {
+        id: 'bouaddi',
+        name: '🇲🇦 بوعدي (83 CDM)',
+        arName: 'أيوب بوعدي',
+        rating: '83',
+        position: 'CDM',
+        club: 'ليل • المغرب',
+        aura: 'crimson',
+        cutoutUrl: 'https://game-assets.fut.gg/cdn-cgi/image/quality=85,width=500,format=auto/2027/player-item/27-50610549.a5241466ab9524ff9831f38487f3645704faa6c99659a0779ffb32e79bc96ae2.webp',
+        cardUrl: 'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=600/2025/futgg-player-item-card/25-278901.18e50b70ffbcadf1f0621d40662f9b33875362637e894aa202b27166ee9e0da5.webp'
+    },
+    {
+        id: 'saka',
+        name: '⚡ ساكا (87 RW)',
+        arName: 'بوكايو ساكا',
+        rating: '87',
+        position: 'RW',
+        club: 'أرسنال • إنجلترا',
+        aura: 'crimson',
+        cutoutUrl: 'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=500/2024/players/246669.png',
+        cardUrl: 'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=600/2027/futgg-player-item-card/27-246669.cab7c7f82f8442d8ba57fc15e5f49728247141eac35add86238cdc54e7916495.webp'
+    },
+    {
+        id: 'dembele',
+        name: '⚡ ديمبيلي (86 RW)',
+        arName: 'عثمان ديمبيلي',
+        rating: '86',
+        position: 'RW',
+        club: 'باريس سان جيرمان • فرنسا',
+        aura: 'purple',
+        cutoutUrl: 'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=500/2024/players/231443.png',
+        cardUrl: 'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=600/2027/futgg-player-item-card/27-231443.9d2df34d7d5634b9b794266c24e87ea7079be125a6059c3cdc40db7443a0fe4d.webp'
+    }
+];
+
 const TEMPLATES = {
+    showcase: {
+        id: 'showcase',
+        name: '⭐ شوكيس النجوم والحدث (Star Showcase)',
+        icon: 'star',
+        description: 'تصميم بوست إنستغرام فاخر (1:1 و 4:5): ريندر اللاعب الحقيقي يساراً مع بطاقة FC 27 الأصلية وأكوام الكوينز يميناً وهالة ضوئية دائرية',
+        defaultState: {
+            bgTheme: 'showcase_dark',
+            auraTheme: 'emerald',
+            gameVersion: 'FC 27',
+            playerCutoutUrl: SHOWCASE_STARS_PRESETS[0].cutoutUrl,
+            cardImageUrl: SHOWCASE_STARS_PRESETS[0].cardUrl,
+            playerName: 'كيليان مبابي',
+            playerSub: 'ريال مدريد • فرنسا',
+            rating: '91',
+            position: 'ST',
+            showCoinsStack: true,
+            badgeText: '🔥 مع نزول لاعبي الحدث رسمياً',
+            headline: 'ضبط تشكيلتك مع المتجر الأفضل 🔥',
+            subheadline: 'أقوى كوينز مضمونة 100% بدون أي تصفير أو بان مع سرعة تسليم فورية',
+            promoCode: 'كود خصم: SC15',
+            ctaText: 'ارسل اسم اللاعب بالخاص واستلم كوينزك فوراً 📩',
+            playerScale: 100,
+            playerPosX: 25,
+            playerPosY: 90,
+            cardScale: 96,
+            cardPosX: 240,
+            cardPosY: 110,
+            showFcLogo: true,
+            showStoreLogo: true
+        }
+    },
     store_promo: {
         id: 'store_promo',
         name: '📱 ستوري المتجر الأصلية (الشرائط المكدسة)',
@@ -478,3 +668,6 @@ window.STORE_BANNER_THEMES = STORE_BANNER_THEMES;
 window.POTM_LEAGUES = POTM_LEAGUES;
 window.POPULAR_POTM_STARS = POPULAR_POTM_STARS;
 window.SBC_PRESETS = SBC_PRESETS;
+window.SHOWCASE_AURA_THEMES = SHOWCASE_AURA_THEMES;
+window.SHOWCASE_STARS_PRESETS = SHOWCASE_STARS_PRESETS;
+
