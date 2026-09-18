@@ -22,7 +22,7 @@ window.CarouselEngine = (function() {
         eventTitle: 'TEAM OF THE SEASON ⚽',
         hookText: 'مع نزول لاعبين الحدث! متجرنا بخدمتك 🔥',
         hookEmoji: '🔥',
-        atmosphere: 'light_gold', // 'light_gold' (Default) | 'light_mint' | 'light_cyan' | 'light_warm' | 'light_minimal'
+        atmosphere: 'arena_3d_daylight', // 'arena_3d_daylight' (Default) | 'championship_hall_3d' | 'light_gold' | 'light_mint' | 'light_cyan'
         layoutStyle: 'player_card', // 'player_card' (Player + Card) | 'giant_card' (Card + Coins) | 'trio_cards' (Trio Stack)
         discountCode: 'SHOP15',
         coinsHighlight: '+1,000,000 كوينز',
@@ -165,8 +165,40 @@ window.CarouselEngine = (function() {
         { emoji: '😎', text: 'متجرك الأول والأضمن في الشرق الأوسط' }
     ];
 
-    // ShopCoin15 Light & Bright Luxury Brand Atmospheres
+    // ShopCoin15 Bespoke 3D Arena & Light Luxury Atmospheres
     const ATMOSPHERES = {
+        arena_3d_daylight: {
+            name: '🏟️ ستاديوم أرينا نهاري 3D (Bespoke 3D Stadium Stage)',
+            bgImage: 'assets/shopcoin_arena_bg.jpg',
+            bgGrad: 'from-[#ffffff] via-[#f1f5f9] to-[#e2e8f0]',
+            heroAura: 'from-amber-400/20 via-yellow-200/10 to-transparent',
+            portalBorder: 'border-emerald-400/50',
+            glowColor: 'rgba(16, 185, 129, 0.25)',
+            capsuleBorder: 'border-white/90',
+            capsuleGlow: 'shadow-[0_10px_35px_rgba(0,0,0,0.10)]',
+            accentText: 'text-amber-800',
+            subAccent: 'text-emerald-700',
+            eyebrowColor: 'text-emerald-700',
+            tagBg: 'bg-white/95 text-amber-900 border-amber-300',
+            badgeBg: 'bg-gradient-to-r from-amber-500 to-emerald-500 text-slate-950',
+            ambientGlow: 'bg-amber-200/25'
+        },
+        championship_hall_3d: {
+            name: '👑 قاعة بطولات فيفا الذهبية 3D (Championship Hall)',
+            bgImage: 'assets/shopcoin_gold_lounge.jpg',
+            bgGrad: 'from-[#fffbeb] via-[#fef3c7] to-[#fde68a]',
+            heroAura: 'from-amber-400/25 via-yellow-200/15 to-transparent',
+            portalBorder: 'border-amber-400/60',
+            glowColor: 'rgba(245, 158, 11, 0.25)',
+            capsuleBorder: 'border-amber-300/80',
+            capsuleGlow: 'shadow-[0_10px_35px_rgba(245,158,11,0.20)]',
+            accentText: 'text-amber-800',
+            subAccent: 'text-amber-600',
+            eyebrowColor: 'text-amber-700',
+            tagBg: 'bg-white/95 text-amber-900 border-amber-300',
+            badgeBg: 'bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-950',
+            ambientGlow: 'bg-amber-300/25'
+        },
         light_gold: {
             name: '☀️ ذهبي شمسي ناصع (Golden Sunlight Luxury)',
             bgGrad: 'from-[#fffdfa] via-[#fffbeb] to-[#fef3c7]',
@@ -211,36 +243,6 @@ window.CarouselEngine = (function() {
             tagBg: 'bg-cyan-100/90 text-cyan-900 border-cyan-300',
             badgeBg: 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white',
             ambientGlow: 'bg-cyan-300/30'
-        },
-        light_warm: {
-            name: '🌅 كهرماني نهاري دافئ (Warm Amber Daylight)',
-            bgGrad: 'from-[#fffaf5] via-[#fff7ed] to-[#fed7aa]',
-            heroAura: 'from-orange-400/30 via-amber-200/25 to-transparent',
-            portalBorder: 'border-orange-400/60',
-            glowColor: 'rgba(249, 115, 22, 0.25)',
-            capsuleBorder: 'border-orange-300/70',
-            capsuleGlow: 'shadow-[0_8px_30px_rgba(249,115,22,0.15)]',
-            accentText: 'text-orange-800',
-            subAccent: 'text-orange-600',
-            eyebrowColor: 'text-orange-700',
-            tagBg: 'bg-orange-100/90 text-orange-900 border-orange-300',
-            badgeBg: 'bg-gradient-to-r from-orange-500 to-amber-500 text-white',
-            ambientGlow: 'bg-orange-300/30'
-        },
-        light_minimal: {
-            name: '✨ أبيض نقي ومينيمال فخم (Minimal Pure White)',
-            bgGrad: 'from-[#ffffff] via-[#f8fafc] to-[#f1f5f9]',
-            heroAura: 'from-slate-200/50 via-slate-100/35 to-transparent',
-            portalBorder: 'border-slate-300/70',
-            glowColor: 'rgba(15, 23, 42, 0.08)',
-            capsuleBorder: 'border-slate-200/90',
-            capsuleGlow: 'shadow-[0_8px_30px_rgba(0,0,0,0.06)]',
-            accentText: 'text-slate-900',
-            subAccent: 'text-slate-600',
-            eyebrowColor: 'text-blue-700',
-            tagBg: 'bg-slate-100 text-slate-800 border-slate-300',
-            badgeBg: 'bg-slate-900 text-white',
-            ambientGlow: 'bg-slate-200/40'
         }
     };
 
@@ -345,7 +347,7 @@ window.CarouselEngine = (function() {
     // RENDER SIGNATURE STORE THEME (ShopCoin15 Light & Bright Luxury Suite)
     function renderSignatureStoreSlide() {
         const star = STARS_DATABASE[themeState.starKey] || STARS_DATABASE.mbappe;
-        const atm = ATMOSPHERES[themeState.atmosphere] || ATMOSPHERES.light_gold;
+        const atm = ATMOSPHERES[themeState.atmosphere] || ATMOSPHERES.arena_3d_daylight;
         const cardImg = themeState.customCardUrl || star.cardUrl;
         const photoImg = themeState.customPhotoUrl || star.photoUrl;
         const subIdx = themeState.activeSubSlide || 0;
@@ -362,20 +364,20 @@ window.CarouselEngine = (function() {
                     </div>
 
                     <!-- Ambient Concentric Multi-Layered Sunburst Geometric Energy Halo -->
-                    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[285px] h-[285px] rounded-full border-2 ${atm.portalBorder} bg-gradient-to-b ${atm.heroAura} shadow-[0_10px_40px_${atm.glowColor}] flex items-center justify-center pointer-events-none">
+                    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[285px] h-[285px] rounded-full border-2 ${atm.portalBorder} bg-gradient-to-b ${atm.heroAura} shadow-[0_10px_40px_${atm.glowColor}] flex items-center justify-center pointer-events-none backdrop-blur-[1px]">
                         <div class="w-[84%] h-[84%] rounded-full border border-amber-400/40 border-dashed"></div>
                         <div class="w-[66%] h-[66%] rounded-full border ${atm.portalBorder} opacity-60"></div>
                         <div class="absolute inset-2 rounded-full border border-white/60"></div>
                     </div>
 
                     ${themeState.layoutStyle === 'player_card' ? `
-                        <!-- Player Cutout (Right / Mid) -->
-                        <div class="absolute -right-4 bottom-4 z-10 w-[230px] h-auto max-h-[330px] pointer-events-none flex items-end justify-center filter drop-shadow-[0_16px_30px_rgba(0,0,0,0.22)]">
+                        <!-- Player Cutout (Standing on 3D Stadium Stage) -->
+                        <div class="absolute -right-2 bottom-1 z-10 w-[235px] h-auto max-h-[340px] pointer-events-none flex items-end justify-center filter drop-shadow-[0_16px_30px_rgba(0,0,0,0.30)]">
                             <img src="${proxyUrl(photoImg)}" onerror="this.style.display='none'" class="w-full h-auto object-contain scale-110 translate-y-2 transform -rotate-1" alt="${star.arName}">
                         </div>
 
-                        <!-- Official FC 27 Item Card (Left / Front) -->
-                        <div class="absolute left-6 bottom-8 z-20 w-[175px] filter drop-shadow-[0_20px_35px_rgba(0,0,0,0.20)]">
+                        <!-- Official FC 27 Item Card (Floating on 3D Stage) -->
+                        <div class="absolute left-6 bottom-7 z-20 w-[175px] filter drop-shadow-[0_22px_35px_rgba(0,0,0,0.30)]">
                             <div class="relative">
                                 <img src="${proxyUrl(cardImg)}" class="w-full h-auto object-contain" alt="Card Item">
                                 
@@ -537,31 +539,33 @@ window.CarouselEngine = (function() {
         } else {
             // SLIDE 4: SHOPCOIN15 LIGHT SECURITY VAULT & CALL TO ACTION
             centerContent = `
-                <div class="relative w-full h-[360px] flex flex-col justify-center items-center text-center px-5 space-y-3 z-20 font-['Cairo']">
-                    <!-- ShopCoin15 Bright 3D Security Shield -->
-                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-amber-400 via-yellow-300 to-emerald-400 text-slate-950 flex items-center justify-center text-3xl font-black shadow-[0_10px_30px_rgba(245,158,11,0.35)] border-2 border-white">
-                        🛡️
-                    </div>
+                <div class="relative w-full h-[360px] flex items-center justify-center px-4 z-20 font-['Cairo']">
+                    <div class="w-full max-w-sm p-5 rounded-3xl bg-white/92 backdrop-blur-xl border border-white shadow-[0_12px_40px_rgba(0,0,0,0.12)] flex flex-col items-center text-center space-y-2.5">
+                        <!-- ShopCoin15 Bright 3D Security Shield -->
+                        <div class="w-13 h-13 rounded-2xl bg-gradient-to-tr from-amber-400 via-yellow-300 to-emerald-400 text-slate-950 flex items-center justify-center text-2xl font-black shadow-[0_8px_25px_rgba(245,158,11,0.35)] border-2 border-white">
+                            🛡️
+                        </div>
 
-                    <h3 class="text-xl font-black text-slate-900 font-['Alexandria'] leading-tight">
-                        ضمان نادي كامل 100% من متجر شوب كوينز
-                    </h3>
+                        <h3 class="text-lg font-black text-slate-900 font-['Alexandria'] leading-tight">
+                            ضمان نادي كامل 100% من متجر شوب كوينز
+                        </h3>
 
-                    <p class="text-xs text-slate-700 leading-relaxed max-w-xs font-bold">
-                        نعتمد أحدث بروتوكولات الأمان المطابقة لصفقات الماركت الطبيعية 100%. حسابك وناديك في أمان تام دائماً.
-                    </p>
+                        <p class="text-[11px] text-slate-700 leading-relaxed font-bold px-2">
+                            نعتمد أحدث بروتوكولات الأمان المطابقة لصفقات الماركت الطبيعية 100%. حسابك وناديك في أمان تام دائماً.
+                        </p>
 
-                    <!-- Reassurance Checklist (Light Badges) -->
-                    <div class="flex items-center gap-2 text-[10.5px] font-bold pt-1">
-                        <span class="px-2.5 py-1 rounded-full bg-white border border-slate-200 shadow-xs text-emerald-700 font-['Alexandria']">✓ صفر تصفير</span>
-                        <span class="px-2.5 py-1 rounded-full bg-white border border-slate-200 shadow-xs text-cyan-700 font-['Alexandria']">✓ تسليم فوري في 60 ثانية</span>
-                        <span class="px-2.5 py-1 rounded-full bg-white border border-slate-200 shadow-xs text-amber-800 font-['Alexandria']">✓ صافي الضريبة</span>
-                    </div>
+                        <!-- Reassurance Checklist (Light Badges) -->
+                        <div class="flex items-center gap-1.5 text-[10px] font-bold pt-0.5 flex-wrap justify-center">
+                            <span class="px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 font-['Alexandria'] font-black">✓ صفر تصفير</span>
+                            <span class="px-2.5 py-1 rounded-full bg-cyan-50 border border-cyan-200 text-cyan-800 font-['Alexandria'] font-black">✓ تسليم فوري في 60 ثانية</span>
+                            <span class="px-2.5 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-900 font-['Alexandria'] font-black">✓ صافي الضريبة</span>
+                        </div>
 
-                    <!-- Direct High-Contrast Island Button -->
-                    <div class="pt-2 w-full max-w-xs">
-                        <div class="py-3.5 px-6 rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 text-white font-black text-xs shadow-[0_10px_30px_rgba(16,185,129,0.35)] border-2 border-emerald-300 flex items-center justify-center gap-2 font-['Alexandria']">
-                            <span>⚡ تواصل معنا بالخاص للطلب الفوري 📩</span>
+                        <!-- Direct High-Contrast Island Button -->
+                        <div class="pt-1 w-full">
+                            <div class="py-3 px-5 rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 text-white font-black text-xs shadow-[0_8px_25px_rgba(16,185,129,0.35)] border border-emerald-300 flex items-center justify-center gap-2 font-['Alexandria']">
+                                <span>⚡ تواصل معنا بالخاص للطلب الفوري 📩</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -569,13 +573,23 @@ window.CarouselEngine = (function() {
         }
 
         return `
-            <!-- Signature Store Slide Container (Light & Bright Luxury Suite) -->
-            <div class="absolute inset-0 bg-gradient-to-b ${atm.bgGrad} overflow-hidden select-none p-5 flex flex-col justify-between">
+            <!-- Signature Store Slide Container (ShopCoin15 Bespoke 3D Arena Suite) -->
+            <div class="absolute inset-0 overflow-hidden select-none p-5 flex flex-col justify-between">
                 
-                <!-- Background Stadium Daylight Atmosphere & Geometric Light Lattice -->
-                <div class="absolute inset-0 pointer-events-none opacity-15" style="background-image: radial-gradient(#94a3b8 1px, transparent 1px); background-size: 24px 24px;"></div>
-                <div class="absolute top-0 right-0 left-0 h-36 bg-gradient-to-b from-white/70 to-transparent pointer-events-none"></div>
-                <div class="absolute bottom-0 right-0 left-0 h-40 bg-gradient-to-t from-white/70 to-transparent pointer-events-none"></div>
+                ${atm.bgImage ? `
+                    <!-- 3D Bespoke Photorealistic Stadium Stage Background -->
+                    <img src="${atm.bgImage}" class="absolute inset-0 w-full h-full object-cover pointer-events-none" alt="Stadium Stage">
+                    <!-- Soft Daylight Lighting Balancer for Eye Comfort & Perfect Contrast -->
+                    <div class="absolute inset-0 bg-gradient-to-b from-white/20 via-transparent to-white/35 pointer-events-none"></div>
+                    <div class="absolute top-0 right-0 left-0 h-32 bg-gradient-to-b from-white/80 via-white/30 to-transparent pointer-events-none"></div>
+                    <div class="absolute bottom-0 right-0 left-0 h-36 bg-gradient-to-t from-white/85 via-white/40 to-transparent pointer-events-none"></div>
+                ` : `
+                    <!-- Background Stadium Daylight Atmosphere & Geometric Light Lattice -->
+                    <div class="absolute inset-0 bg-gradient-to-b ${atm.bgGrad}"></div>
+                    <div class="absolute inset-0 pointer-events-none opacity-15" style="background-image: radial-gradient(#94a3b8 1px, transparent 1px); background-size: 24px 24px;"></div>
+                    <div class="absolute top-0 right-0 left-0 h-36 bg-gradient-to-b from-white/70 to-transparent pointer-events-none"></div>
+                    <div class="absolute bottom-0 right-0 left-0 h-40 bg-gradient-to-t from-white/70 to-transparent pointer-events-none"></div>
+                `}
 
                 <!-- TOP HEADER BAR: ShopCoin15 Light Chamfered Headline Capsule + EA FC 27 Tag -->
                 <div class="relative z-30 flex items-center justify-between">
