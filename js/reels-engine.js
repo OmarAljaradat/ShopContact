@@ -1757,7 +1757,7 @@ window.ReelsEngine = (function() {
                                     <span>نشر تيك توك التلقائي</span>
                                     <span id="tiktokStatusBadge" class="text-[9.5px] px-2 py-0.5 rounded-full font-bold bg-zinc-800 text-zinc-400 border border-zinc-700">جاري الفحص...</span>
                                 </h4>
-                                <p class="text-[10px] text-zinc-400">نشر مباشر بلمسة واحدة عبر TikTok API</p>
+                                <p class="text-[10px] text-zinc-400">نشر مباشر على حسابك بلمسة واحدة</p>
                             </div>
                         </div>
                         <div id="tiktokActionBtnArea">
@@ -1767,12 +1767,22 @@ window.ReelsEngine = (function() {
                         </div>
                     </div>
 
+                    <!-- Privacy Level Selector -->
+                    <div class="flex items-center justify-between gap-2 p-2 rounded-xl bg-zinc-900/90 border border-zinc-800 text-[11px]">
+                        <span class="text-zinc-400 font-bold shrink-0">نوع النشر:</span>
+                        <select id="tiktokPrivacyLevel" class="w-full bg-black/70 text-zinc-200 text-[10.5px] font-bold rounded-lg px-2 py-1 border border-zinc-700 outline-none">
+                            <option value="PUBLIC_TO_EVERYONE">🌐 نشر عام ومباشر للجميع (Public)</option>
+                            <option value="SELF_ONLY">🔒 نشر مباشر بحسابي (أنا فقط - Private)</option>
+                            <option value="MUTUAL_FOLLOW_FRIENDS">👥 للأصدقاء المشتركين فقط</option>
+                        </select>
+                    </div>
+
                     <!-- Direct Publish Button -->
                     <button type="button" id="btnPublishTikTok" onclick="ReelsEngine.publishToTikTok()"
                             class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-[#FE2C55] via-[#ff0050] to-[#25F4EE] hover:brightness-110 text-white font-black text-xs transition flex items-center justify-center gap-2 shadow-lg shadow-[#FE2C55]/20 cursor-pointer active:scale-[0.99]">
                         <span>🚀 نشر الريل على تيك توك بنقرة واحدة</span>
                     </button>
-                    <div id="tiktokPublishStatus" class="hidden text-[11px] p-2 rounded-xl text-center font-bold"></div>
+                    <div id="tiktokPublishStatus" class="hidden text-[11px] p-2.5 rounded-xl text-center font-bold"></div>
                 </div>
 
                 <!-- 7. EXPORT ACTIONS -->
@@ -2291,7 +2301,7 @@ window.ReelsEngine = (function() {
     }
 
     // ---- 12. TIKTOK AUTO PUBLISHING & OAUTH ----
-    let tiktokStatus = { connected: false, username: null };
+    let tiktokStatus = { connected: false, username: null, scope: null };
 
     async function checkTikTokStatus() {
         try {
@@ -2304,7 +2314,13 @@ window.ReelsEngine = (function() {
                 data.connected = true;
                 data.username = localStorage.getItem('shopcoin15_tiktok_user') || 'shop_coin15';
             }
+            if (data.scope) {
+                localStorage.setItem('shopcoin15_tiktok_scope', data.scope);
+            }
             tiktokStatus = data;
+
+            const scope = data.scope || localStorage.getItem('shopcoin15_tiktok_scope') || '';
+            const hasDirect = scope.includes('video.publish');
 
             const badge = document.getElementById('tiktokStatusBadge');
             const actionArea = document.getElementById('tiktokActionBtnArea');
@@ -2312,14 +2328,25 @@ window.ReelsEngine = (function() {
 
             if (data.connected) {
                 if (badge) {
-                    badge.className = 'text-[9.5px] px-2 py-0.5 rounded-full font-bold bg-emerald-950 text-emerald-300 border border-emerald-700';
-                    badge.innerHTML = `🟢 متصل (@${data.username || 'shop_coin15'})`;
+                    if (hasDirect) {
+                        badge.className = 'text-[9.5px] px-2 py-0.5 rounded-full font-bold bg-emerald-950 text-emerald-300 border border-emerald-700';
+                        badge.innerHTML = `🟢 متصل: نشر مباشر (@${data.username || 'shop_coin15'})`;
+                    } else {
+                        badge.className = 'text-[9.5px] px-2 py-0.5 rounded-full font-bold bg-amber-950 text-amber-300 border border-amber-700';
+                        badge.innerHTML = `🟡 متصل: مسودات فقط (@${data.username || 'shop_coin15'})`;
+                    }
                 }
                 if (actionArea) {
                     actionArea.innerHTML = `
-                        <button type="button" onclick="ReelsEngine.disconnectTikTok()" class="px-2 py-0.5 rounded bg-zinc-800 hover:bg-rose-900 text-zinc-400 hover:text-rose-200 text-[10px] font-bold transition">
-                            إلغاء الربط
-                        </button>
+                        <div class="flex items-center gap-1.5">
+                            ${!hasDirect ? `
+                            <button type="button" onclick="ReelsEngine.reconnectDirectPublish()" class="px-2 py-1 rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 hover:brightness-110 text-white text-[10px] font-black transition shadow-sm animate-pulse" title="إعادة الربط لتفعيل النشر المباشر">
+                                تفعيل النشر المباشر ⚡
+                            </button>` : ''}
+                            <button type="button" onclick="ReelsEngine.disconnectTikTok()" class="px-2 py-0.5 rounded bg-zinc-800 hover:bg-rose-900 text-zinc-400 hover:text-rose-200 text-[10px] font-bold transition">
+                                إلغاء الربط
+                            </button>
+                        </div>
                     `;
                 }
                 if (btnPublish) {
@@ -2338,7 +2365,7 @@ window.ReelsEngine = (function() {
                     `;
                 }
                 if (btnPublish) {
-                    btnPublish.innerHTML = `<span>🔗 اربط تيك توك للنشر التلقائي</span>`;
+                    btnPublish.innerHTML = `<span>🔗 اربط تيك توك للنشر المباشر</span>`;
                 }
             }
         } catch (e) {
@@ -2350,11 +2377,19 @@ window.ReelsEngine = (function() {
         window.location.href = '/api/tiktok/login';
     }
 
+    function reconnectDirectPublish() {
+        localStorage.removeItem('shopcoin15_tiktok_token');
+        localStorage.removeItem('shopcoin15_tiktok_user');
+        localStorage.removeItem('shopcoin15_tiktok_scope');
+        loginTikTok();
+    }
+
     async function disconnectTikTok() {
         if (!confirm('هل تريد بالتأكيد إلغاء ربط حساب تيك توك؟')) return;
         try {
             localStorage.removeItem('shopcoin15_tiktok_token');
             localStorage.removeItem('shopcoin15_tiktok_user');
+            localStorage.removeItem('shopcoin15_tiktok_scope');
             await fetch('/api/tiktok/disconnect', { method: 'POST' });
             if (window.showCopyToast) window.showCopyToast('تم إلغاء ربط الحساب بنجاح.');
             await checkTikTokStatus();
@@ -2387,7 +2422,7 @@ window.ReelsEngine = (function() {
             });
 
             if (btn) btn.innerHTML = '<span>🚀 جاري رفع الفيديو لتيك توك...</span>';
-            if (statusBox) statusBox.textContent = '🚀 جاري الاتصال بـ TikTok API ورفع الفيديو...';
+            if (statusBox) statusBox.textContent = '🚀 جاري الاتصال بـ TikTok API ونشر الفيديو مباشرة...';
 
             // Convert Blob to Base64
             const reader = new FileReader();
@@ -2402,6 +2437,9 @@ window.ReelsEngine = (function() {
             const caption = `${state.title || 'أقوى كروت EA FC 27'} ⚡\n\nمتجر ShopCoin15 لشحن كوينز فيفا بأمان وسرعة 100% 👑\nللطلب حياك عبر الرابط بالبايو! 📩\n\n#eafc27 #fc27 #fifa #fut #shopcoin15 #gaming`;
 
             const savedToken = localStorage.getItem('shopcoin15_tiktok_token') || '';
+            const privacySelector = document.getElementById('tiktokPrivacyLevel');
+            const chosenPrivacy = privacySelector ? privacySelector.value : 'PUBLIC_TO_EVERYONE';
+
             const res = await fetch('/api/tiktok/publish', {
                 method: 'POST',
                 headers: { 
@@ -2411,7 +2449,7 @@ window.ReelsEngine = (function() {
                 body: JSON.stringify({
                     videoBase64,
                     caption,
-                    privacyLevel: 'SELF_ONLY',
+                    privacyLevel: chosenPrivacy,
                     accessToken: savedToken
                 })
             });
@@ -2420,10 +2458,10 @@ window.ReelsEngine = (function() {
             if (data.success) {
                 if (statusBox) {
                     statusBox.className = 'text-[11px] p-2.5 rounded-xl text-center font-black bg-emerald-950 text-emerald-300 border border-emerald-600 block';
-                    statusBox.innerHTML = `🎉 تم إرسال الريلز لتطبيق تيك توك بنجاح! تفقد مسوداتك في تيك توك الآن! ✨`;
+                    statusBox.innerHTML = `🎉 ${data.message || 'تم نشر الريلز في حساب تيك توك مباشرة بنجاح!'} ✨`;
                 }
                 if (window.showCopyToast) {
-                    window.showCopyToast('تم نشر الريلز في حساب تيك توك بنجاح! 🚀👑');
+                    window.showCopyToast('تم نشر الريلز في حساب تيك توك مباشرة بنجاح! 🚀👑');
                 }
             } else {
                 throw new Error(data.error || 'تعذر إتمام النشر');
@@ -2431,10 +2469,10 @@ window.ReelsEngine = (function() {
         } catch (err) {
             console.error('TikTok publish error:', err);
             if (statusBox) {
-                statusBox.className = 'text-[11px] p-2 rounded-xl text-center font-bold bg-rose-950 text-rose-300 border border-rose-800 block';
+                statusBox.className = 'text-[11px] p-2.5 rounded-xl text-center font-bold bg-rose-950 text-rose-300 border border-rose-800 block';
                 statusBox.textContent = '❌ خطأ: ' + err.message;
             }
-            alert('حدث خطأ أثناء النشر على تيك توك: ' + err.message);
+            alert('حدث خطأ أثناء النشر على تيك توك:\n' + err.message);
         } finally {
             if (btn) {
                 btn.disabled = false;
@@ -2511,13 +2549,16 @@ ${state.subtitle}
             const u = urlParams.get('username') || '';
             const t = urlParams.get('token') || '';
             const r = urlParams.get('refresh') || '';
+            const s = urlParams.get('scope') || '';
             if (t) localStorage.setItem('shopcoin15_tiktok_token', t);
             if (r) localStorage.setItem('shopcoin15_tiktok_refresh', r);
             if (u) localStorage.setItem('shopcoin15_tiktok_user', u);
+            if (s) localStorage.setItem('shopcoin15_tiktok_scope', s);
 
             setTimeout(() => {
+                const isDirect = s.includes('video.publish');
                 if (window.showCopyToast) {
-                    window.showCopyToast(`🎉 تم ربط حساب تيك توك بنجاح (@${u || 'shop_coin15'})! جاهز للنشر التلقائي 👑`);
+                    window.showCopyToast(`🎉 تم ربط حساب تيك توك بنجاح (@${u || 'shop_coin15'})! ${isDirect ? 'مفعل للنشر المباشر 👑' : 'وضع المسودات 📝'}`);
                 }
                 checkTikTokStatus();
             }, 800);
@@ -2570,6 +2611,7 @@ ${state.subtitle}
         sendReelTelegram,
         checkTikTokStatus,
         loginTikTok,
+        reconnectDirectPublish,
         disconnectTikTok,
         publishToTikTok
     };

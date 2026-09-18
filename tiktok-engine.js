@@ -247,13 +247,46 @@ async function fetchUserInfo(accessToken) {
     });
 }
 
+async function queryCreatorInfo(accessToken) {
+    return new Promise((resolve) => {
+        const req = https.request({
+            hostname: 'open.tiktokapis.com',
+            path: '/v2/post/publish/creator_info/query/',
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${accessToken}`,
+                'Content-Type': 'application/json; charset=UTF-8',
+                'Content-Length': 2
+            }
+        }, (res) => {
+            let body = '';
+            res.on('data', c => body += c);
+            res.on('end', () => {
+                try {
+                    const json = JSON.parse(body);
+                    if (json.data) {
+                        resolve(json.data);
+                    } else {
+                        resolve(null);
+                    }
+                } catch (e) {
+                    resolve(null);
+                }
+            });
+        });
+        req.on('error', () => resolve(null));
+        req.write('{}');
+        req.end();
+    });
+}
+
 /**
  * Publish a video buffer directly to TikTok via Content Posting API
  * @param {Buffer} videoBuffer - MP4 / WebM video buffer
  * @param {string} caption - Post title & hashtags
  * @param {string} privacyLevel - 'PUBLIC_TO_EVERYONE' | 'MUTUAL_FOLLOW_FRIENDS' | 'SELF_ONLY'
  */
-async function publishVideo(videoBuffer, caption, privacyLevel = 'SELF_ONLY', overrideToken = null) {
+async function publishVideo(videoBuffer, caption, privacyLevel = 'PUBLIC_TO_EVERYONE', overrideToken = null) {
     const accessToken = overrideToken || (await getValidAccessToken());
     if (!accessToken) {
         throw new Error('حساب تيك توك غير مربوط بعد. يرجى الضغط على زر ربط تيك توك أولاً!');
@@ -264,72 +297,126 @@ async function publishVideo(videoBuffer, caption, privacyLevel = 'SELF_ONLY', ov
     }
 
     const token = getToken();
-    const hasDirectPublish = token && token.scope && token.scope.includes('video.publish');
+    const tokenScope = (token && token.scope) || '';
 
-    // Choose endpoint: direct post or inbox draft (official for video.upload)
-    const initPath = hasDirectPublish 
-        ? '/v2/post/publish/video/init/' 
-        : '/v2/post/publish/inbox/video/init/';
+    // Query Creator Info from TikTok to inspect capabilities
+    let creatorInfo = null;
+    try {
+        creatorInfo = await queryCreatorInfo(accessToken);
+    } catch (e) {
+        console.warn('[TikTok Engine] Query creator info notice:', e.message);
+    }
 
-    const initPayload = hasDirectPublish ? JSON.stringify({
-        post_info: {
-            title: caption || 'ريلز جديد من متجر shop_coin15 ⚽⚡ #fc27 #fifa #eafc',
-            privacy_level: privacyLevel,
-            disable_duet: false,
-            disable_stitch: false,
-            disable_comment: false,
-            video_cover_timestamp_ms: 1000
-        },
-        source_info: {
-            source: 'FILE_UPLOAD',
-            video_size: videoBuffer.length,
-            chunk_size: videoBuffer.length,
-            total_chunk_count: 1
+    // Direct publish is available if creatorInfo resolved or token scope includes video.publish
+    const hasDirectPublish = !!(creatorInfo || tokenScope.includes('video.publish'));
+
+    if (!hasDirectPublish && !tokenScope.includes('video.upload')) {
+        throw new Error('صلاحيات النشر غير مفعلة. يرجى الضغط على زر ربط تيك توك لإعادة تفويض الصلاحيات.');
+    }
+
+    if (!hasDirectPublish) {
+        throw new Error('حسابك مربوط حالياً بوضع المسودات فقط. لنشر الريل مباشرة على حسابك دون حفظه بالمسودة: يرجى التأكد من تفعيل Direct Post من لوحة مطوري تيك توك، ثم الضغط على "إلغاء الربط" و"ربط تيك توك" مجدداً!');
+    }
+
+    let targetPrivacy = privacyLevel || 'PUBLIC_TO_EVERYONE';
+    if (creatorInfo && Array.isArray(creatorInfo.privacy_level_options)) {
+        if (!creatorInfo.privacy_level_options.includes(targetPrivacy)) {
+            targetPrivacy = creatorInfo.privacy_level_options.includes('PUBLIC_TO_EVERYONE')
+                ? 'PUBLIC_TO_EVERYONE'
+                : (creatorInfo.privacy_level_options[0] || 'SELF_ONLY');
         }
-    }) : JSON.stringify({
-        source_info: {
-            source: 'FILE_UPLOAD',
-            video_size: videoBuffer.length,
-            chunk_size: videoBuffer.length,
-            total_chunk_count: 1
-        }
-    });
+    }
 
-    console.log(`[TikTok Engine] Initializing publish via ${initPath} (${(videoBuffer.length / (1024 * 1024)).toFixed(2)} MB)...`);
-
-    const initResult = await new Promise((resolve, reject) => {
-        const req = https.request({
-            hostname: 'open.tiktokapis.com',
-            path: initPath,
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${accessToken}`,
-                'Content-Type': 'application/json; charset=UTF-8',
-                'Content-Length': Buffer.byteLength(initPayload)
-            }
-        }, (res) => {
-            let body = '';
-            res.on('data', c => body += c);
-            res.on('end', () => {
-                try {
-                    const json = JSON.parse(body);
-                    const d = json.data;
-                    if (d && (d.upload_url || d.publish_id)) {
-                        resolve(d);
-                    } else {
-                        const msg = json.error ? `${json.error.code}: ${json.error.message}` : body;
-                        reject(new Error(msg));
-                    }
-                } catch (e) {
-                    reject(new Error('استجابة غير صالحة من تيك توك عند التهيئة: ' + body.slice(0, 100)));
+    async function initPublish(endpointPath, payloadObj) {
+        const payloadStr = JSON.stringify(payloadObj);
+        return new Promise((resolve, reject) => {
+            const req = https.request({
+                hostname: 'open.tiktokapis.com',
+                path: endpointPath,
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                    'Content-Type': 'application/json; charset=UTF-8',
+                    'Content-Length': Buffer.byteLength(payloadStr)
                 }
+            }, (res) => {
+                let body = '';
+                res.on('data', c => body += c);
+                res.on('end', () => {
+                    try {
+                        const json = JSON.parse(body);
+                        const d = json.data;
+                        if (d && (d.upload_url || d.publish_id)) {
+                            resolve({ data: d, response: json });
+                        } else {
+                            const errCode = json.error ? json.error.code : 'unknown_error';
+                            const errMsg = json.error ? json.error.message : body;
+                            const err = new Error(`${errCode}: ${errMsg}`);
+                            err.code = errCode;
+                            reject(err);
+                        }
+                    } catch (e) {
+                        reject(new Error('استجابة غير صالحة من تيك توك عند التهيئة: ' + body.slice(0, 120)));
+                    }
+                });
             });
-        });
 
-        req.on('error', err => reject(err));
-        req.write(initPayload);
-        req.end();
-    });
+            req.on('error', err => reject(err));
+            req.write(payloadStr);
+            req.end();
+        });
+    }
+
+    let initResult = null;
+    let finalPrivacy = targetPrivacy;
+
+    try {
+        console.log(`[TikTok Engine] Attempting direct feed publish with privacy: ${targetPrivacy}...`);
+        const directPayload = {
+            post_info: {
+                title: caption || 'ريلز جديد من متجر shop_coin15 ⚽⚡ #fc27 #fifa #eafc #shopcoin15',
+                privacy_level: targetPrivacy,
+                disable_duet: false,
+                disable_stitch: false,
+                disable_comment: false,
+                video_cover_timestamp_ms: 1000
+            },
+            source_info: {
+                source: 'FILE_UPLOAD',
+                video_size: videoBuffer.length,
+                chunk_size: videoBuffer.length,
+                total_chunk_count: 1
+            }
+        };
+        const r = await initPublish('/v2/post/publish/video/init/', directPayload);
+        initResult = r.data;
+    } catch (err) {
+        console.warn('[TikTok Engine] Direct publish attempt 1 note:', err.message);
+        if (targetPrivacy !== 'SELF_ONLY' && (err.message.includes('privacy') || err.message.includes('unaudited') || err.message.includes('permission'))) {
+            console.log('[TikTok Engine] Retrying direct publish with SELF_ONLY (Sandbox restriction)...');
+            const fallbackPayload = {
+                post_info: {
+                    title: caption || 'ريلز جديد من متجر shop_coin15 ⚽⚡ #fc27 #fifa #eafc #shopcoin15',
+                    privacy_level: 'SELF_ONLY',
+                    disable_duet: false,
+                    disable_stitch: false,
+                    disable_comment: false,
+                    video_cover_timestamp_ms: 1000
+                },
+                source_info: {
+                    source: 'FILE_UPLOAD',
+                    video_size: videoBuffer.length,
+                    chunk_size: videoBuffer.length,
+                    total_chunk_count: 1
+                }
+            };
+            const r = await initPublish('/v2/post/publish/video/init/', fallbackPayload);
+            initResult = r.data;
+            finalPrivacy = 'SELF_ONLY';
+        } else {
+            throw err;
+        }
+    }
 
     // Step 2: Upload Video binary chunks to upload_url
     console.log(`[TikTok Engine] Uploading binary to TikTok upload endpoint...`);
@@ -364,10 +451,17 @@ async function publishVideo(videoBuffer, caption, privacyLevel = 'SELF_ONLY', ov
 
     console.log(`[TikTok Engine] Video uploaded successfully! Publish ID: ${initResult.publish_id}`);
 
+    let msg = 'تم نشر الفيديو على حسابك في تيك توك بنجاح! 🚀🎉';
+    if (finalPrivacy === 'SELF_ONLY') {
+        msg = 'تم نشر الفيديو على حسابك مباشرة! 🔒 (مضبوط على "أنا فقط" لحماية الخصوصية في وضع Sandbox، يمكنك تحويله للعامة بلمسة واحدة داخل تيك توك)';
+    }
+
     return {
         success: true,
         publishId: initResult.publish_id,
-        message: 'تم إرسال الفيديو إلى تيك توك بنجاح! 🚀🎉'
+        direct: true,
+        privacy: finalPrivacy,
+        message: msg
     };
 }
 
@@ -380,5 +474,6 @@ module.exports = {
     refreshAccessToken,
     getValidAccessToken,
     fetchUserInfo,
+    queryCreatorInfo,
     publishVideo
 };

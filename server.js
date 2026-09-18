@@ -780,7 +780,7 @@ const server = http.createServer((req, res) => {
         tiktokEngine.exchangeCodeForToken(code)
             .then(tokenData => {
                 console.log(`[TikTok Engine] Account linked successfully! User: @${tokenData.username || 'user'}`);
-                const redirectUrl = `/?suite=suite_reels&tiktok_connected=1&username=${encodeURIComponent(tokenData.username || '')}&token=${encodeURIComponent(tokenData.access_token || '')}&refresh=${encodeURIComponent(tokenData.refresh_token || '')}`;
+                const redirectUrl = `/?suite=suite_reels&tiktok_connected=1&username=${encodeURIComponent(tokenData.username || '')}&token=${encodeURIComponent(tokenData.access_token || '')}&refresh=${encodeURIComponent(tokenData.refresh_token || '')}&scope=${encodeURIComponent(tokenData.scope || '')}`;
                 res.writeHead(302, { 'Location': redirectUrl });
                 res.end();
             })
@@ -842,7 +842,7 @@ const server = http.createServer((req, res) => {
                 const cleanBase64 = videoBase64.replace(/^data:video\/[a-z0-9]+;base64,/, '');
                 const videoBuffer = Buffer.from(cleanBase64, 'base64');
 
-                const result = await tiktokEngine.publishVideo(videoBuffer, caption, privacyLevel || 'SELF_ONLY', clientToken || null);
+                const result = await tiktokEngine.publishVideo(videoBuffer, caption, privacyLevel || 'PUBLIC_TO_EVERYONE', clientToken || null);
                 res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*' });
                 res.end(JSON.stringify(result));
             } catch (err) {
