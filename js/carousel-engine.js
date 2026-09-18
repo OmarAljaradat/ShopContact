@@ -22,7 +22,7 @@ window.CarouselEngine = (function() {
         eventTitle: 'TEAM OF THE SEASON ⚽',
         hookText: 'مع نزول لاعبين الحدث! متجرنا بخدمتك 🔥',
         hookEmoji: '🔥',
-        atmosphere: 'royal_blue', // 'royal_blue' | 'toty_gold' | 'shopcoin_emerald' | 'cyber_purple' | 'electric_amber'
+        atmosphere: 'shopcoin_emerald', // 'shopcoin_emerald' (Default) | 'toty_gold' | 'electric_cyan' | 'cyber_purple' | 'voltage_amber'
         layoutStyle: 'player_card', // 'player_card' (Player + Card) | 'giant_card' (Card + Coins) | 'trio_cards' (Trio Stack)
         discountCode: 'SHOP15',
         coinsHighlight: '+1,000,000 كوينز',
@@ -154,78 +154,78 @@ window.CarouselEngine = (function() {
         }
     };
 
-    // Pre-written Marketing Hooks inspired directly by ChampCoins (Screenshot 13) and Barq (Screenshot 2)
+    // Pre-written Marketing Hooks for ShopCoin15 Store
     const HOOK_PRESETS = [
-        { emoji: '🔥', text: 'مع نزول لاعبين الحدث! متجرنا بخدمتك' },
-        { emoji: '😎', text: 'اضبط تشكيلتك مع المتجر الأفضل' },
-        { emoji: '⚡', text: 'بضغطة زر... أي لاعب عندك وبأقل سعر' },
+        { emoji: '⚡', text: 'شحن فوري بدقيقة مع متجر شوب كوينز' },
+        { emoji: '🔥', text: 'مع نزول لاعبي الحدث! متجرنا بخدمتك' },
+        { emoji: '👑', text: 'اضبط تشكيلتك الآن بأفضل سعر كوينز' },
         { emoji: '💰', text: 'تحديات الـ SBC نسويها عنك بأرخص سعر' },
-        { emoji: '👑', text: 'أي لاعب تحلم فيه... نضبطك بأسرع تسليم' },
-        { emoji: '🛡️', text: 'شحن فوري خلال دقيقة مع ضمان نادي 100%' },
-        { emoji: '🚀', text: 'الأدرينالين مالوش سقف! احسم جولة الفوت' }
+        { emoji: '🛡️', text: 'ضمان نادي كامل 100% بدون أي قلق' },
+        { emoji: '🚀', text: 'بضغطة زر... أي لاعب بفرقتك وبأسرع تسليم' },
+        { emoji: '😎', text: 'متجرك الأول والأضمن في الشرق الأوسط' }
     ];
 
-    // Color Atmospheres
+    // ShopCoin15 Brand Color Atmospheres
     const ATMOSPHERES = {
-        royal_blue: {
-            name: '🔵 أزرق تشامب الملكي (ChampCoins / TOTS)',
-            bgGrad: 'from-[#040a1c] via-[#020510] to-[#010207]',
-            glowColor: 'rgba(0, 140, 255, 0.4)',
-            discBg: 'bg-gradient-to-tr from-blue-700/60 via-cyan-500/40 to-indigo-800/60',
-            discBorder: 'border-cyan-400/50',
-            badgeBg: 'bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500',
-            bubbleArrowColor: 'border-t-amber-400',
-            accentText: 'text-cyan-400',
-            borderAccent: 'border-cyan-500/40',
-            ambientGlow: 'bg-blue-600/25'
+        shopcoin_emerald: {
+            name: '🟢 أخضر شوب كوينز النيون (ShopCoin15 Signature)',
+            bgGrad: 'from-[#02140b] via-[#010a05] to-[#000402]',
+            glowColor: 'rgba(16, 185, 129, 0.45)',
+            pillBorder: 'border-emerald-500/40',
+            pillGlow: 'shadow-[0_0_20px_rgba(16,185,129,0.3)]',
+            accentText: 'text-emerald-400',
+            subAccent: 'text-amber-400',
+            portalGradient: 'from-emerald-500/25 via-teal-500/10 to-transparent',
+            portalBorder: 'border-emerald-400/40',
+            ambientGlow: 'bg-emerald-500/20'
         },
         toty_gold: {
-            name: '🟡 ذهبي ألتيميت فيفا (FUT TOTY Gold)',
-            bgGrad: 'from-[#140d04] via-[#090502] to-[#040201]',
+            name: '🟡 ذهبي ألتيميت فيفا (Prime Gold & Amber)',
+            bgGrad: 'from-[#150e03] via-[#090501] to-[#030200]',
             glowColor: 'rgba(245, 158, 11, 0.45)',
-            discBg: 'bg-gradient-to-tr from-amber-600/60 via-yellow-400/40 to-amber-800/60',
-            discBorder: 'border-amber-300/60',
-            badgeBg: 'bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500',
-            bubbleArrowColor: 'border-t-amber-400',
+            pillBorder: 'border-amber-500/40',
+            pillGlow: 'shadow-[0_0_20px_rgba(245,158,11,0.3)]',
             accentText: 'text-amber-400',
-            borderAccent: 'border-amber-400/40',
-            ambientGlow: 'bg-amber-500/25'
+            subAccent: 'text-yellow-300',
+            portalGradient: 'from-amber-500/25 via-yellow-500/10 to-transparent',
+            portalBorder: 'border-amber-400/40',
+            ambientGlow: 'bg-amber-500/20'
         },
-        shopcoin_emerald: {
-            name: '🟢 أخضر شوب كوين الرسمي (ShopCoin15 Signature)',
-            bgGrad: 'from-[#03140c] via-[#020905] to-[#010402]',
-            glowColor: 'rgba(16, 185, 129, 0.4)',
-            discBg: 'bg-gradient-to-tr from-emerald-600/60 via-teal-400/40 to-emerald-900/60',
-            discBorder: 'border-emerald-400/50',
-            badgeBg: 'bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-500',
-            bubbleArrowColor: 'border-t-emerald-400',
-            accentText: 'text-emerald-400',
-            borderAccent: 'border-emerald-500/40',
-            ambientGlow: 'bg-emerald-600/25'
+        electric_cyan: {
+            name: '🔵 أزرق كهربائي ملكي (Electric Cyan & Royal)',
+            bgGrad: 'from-[#021020] via-[#010810] to-[#000306]',
+            glowColor: 'rgba(6, 182, 212, 0.45)',
+            pillBorder: 'border-cyan-500/40',
+            pillGlow: 'shadow-[0_0_20px_rgba(6,182,212,0.3)]',
+            accentText: 'text-cyan-400',
+            subAccent: 'text-blue-300',
+            portalGradient: 'from-cyan-500/25 via-blue-500/10 to-transparent',
+            portalBorder: 'border-cyan-400/40',
+            ambientGlow: 'bg-cyan-500/20'
         },
         cyber_purple: {
-            name: '🟣 بنفسجي سايبر نيون (Rven Store Style)',
-            bgGrad: 'from-[#10051c] via-[#07020e] to-[#030107]',
-            glowColor: 'rgba(168, 85, 247, 0.4)',
-            discBg: 'bg-gradient-to-tr from-purple-600/60 via-fuchsia-400/40 to-indigo-900/60',
-            discBorder: 'border-fuchsia-400/50',
-            badgeBg: 'bg-gradient-to-r from-fuchsia-400 via-purple-400 to-pink-500',
-            bubbleArrowColor: 'border-t-fuchsia-400',
-            accentText: 'text-fuchsia-400',
-            borderAccent: 'border-fuchsia-500/40',
-            ambientGlow: 'bg-purple-600/25'
+            name: '🟣 سايبر نايت بنفسجي (Cyber Obsidian)',
+            bgGrad: 'from-[#120420] via-[#080210] to-[#030006]',
+            glowColor: 'rgba(168, 85, 247, 0.45)',
+            pillBorder: 'border-purple-500/40',
+            pillGlow: 'shadow-[0_0_20px_rgba(168,85,247,0.3)]',
+            accentText: 'text-purple-400',
+            subAccent: 'text-fuchsia-300',
+            portalGradient: 'from-purple-500/25 via-fuchsia-500/10 to-transparent',
+            portalBorder: 'border-purple-400/40',
+            ambientGlow: 'bg-purple-500/20'
         },
-        electric_amber: {
-            name: '🟠 كهرماني ناري (Barq Store Style)',
-            bgGrad: 'from-[#1a0802] via-[#0c0401] to-[#040100]',
+        voltage_amber: {
+            name: '🟠 كهرماني فولتج (Voltage Amber & Crimson)',
+            bgGrad: 'from-[#1a0802] via-[#0c0301] to-[#040100]',
             glowColor: 'rgba(249, 115, 22, 0.45)',
-            discBg: 'bg-gradient-to-tr from-orange-600/60 via-amber-400/40 to-red-800/60',
-            discBorder: 'border-orange-400/50',
-            badgeBg: 'bg-gradient-to-r from-orange-400 via-amber-400 to-yellow-400',
-            bubbleArrowColor: 'border-t-orange-400',
+            pillBorder: 'border-orange-500/40',
+            pillGlow: 'shadow-[0_0_20px_rgba(249,115,22,0.3)]',
             accentText: 'text-orange-400',
-            borderAccent: 'border-orange-500/40',
-            ambientGlow: 'bg-orange-600/25'
+            subAccent: 'text-amber-300',
+            portalGradient: 'from-orange-500/25 via-amber-500/10 to-transparent',
+            portalBorder: 'border-orange-400/40',
+            ambientGlow: 'bg-orange-500/20'
         }
     };
 
@@ -327,9 +327,10 @@ window.CarouselEngine = (function() {
     }
 
     // RENDER SIGNATURE STORE THEME (Screenshots 13, 1, 2)
+    // RENDER SIGNATURE STORE THEME (ShopCoin15 Authentic Visual Identity)
     function renderSignatureStoreSlide() {
         const star = STARS_DATABASE[themeState.starKey] || STARS_DATABASE.mbappe;
-        const atm = ATMOSPHERES[themeState.atmosphere] || ATMOSPHERES.royal_blue;
+        const atm = ATMOSPHERES[themeState.atmosphere] || ATMOSPHERES.shopcoin_emerald;
         const cardImg = themeState.customCardUrl || star.cardUrl;
         const photoImg = themeState.customPhotoUrl || star.photoUrl;
         const subIdx = themeState.activeSubSlide || 0;
@@ -337,23 +338,24 @@ window.CarouselEngine = (function() {
         let centerContent = '';
 
         if (subIdx === 0) {
-            // SLIDE 1: HERO SHOWCASE (Direct ChampCoins Screenshot 13 Anatomy)
+            // SLIDE 1: HERO SHOWCASE (ShopCoin15 Signature Spatial Arena)
             centerContent = `
                 <div class="relative w-full h-[360px] flex items-center justify-center">
                     <!-- Radial Glow Bloom Behind Everything -->
                     <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
-                        <div class="w-72 h-72 rounded-full ${atm.ambientGlow} blur-3xl"></div>
+                        <div class="w-80 h-80 rounded-full ${atm.ambientGlow} blur-3xl"></div>
                     </div>
 
-                    <!-- Ambient Concentric Circular Disc / Portal -->
-                    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[270px] h-[270px] rounded-full ${atm.discBg} border-2 ${atm.discBorder} shadow-[0_0_40px_${atm.glowColor}] flex items-center justify-center pointer-events-none">
-                        <div class="w-[84%] h-[84%] rounded-full border border-white/20 opacity-50"></div>
-                        <div class="w-[66%] h-[66%] rounded-full border border-white/15 opacity-30"></div>
+                    <!-- Ambient Concentric Multi-Layered Geometric Energy Halo -->
+                    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[285px] h-[285px] rounded-full border-2 ${atm.portalBorder} bg-gradient-to-b ${atm.portalGradient} shadow-[0_0_50px_${atm.glowColor}] flex items-center justify-center pointer-events-none">
+                        <div class="w-[84%] h-[84%] rounded-full border border-white/20 border-dashed opacity-60"></div>
+                        <div class="w-[66%] h-[66%] rounded-full border ${atm.portalBorder} opacity-40"></div>
+                        <div class="absolute inset-2 rounded-full border border-white/10"></div>
                     </div>
 
                     ${themeState.layoutStyle === 'player_card' ? `
                         <!-- Player Cutout (Right / Mid) -->
-                        <div class="absolute -right-4 bottom-4 z-10 w-[230px] h-auto max-h-[330px] pointer-events-none flex items-end justify-center filter drop-shadow-[0_15px_25px_rgba(0,0,0,0.9)]">
+                        <div class="absolute -right-4 bottom-4 z-10 w-[230px] h-auto max-h-[330px] pointer-events-none flex items-end justify-center filter drop-shadow-[0_20px_35px_rgba(0,0,0,0.95)]">
                             <img src="${proxyUrl(photoImg)}" onerror="this.style.display='none'" class="w-full h-auto object-contain scale-110 translate-y-2 transform -rotate-1" alt="${star.arName}">
                         </div>
 
@@ -368,12 +370,15 @@ window.CarouselEngine = (function() {
                                 </div>
                             </div>
 
-                            <!-- 3D Gold Coins Stack Underneath Card (UT Coins Stack) -->
-                            <div class="relative -mt-3.5 flex items-center justify-center z-30 filter drop-shadow-[0_8px_15px_rgba(245,158,11,0.7)]">
-                                <div class="flex items-center gap-1.5 bg-gradient-to-r from-amber-600 via-yellow-400 to-amber-500 px-3 py-1 rounded-full border-2 border-yellow-200 shadow-lg">
-                                    <span class="w-4 h-4 rounded-full bg-slate-950 text-amber-300 font-black text-[9px] flex items-center justify-center border border-amber-400">UT</span>
-                                    <span class="text-[10px] font-black text-slate-950 tracking-wider">COINS</span>
-                                    <span class="text-[10px]">🪙</span>
+                            <!-- ShopCoin15 Custom 3D UT Coins Vault -->
+                            <div class="relative -mt-3.5 flex items-center justify-center z-30 filter drop-shadow-[0_10px_20px_rgba(16,185,129,0.5)]">
+                                <div class="flex items-center gap-1.5 bg-gradient-to-r from-emerald-600 via-amber-400 to-emerald-500 p-[1.5px] rounded-full shadow-xl">
+                                    <div class="flex items-center gap-2 bg-slate-950/90 backdrop-blur-md px-3.5 py-1 rounded-full">
+                                        <span class="w-4 h-4 rounded-full bg-gradient-to-tr from-amber-400 to-yellow-300 text-slate-950 font-black text-[9px] flex items-center justify-center">⚡</span>
+                                        <span class="text-[10px] font-black text-amber-300 tracking-wider font-['Alexandria']">SHOPCOIN UT</span>
+                                        <span class="text-[10px] font-black text-white font-mono">${themeState.coinsHighlight || 'COINS'}</span>
+                                        <span class="text-[10.5px]">🪙</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -382,17 +387,19 @@ window.CarouselEngine = (function() {
                         <div class="relative z-20 w-[205px] filter drop-shadow-[0_30px_50px_rgba(0,0,0,0.95)] flex flex-col items-center">
                             <img src="${proxyUrl(cardImg)}" class="w-full h-auto object-contain" alt="Card Item">
                             
-                            <!-- 3D Gold Coins Stack -->
-                            <div class="relative -mt-4 z-30 filter drop-shadow-[0_10px_20px_rgba(245,158,11,0.7)]">
-                                <div class="flex items-center gap-2 bg-gradient-to-r from-amber-600 via-yellow-400 to-amber-500 px-4 py-1.5 rounded-full border-2 border-yellow-100 shadow-xl">
-                                    <span class="w-5 h-5 rounded-full bg-slate-950 text-amber-300 font-black text-[10px] flex items-center justify-center">UT</span>
-                                    <span class="text-xs font-black text-slate-950 tracking-wider">COINS ⚡</span>
-                                    <span class="text-xs">🪙</span>
+                            <!-- ShopCoin15 Custom 3D Coins Stack -->
+                            <div class="relative -mt-4 z-30 filter drop-shadow-[0_10px_20px_rgba(16,185,129,0.6)]">
+                                <div class="flex items-center gap-1.5 bg-gradient-to-r from-emerald-600 via-amber-400 to-emerald-500 p-[1.5px] rounded-full shadow-xl">
+                                    <div class="flex items-center gap-2 bg-slate-950/90 backdrop-blur-md px-4 py-1.5 rounded-full">
+                                        <span class="w-5 h-5 rounded-full bg-slate-950 text-amber-300 font-black text-[10px] flex items-center justify-center">⚡</span>
+                                        <span class="text-xs font-black text-amber-300 tracking-wider font-['Alexandria']">SHOPCOIN COINS ⚡</span>
+                                        <span class="text-xs">🪙</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     ` : `
-                        <!-- Trio Overlapping Cards Stack ("اشي فوق اشي") -->
+                        <!-- Trio Overlapping Cards Stack -->
                         <div class="relative w-[320px] h-[260px] flex items-center justify-center">
                             <div class="absolute transform -rotate-12 -translate-x-16 translate-y-3 scale-90 opacity-85 filter drop-shadow-[0_15px_25px_rgba(0,0,0,0.8)]">
                                 <img src="${proxyUrl(STARS_DATABASE.bellingham.cardUrl)}" class="w-36 h-auto">
@@ -402,61 +409,68 @@ window.CarouselEngine = (function() {
                             </div>
                             <div class="relative z-20 scale-105 filter drop-shadow-[0_25px_40px_rgba(0,0,0,0.95)]">
                                 <img src="${proxyUrl(cardImg)}" class="w-40 h-auto">
-                                <div class="relative -mt-3.5 flex items-center justify-center z-30 filter drop-shadow-[0_8px_15px_rgba(245,158,11,0.7)]">
-                                    <div class="flex items-center gap-1.5 bg-gradient-to-r from-amber-600 via-yellow-400 to-amber-500 px-3 py-1 rounded-full border-2 border-yellow-200 shadow-lg">
-                                        <span class="text-[10px] font-black text-slate-950">COINS ⚡</span>
+                                <div class="relative -mt-3.5 flex items-center justify-center z-30 filter drop-shadow-[0_8px_15px_rgba(16,185,129,0.7)]">
+                                    <div class="flex items-center gap-1.5 bg-gradient-to-r from-emerald-600 via-amber-400 to-emerald-500 p-[1px] rounded-full shadow-lg">
+                                        <div class="bg-slate-950 px-3 py-1 rounded-full text-[10px] font-black text-amber-300">SHOPCOIN ⚡</div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     `)}
 
-                    <!-- Floating Exclusive Discount Coupon Pill -->
-                    <div class="absolute bottom-1 left-7 z-30 flex items-center gap-1.5 bg-slate-950/85 backdrop-blur-md px-3 py-1 rounded-xl border border-white/20 shadow-md">
+                    <!-- Floating Exclusive VIP Discount Coupon Pill -->
+                    <div class="absolute bottom-1 left-6 z-30 flex items-center gap-2 bg-slate-950/90 backdrop-blur-xl px-3 py-1.5 rounded-xl border border-emerald-500/40 shadow-lg">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                         <span class="text-[10px] text-slate-300 font-bold font-['Cairo']">كود الخصم:</span>
-                        <span class="text-[11px] font-black text-amber-400 font-mono">${themeState.discountCode || 'SHOP15'}</span>
+                        <span class="text-xs font-black text-amber-300 font-mono tracking-wider">${themeState.discountCode || 'SHOP15'}</span>
                     </div>
                 </div>
             `;
         } else if (subIdx === 1) {
-            // SLIDE 2: META ANALYSIS & CARD BREAKDOWN
+            // SLIDE 2: META ANALYSIS & CARD BREAKDOWN (ShopCoin15 Bento HUD)
             centerContent = `
                 <div class="relative w-full h-[360px] flex items-center justify-between px-3 gap-3 z-20">
                     <!-- Left: Card -->
                     <div class="w-[155px] shrink-0 filter drop-shadow-[0_20px_35px_rgba(0,0,0,0.85)]">
                         <img src="${proxyUrl(cardImg)}" class="w-full h-auto object-contain">
                         <div class="mt-2 text-center">
-                            <span class="inline-block px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-black text-[10px] border border-amber-400/30">
+                            <span class="inline-block px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-black text-[10px] border border-emerald-400/30 font-['Cairo']">
                                 ${star.statHighlight}
                             </span>
                         </div>
                     </div>
 
-                    <!-- Right: 3 Meta Highlights -->
+                    <!-- Right: 3 ShopCoin15 Bento Meta Highlights -->
                     <div class="flex-1 space-y-2.5 text-right font-['Cairo']">
-                        <div class="p-2.5 rounded-xl bg-white/5 backdrop-blur-md border border-white/10 shadow-sm">
+                        <div class="p-2.5 rounded-xl bg-slate-950/70 backdrop-blur-md border border-white/10 shadow-sm">
                             <div class="flex items-center justify-between mb-1">
-                                <span class="text-xs font-black text-white font-['Alexandria']">⚡ السرعة والتحرك</span>
-                                <span class="text-[10px] text-cyan-300 font-black">97/99</span>
+                                <span class="text-xs font-black text-white font-['Alexandria']">⚡ السرعة والانطلاق</span>
+                                <span class="text-[10px] text-emerald-400 font-mono font-black">97/99</span>
+                            </div>
+                            <div class="w-full bg-slate-800 h-1 rounded-full overflow-hidden mb-1.5">
+                                <div class="bg-gradient-to-r from-emerald-500 to-cyan-400 h-full w-[97%]"></div>
                             </div>
                             <p class="text-[10.5px] text-slate-300 leading-snug font-medium">
                                 ${star.metaPace}
                             </p>
                         </div>
 
-                        <div class="p-2.5 rounded-xl bg-white/5 backdrop-blur-md border border-white/10 shadow-sm">
+                        <div class="p-2.5 rounded-xl bg-slate-950/70 backdrop-blur-md border border-white/10 shadow-sm">
                             <div class="flex items-center justify-between mb-1">
-                                <span class="text-xs font-black text-white font-['Alexandria']">🎯 الإنهاء والحسم</span>
-                                <span class="text-[10px] text-amber-300 font-black">91/99</span>
+                                <span class="text-xs font-black text-white font-['Alexandria']">🎯 الإنهاء والتسديد</span>
+                                <span class="text-[10px] text-amber-300 font-mono font-black">91/99</span>
+                            </div>
+                            <div class="w-full bg-slate-800 h-1 rounded-full overflow-hidden mb-1.5">
+                                <div class="bg-gradient-to-r from-amber-500 to-yellow-400 h-full w-[91%]"></div>
                             </div>
                             <p class="text-[10.5px] text-slate-300 leading-snug font-medium">
                                 ${star.metaShot}
                             </p>
                         </div>
 
-                        <div class="p-2.5 rounded-xl bg-gradient-to-l from-blue-600/20 to-transparent border-r-2 border-blue-400 p-2">
-                            <div class="text-[11px] font-black text-white font-['Alexandria'] mb-0.5">👑 خلاصة الميتا:</div>
-                            <p class="text-[10px] text-cyan-200 leading-snug font-bold">
+                        <div class="p-2.5 rounded-xl bg-gradient-to-l from-emerald-950/60 to-slate-950/80 border-r-2 border-emerald-400 p-2 border border-white/5">
+                            <div class="text-[11px] font-black text-amber-300 font-['Alexandria'] mb-0.5">👑 خلاصة الميتا من شوب كوينز:</div>
+                            <p class="text-[10px] text-emerald-200 leading-snug font-bold">
                                 ${star.metaVerdict}
                             </p>
                         </div>
@@ -464,77 +478,77 @@ window.CarouselEngine = (function() {
                 </div>
             `;
         } else if (subIdx === 2) {
-            // SLIDE 3: COIN PRICING PACKAGES (Clean Matrix)
+            // SLIDE 3: SHOPCOIN15 COIN PRICING VAULT
             centerContent = `
                 <div class="relative w-full h-[360px] flex flex-col justify-center px-4 space-y-2.5 z-20 font-['Cairo']">
                     <div class="text-center">
-                        <span class="inline-block px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 font-black text-[11px] border border-emerald-400/40">
-                            💰 أسعار الكوينز الصافية شاملة الضريبة 100%
+                        <span class="inline-block px-3.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 font-black text-[11px] border border-emerald-400/40 shadow-sm font-['Alexandria']">
+                            💰 باقات كوينز شوب كوينز الصافية (شاملة الضريبة 100%)
                         </span>
                     </div>
 
                     <div class="grid grid-cols-2 gap-2 text-right">
-                        <div class="p-3 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md shadow-md">
-                            <div class="text-xs font-black text-amber-400">🥉 باقة 500,000 كوينز</div>
-                            <div class="text-[10px] text-slate-300 mt-1">⚡ تسليم في دقيقتين</div>
+                        <div class="p-3 rounded-2xl bg-slate-950/70 border border-white/10 backdrop-blur-md shadow-md">
+                            <div class="text-xs font-black text-amber-400 font-['Alexandria']">🥉 باقة 500,000 كوينز</div>
+                            <div class="text-[10px] text-slate-300 mt-1">⚡ تسليم فوري بدقيقتين</div>
                             <div class="text-[10px] text-emerald-400 font-black mt-0.5">✓ تغطية ضريبة EA كاملة</div>
                         </div>
 
-                        <div class="p-3 rounded-2xl bg-gradient-to-br from-blue-600/30 to-indigo-900/30 border-2 border-cyan-400/50 shadow-md relative overflow-hidden">
-                            <div class="absolute -top-1 -left-1 px-2 py-0.5 rounded-br-lg bg-cyan-400 text-slate-950 font-black text-[8.5px]">الأكثر طلباً</div>
-                            <div class="text-xs font-black text-cyan-300">🥈 باقة 1,000,000 كوينز</div>
-                            <div class="text-[10px] text-slate-200 mt-1">⚡ تسليم فوري بدقيقة</div>
-                            <div class="text-[10px] text-amber-300 font-black mt-0.5">★ وفر 15% إضافي</div>
+                        <div class="p-3 rounded-2xl bg-gradient-to-br from-emerald-950/60 to-slate-950 border-2 border-emerald-400/60 shadow-md relative overflow-hidden">
+                            <div class="absolute -top-1 -left-1 px-2 py-0.5 rounded-br-lg bg-emerald-400 text-slate-950 font-black text-[8.5px]">الأكثر طلباً ⭐</div>
+                            <div class="text-xs font-black text-emerald-300 font-['Alexandria']">🥈 باقة 1,000,000 كوينز</div>
+                            <div class="text-[10px] text-slate-200 mt-1">⚡ تسليم فوري في 60 ثانية</div>
+                            <div class="text-[10px] text-amber-300 font-black mt-0.5">★ وفر 15% إضافي بكود SHOP15</div>
                         </div>
 
-                        <div class="p-3 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md shadow-md">
-                            <div class="text-xs font-black text-yellow-300">🥇 باقة 2,000,000 كوينز</div>
+                        <div class="p-3 rounded-2xl bg-slate-950/70 border border-white/10 backdrop-blur-md shadow-md">
+                            <div class="text-xs font-black text-yellow-300 font-['Alexandria']">🥇 باقة 2,000,000 كوينز</div>
                             <div class="text-[10px] text-slate-300 mt-1">👑 لبناء تشكيلة أحلامك</div>
                             <div class="text-[10px] text-emerald-400 font-black mt-0.5">✓ دعم فني VIP فوري</div>
                         </div>
 
-                        <div class="p-3 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md shadow-md">
-                            <div class="text-xs font-black text-purple-300">💎 باقات مفتوحة (5M+)</div>
+                        <div class="p-3 rounded-2xl bg-slate-950/70 border border-white/10 backdrop-blur-md shadow-md">
+                            <div class="text-xs font-black text-cyan-300 font-['Alexandria']">💎 باقات مفتوحة (5M+)</div>
                             <div class="text-[10px] text-slate-300 mt-1">🚀 أسعار خاصة للكميات</div>
                             <div class="text-[10px] text-cyan-400 font-black mt-0.5">✓ حسابات وتحديات SBC</div>
                         </div>
                     </div>
 
-                    <div class="p-2.5 rounded-xl bg-amber-500/10 border border-amber-400/25 text-center text-[10.5px] text-amber-300 font-bold">
-                        ⚡ المليون ينشحن بحسابك في 60 ثانية بدون أي تعقيد أو انتظار!
+                    <div class="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-400/25 text-center text-[10.5px] text-emerald-300 font-bold">
+                        ⚡ كوينزك تشحن بحسابك في 60 ثانية بدون أي تعقيد أو انتظار!
                     </div>
                 </div>
             `;
         } else {
-            // SLIDE 4: CLUB GUARANTEE & CALL TO ACTION
+            // SLIDE 4: SHOPCOIN15 SECURITY VAULT & CALL TO ACTION
             centerContent = `
                 <div class="relative w-full h-[360px] flex flex-col justify-center items-center text-center px-5 space-y-3 z-20 font-['Cairo']">
-                    <!-- Giant Gold Shield Icon -->
-                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-amber-500 to-yellow-400 text-slate-950 flex items-center justify-center text-3xl font-black shadow-[0_0_25px_#f59e0b] border-2 border-white">
+                    <!-- ShopCoin15 Hexagonal Security Shield -->
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-emerald-500 via-teal-400 to-amber-400 text-slate-950 flex items-center justify-center text-3xl font-black shadow-[0_0_30px_rgba(16,185,129,0.7)] border-2 border-white">
                         🛡️
                     </div>
 
                     <h3 class="text-xl font-black text-white font-['Alexandria'] leading-tight">
-                        ضمان نادي كامل 100% بدون أي قلق
+                        ضمان نادي كامل 100% من متجر شوب كوينز
                     </h3>
 
                     <p class="text-xs text-slate-300 leading-relaxed max-w-xs font-medium">
-                        نستخدم أحدث بروتوكولات الأمان الرسمية المتطابقة مع صفقات السوق الطبيعية. ناديك وكوينزك في أمان تام دائماً.
+                        نعتمد أحدث بروتوكولات الأمان المطابقة لصفقات الماركت الطبيعية 100%. حسابك وناديك في أمان تام دائماً.
                     </p>
 
-                    <!-- Trust Checklist -->
+                    <!-- Reassurance Checklist -->
                     <div class="flex items-center gap-3 text-[10.5px] font-bold text-white pt-1">
-                        <span class="flex items-center gap-1 text-emerald-400">✓ صفر تصفير</span>
+                        <span class="flex items-center gap-1 text-emerald-400 font-['Alexandria']">✓ صفر تصفير</span>
                         <span class="text-slate-600">•</span>
-                        <span class="flex items-center gap-1 text-cyan-400">✓ تسليم فوري بدقيقة</span>
+                        <span class="flex items-center gap-1 text-cyan-400 font-['Alexandria']">✓ تسليم فوري في 60 ثانية</span>
                         <span class="text-slate-600">•</span>
-                        <span class="flex items-center gap-1 text-amber-400">✓ صافي الضريبة</span>
+                        <span class="flex items-center gap-1 text-amber-400 font-['Alexandria']">✓ صافي الضريبة</span>
                     </div>
 
-                    <!-- Direct High-Contrast CTA Button -->
+                    <!-- Direct High-Contrast Island Button -->
                     <div class="pt-2 w-full max-w-xs">
-                        <div class="py-3.5 px-6 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 text-white font-black text-xs shadow-[0_0_30px_rgba(16,185,129,0.7)] border-2 border-emerald-200 flex items-center justify-center gap-2 font-['Alexandria']">
-                            <span>ارسل رسالة بالخاص للطلب الفوري 📩</span>
+                        <div class="py-3.5 px-6 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-500 text-slate-950 font-black text-xs shadow-[0_0_35px_rgba(16,185,129,0.7)] border-2 border-emerald-200 flex items-center justify-center gap-2 font-['Alexandria']">
+                            <span>⚡ تواصل معنا بالخاص للطلب الفوري 📩</span>
                         </div>
                     </div>
                 </div>
@@ -545,27 +559,35 @@ window.CarouselEngine = (function() {
             <!-- Signature Store Slide Container -->
             <div class="absolute inset-0 bg-gradient-to-b ${atm.bgGrad} overflow-hidden select-none p-5 flex flex-col justify-between">
                 
-                <!-- Background Stadium Atmosphere & Geometric FC Lattice -->
+                <!-- Background Stadium Atmosphere & Hexagonal Tech Lattice -->
                 <div class="absolute inset-0 pointer-events-none opacity-20" style="background-image: radial-gradient(#ffffff 1px, transparent 1px); background-size: 20px 20px;"></div>
                 <div class="absolute top-0 right-0 left-0 h-40 bg-gradient-to-b from-black/80 to-transparent pointer-events-none"></div>
                 <div class="absolute bottom-0 right-0 left-0 h-44 bg-gradient-to-t from-black/90 to-transparent pointer-events-none"></div>
 
-                <!-- TOP HEADER BAR: Speech Bubble Hook (Right) + EA FC 27 Logo (Left) -->
-                <div class="relative z-30 flex items-start justify-between">
-                    <!-- Right: Speech Bubble Hook with Tail (Screenshot 13 & 2) -->
-                    <div class="relative inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-2xl ${atm.badgeBg} text-slate-950 font-black text-[11px] font-['Alexandria'] shadow-lg border border-white/40 filter drop-shadow-md">
-                        <span class="text-sm">${themeState.hookEmoji}</span>
-                        <span class="tracking-tight">${themeState.hookText}</span>
-                        <!-- Speech Bubble Triangle Tail -->
-                        <div class="absolute -bottom-1.5 right-5 w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-t-[6px] ${atm.bubbleArrowColor}"></div>
+                <!-- TOP HEADER BAR: ShopCoin15 Signature Chamfered Headline Capsule + EA FC 27 Tag -->
+                <div class="relative z-30 flex items-center justify-between">
+                    <!-- Right: ShopCoin15 Signature Headline Badge (Double-Bezel Glass Pill) -->
+                    <div class="relative flex items-center gap-2.5 px-4 py-2 rounded-2xl bg-black/75 backdrop-blur-xl border ${atm.pillBorder} ${atm.pillGlow}">
+                        <div class="w-6 h-6 rounded-xl bg-gradient-to-tr from-amber-400 to-emerald-400 p-[1px] shadow-sm shrink-0">
+                            <div class="w-full h-full rounded-[11px] bg-slate-950 flex items-center justify-center text-xs font-black text-amber-300">
+                                ⚡
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-[8px] font-black tracking-widest text-emerald-400 uppercase font-['Alexandria']">SHOPCOIN15 • عرض حصري</div>
+                            <div class="text-[11.5px] font-black text-white font-['Alexandria'] tracking-tight flex items-center gap-1.5">
+                                <span>${themeState.hookEmoji}</span>
+                                <span>${themeState.hookText}</span>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Left: EA SPORTS FC 27 Official Logo + Slide Badge -->
+                    <!-- Left: EA SPORTS FC 27 Official Tag + Slide Badge -->
                     <div class="flex items-center gap-2">
-                        <div class="bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/15 flex items-center gap-1.5 text-[10px] font-black text-amber-300 tracking-wider shadow-md">
-                            <span>EA FC 27 ⚽</span>
+                        <div class="bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/15 flex items-center gap-1.5 text-[10px] font-black text-amber-400 font-['Alexandria'] shadow-md">
+                            <span>EA SPORTS FC 27</span>
                         </div>
-                        <div class="bg-white/10 backdrop-blur-md px-2.5 py-1.5 rounded-full border border-white/15 text-[10px] font-black text-cyan-300 whitespace-nowrap shadow-md">
+                        <div class="bg-emerald-500/20 backdrop-blur-md px-2.5 py-1.5 rounded-xl border border-emerald-400/40 text-[10.5px] font-black text-emerald-300 font-mono shadow-md">
                             ${subIdx + 1}/4
                         </div>
                     </div>
@@ -579,29 +601,30 @@ window.CarouselEngine = (function() {
                 <!-- BOTTOM ANCHOR BAR: Call to action + @SHOP_COIN15 + Platforms Row -->
                 <div class="relative z-30 space-y-1.5 pt-2">
                     <div class="text-center text-[10.5px] text-slate-300 font-bold font-['Cairo'] flex items-center justify-center gap-1.5">
+                        <span class="text-emerald-400">⚡</span>
                         <span>لإكمال التحدي أو طلب الكوينز تواصل معنا بالخاص:</span>
                     </div>
 
-                    <!-- Clean Anchor Glass Bar -->
-                    <div class="flex items-center justify-between bg-black/65 backdrop-blur-md px-3.5 py-2 rounded-2xl border border-white/10 shadow-xl">
+                    <!-- Signature Hardware Glass Bar -->
+                    <div class="flex items-center justify-between bg-black/75 backdrop-blur-xl px-4 py-2.5 rounded-2xl border border-emerald-500/30 shadow-2xl">
                         <!-- Brand Handle (Left LTR) -->
                         <div class="flex items-center gap-2 whitespace-nowrap" dir="ltr">
-                            <div class="w-5 h-5 rounded-full bg-gradient-to-tr from-amber-400 to-emerald-400 p-[1px]">
-                                <div class="w-full h-full rounded-full bg-slate-950 flex items-center justify-center text-[8.5px]">⚡</div>
+                            <div class="w-6 h-6 rounded-full bg-gradient-to-tr from-amber-400 to-emerald-400 p-[1.5px] shadow-sm">
+                                <div class="w-full h-full rounded-full bg-slate-950 flex items-center justify-center text-[10px] text-amber-400 font-black">⚡</div>
                             </div>
-                            <span class="text-xs font-black tracking-wider text-white">@SHOP_COIN15</span>
+                            <span class="text-xs font-black tracking-wider text-white font-['Alexandria']">@SHOP_COIN15</span>
                             <span class="w-4 h-4 rounded-full bg-blue-500 text-white flex items-center justify-center text-[8.5px] font-bold">✓</span>
                         </div>
 
                         <!-- Supported Platforms (Right LTR) -->
-                        <div class="flex items-center gap-2 text-[10.5px] font-black text-slate-300 whitespace-nowrap" dir="ltr">
+                        <div class="flex items-center gap-2.5 text-[10.5px] font-black text-slate-200 whitespace-nowrap" dir="ltr">
                             <span class="text-emerald-400 font-bold font-['Cairo'] mr-1" dir="rtl">⚡ دقيقة</span>
                             <span class="text-slate-600">•</span>
-                            <span>PS5</span>
+                            <span class="text-slate-300 font-mono">PS5</span>
                             <span class="text-slate-600">•</span>
-                            <span>XBOX</span>
+                            <span class="text-slate-300 font-mono">XBOX</span>
                             <span class="text-slate-600">•</span>
-                            <span>PC</span>
+                            <span class="text-slate-300 font-mono">PC</span>
                         </div>
                     </div>
                 </div>
@@ -642,10 +665,10 @@ window.CarouselEngine = (function() {
                     <button type="button" onclick="CarouselEngine.setEditorMode('theme')" 
                             class="flex-1 py-2 rounded-xl transition flex items-center justify-center gap-1.5 ${
                                 editorMode === 'theme' 
-                                    ? 'bg-blue-600 text-white shadow-sm shadow-blue-500/30' 
+                                    ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-500/30' 
                                     : 'text-slate-700 hover:bg-slate-100'
                             }">
-                        <span>👑 ثيم المتجر الموحد (ChampCoins)</span>
+                        <span>⚡ ثيم شوب كوينز الرسمي (ShopCoin15)</span>
                     </button>
                     <button type="button" onclick="CarouselEngine.setEditorMode('sandbox')" 
                             class="py-2 px-3 rounded-xl transition flex items-center justify-center gap-1 ${
@@ -671,8 +694,8 @@ window.CarouselEngine = (function() {
         // 4K Batch Export & Telegram Action Box
         html += `
                 <div class="pt-3 border-t border-slate-200 space-y-2">
-                    <button type="button" onclick="CarouselEngine.exportAllSlides()" class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:brightness-105 text-white font-black text-xs transition flex items-center justify-center gap-2 shadow-md shadow-blue-600/25 font-['Alexandria']">
-                        <span>👑 تصدير كامل سلايدات الكاروسيل بدقة 4K (${THEME_SLIDES.length} صور)</span>
+                    <button type="button" onclick="CarouselEngine.exportAllSlides()" class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:brightness-105 text-white font-black text-xs transition flex items-center justify-center gap-2 shadow-md shadow-emerald-600/25 font-['Alexandria']">
+                        <span>⚡ تصدير كامل سلايدات الكاروسيل بدقة 4K (${THEME_SLIDES.length} صور)</span>
                     </button>
                     <button type="button" onclick="CarouselEngine.sendCarouselTelegram()" class="w-full py-2.5 px-4 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-black text-xs transition flex items-center justify-center gap-2 shadow-sm font-['Alexandria']">
                         <span>🚀 إرسال الألبوم كاملاً للتليجرام</span>
@@ -696,7 +719,7 @@ window.CarouselEngine = (function() {
                     <span class="font-black text-slate-900 text-xs flex items-center gap-1.5">
                         <span>⚽ اختيار نجم التشكيلة والكارت (بنقرة زر):</span>
                     </span>
-                    <span class="text-[10.5px] font-black text-blue-600">${star.arName} (${star.rating})</span>
+                    <span class="text-[10.5px] font-black text-emerald-600">${star.arName} (${star.rating})</span>
                 </div>
 
                 <!-- Star Buttons Grid -->
@@ -705,7 +728,7 @@ window.CarouselEngine = (function() {
                         <button type="button" onclick="CarouselEngine.selectThemeStar('${key}')" 
                                 class="p-1.5 rounded-xl border text-center transition flex flex-col items-center justify-between ${
                                     themeState.starKey === key 
-                                        ? 'border-blue-600 bg-blue-50/80 ring-2 ring-blue-500/20 shadow-xs' 
+                                        ? 'border-emerald-600 bg-emerald-50/80 ring-2 ring-emerald-500/20 shadow-xs' 
                                         : 'border-slate-200 bg-slate-50 hover:bg-white hover:border-slate-300'
                                 }">
                             <span class="text-[11px] font-black text-slate-900 truncate w-full">${s.arName.split(' ')[0]}</span>
@@ -720,22 +743,22 @@ window.CarouselEngine = (function() {
                         <label class="block font-bold text-slate-600 mb-0.5">رابط كرت مخصص (FUT.GG):</label>
                         <input type="text" placeholder="https://..." value="${themeState.customCardUrl || ''}" 
                                oninput="CarouselEngine.updateThemeField('customCardUrl', this.value)"
-                               class="w-full px-2 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 font-mono text-[10px] outline-none focus:border-blue-500">
+                               class="w-full px-2 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 font-mono text-[10px] outline-none focus:border-emerald-500">
                     </div>
                     <div>
                         <label class="block font-bold text-slate-600 mb-0.5">صورة اللاعب المقصوصة:</label>
                         <input type="text" placeholder="https://..." value="${themeState.customPhotoUrl || ''}" 
                                oninput="CarouselEngine.updateThemeField('customPhotoUrl', this.value)"
-                               class="w-full px-2 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 font-mono text-[10px] outline-none focus:border-blue-500">
+                               class="w-full px-2 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 font-mono text-[10px] outline-none focus:border-emerald-500">
                     </div>
                 </div>
             </div>
 
-            <!-- 2. Marketing Hook Presets (ChampCoins Style) -->
+            <!-- 2. Marketing Hook Presets (ShopCoin15 Signature) -->
             <div class="p-3.5 rounded-2xl bg-white border border-slate-200 space-y-2.5 shadow-xs">
                 <div class="flex items-center justify-between">
                     <span class="font-black text-slate-900 text-xs flex items-center gap-1.5">
-                        <span>💬 مانشيت الهوك في الفقاعة العلوية:</span>
+                        <span>⚡ مانشيت كبسولة العرض العلوية:</span>
                     </span>
                 </div>
 
@@ -781,7 +804,7 @@ window.CarouselEngine = (function() {
                 </div>
             </div>
 
-            <!-- 4. Hero Layout Mode (ChampCoins vs Giant Card vs Trio) -->
+            <!-- 4. Hero Layout Mode (ShopCoin15 vs Giant Card vs Trio) -->
             <div class="p-3.5 rounded-2xl bg-white border border-slate-200 space-y-2 shadow-xs">
                 <span class="font-black text-slate-900 text-xs">📐 نمط العرض المركزي في الغلاف:</span>
                 <div class="grid grid-cols-3 gap-1.5 text-center text-xs font-bold">
