@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const { URL } = require('url');
 const autoWatcher = require('./auto-watcher-engine');
+const tiktokEngine = require('./tiktok-engine');
 
 let puppeteer = null;
 try {
@@ -753,6 +754,96 @@ function sendTelegramRequest({ botToken, endpoint, fields = {}, fileField = null
 const server = http.createServer((req, res) => {
     const parsedUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
     const reqPath = decodeURIComponent(parsedUrl.pathname);
+
+    // ==========================================
+    // API: TikTok OAuth 2.0 & Publishing
+    // ==========================================
+    if (reqPath === '/api/tiktok/login') {
+        const originParam = parsedUrl.searchParams.get('origin') || '';
+        const authUrl = tiktokEngine.getAuthUrl(originParam);
+        res.writeHead(302, { 'Location': authUrl });
+        res.end();
+        return;
+    }
+
+    if (reqPath === '/api/tiktok/callback') {
+        const code = parsedUrl.searchParams.get('code');
+        const state = parsedUrl.searchParams.get('state') || '';
+        const error = parsedUrl.searchParams.get('error');
+
+        if (error || !code) {
+            res.writeHead(302, { 'Location': `/?suite=suite_reels&tiktok_error=${encodeURIComponent(error || 'cancelled')}` });
+            res.end();
+            return;
+        }
+
+        tiktokEngine.exchangeCodeForToken(code)
+            .then(tokenData => {
+                console.log(`[TikTok Engine] Account linked successfully! User: @${tokenData.username || 'user'}`);
+                res.writeHead(302, { 'Location': `/?suite=suite_reels&tiktok_connected=1&username=${encodeURIComponent(tokenData.username || '')}` });
+                res.end();
+            })
+            .catch(err => {
+                console.error('[TikTok Engine] Callback exchange error:', err.message);
+                res.writeHead(302, { 'Location': `/?suite=suite_reels&tiktok_error=${encodeURIComponent(err.message)}` });
+                res.end();
+            });
+        return;
+    }
+
+    if (reqPath === '/api/tiktok/status') {
+        const token = tiktokEngine.getToken();
+        const isConnected = !!(token && token.access_token);
+        res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*' });
+        res.end(JSON.stringify({
+            connected: isConnected,
+            username: token ? (token.username || token.display_name || 'shop_coin15') : null,
+            avatarUrl: token ? token.avatar_url : null,
+            expiresAt: token ? token.expires_at : null
+        }));
+        return;
+    }
+
+    if (reqPath === '/api/tiktok/disconnect' && req.method === 'POST') {
+        try {
+            const tokenPath = path.join(__dirname, 'data', 'tiktok-token.json');
+            if (fs.existsSync(tokenPath)) fs.unlinkSync(tokenPath);
+            res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*' });
+            res.end(JSON.stringify({ success: true, message: 'تم إلغاء ربط الحساب بنجاح' }));
+        } catch (e) {
+            res.writeHead(500, { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*' });
+            res.end(JSON.stringify({ success: false, error: e.message }));
+        }
+        return;
+    }
+
+    if (reqPath === '/api/tiktok/publish' && req.method === 'POST') {
+        let body = '';
+        req.on('data', chunk => body += chunk);
+        req.on('end', async () => {
+            try {
+                const payload = JSON.parse(body || '{}');
+                const { videoBase64, caption, privacyLevel } = payload;
+                if (!videoBase64) {
+                    res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*' });
+                    res.end(JSON.stringify({ success: false, error: 'لم يتم استلام ملف الفيديو' }));
+                    return;
+                }
+
+                const cleanBase64 = videoBase64.replace(/^data:video\/[a-z0-9]+;base64,/, '');
+                const videoBuffer = Buffer.from(cleanBase64, 'base64');
+
+                const result = await tiktokEngine.publishVideo(videoBuffer, caption, privacyLevel || 'SELF_ONLY');
+                res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*' });
+                res.end(JSON.stringify(result));
+            } catch (err) {
+                console.error('[TikTok Publish Error]', err.message);
+                res.writeHead(500, { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*' });
+                res.end(JSON.stringify({ success: false, error: err.message }));
+            }
+        });
+        return;
+    }
 
     // API: Fetch Player Card & SBC Asset (FUTBIN / FUT.GG / ID / Direct Image / Base64)
     if (reqPath === '/api/fetch-futgg' || reqPath === '/api/fetch-card' || reqPath === '/api/fetch-sbc') {

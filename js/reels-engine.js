@@ -1747,7 +1747,35 @@ window.ReelsEngine = (function() {
                     </button>
                 </div>
 
-                <!-- 6. EXPORT ACTIONS -->
+                <!-- 6. TIKTOK AUTO PUBLISHING INTEGRATION -->
+                <div class="p-3.5 rounded-2xl bg-gradient-to-br from-slate-950 via-zinc-900 to-black border border-zinc-800 text-white shadow-md space-y-2.5">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="text-lg">🎵</span>
+                            <div>
+                                <h4 class="text-xs font-black text-white flex items-center gap-1.5">
+                                    <span>نشر تيك توك التلقائي</span>
+                                    <span id="tiktokStatusBadge" class="text-[9.5px] px-2 py-0.5 rounded-full font-bold bg-zinc-800 text-zinc-400 border border-zinc-700">جاري الفحص...</span>
+                                </h4>
+                                <p class="text-[10px] text-zinc-400">نشر مباشر بلمسة واحدة عبر TikTok API</p>
+                            </div>
+                        </div>
+                        <div id="tiktokActionBtnArea">
+                            <button type="button" onclick="ReelsEngine.loginTikTok()" class="px-2.5 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-[10.5px] font-bold text-zinc-300 transition">
+                                🔗 ربط
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Direct Publish Button -->
+                    <button type="button" id="btnPublishTikTok" onclick="ReelsEngine.publishToTikTok()"
+                            class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-[#FE2C55] via-[#ff0050] to-[#25F4EE] hover:brightness-110 text-white font-black text-xs transition flex items-center justify-center gap-2 shadow-lg shadow-[#FE2C55]/20 cursor-pointer active:scale-[0.99]">
+                        <span>🚀 نشر الريل على تيك توك بنقرة واحدة</span>
+                    </button>
+                    <div id="tiktokPublishStatus" class="hidden text-[11px] p-2 rounded-xl text-center font-bold"></div>
+                </div>
+
+                <!-- 7. EXPORT ACTIONS -->
                 <div class="pt-2 border-t border-slate-200 space-y-2">
                     <button type="button" onclick="ReelsEngine.exportReelVideo()" id="btnExportVideo" 
                             class="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:brightness-105 text-white font-black text-xs transition flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/25 cursor-pointer">
@@ -1767,6 +1795,7 @@ window.ReelsEngine = (function() {
         `;
 
         container.innerHTML = html;
+        checkTikTokStatus();
     }
 
     function renderSlideForm(slide) {
@@ -2125,26 +2154,17 @@ window.ReelsEngine = (function() {
         updatePlayerUi();
     }
 
-    // ---- 11. EXPORTERS (VIDEO & SLIDES) ----
-    async function exportReelVideo() {
-        const btn = document.getElementById('btnExportVideo');
-        if (btn) {
-            btn.disabled = true;
-            btn.innerHTML = '<span>⏳ جاري تسجيل الفيديو بدقة 60FPS...</span>';
-        }
-
+    // ---- 11. VIDEO RECORDER HELPER ----
+    async function recordReelVideoBlob(progressCallback) {
         pausePlayback();
         const prevSafe = state.showSafeZone;
         const prevDrag = state.dragEnabled;
+        const prevIndex = state.currentSlideIndex;
         state.showSafeZone = false;
         state.dragEnabled = false;
         hideMagnetGuides();
 
         try {
-            if (window.showCopyToast) {
-                window.showCopyToast('بدأ تسجيل فيديو الريل بدقة 60FPS.. يرجى الانتظار ثوانٍ! 🎬⚡');
-            }
-
             const recordCanvas = document.createElement('canvas');
             recordCanvas.width = 1080;
             recordCanvas.height = 1920;
@@ -2162,16 +2182,7 @@ window.ReelsEngine = (function() {
             const recordingComplete = new Promise(resolve => {
                 recorder.onstop = () => {
                     const blob = new Blob(chunks, { type: mimeType });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    const ext = mimeType.includes('mp4') ? 'mp4' : 'webm';
-                    a.download = `Reel_FC27_ShopCoin15_${Date.now()}.${ext}`;
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    URL.revokeObjectURL(url);
-                    resolve();
+                    resolve({ blob, mimeType });
                 };
             });
 
@@ -2179,7 +2190,6 @@ window.ReelsEngine = (function() {
 
             const domNode = document.getElementById('exportCanvas');
             const totalSlides = state.slides.length;
-            const msPerSlide = (state.slideDuration || 2.5) * 1000;
 
             try {
                 if (document.fonts && document.fonts.ready) {
@@ -2188,6 +2198,7 @@ window.ReelsEngine = (function() {
             } catch (e) {}
 
             for (let i = 0; i < totalSlides; i++) {
+                if (progressCallback) progressCallback(i + 1, totalSlides);
                 state.currentSlideIndex = i;
                 renderCanvas();
                 await new Promise(r => setTimeout(r, 200));
@@ -2229,7 +2240,41 @@ window.ReelsEngine = (function() {
             }
 
             recorder.stop();
-            await recordingComplete;
+            const result = await recordingComplete;
+            return result;
+        } finally {
+            state.showSafeZone = prevSafe;
+            state.dragEnabled = prevDrag;
+            state.currentSlideIndex = prevIndex;
+            renderCanvas();
+        }
+    }
+
+    async function exportReelVideo() {
+        const btn = document.getElementById('btnExportVideo');
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<span>⏳ جاري تسجيل الفيديو بدقة 60FPS...</span>';
+        }
+
+        try {
+            if (window.showCopyToast) {
+                window.showCopyToast('بدأ تسجيل فيديو الريل بدقة 60FPS.. يرجى الانتظار ثوانٍ! 🎬⚡');
+            }
+
+            const { blob, mimeType } = await recordReelVideoBlob((cur, total) => {
+                if (btn) btn.innerHTML = `<span>⏳ معالجة سلايد ${cur}/${total} (60FPS)...</span>`;
+            });
+
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            const ext = mimeType.includes('mp4') ? 'mp4' : 'webm';
+            a.download = `Reel_FC27_ShopCoin15_${Date.now()}.${ext}`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
 
             if (window.showCopyToast) {
                 window.showCopyToast('تم تحميل فيديو الريل بنجاح! جاهز للنشر مع موسيقاك 🚀🎉');
@@ -2238,14 +2283,148 @@ window.ReelsEngine = (function() {
             console.error('Video export error:', err);
             alert('تعذر تصدير الفيديو مباشرة: ' + err.message);
         } finally {
-            state.showSafeZone = prevSafe;
-            state.dragEnabled = prevDrag;
-            state.currentSlideIndex = 0;
-            renderCanvas();
             if (btn) {
                 btn.disabled = false;
                 btn.innerHTML = '<span>🎬 تصدير فيديو الريل بدقة 60FPS (MP4 / WebM)</span>';
             }
+        }
+    }
+
+    // ---- 12. TIKTOK AUTO PUBLISHING & OAUTH ----
+    let tiktokStatus = { connected: false, username: null };
+
+    async function checkTikTokStatus() {
+        try {
+            const res = await fetch('/api/tiktok/status');
+            const data = await res.json();
+            tiktokStatus = data;
+
+            const badge = document.getElementById('tiktokStatusBadge');
+            const actionArea = document.getElementById('tiktokActionBtnArea');
+            const btnPublish = document.getElementById('btnPublishTikTok');
+
+            if (data.connected) {
+                if (badge) {
+                    badge.className = 'text-[9.5px] px-2 py-0.5 rounded-full font-bold bg-emerald-950 text-emerald-300 border border-emerald-700';
+                    badge.innerHTML = `🟢 متصل (@${data.username || 'shop_coin15'})`;
+                }
+                if (actionArea) {
+                    actionArea.innerHTML = `
+                        <button type="button" onclick="ReelsEngine.disconnectTikTok()" class="px-2 py-0.5 rounded bg-zinc-800 hover:bg-rose-900 text-zinc-400 hover:text-rose-200 text-[10px] font-bold transition">
+                            إلغاء الربط
+                        </button>
+                    `;
+                }
+                if (btnPublish) {
+                    btnPublish.innerHTML = `<span>🚀 نشر الريل على تيك توك (@${data.username || 'shop_coin15'})</span>`;
+                }
+            } else {
+                if (badge) {
+                    badge.className = 'text-[9.5px] px-2 py-0.5 rounded-full font-bold bg-zinc-800 text-zinc-400 border border-zinc-700';
+                    badge.innerHTML = 'غير مربوط';
+                }
+                if (actionArea) {
+                    actionArea.innerHTML = `
+                        <button type="button" onclick="ReelsEngine.loginTikTok()" class="px-2.5 py-1 rounded-lg bg-gradient-to-r from-[#FE2C55] to-[#ff0050] hover:brightness-110 text-[10.5px] font-black text-white transition shadow-sm">
+                            🔗 ربط تيك توك
+                        </button>
+                    `;
+                }
+                if (btnPublish) {
+                    btnPublish.innerHTML = `<span>🔗 اربط تيك توك للنشر التلقائي</span>`;
+                }
+            }
+        } catch (e) {
+            console.warn('[TikTok Status Notice]', e.message);
+        }
+    }
+
+    function loginTikTok() {
+        window.location.href = '/api/tiktok/login';
+    }
+
+    async function disconnectTikTok() {
+        if (!confirm('هل تريد بالتأكيد إلغاء ربط حساب تيك توك؟')) return;
+        try {
+            await fetch('/api/tiktok/disconnect', { method: 'POST' });
+            if (window.showCopyToast) window.showCopyToast('تم إلغاء ربط الحساب بنجاح.');
+            await checkTikTokStatus();
+        } catch (e) {
+            alert('حدث خطأ: ' + e.message);
+        }
+    }
+
+    async function publishToTikTok() {
+        if (!tiktokStatus.connected) {
+            loginTikTok();
+            return;
+        }
+
+        const btn = document.getElementById('btnPublishTikTok');
+        const statusBox = document.getElementById('tiktokPublishStatus');
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<span>⏳ جاري معالجة الفيديو بجودة فائقة...</span>';
+        }
+        if (statusBox) {
+            statusBox.className = 'text-[11px] p-2 rounded-xl text-center font-bold bg-zinc-800 text-zinc-300 block';
+            statusBox.textContent = '⏳ جاري التقاط السلايدات وتوليد فيديو عالي الدقة...';
+        }
+
+        try {
+            const { blob } = await recordReelVideoBlob((cur, total) => {
+                if (btn) btn.innerHTML = `<span>⏳ معالجة سلايد ${cur}/${total}...</span>`;
+                if (statusBox) statusBox.textContent = `⏳ جاري معالجة السلايد ${cur} من ${total}...`;
+            });
+
+            if (btn) btn.innerHTML = '<span>🚀 جاري رفع الفيديو لتيك توك...</span>';
+            if (statusBox) statusBox.textContent = '🚀 جاري الاتصال بـ TikTok API ورفع الفيديو...';
+
+            // Convert Blob to Base64
+            const reader = new FileReader();
+            const base64Promise = new Promise((res, rej) => {
+                reader.onloadend = () => res(reader.result);
+                reader.onerror = rej;
+            });
+            reader.readAsDataURL(blob);
+            const videoBase64 = await base64Promise;
+
+            // Prepare Caption
+            const caption = `${state.title || 'أقوى كروت EA FC 27'} ⚡\n\nمتجر ShopCoin15 لشحن كوينز فيفا بأمان وسرعة 100% 👑\nللطلب حياك عبر الرابط بالبايو! 📩\n\n#eafc27 #fc27 #fifa #fut #shopcoin15 #gaming`;
+
+            const res = await fetch('/api/tiktok/publish', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    videoBase64,
+                    caption,
+                    privacyLevel: 'SELF_ONLY' // draft/private for preview
+                })
+            });
+
+            const data = await res.json();
+            if (data.success) {
+                if (statusBox) {
+                    statusBox.className = 'text-[11px] p-2.5 rounded-xl text-center font-black bg-emerald-950 text-emerald-300 border border-emerald-600 block';
+                    statusBox.innerHTML = `🎉 تم إرسال الريلز لتطبيق تيك توك بنجاح! تفقد مسوداتك في تيك توك الآن! ✨`;
+                }
+                if (window.showCopyToast) {
+                    window.showCopyToast('تم نشر الريلز في حساب تيك توك بنجاح! 🚀👑');
+                }
+            } else {
+                throw new Error(data.error || 'تعذر إتمام النشر');
+            }
+        } catch (err) {
+            console.error('TikTok publish error:', err);
+            if (statusBox) {
+                statusBox.className = 'text-[11px] p-2 rounded-xl text-center font-bold bg-rose-950 text-rose-300 border border-rose-800 block';
+                statusBox.textContent = '❌ خطأ: ' + err.message;
+            }
+            alert('حدث خطأ أثناء النشر على تيك توك: ' + err.message);
+        } finally {
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = `<span>🚀 نشر الريل على تيك توك (@${tiktokStatus.username || 'shop_coin15'})</span>`;
         }
     }
 
@@ -2308,8 +2487,25 @@ ${state.subtitle}
         renderCanvas();
     }
 
-    // Initial setup
+    // Initial setup & OAuth param check
     initSection('countdown');
+
+    try {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('tiktok_connected') === '1') {
+            const u = urlParams.get('username') || '';
+            setTimeout(() => {
+                if (window.showCopyToast) {
+                    window.showCopyToast(`🎉 تم ربط حساب تيك توك بنجاح (@${u || 'shop_coin15'})! جاهز للنشر التلقائي 👑`);
+                }
+                checkTikTokStatus();
+            }, 800);
+        } else if (urlParams.get('tiktok_error')) {
+            setTimeout(() => {
+                alert('فشل ربط تيك توك: ' + urlParams.get('tiktok_error'));
+            }, 800);
+        }
+    } catch (e) {}
 
     return {
         getState: () => state,
@@ -2350,6 +2546,10 @@ ${state.subtitle}
         renderPlayerToolbar,
         exportReelVideo,
         exportAllSlidesBatch,
-        sendReelTelegram
+        sendReelTelegram,
+        checkTikTokStatus,
+        loginTikTok,
+        disconnectTikTok,
+        publishToTikTok
     };
 })();
