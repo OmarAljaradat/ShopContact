@@ -4416,6 +4416,8 @@ window.ReelsEngine = (function() {
                 bars.forEach(b => { if (b) b.style.width = `${state.timelineProgress}%`; });
                 const curStorySeg = document.getElementById('storyProgressSeg_' + state.currentSlideIndex);
                 if (curStorySeg) curStorySeg.style.width = `${state.timelineProgress}%`;
+                const curCinemaSeg = document.getElementById('cinemaSeg_' + state.currentSlideIndex);
+                if (curCinemaSeg) curCinemaSeg.style.width = `${state.timelineProgress}%`;
 
                 const laserBar = document.getElementById('storyProgressLaserBar');
                 const laserHead = document.getElementById('storyProgressLaserHead');
@@ -4470,6 +4472,8 @@ window.ReelsEngine = (function() {
         bars.forEach(b => { if (b) b.style.width = '0%'; });
         const curStorySeg = document.getElementById('storyProgressSeg_' + state.currentSlideIndex);
         if (curStorySeg) curStorySeg.style.width = '0%';
+        const curCinemaSeg = document.getElementById('cinemaSeg_' + state.currentSlideIndex);
+        if (curCinemaSeg) curCinemaSeg.style.width = '0%';
         const laserBar = document.getElementById('storyProgressLaserBar');
         const laserHead = document.getElementById('storyProgressLaserHead');
         if (laserBar || laserHead) {
@@ -5198,6 +5202,31 @@ window.ReelsEngine = (function() {
                     d.className = 'reel-dot w-2 h-2 rounded-full bg-slate-300 hover:bg-slate-400 transition-all cursor-pointer';
                 }
             });
+        }
+
+        // Sync Fullscreen Cinema Controls
+        const cinemaInd = document.getElementById('cinemaSlideIndicator');
+        if (cinemaInd) cinemaInd.textContent = slideText;
+
+        const cinemaPlayIcon = document.getElementById('cinemaPlayIcon');
+        if (cinemaPlayIcon) cinemaPlayIcon.textContent = state.isPlaying ? '⏸️ إيقاف' : '▶️ تشغيل';
+
+        const btnCinemaPlay = document.getElementById('btnCinemaPlay');
+        if (btnCinemaPlay) {
+            btnCinemaPlay.classList.toggle('from-amber-500', state.isPlaying);
+            btnCinemaPlay.classList.toggle('to-orange-600', state.isPlaying);
+            btnCinemaPlay.classList.toggle('from-emerald-500', !state.isPlaying);
+            btnCinemaPlay.classList.toggle('to-teal-600', !state.isPlaying);
+        }
+
+        // Update Cinema Segments (past=100%, future=0%)
+        const count = (state.slides && state.slides.length) || 1;
+        for (let i = 0; i < count; i++) {
+            const seg = document.getElementById('cinemaSeg_' + i);
+            if (seg) {
+                if (i < state.currentSlideIndex) seg.style.width = '100%';
+                else if (i > state.currentSlideIndex) seg.style.width = '0%';
+            }
         }
     }
 
@@ -6382,6 +6411,9 @@ window.ReelsEngine = (function() {
                                 <button type="button" onclick="ReelsEngine.togglePlayPause()" class="reels-toolbar-btn-play px-2.5 py-0.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[10.5px] font-black transition flex items-center gap-1 shadow-2xs" title="تشغيل / إيقاف">
                                     <span>▶️</span>
                                 </button>
+                                <button type="button" onclick="ReelsEngine.openFullscreenPreview()" class="px-2 py-0.5 rounded-lg bg-purple-100 hover:bg-purple-200 text-purple-800 text-[10.5px] font-black transition flex items-center gap-1 cursor-pointer" title="معاينة سينمائية ملء الشاشة">
+                                    <span>⛶ ملء الشاشة</span>
+                                </button>
                             </div>
                         </div>
                         <div class="flex items-center gap-1.5 flex-wrap">
@@ -7066,6 +7098,9 @@ window.ReelsEngine = (function() {
                     <button type="button" onclick="ReelsEngine.replaySlideAnimations()" class="px-2.5 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-black transition flex items-center gap-1 shadow-sm active:scale-95" title="إعادة تشغيل حركات السلايد الحالي">
                         <span>✨ إعادة الحركة</span>
                     </button>
+                    <button type="button" onclick="ReelsEngine.openFullscreenPreview()" class="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 hover:brightness-110 text-white text-xs font-black transition flex items-center gap-1.5 shadow-md shadow-purple-600/25 active:scale-95 cursor-pointer" title="معاينة سينمائية ملء الشاشة على كامل الشاشة (Fullscreen Cinema)">
+                        <span>⛶ ملء الشاشة</span>
+                    </button>
                 </div>
 
                 <div class="flex flex-col items-center gap-1">
@@ -7078,7 +7113,7 @@ window.ReelsEngine = (function() {
                 </div>
 
                 <div class="flex items-center gap-1.5 flex-wrap">
-                    <span class="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 font-mono text-[10px] border border-emerald-500/30" title="محرك التصدير الفائق 1080x1920 مفعّل">v67.0 ⚡</span>
+                    <span class="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 font-mono text-[10px] border border-emerald-500/30" title="محرك التصدير الفائق 1080x1920 مفعّل">v68.0 ⚡</span>
                     <button type="button" id="btnExportVideoFloating" onclick="ReelsEngine.exportReelVideo()" class="btn-export-reel-action px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:brightness-105 text-white font-black text-xs transition flex items-center gap-1 shadow-md shadow-emerald-600/20 active:scale-95" title="تحميل الفيديو بدقة 1080x1920 Full HD مع الأنيميشن والصوت">
                         <span>🎬 تحميل فيديو</span>
                     </button>
@@ -7092,6 +7127,198 @@ window.ReelsEngine = (function() {
         if (topContainer) topContainer.innerHTML = toolbarHtml;
         if (bottomContainer) bottomContainer.innerHTML = toolbarHtml;
         updatePlayerUi();
+    }
+
+    // ---- 10.5 FULLSCREEN CINEMA PREVIEW SYSTEM (معاينة سينمائية ملء الشاشة 100%) ----
+    let isCinemaFullscreen = false;
+    let cinemaPlaceholder = null;
+    let cinemaKeyHandler = null;
+    let isCinemaMuted = false;
+
+    function renderCinemaProgressSegments() {
+        const container = document.getElementById('cinemaProgressSegments');
+        if (!container) return;
+        const count = (state.slides && state.slides.length) || 1;
+        let html = '';
+        for (let i = 0; i < count; i++) {
+            const isPast = i < state.currentSlideIndex;
+            const initialW = isPast ? '100%' : '0%';
+            html += `
+                <div class="flex-1 bg-white/20 h-1.5 rounded-full overflow-hidden backdrop-blur-xs cursor-pointer" onclick="ReelsEngine.goToSlide(${i})" title="انتقل للسلايد ${i + 1}">
+                    <div id="cinemaSeg_${i}" class="h-full bg-white transition-all duration-75" style="width: ${initialW};"></div>
+                </div>
+            `;
+        }
+        container.innerHTML = html;
+    }
+
+    function updateCinemaScale() {
+        if (!isCinemaFullscreen) return;
+        const stage = document.getElementById('canvasScaleStage');
+        const canvas = document.getElementById('exportCanvas');
+        if (!stage || !canvas) return;
+
+        const vh = window.innerHeight;
+        const vw = window.innerWidth;
+
+        // Leave clearance for cinema header (60px) and cinema bottom controls (70px)
+        const availH = Math.max(300, vh - 130);
+        const availW = Math.max(200, vw - 32);
+
+        // Aspect ratio for Reels is 450x800 (9:16)
+        const scaleH = availH / 800;
+        const scaleW = availW / 450;
+        const scale = Math.min(scaleH, scaleW);
+
+        stage.style.width = `${Math.round(450 * scale)}px`;
+        stage.style.height = `${Math.round(800 * scale)}px`;
+        stage.style.position = 'relative';
+        stage.style.margin = 'auto';
+        stage.style.transform = 'none';
+
+        canvas.style.transform = `scale(${scale})`;
+        canvas.style.transformOrigin = '0 0';
+        canvas.style.left = '0';
+        canvas.style.top = '0';
+    }
+
+    function openFullscreenPreview() {
+        const modal = document.getElementById('reelsCinemaModal');
+        const stage = document.getElementById('canvasScaleStage');
+        const cinemaStage = document.getElementById('reelsCinemaStage');
+        const previewContainer = document.getElementById('previewContainer');
+        if (!modal || !stage || !cinemaStage || !previewContainer) return;
+
+        if (isCinemaFullscreen) return;
+        isCinemaFullscreen = true;
+
+        // 1. Clear any selected element to ensure a 100% pristine clean cinema view
+        try {
+            setSelectedElement('');
+        } catch(e) {}
+
+        // 2. Create a placeholder to preserve exact DOM position in editor
+        if (!cinemaPlaceholder) {
+            cinemaPlaceholder = document.createElement('div');
+            cinemaPlaceholder.id = 'canvasStagePlaceholder';
+            cinemaPlaceholder.style.display = 'none';
+        }
+        previewContainer.insertBefore(cinemaPlaceholder, stage);
+
+        // 2. Move stage into cinemaStage
+        cinemaStage.appendChild(stage);
+
+        // 3. Show modal
+        modal.classList.remove('hidden');
+
+        // 4. Request native browser fullscreen
+        try {
+            const requestFs = modal.requestFullscreen || modal.webkitRequestFullscreen || modal.mozRequestFullScreen || modal.msRequestFullscreen;
+            if (requestFs) {
+                requestFs.call(modal).catch(err => {
+                    console.log('[Cinema Fullscreen Notice]', err.message);
+                });
+            }
+        } catch (fsErr) {}
+
+        // 5. Update scale to fill full screen height
+        updateCinemaScale();
+
+        // 6. Build segmented progress bars
+        renderCinemaProgressSegments();
+
+        // 7. Update UI elements
+        updatePlayerUi();
+
+        // 8. Auto-start playback so animations flow immediately
+        playPlayback();
+
+        // 9. Attach keyboard shortcuts
+        if (!cinemaKeyHandler) {
+            cinemaKeyHandler = function(e) {
+                if (!isCinemaFullscreen) return;
+                if (e.key === 'Escape') {
+                    closeFullscreenPreview();
+                } else if (e.code === 'Space') {
+                    e.preventDefault();
+                    togglePlayPause();
+                } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    nextSlide();
+                } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    prevSlide();
+                }
+            };
+            window.addEventListener('keydown', cinemaKeyHandler);
+        }
+
+        // 10. Native browser fullscreen exit listener
+        const fsChangeHandler = function() {
+            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                if (isCinemaFullscreen) {
+                    closeFullscreenPreview();
+                }
+            }
+        };
+        document.addEventListener('fullscreenchange', fsChangeHandler, { once: true });
+        document.addEventListener('webkitfullscreenchange', fsChangeHandler, { once: true });
+    }
+
+    function closeFullscreenPreview() {
+        const modal = document.getElementById('reelsCinemaModal');
+        const stage = document.getElementById('canvasScaleStage');
+        const previewContainer = document.getElementById('previewContainer');
+        if (!isCinemaFullscreen) return;
+        isCinemaFullscreen = false;
+
+        // 1. Move stage back to placeholder position
+        if (cinemaPlaceholder && cinemaPlaceholder.parentNode) {
+            cinemaPlaceholder.parentNode.insertBefore(stage, cinemaPlaceholder);
+            cinemaPlaceholder.remove();
+            cinemaPlaceholder = null;
+        } else if (previewContainer) {
+            previewContainer.appendChild(stage);
+        }
+
+        // 2. Hide modal
+        if (modal) modal.classList.add('hidden');
+
+        // 3. Exit native browser fullscreen if active
+        try {
+            if (document.fullscreenElement || document.webkitFullscreenElement) {
+                const exitFs = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen;
+                if (exitFs) {
+                    exitFs.call(document).catch(() => {});
+                }
+            }
+        } catch (e) {}
+
+        // 4. Restore normal studio canvas viewport scale
+        if (typeof window.updateCanvasViewportScale === 'function') {
+            window.updateCanvasViewportScale();
+        }
+
+        // 5. Update UI
+        updatePlayerUi();
+    }
+
+    function toggleFullscreenPreview() {
+        if (isCinemaFullscreen) closeFullscreenPreview();
+        else openFullscreenPreview();
+    }
+
+    function toggleMute() {
+        isCinemaMuted = !isCinemaMuted;
+        const icon = document.getElementById('cinemaMuteIcon');
+        if (icon) icon.textContent = isCinemaMuted ? '🔇' : '🔊';
+        if (typeof toggleAudioMaster === 'function') {
+            toggleAudioMaster(!isCinemaMuted);
+        }
+    }
+
+    function isCinemaMode() {
+        return isCinemaFullscreen;
     }
 
     // ---- 11. VIDEO RECORDER HELPER ----
@@ -8050,11 +8277,16 @@ ${state.subtitle}
         clearSlideBadges,
         applyBadgesToAllPlayerCards,
         REELS_PRESET_BADGES,
-        getProgressBarState: () => state.progressBar,
         getState: () => state,
         loadProject,
         setAudioState,
         renderMasterAudioWav,
-        recordStudioReelViaServer
+        recordStudioReelViaServer,
+        openFullscreenPreview,
+        closeFullscreenPreview,
+        toggleFullscreenPreview,
+        updateCinemaScale,
+        toggleMute,
+        isCinemaMode
     };
 })();

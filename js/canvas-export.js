@@ -16,6 +16,12 @@ const CanvasExporter = {
         }
     },
 
+    openFullscreen() {
+        if (window.ReelsEngine && typeof window.ReelsEngine.openFullscreenPreview === 'function') {
+            window.ReelsEngine.openFullscreenPreview();
+        }
+    },
+
     async renderToCanvas(elementId, isJpg = true, customRes = null) {
         const source = document.getElementById(elementId);
         if (!source) {

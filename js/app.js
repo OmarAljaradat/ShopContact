@@ -192,7 +192,11 @@ window.updateCanvasViewportScale = function() {
 };
 
 window.addEventListener('resize', () => {
-    if (window.updateCanvasViewportScale) window.updateCanvasViewportScale();
+    if (window.ReelsEngine && typeof window.ReelsEngine.isCinemaMode === 'function' && window.ReelsEngine.isCinemaMode()) {
+        window.ReelsEngine.updateCinemaScale();
+    } else if (window.updateCanvasViewportScale) {
+        window.updateCanvasViewportScale();
+    }
 });
 
 /* =========================================================================
