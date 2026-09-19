@@ -1120,13 +1120,6 @@ async function processReelJob(jobId, payload, execPath) {
                 .reel-resize-handle, .snap-guide, .layer-toolbar, .ring-2, [class*="ring-"], [id*="Toast"] {
                     display: none !important;
                 }
-                #reelSlideTransitionWrapper,
-                .reel-anim-layer,
-                [class*="reel-anim-layer"] {
-                    animation: none !important;
-                    opacity: 1 !important;
-                    transform: none !important;
-                }
             `
         });
 
@@ -1217,35 +1210,113 @@ async function processReelJob(jobId, payload, execPath) {
         const totalSlides = slides.length;
         const totalDurationSec = slides.reduce((acc, s) => acc + (Number(s.duration) || Number(projectState?.slideDuration) || 2.5), 0);
 
-        job.message = `جاري التقاط السلايدات بدقة 1080x1920 (0/${totalSlides})...`;
+        const animEnabled = projectState?.animationsEnabled !== false;
+        job.message = `جاري التقاط وتسجيل حركة السلايدات بدقة 1080x1920 (0/${totalSlides})...`;
+
+        let concatContent = '';
+        let globalFrameIdx = 0;
+        const stepMs = 60; // 60ms (~16.6 fps motion during entrance)
 
         for (let i = 0; i < totalSlides; i++) {
             const pct = Math.round(30 + ((i + 1) / totalSlides) * 35);
             job.progress = pct;
-            job.message = `جاري التقاط السلايدة ${i + 1} من ${totalSlides} بدقة 1080x1920 (${pct}%)...`;
+            job.message = `جاري التقاط السلايدة ${i + 1} من ${totalSlides} وحركاتها (${pct}%)...`;
 
+            const slideDur = Number(slides[i].duration) || Number(projectState?.slideDuration) || 2.5;
+
+            // Switch to slide and trigger animations
             await page.evaluate((idx) => {
                 if (window.ReelsEngine && typeof window.ReelsEngine.goToSlide === 'function') {
+                    const state = window.ReelsEngine.getState ? window.ReelsEngine.getState() : null;
+                    if (state) state.slideEntrancePending = true;
                     window.ReelsEngine.goToSlide(idx);
+                    if (state) {
+                        state.slideEntrancePending = true;
+                        if (typeof window.ReelsEngine.renderCanvas === 'function') {
+                            window.ReelsEngine.renderCanvas();
+                        }
+                    }
                 }
-                const layers = document.querySelectorAll('.reel-anim-layer, [class*="reel-anim-layer"], #reelSlideTransitionWrapper');
-                layers.forEach(l => {
-                    l.style.animation = 'none';
-                    l.style.opacity = '1';
-                    l.style.transform = 'none';
-                });
             }, i);
 
-            // Wait 120ms to allow layout, badges, fonts, and images to settle stably
-            await new Promise(r => setTimeout(r, 120));
+            // Small settle delay for fonts/images
+            await new Promise(r => setTimeout(r, 60));
 
-            const slideFname = `slide_${String(i).padStart(3, '0')}.jpg`;
-            const slidePath = path.join(framesDir, slideFname);
-            await page.screenshot({
-                path: slidePath,
-                type: 'jpeg',
-                quality: 92
-            });
+            if (animEnabled && slideDur >= 0.8) {
+                // Pause all animations so we control the timeline deterministically
+                await page.evaluate(() => {
+                    const canvas = document.getElementById('exportCanvas');
+                    if (canvas && typeof canvas.getAnimations === 'function') {
+                        const anims = canvas.getAnimations({ subtree: true });
+                        anims.forEach(a => a.pause());
+                    }
+                });
+
+                const maxEntranceSec = Math.min(0.66, slideDur * 0.5);
+                const numEntranceFrames = Math.max(1, Math.round(maxEntranceSec / (stepMs / 1000)));
+                const actualEntranceSec = numEntranceFrames * (stepMs / 1000);
+                const holdSec = Math.max(0.1, slideDur - actualEntranceSec);
+
+                // Step through entrance frames
+                for (let f = 0; f < numEntranceFrames; f++) {
+                    const currentMs = f * stepMs;
+                    await page.evaluate((ms) => {
+                        const canvas = document.getElementById('exportCanvas');
+                        if (canvas && typeof canvas.getAnimations === 'function') {
+                            const anims = canvas.getAnimations({ subtree: true });
+                            anims.forEach(a => {
+                                a.currentTime = ms;
+                            });
+                        }
+                    }, currentMs);
+
+                    const fName = `f_${String(globalFrameIdx++).padStart(5, '0')}.jpg`;
+                    const fPath = path.join(framesDir, fName);
+                    await page.screenshot({ path: fPath, type: 'jpeg', quality: 88 });
+
+                    concatContent += `file '${fPath.replace(/\\/g, '/')}'\n`;
+                    concatContent += `duration ${(stepMs / 1000).toFixed(6)}\n`;
+                }
+
+                // Settle animations to completion (t = 800ms) for hold frame
+                await page.evaluate(() => {
+                    const canvas = document.getElementById('exportCanvas');
+                    if (canvas && typeof canvas.getAnimations === 'function') {
+                        const anims = canvas.getAnimations({ subtree: true });
+                        anims.forEach(a => {
+                            a.currentTime = 800;
+                        });
+                    }
+                    const layers = document.querySelectorAll('.reel-anim-layer, [class*="reel-anim-layer"], #reelSlideTransitionWrapper');
+                    layers.forEach(l => {
+                        l.style.opacity = '1';
+                    });
+                });
+
+                const holdName = `f_${String(globalFrameIdx++).padStart(5, '0')}.jpg`;
+                const holdPath = path.join(framesDir, holdName);
+                await page.screenshot({ path: holdPath, type: 'jpeg', quality: 92 });
+
+                concatContent += `file '${holdPath.replace(/\\/g, '/')}'\n`;
+                concatContent += `duration ${holdSec.toFixed(6)}\n`;
+            } else {
+                // Static frame fallback (if animations explicitly disabled)
+                await page.evaluate(() => {
+                    const layers = document.querySelectorAll('.reel-anim-layer, [class*="reel-anim-layer"], #reelSlideTransitionWrapper');
+                    layers.forEach(l => {
+                        l.style.animation = 'none';
+                        l.style.opacity = '1';
+                        l.style.transform = 'none';
+                    });
+                });
+
+                const slideFname = `f_${String(globalFrameIdx++).padStart(5, '0')}.jpg`;
+                const slidePath = path.join(framesDir, slideFname);
+                await page.screenshot({ path: slidePath, type: 'jpeg', quality: 92 });
+
+                concatContent += `file '${slidePath.replace(/\\/g, '/')}'\n`;
+                concatContent += `duration ${slideDur.toFixed(6)}\n`;
+            }
         }
 
         // 3. Close tab immediately to release memory
@@ -1256,16 +1327,8 @@ async function processReelJob(jobId, payload, execPath) {
         job.progress = 70;
         job.message = 'جاري تجميع ودمج الفيديو والصوت عبر FFmpeg...';
 
-        // 4. Build concat demuxer file with exact slide durations
-        let concatContent = '';
-        for (let i = 0; i < totalSlides; i++) {
-            const dur = Number(slides[i].duration) || Number(projectState?.slideDuration) || 2.5;
-            const absPath = path.join(framesDir, `slide_${String(i).padStart(3, '0')}.jpg`).replace(/\\/g, '/');
-            concatContent += `file '${absPath}'\n`;
-            concatContent += `duration ${dur.toFixed(6)}\n`;
-        }
         // Concat demuxer requirement: repeat the last image without duration
-        const lastAbs = path.join(framesDir, `slide_${String(totalSlides - 1).padStart(3, '0')}.jpg`).replace(/\\/g, '/');
+        const lastAbs = path.join(framesDir, `f_${String(globalFrameIdx - 1).padStart(5, '0')}.jpg`).replace(/\\/g, '/');
         concatContent += `file '${lastAbs}'\n`;
 
         const concatPath = path.join(framesDir, 'concat.txt');
