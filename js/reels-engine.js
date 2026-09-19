@@ -7078,7 +7078,7 @@ window.ReelsEngine = (function() {
                 </div>
 
                 <div class="flex items-center gap-1.5 flex-wrap">
-                    <span class="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 font-mono text-[10px] border border-emerald-500/30" title="محرك التصدير الفائق 1080x1920 مفعّل">v65.0 ⚡</span>
+                    <span class="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 font-mono text-[10px] border border-emerald-500/30" title="محرك التصدير الفائق 1080x1920 مفعّل">v66.0 ⚡</span>
                     <button type="button" id="btnExportVideoFloating" onclick="ReelsEngine.exportReelVideo()" class="btn-export-reel-action px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:brightness-105 text-white font-black text-xs transition flex items-center gap-1 shadow-md shadow-emerald-600/20 active:scale-95" title="تحميل الفيديو بدقة 1080x1920 Full HD مع الأنيميشن والصوت">
                         <span>🎬 تحميل فيديو</span>
                     </button>
@@ -7428,7 +7428,8 @@ window.ReelsEngine = (function() {
 
         // Poll every 1.2s until job completes or fails (safety timeout)
         const pollStart = Date.now();
-        while (Date.now() - pollStart < 400000) {
+        let notFoundCount = 0;
+        while (Date.now() - pollStart < 600000) {
             await new Promise(r => setTimeout(r, 1200));
 
             let statusRes;
@@ -7439,7 +7440,16 @@ window.ReelsEngine = (function() {
                 continue;
             }
 
-            if (!statusRes.ok) continue;
+            if (!statusRes.ok) {
+                if (statusRes.status === 404) {
+                    notFoundCount++;
+                    if (notFoundCount > 10) {
+                        throw new Error('تم إعادة تشغيل السيرفر أو تجديد الاتصال. يرجى إعادة الضغط على زر تحميل فيديو الآن.');
+                    }
+                }
+                continue;
+            }
+            notFoundCount = 0;
 
             const job = await statusRes.json().catch(() => null);
             if (!job || !job.success) continue;

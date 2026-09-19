@@ -1252,12 +1252,12 @@ async function processReelJob(jobId, payload, execPath) {
                     }
                 });
 
-                // Continuous 10-point trajectory matching the natural 0.80s preview easing curve
+                // Optimal 4-point trajectory matching the natural preview easing curve (150ms, 320ms, 500ms, 680ms)
                 const currentSlide = slides[i] || {};
-                const targetEntranceDur = Math.min(0.80, Math.max(0.40, slideDur - 0.20));
-                const stepCount = 10;
+                const targetEntranceDur = Math.min(0.55, Math.max(0.35, slideDur - 0.25));
+                const stepCount = 4;
                 const stepDur = targetEntranceDur / stepCount;
-                const entranceTimes = [80, 160, 240, 320, 400, 480, 560, 640, 720, 800];
+                const entranceTimes = [150, 320, 500, 680];
                 const holdSec = Math.max(0.1, slideDur - targetEntranceDur);
 
                 // Step through keyframes
@@ -1327,8 +1327,8 @@ async function processReelJob(jobId, payload, execPath) {
         page = null;
 
         job.status = 'encoding';
-        job.progress = 70;
-        job.message = 'جاري تجميع ودمج الفيديو والصوت عبر FFmpeg...';
+        job.progress = 75;
+        job.message = 'جاري تجميع وضغط الفيديو والصوت في مسار فائق السرعة...';
 
         // Concat demuxer requirement: repeat the last image without duration
         const lastAbsName = `f_${String(globalFrameIdx - 1).padStart(5, '0')}.jpg`;
@@ -1337,11 +1337,10 @@ async function processReelJob(jobId, payload, execPath) {
         const concatPath = path.join(framesDir, 'concat.txt');
         fs.writeFileSync(concatPath, concatContent);
 
-        const rawMp4Path = path.join(runDir, 'raw_reel.mp4');
         const outMp4Path = path.join(runDir, 'final_reel.mp4');
 
-        // Pass 1: Concat frames with master audio
-        const ffmpegArgs1 = [
+        // Single-pass high-speed FFmpeg pipeline with real-time 30 FPS motion blending
+        const ffmpegArgs = [
             '-y',
             '-f', 'concat',
             '-safe', '0',
@@ -1349,73 +1348,79 @@ async function processReelJob(jobId, payload, execPath) {
         ];
 
         if (audioFile && fs.existsSync(audioFile) && fs.statSync(audioFile).size > 1000) {
-            ffmpegArgs1.push('-i', audioFile.replace(/\\/g, '/'), '-c:a', 'aac', '-b:a', '192k');
+            ffmpegArgs.push('-i', audioFile.replace(/\\/g, '/'), '-c:a', 'aac', '-b:a', '192k');
         } else {
-            ffmpegArgs1.push('-f', 'lavfi', '-i', 'anullsrc=r=44100:cl=stereo', '-c:a', 'aac', '-b:a', '128k');
+            ffmpegArgs.push('-f', 'lavfi', '-i', 'anullsrc=r=44100:cl=stereo', '-c:a', 'aac', '-b:a', '128k');
         }
 
-        ffmpegArgs1.push(
+        ffmpegArgs.push(
+            '-vf', 'framerate=fps=30:interp_start=0:interp_end=255',
             '-c:v', 'libx264',
-            '-crf', '20',
+            '-crf', '22',
             '-preset', 'ultrafast',
             '-tune', 'fastdecode',
             '-threads', '0',
             '-pix_fmt', 'yuv420p',
             '-t', String(totalDurationSec),
-            rawMp4Path.replace(/\\/g, '/')
+            '-movflags', '+faststart',
+            outMp4Path.replace(/\\/g, '/')
         );
 
         const { exec } = require('child_process');
-        job.progress = 78;
-        job.message = 'جاري دمج إطارات الفيديو والصوت (Pass 1)...';
-        await new Promise((resolve, reject) => {
-            exec(`"${ffmpegPath}" ${ffmpegArgs1.map(a => `"${a}"`).join(' ')}`, { cwd: framesDir, maxBuffer: 10 * 1024 * 1024 }, (err) => {
-                if (err) return reject(err);
-                resolve();
-            });
-        });
+        job.progress = 85;
+        job.message = 'جاري ضغط وترميز إطارات الفيديو (FFmpeg 30 FPS Motion)...';
 
-        // Pass 2: Temporal Frame Blending (Synthesizes 30 FPS buttery-smooth continuous transitions like preview)
-        job.progress = 90;
-        job.message = 'جاري مضاعفة سلاسة ونعومة الحركة إلى 30 FPS فائقة الانسيابية (Pass 2)...';
-
-        let finalEncodedPath = outMp4Path;
+        let encodedSuccessfully = false;
         try {
-            const ffmpegArgs2 = [
+            await new Promise((resolve, reject) => {
+                exec(`"${ffmpegPath}" ${ffmpegArgs.map(a => `"${a}"`).join(' ')}`, { cwd: framesDir, maxBuffer: 10 * 1024 * 1024 }, (err) => {
+                    if (err) return reject(err);
+                    resolve();
+                });
+            });
+            encodedSuccessfully = fs.existsSync(outMp4Path);
+        } catch (encErr) {
+            console.warn('[processReelJob] Motion filter notice, falling back to direct concat:', encErr.message);
+        }
+
+        // Resilient Fallback to direct concat if framerate filter encounters any issue
+        if (!encodedSuccessfully) {
+            const fallbackArgs = [
                 '-y',
-                '-i', rawMp4Path.replace(/\\/g, '/'),
-                '-vf', 'minterpolate=fps=30:mi_mode=blend',
+                '-f', 'concat',
+                '-safe', '0',
+                '-i', 'concat.txt'
+            ];
+            if (audioFile && fs.existsSync(audioFile) && fs.statSync(audioFile).size > 1000) {
+                fallbackArgs.push('-i', audioFile.replace(/\\/g, '/'), '-c:a', 'aac', '-b:a', '192k');
+            } else {
+                fallbackArgs.push('-f', 'lavfi', '-i', 'anullsrc=r=44100:cl=stereo', '-c:a', 'aac', '-b:a', '128k');
+            }
+            fallbackArgs.push(
                 '-c:v', 'libx264',
                 '-crf', '22',
                 '-preset', 'ultrafast',
                 '-tune', 'fastdecode',
                 '-threads', '0',
                 '-pix_fmt', 'yuv420p',
-                '-c:a', 'copy',
+                '-t', String(totalDurationSec),
                 '-movflags', '+faststart',
                 outMp4Path.replace(/\\/g, '/')
-            ];
+            );
 
             await new Promise((resolve, reject) => {
-                exec(`"${ffmpegPath}" ${ffmpegArgs2.map(a => `"${a}"`).join(' ')}`, { cwd: runDir, maxBuffer: 10 * 1024 * 1024 }, (err) => {
+                exec(`"${ffmpegPath}" ${fallbackArgs.map(a => `"${a}"`).join(' ')}`, { cwd: framesDir, maxBuffer: 10 * 1024 * 1024 }, (err) => {
                     if (err) return reject(err);
                     resolve();
                 });
             });
-        } catch (blendErr) {
-            console.warn('[processReelJob] Pass 2 blend notice, using pass 1 stream:', blendErr.message);
-            finalEncodedPath = rawMp4Path;
         }
 
-        if (!fs.existsSync(finalEncodedPath)) {
-            finalEncodedPath = rawMp4Path;
-        }
-
-        if (!fs.existsSync(finalEncodedPath)) {
+        if (!fs.existsSync(outMp4Path)) {
             throw new Error('فشل توليد ملف الفيديو النهائي عبر FFmpeg');
         }
 
-        const mp4Buffer = fs.readFileSync(finalEncodedPath);
+        const mp4Buffer = fs.readFileSync(outMp4Path);
         console.log(`[Record Studio Reel] Video created successfully! File: ${outFilename}, Size: ${(mp4Buffer.length / (1024 * 1024)).toFixed(2)} MB, Slides: ${totalSlides}, Duration: ${totalDurationSec}s`);
 
         // Prune old exports
