@@ -7078,7 +7078,7 @@ window.ReelsEngine = (function() {
                 </div>
 
                 <div class="flex items-center gap-1.5 flex-wrap">
-                    <span class="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 font-mono text-[10px] border border-emerald-500/30" title="محرك التصدير الفائق 1080x1920 مفعّل">v64.0 ⚡</span>
+                    <span class="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 font-mono text-[10px] border border-emerald-500/30" title="محرك التصدير الفائق 1080x1920 مفعّل">v65.0 ⚡</span>
                     <button type="button" id="btnExportVideoFloating" onclick="ReelsEngine.exportReelVideo()" class="btn-export-reel-action px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:brightness-105 text-white font-black text-xs transition flex items-center gap-1 shadow-md shadow-emerald-600/20 active:scale-95" title="تحميل الفيديو بدقة 1080x1920 Full HD مع الأنيميشن والصوت">
                         <span>🎬 تحميل فيديو</span>
                     </button>

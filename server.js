@@ -1252,62 +1252,42 @@ async function processReelJob(jobId, payload, execPath) {
                     }
                 });
 
-                // Fluid high-framerate entrance keyframes (45ms per frame = 22 FPS continuous smooth motion)
+                // Continuous 10-point trajectory matching the natural 0.80s preview easing curve
                 const currentSlide = slides[i] || {};
-                const isCardSlide = (
-                    currentSlide.type === 'player_card' ||
-                    currentSlide.type === 'player' ||
-                    currentSlide.type === 'versus_card' ||
-                    currentSlide.type === 'versus' ||
-                    Boolean(currentSlide.cardUrl || currentSlide.playerA || currentSlide.playerB) ||
-                    (!currentSlide.type && i > 0 && i < totalSlides - 1)
-                );
-
-                const keyframes = isCardSlide
-                    ? [
-                        { ms: 120, dur: 0.045 },
-                        { ms: 220, dur: 0.045 },
-                        { ms: 320, dur: 0.045 },
-                        { ms: 420, dur: 0.045 },
-                        { ms: 520, dur: 0.050 }
-                    ]
-                    : [
-                        { ms: 140, dur: 0.050 },
-                        { ms: 300, dur: 0.050 },
-                        { ms: 460, dur: 0.050 }
-                    ];
-
-                const entranceDurTotal = keyframes.reduce((acc, k) => acc + k.dur, 0);
-                const holdSec = Math.max(0.1, slideDur - entranceDurTotal);
+                const targetEntranceDur = Math.min(0.80, Math.max(0.40, slideDur - 0.20));
+                const stepCount = 10;
+                const stepDur = targetEntranceDur / stepCount;
+                const entranceTimes = [80, 160, 240, 320, 400, 480, 560, 640, 720, 800];
+                const holdSec = Math.max(0.1, slideDur - targetEntranceDur);
 
                 // Step through keyframes
-                for (let f = 0; f < keyframes.length; f++) {
-                    const kf = keyframes[f];
-                    await page.evaluate((ms) => {
+                for (let f = 0; f < entranceTimes.length; f++) {
+                    const ms = entranceTimes[f];
+                    await page.evaluate((t) => {
                         const canvas = document.getElementById('exportCanvas');
                         if (canvas && typeof canvas.getAnimations === 'function') {
                             const anims = canvas.getAnimations({ subtree: true });
                             anims.forEach(a => {
-                                a.currentTime = ms;
+                                a.currentTime = t;
                             });
                         }
-                    }, kf.ms);
+                    }, ms);
 
                     const fName = `f_${String(globalFrameIdx++).padStart(5, '0')}.jpg`;
                     const fPath = path.join(framesDir, fName);
                     await page.screenshot({ path: fPath, type: 'jpeg', quality: 80, optimizeForSpeed: true });
 
-                    concatContent += `file '${fPath.replace(/\\/g, '/')}'\n`;
-                    concatContent += `duration ${kf.dur.toFixed(6)}\n`;
+                    concatContent += `file '${fName}'\n`;
+                    concatContent += `duration ${stepDur.toFixed(6)}\n`;
                 }
 
-                // Settle animations to completion (t = 800ms) for hold frame
+                // Settle animations to completion (t = 850ms) for hold frame
                 await page.evaluate(() => {
                     const canvas = document.getElementById('exportCanvas');
                     if (canvas && typeof canvas.getAnimations === 'function') {
                         const anims = canvas.getAnimations({ subtree: true });
                         anims.forEach(a => {
-                            a.currentTime = 800;
+                            a.currentTime = 850;
                         });
                     }
                     const layers = document.querySelectorAll('.reel-anim-layer, [class*="reel-anim-layer"], #reelSlideTransitionWrapper');
@@ -1320,7 +1300,7 @@ async function processReelJob(jobId, payload, execPath) {
                 const holdPath = path.join(framesDir, holdName);
                 await page.screenshot({ path: holdPath, type: 'jpeg', quality: 86, optimizeForSpeed: true });
 
-                concatContent += `file '${holdPath.replace(/\\/g, '/')}'\n`;
+                concatContent += `file '${holdName}'\n`;
                 concatContent += `duration ${holdSec.toFixed(6)}\n`;
             } else {
                 // Static frame fallback (if animations explicitly disabled)
@@ -1337,7 +1317,7 @@ async function processReelJob(jobId, payload, execPath) {
                 const slidePath = path.join(framesDir, slideFname);
                 await page.screenshot({ path: slidePath, type: 'jpeg', quality: 88, optimizeForSpeed: true });
 
-                concatContent += `file '${slidePath.replace(/\\/g, '/')}'\n`;
+                concatContent += `file '${slideFname}'\n`;
                 concatContent += `duration ${slideDur.toFixed(6)}\n`;
             }
         }
@@ -1351,55 +1331,91 @@ async function processReelJob(jobId, payload, execPath) {
         job.message = 'جاري تجميع ودمج الفيديو والصوت عبر FFmpeg...';
 
         // Concat demuxer requirement: repeat the last image without duration
-        const lastAbs = path.join(framesDir, `f_${String(globalFrameIdx - 1).padStart(5, '0')}.jpg`).replace(/\\/g, '/');
-        concatContent += `file '${lastAbs}'\n`;
+        const lastAbsName = `f_${String(globalFrameIdx - 1).padStart(5, '0')}.jpg`;
+        concatContent += `file '${lastAbsName}'\n`;
 
         const concatPath = path.join(framesDir, 'concat.txt');
         fs.writeFileSync(concatPath, concatContent);
 
+        const rawMp4Path = path.join(runDir, 'raw_reel.mp4');
         const outMp4Path = path.join(runDir, 'final_reel.mp4');
 
-        const ffmpegArgs = [
+        // Pass 1: Concat frames with master audio
+        const ffmpegArgs1 = [
             '-y',
             '-f', 'concat',
             '-safe', '0',
-            '-i', concatPath
+            '-i', 'concat.txt'
         ];
 
         if (audioFile && fs.existsSync(audioFile) && fs.statSync(audioFile).size > 1000) {
-            ffmpegArgs.push('-i', audioFile, '-c:a', 'aac', '-b:a', '192k');
+            ffmpegArgs1.push('-i', audioFile.replace(/\\/g, '/'), '-c:a', 'aac', '-b:a', '192k');
         } else {
-            ffmpegArgs.push('-f', 'lavfi', '-i', 'anullsrc=r=44100:cl=stereo', '-c:a', 'aac', '-b:a', '128k');
+            ffmpegArgs1.push('-f', 'lavfi', '-i', 'anullsrc=r=44100:cl=stereo', '-c:a', 'aac', '-b:a', '128k');
         }
 
-        ffmpegArgs.push(
+        ffmpegArgs1.push(
             '-c:v', 'libx264',
-            '-crf', '22',
+            '-crf', '20',
             '-preset', 'ultrafast',
             '-tune', 'fastdecode',
             '-threads', '0',
             '-pix_fmt', 'yuv420p',
             '-t', String(totalDurationSec),
-            '-movflags', '+faststart',
-            outMp4Path
+            rawMp4Path.replace(/\\/g, '/')
         );
 
         const { exec } = require('child_process');
-        const cmd = `"${ffmpegPath}" ${ffmpegArgs.map(a => `"${a}"`).join(' ')}`;
-        job.progress = 85;
-        job.message = 'جاري ضغط وترميز إطارات الفيديو (FFmpeg Ultrafast)...';
+        job.progress = 78;
+        job.message = 'جاري دمج إطارات الفيديو والصوت (Pass 1)...';
         await new Promise((resolve, reject) => {
-            exec(cmd, { maxBuffer: 10 * 1024 * 1024 }, (err) => {
+            exec(`"${ffmpegPath}" ${ffmpegArgs1.map(a => `"${a}"`).join(' ')}`, { cwd: framesDir, maxBuffer: 10 * 1024 * 1024 }, (err) => {
                 if (err) return reject(err);
                 resolve();
             });
         });
 
-        if (!fs.existsSync(outMp4Path)) {
+        // Pass 2: Temporal Frame Blending (Synthesizes 30 FPS buttery-smooth continuous transitions like preview)
+        job.progress = 90;
+        job.message = 'جاري مضاعفة سلاسة ونعومة الحركة إلى 30 FPS فائقة الانسيابية (Pass 2)...';
+
+        let finalEncodedPath = outMp4Path;
+        try {
+            const ffmpegArgs2 = [
+                '-y',
+                '-i', rawMp4Path.replace(/\\/g, '/'),
+                '-vf', 'minterpolate=fps=30:mi_mode=blend',
+                '-c:v', 'libx264',
+                '-crf', '22',
+                '-preset', 'ultrafast',
+                '-tune', 'fastdecode',
+                '-threads', '0',
+                '-pix_fmt', 'yuv420p',
+                '-c:a', 'copy',
+                '-movflags', '+faststart',
+                outMp4Path.replace(/\\/g, '/')
+            ];
+
+            await new Promise((resolve, reject) => {
+                exec(`"${ffmpegPath}" ${ffmpegArgs2.map(a => `"${a}"`).join(' ')}`, { cwd: runDir, maxBuffer: 10 * 1024 * 1024 }, (err) => {
+                    if (err) return reject(err);
+                    resolve();
+                });
+            });
+        } catch (blendErr) {
+            console.warn('[processReelJob] Pass 2 blend notice, using pass 1 stream:', blendErr.message);
+            finalEncodedPath = rawMp4Path;
+        }
+
+        if (!fs.existsSync(finalEncodedPath)) {
+            finalEncodedPath = rawMp4Path;
+        }
+
+        if (!fs.existsSync(finalEncodedPath)) {
             throw new Error('فشل توليد ملف الفيديو النهائي عبر FFmpeg');
         }
 
-        const mp4Buffer = fs.readFileSync(outMp4Path);
+        const mp4Buffer = fs.readFileSync(finalEncodedPath);
         console.log(`[Record Studio Reel] Video created successfully! File: ${outFilename}, Size: ${(mp4Buffer.length / (1024 * 1024)).toFixed(2)} MB, Slides: ${totalSlides}, Duration: ${totalDurationSec}s`);
 
         // Prune old exports
