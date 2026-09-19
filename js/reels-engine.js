@@ -981,6 +981,431 @@ window.ReelsEngine = (function() {
         saveProjectState();
     }
 
+    // ---- 6.5 FC 27 PLAYER & CARD FETCHER ENGINE (FUT.GG / FUTBIN / PRESETS / UPLOAD) ----
+    const REELS_PRESET_STARS = [
+        {
+            name: 'Kylian Mbappé',
+            arName: 'كيليان مبابي',
+            enQuery: 'kylian-mbappe',
+            rating: '91',
+            position: 'ST',
+            imageUrl: 'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=600/2027/futgg-player-item-card/27-231747.1b49b357729ba7dbf174dc4aa1e8519ce230b98ad399360e364a59f4b3477f07.webp',
+            badges: ['⚡ سرعة 97', '🔥 ميتّا 5/5', '💰 2.4M كوينز']
+        },
+        {
+            name: 'Vinícius Júnior',
+            arName: 'فينيسيوس جونيور',
+            enQuery: 'vinicius-jr',
+            rating: '90',
+            position: 'LW',
+            imageUrl: 'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=600/2027/futgg-player-item-card/27-238794.6715e80f49fb5360b92261f8bd984f7178a47066cff3bfcd2c1b7dd57db13fbf.webp',
+            badges: ['⚡ سرعة 95', '🪄 مهارات 5 نجوم', '🔥 مراوغات 91']
+        },
+        {
+            name: 'Jude Bellingham',
+            arName: 'جود بيلينغهام',
+            enQuery: 'jude-bellingham',
+            rating: '90',
+            position: 'CAM',
+            imageUrl: 'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=600/2027/futgg-player-item-card/27-252371.49e4acdf2d78496f4951f41725cd17fb8efb118d99a69ba074ab76fc62d70735.webp',
+            badges: ['🛡️ متكامل 80+', '🎯 إنهاء قوي', '👑 صانع لعب']
+        },
+        {
+            name: 'Erling Haaland',
+            arName: 'إرلينغ هالاند',
+            enQuery: 'erling-haaland',
+            rating: '91',
+            position: 'ST',
+            imageUrl: 'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=600/2027/futgg-player-item-card/27-239085.5302941a50a927b565c122945958880e418b56c6cf7a76f88179fa24ec510b57.webp',
+            badges: ['🚀 تسديد خارق 93', '💪 قوة بدنية', '🤖 ماكينة أهداف']
+        },
+        {
+            name: 'Lamine Yamal',
+            arName: 'لامين يامال',
+            enQuery: 'lamine-yamal',
+            rating: '87',
+            position: 'RW',
+            imageUrl: 'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=600/2027/futgg-player-item-card/27-274438.2435e0037a1f5926c04f9fa847384995f5bbd9e5a87114b7ec82939c049687e1.webp',
+            badges: ['💎 موهبة استثنائية', '⚡ سرعة ورشاقة', '🔥 تسديد مقوس']
+        },
+        {
+            name: 'Mohamed Salah',
+            arName: 'محمد صلاح',
+            enQuery: 'mohamed-salah',
+            rating: '87',
+            position: 'RW',
+            imageUrl: 'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=600/2024/futgg-player-item-card/24-235090355.74fd60fbcdde4e7f51060ab12714cea468e7dad2e624af92aa522a0ccfbeb4e5.webp',
+            badges: ['👑 فخر العرب', '🎯 إنهاء حاسم', '⚡ سرعة 89']
+        },
+        {
+            name: 'Cole Palmer',
+            arName: 'كول بالمر',
+            enQuery: 'cole-palmer',
+            rating: '85',
+            position: 'CAM',
+            imageUrl: 'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=600/2025/futgg-player-item-card/25-201584126.500bb2c019821bd061dc27ece4aa1c69f4f59ce35c98a786c40fed1bf2eac4d2.webp',
+            badges: ['🥶 كولد بالمر', '🎯 صانع لعب', '🔥 تسديد متقن']
+        },
+        {
+            name: 'Bukayo Saka',
+            arName: 'بوكايو ساكا',
+            enQuery: 'bukayo-saka',
+            rating: '88',
+            position: 'RW',
+            imageUrl: 'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=600/2027/futgg-player-item-card/27-246669.cab7c7f82f8442d8ba57fc15e5f49728247141eac35add86238cdc54e7916495.webp',
+            badges: ['⚡ جناح سريع', '🎯 عرضيات متقنة', '🔥 نجم الدوري']
+        },
+        {
+            name: 'Rodri',
+            arName: 'رودري',
+            enQuery: 'rodri',
+            rating: '90',
+            position: 'CDM',
+            imageUrl: 'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=600/2025/futgg-player-item-card/25-100895162.da4544b2ad9215990f4a0907c95d24704e6a5ec74abb309a919821436807ac98.webp',
+            badges: ['🏆 أفضل لاعب بالعالم', '🛡️ صمام أمان', '🎯 تمريرات 90+']
+        },
+        {
+            name: 'Lionel Messi',
+            arName: 'ليونيل ميسي',
+            enQuery: 'lionel-messi',
+            rating: '89',
+            position: 'RW',
+            imageUrl: 'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=600/2027/futgg-player-item-card/27-158023.b7b052e75f1a00658907cbe5312eb4a62b2661631a6e0661b1924ec5e3f2a91c.webp',
+            badges: ['🐐 الأسطورة', '🪄 سحر المراوغة', '🎯 صانع أهداف']
+        },
+        {
+            name: 'Cristiano Ronaldo',
+            arName: 'كريستيانو رونالدو',
+            enQuery: 'cristiano-ronaldo',
+            rating: '84',
+            position: 'ST',
+            imageUrl: 'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=600/2027/futgg-player-item-card/27-20801.cb3bb88dcfff15fcfcc495bbad7a5d9b90f64d78078740c44e67a7ecf028ecb4.webp',
+            badges: ['🐐 الدون SIUU', '🎯 تسديد 88', '💪 ارتقاء خيالي']
+        }
+    ];
+
+    const ARABIC_PLAYER_NAME_MAP = {
+        'مبابي': { en: 'kylian-mbappe', ar: 'كيليان مبابي' },
+        'فينيسيوس': { en: 'vinicius-jr', ar: 'فينيسيوس جونيور' },
+        'بيلينغهام': { en: 'jude-bellingham', ar: 'جود بيلينغهام' },
+        'هالاند': { en: 'erling-haaland', ar: 'إرلينغ هالاند' },
+        'صلاح': { en: 'mohamed-salah', ar: 'محمد صلاح' },
+        'يامال': { en: 'lamine-yamal', ar: 'لامين يامال' },
+        'رودري': { en: 'rodri', ar: 'رودري' },
+        'ساكا': { en: 'bukayo-saka', ar: 'بوكايو ساكا' },
+        'بالمر': { en: 'cole-palmer', ar: 'كول بالمر' },
+        'ميسي': { en: 'lionel-messi', ar: 'ليونيل ميسي' },
+        'رونالدو': { en: 'cristiano-ronaldo', ar: 'كريستيانو رونالدو' },
+        'دي بروين': { en: 'kevin-de-bruyne', ar: 'كيفين دي بروين' },
+        'فالفيردي': { en: 'federico-valverde', ar: 'فيديريكو فالفيردي' },
+        'موسيالا': { en: 'jamal-musiala', ar: 'جمال موسيالا' },
+        'سون': { en: 'heung-min-son', ar: 'سون هيونغ مين' },
+        'كين': { en: 'harry-kane', ar: 'هاري كين' },
+        'ليفاندوفسكي': { en: 'robert-lewandowski', ar: 'روبرت ليفاندوفسكي' },
+        'جيوكيريس': { en: 'viktor-gyokeres', ar: 'فيكتور جيوكيريس' },
+        'ديمبيلي': { en: 'ousmane-dembele', ar: 'عثمان ديمبيلي' },
+        'لياو': { en: 'rafael-leao', ar: 'رافائيل لياو' },
+        'مرموش': { en: 'omar-marmoush', ar: 'عمر مرموش' }
+    };
+
+    function applyStarDataToSlide(slideIndex, star, playerKey = null) {
+        const slide = state.slides[slideIndex];
+        if (!slide) return;
+
+        if (playerKey && slide.type === 'versus_card') {
+            if (!slide[playerKey]) slide[playerKey] = {};
+            slide[playerKey].name = star.name;
+            slide[playerKey].arName = star.arName;
+            slide[playerKey].cardUrl = star.imageUrl;
+            slide[playerKey].rating = star.rating;
+            slide[playerKey].statHighlight = `طاقات ${star.rating}`;
+        } else {
+            slide.playerName = star.name;
+            slide.playerArName = star.arName;
+            slide.cardUrl = star.imageUrl;
+            slide.rating = star.rating;
+            if (star.badges && Array.isArray(star.badges)) {
+                slide.badges = [...star.badges];
+            }
+        }
+
+        renderCanvas();
+        renderEditorControls();
+        saveProjectState();
+    }
+
+    function applyStarPresetToSlide(slideIndex, starIndex, playerKey = null) {
+        const star = REELS_PRESET_STARS[starIndex];
+        if (!star) return;
+        applyStarDataToSlide(slideIndex, star, playerKey);
+        if (window.showCopyToast) {
+            window.showCopyToast(`تم تطبيق كرت ${star.arName} (${star.rating}) بنجاح! ⚡`);
+        }
+    }
+
+    async function fetchPlayerCardData(slideIndex, rawQuery, playerKey = null) {
+        const query = (rawQuery || '').trim();
+        if (!query) {
+            if (window.showCopyToast) window.showCopyToast('يرجى كتابة اسم اللاعب أو لصق رابطه من FUT.GG أو FUTBIN ⚠️');
+            return;
+        }
+
+        const btnId = playerKey ? `btnReelFetch_${slideIndex}_${playerKey}` : `btnReelFetch_${slideIndex}`;
+        const btn = document.getElementById(btnId);
+        const origText = btn ? btn.innerHTML : '';
+        if (btn) {
+            btn.innerHTML = 'جاري السحب... ⏳';
+            btn.disabled = true;
+        }
+
+        try {
+            const cleanLower = query.toLowerCase();
+            const localPreset = REELS_PRESET_STARS.find(s => 
+                s.name.toLowerCase().includes(cleanLower) || 
+                s.arName.includes(query) || 
+                cleanLower.includes(s.enQuery.toLowerCase())
+            );
+
+            if (localPreset) {
+                applyStarDataToSlide(slideIndex, localPreset, playerKey);
+                if (window.showCopyToast) window.showCopyToast(`تم سحب كرت ${localPreset.arName} بنجاح! ⚡`);
+                return;
+            }
+
+            let searchTarget = query;
+            const arMatchKey = Object.keys(ARABIC_PLAYER_NAME_MAP).find(k => query.includes(k) || k.includes(query));
+            if (arMatchKey) {
+                searchTarget = ARABIC_PLAYER_NAME_MAP[arMatchKey].en;
+            }
+
+            const res = await fetch(`/api/fetch-futgg?url=${encodeURIComponent(searchTarget)}`);
+            let data = null;
+            try {
+                data = await res.json();
+            } catch(e) {
+                fallbackApplyOrToast(slideIndex, query, playerKey);
+                return;
+            }
+
+            if (!res.ok || !data || !data.success) {
+                const errMsg = (data && data.error) || 'تعذر سحب صورة واسم اللاعب من هذا الرابط';
+                if (window.showCopyToast) window.showCopyToast(`⚠️ ${errMsg}`);
+                return;
+            }
+
+            let finalCardImg = data.cardImage || data.imageUrl || data.sbcImage || '';
+            if (finalCardImg.includes('url=')) {
+                try {
+                    const extracted = decodeURIComponent(finalCardImg.split('url=')[1]);
+                    if (extracted.startsWith('http')) finalCardImg = extracted;
+                } catch(e) {}
+            }
+
+            let arabicName = data.playerName || query;
+            const enLower = (data.playerName || '').toLowerCase();
+            for (const [arKey, item] of Object.entries(ARABIC_PLAYER_NAME_MAP)) {
+                const itemEn = item.en.replace(/-/g, ' ').toLowerCase();
+                const parts = itemEn.split(' ');
+                if (parts.some(p => p.length > 3 && enLower.includes(p))) {
+                    arabicName = item.ar;
+                    break;
+                }
+            }
+
+            const slide = state.slides[slideIndex];
+            if (!slide) return;
+
+            if (playerKey && slide.type === 'versus_card') {
+                if (!slide[playerKey]) slide[playerKey] = {};
+                slide[playerKey].name = data.playerName || query;
+                slide[playerKey].arName = arabicName;
+                slide[playerKey].cardUrl = finalCardImg;
+                slide[playerKey].rating = data.rating || '88';
+                slide[playerKey].statHighlight = `طاقات ${data.rating || '88'}`;
+            } else {
+                slide.playerName = data.playerName || query;
+                slide.playerArName = arabicName;
+                slide.cardUrl = finalCardImg;
+                slide.rating = data.rating || '88';
+                slide.badges = [`⚡ سرعة ${data.rating || '88'}`, '🔥 ميتّا', '💰 كوينز مناسبة'];
+            }
+
+            renderCanvas();
+            renderEditorControls();
+            saveProjectState();
+
+            if (window.showCopyToast) {
+                window.showCopyToast(`تم سحب كرت ${arabicName} بنجاح! ⚡`);
+            }
+        } catch(err) {
+            console.error('[Reels] fetch error:', err);
+            fallbackApplyOrToast(slideIndex, query, playerKey);
+        } finally {
+            if (btn) {
+                btn.innerHTML = origText || 'سحب ⚡';
+                btn.disabled = false;
+            }
+        }
+    }
+
+    function fallbackApplyOrToast(slideIndex, query, playerKey = null) {
+        const clean = query.toLowerCase();
+        const fallbackStar = REELS_PRESET_STARS.find(s => 
+            s.name.toLowerCase().includes(clean) || 
+            s.arName.includes(query) || 
+            clean.includes(s.enQuery.toLowerCase())
+        );
+        if (fallbackStar) {
+            applyStarDataToSlide(slideIndex, fallbackStar, playerKey);
+            if (window.showCopyToast) {
+                window.showCopyToast(`تم سحب وتطبيق كرت ${fallbackStar.arName} بنجاح! ⚡`);
+            }
+        } else {
+            if (window.showCopyToast) {
+                window.showCopyToast('💡 يمكنك رفع صورة الكرت مباشرة من جهازك أو اختيار أحد النجوم الجاهزين');
+            }
+        }
+    }
+
+    function handleCardImageUpload(slideIndex, fileInput, playerKey = null) {
+        if (!fileInput || !fileInput.files || !fileInput.files[0]) return;
+        const file = fileInput.files[0];
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const slide = state.slides[slideIndex];
+            if (!slide) return;
+            if (playerKey && slide.type === 'versus_card') {
+                if (!slide[playerKey]) slide[playerKey] = {};
+                slide[playerKey].cardUrl = e.target.result;
+            } else {
+                slide.cardUrl = e.target.result;
+            }
+            renderCanvas();
+            renderEditorControls();
+            saveProjectState();
+            if (window.showCopyToast) {
+                window.showCopyToast('تم رفع صورة الكرت بنجاح! 🖼️');
+            }
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function renderPlayerFetcherBoxHtml(slideIndex) {
+        const inputId = `reelPlayerFetchInput_${slideIndex}`;
+        const btnId = `btnReelFetch_${slideIndex}`;
+        return `
+            <div class="p-3 rounded-2xl bg-white border border-slate-200 shadow-2xs space-y-2.5">
+                <div class="flex items-center justify-between pb-1 border-b border-slate-100">
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-sm">🃏</span>
+                        <label class="text-[11.5px] font-black text-slate-900">سحب كرت اللاعب مع الاسم تلقائياً:</label>
+                    </div>
+                    <span class="text-[9.5px] font-black text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                        FUT.GG & FUTBIN ⚡
+                    </span>
+                </div>
+
+                <div class="space-y-1.5">
+                    <div class="flex gap-1.5">
+                        <input type="text" id="${inputId}" 
+                               placeholder="الصق رابط كرت اللاعب من FUT.GG أو اكتب اسمه (مثلاً: مبابي)..."
+                               onkeydown="if(event.key==='Enter') ReelsEngine.fetchPlayerCardData(${slideIndex}, this.value)"
+                               class="flex-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs font-medium outline-none focus:border-emerald-600 focus:bg-white transition shadow-2xs">
+                        <button type="button" id="${btnId}"
+                                onclick="ReelsEngine.fetchPlayerCardData(${slideIndex}, document.getElementById('${inputId}').value)"
+                                class="px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-xs transition shrink-0 flex items-center gap-1 shadow-md shadow-emerald-600/20 active:scale-95 cursor-pointer">
+                            <span>سحب ⚡</span>
+                        </button>
+                    </div>
+                    <p class="text-[9.5px] text-slate-400">💡 يسحب صورة البطاقة الشفافة العالية الدقة ويملأ اسم اللاعب باللغة العربية فوراً.</p>
+                </div>
+
+                <div class="pt-1.5 border-t border-slate-100 space-y-1.5">
+                    <span class="text-[10px] font-bold text-slate-500 block">⭐ أو اختر كرت نجم جاهز بنقرة واحدة:</span>
+                    <div class="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto pr-0.5">
+                        ${REELS_PRESET_STARS.map((star, sIdx) => `
+                            <button type="button" onclick="ReelsEngine.applyStarPresetToSlide(${slideIndex}, ${sIdx})"
+                                    class="px-2.5 py-1 rounded-lg bg-slate-50 hover:bg-emerald-50 text-slate-800 hover:text-emerald-900 border border-slate-200 hover:border-emerald-300 text-[10.5px] font-black transition flex items-center gap-1 shadow-2xs active:scale-95 cursor-pointer">
+                                <span>${star.arName}</span>
+                                <span class="text-[9px] font-mono text-emerald-700 bg-white px-1 py-0.2 rounded border border-slate-200 font-bold">${star.rating}</span>
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <div class="pt-1.5 border-t border-slate-100 flex items-center justify-between">
+                    <span class="text-[10.5px] font-bold text-slate-600">أو رفع صورة الكرت يدوياً من جهازك:</span>
+                    <label class="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 text-[11px] font-black cursor-pointer transition flex items-center gap-1 shadow-2xs active:scale-95">
+                        <span>📁 اختيار صورة</span>
+                        <input type="file" accept="image/*" class="hidden" onchange="ReelsEngine.handleCardImageUpload(${slideIndex}, this)">
+                    </label>
+                </div>
+            </div>
+        `;
+    }
+
+    function renderVersusPlayerFetcherHtml(slideIndex, playerKey, labelText) {
+        const inputId = `reelVersusFetchInput_${slideIndex}_${playerKey}`;
+        const btnId = `btnReelFetch_${slideIndex}_${playerKey}`;
+        const pObj = (state.slides[slideIndex] && state.slides[slideIndex][playerKey]) || {};
+        return `
+            <div class="p-2.5 rounded-xl bg-white border border-slate-200 space-y-2">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-xs">⚡</span>
+                        <span class="text-[11px] font-black text-slate-900">${labelText}:</span>
+                    </div>
+                    <button type="button" onclick="ReelsEngine.toggleElementVisibility('${playerKey === 'playerA' ? 'hideCardA' : 'hideCardB'}')" class="text-[10px] font-bold px-2 py-0.5 rounded ${(playerKey === 'playerA' ? state.slides[slideIndex].hideCardA : state.slides[slideIndex].hideCardB) ? 'bg-slate-200 text-slate-600' : 'bg-rose-50 text-rose-600'}">
+                        ${(playerKey === 'playerA' ? state.slides[slideIndex].hideCardA : state.slides[slideIndex].hideCardB) ? '👁️ إظهار' : '🗑️ إخفاء'}
+                    </button>
+                </div>
+
+                <div class="flex gap-1.5">
+                    <input type="text" id="${inputId}" 
+                           placeholder="الصق رابط أو اسم ${labelText}..."
+                           onkeydown="if(event.key==='Enter') ReelsEngine.fetchPlayerCardData(${slideIndex}, this.value, '${playerKey}')"
+                           class="flex-1 px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900 outline-none focus:border-emerald-500 shadow-2xs">
+                    <button type="button" id="${btnId}"
+                            onclick="ReelsEngine.fetchPlayerCardData(${slideIndex}, document.getElementById('${inputId}').value, '${playerKey}')"
+                            class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs transition shrink-0 active:scale-95 shadow-2xs cursor-pointer">
+                        سحب ⚡
+                    </button>
+                    <label class="px-2 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 text-xs font-bold cursor-pointer transition shrink-0 flex items-center justify-center shadow-2xs" title="رفع صورة من الجهاز">
+                        📁
+                        <input type="file" accept="image/*" class="hidden" onchange="ReelsEngine.handleCardImageUpload(${slideIndex}, this, '${playerKey}')">
+                    </label>
+                </div>
+
+                <div class="flex flex-wrap gap-1">
+                    ${REELS_PRESET_STARS.slice(0, 6).map((star, sIdx) => `
+                        <button type="button" onclick="ReelsEngine.applyStarPresetToSlide(${slideIndex}, ${sIdx}, '${playerKey}')"
+                                class="px-2 py-0.5 rounded-md bg-slate-50 hover:bg-emerald-50 text-slate-800 text-[10px] font-bold border border-slate-200 hover:border-emerald-300 transition shadow-2xs">
+                            ${star.arName.split(' ')[0]} ${star.rating}
+                        </button>
+                    `).join('')}
+                </div>
+
+                <div class="grid grid-cols-2 gap-1.5 pt-1 border-t border-slate-100">
+                    <input type="text" placeholder="الاسم بالعربي" value="${(pObj.arName || pObj.name || '').replace(/"/g, '&quot;')}" 
+                           oninput="ReelsEngine.updateVersusField('${playerKey}', 'arName', this.value)"
+                           class="px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-xs font-bold text-slate-900">
+                    <input type="text" placeholder="أبرز ميزة (طاقات 90)" value="${(pObj.statHighlight || '').replace(/"/g, '&quot;')}" 
+                           oninput="ReelsEngine.updateVersusField('${playerKey}', 'statHighlight', this.value)"
+                           class="px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-900">
+                </div>
+
+                <div class="flex items-center gap-1.5">
+                    <div class="w-8 h-10 bg-slate-100 rounded border border-slate-200 flex items-center justify-center p-0.5 shrink-0 overflow-hidden">
+                        <img src="${pObj.cardUrl || 'assets/placeholder_card.png'}" alt="Card" class="max-h-full max-w-full object-contain">
+                    </div>
+                    <input type="text" placeholder="رابط كرت ${labelText}" value="${(pObj.cardUrl || '').replace(/"/g, '&quot;')}" 
+                           onchange="ReelsEngine.updateVersusField('${playerKey}', 'cardUrl', this.value)"
+                           class="flex-1 px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-200 text-[10px] font-mono text-slate-700">
+                </div>
+            </div>
+        `;
+    }
+
     // ---- 7. INTERACTIVE VIDEO PLAYER ----
     function playPlayback() {
         if (state.isPlaying) return;
@@ -2329,6 +2754,8 @@ window.ReelsEngine = (function() {
 
                     ${renderTitleLinesBuilderHtml(state.title || '', 'عنوان الريل المشترك (أعلى الكروت):', 'hideTitle', slide.hideTitle)}
 
+                    ${renderPlayerFetcherBoxHtml(state.currentSlideIndex)}
+
                     <div class="grid grid-cols-2 gap-2">
                         <div class="p-2 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
                             <div class="flex items-center justify-between">
@@ -2343,27 +2770,37 @@ window.ReelsEngine = (function() {
                         </div>
                         <div class="p-2 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
                             <div class="flex items-center justify-between">
-                                <label class="text-[10.5px] font-black text-slate-700">اسم اللاعب:</label>
+                                <label class="text-[10.5px] font-black text-slate-700">اسم اللاعب بالعربي:</label>
                                 <button type="button" onclick="ReelsEngine.toggleElementVisibility('hidePlayerName')" class="text-[9.5px] font-bold px-1.5 py-0.5 rounded ${slide.hidePlayerName ? 'bg-slate-200 text-slate-600' : 'bg-rose-50 text-rose-600'}">
                                     ${slide.hidePlayerName ? '👁️ إظهار' : '🗑️ إخفاء'}
                                 </button>
                             </div>
-                            <input type="text" value="${(slide.playerArName || '').replace(/"/g, '&quot;')}" 
+                            <input type="text" value="${(slide.playerArName || slide.playerName || '').replace(/"/g, '&quot;')}" 
                                    oninput="ReelsEngine.updateCurrentSlideField('playerArName', this.value)"
+                                   placeholder="مثال: كيليان مبابي"
                                    class="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
                         </div>
                     </div>
 
-                    <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+                    <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
                         <div class="flex items-center justify-between">
-                            <label class="text-[11px] font-black text-slate-700">كرت اللاعب (صورة FUT.GG WebP):</label>
+                            <div class="flex items-center gap-1.5">
+                                <label class="text-[11px] font-black text-slate-700">كرت اللاعب الحالي:</label>
+                                <span class="text-[9.5px] text-slate-400 font-mono font-bold">FUT.GG WebP</span>
+                            </div>
                             <button type="button" onclick="ReelsEngine.toggleElementVisibility('hideCard')" class="text-[10px] font-bold px-2 py-0.5 rounded ${slide.hideCard ? 'bg-slate-200 text-slate-600' : 'bg-rose-50 text-rose-600'}">
-                                ${slide.hideCard ? '👁️ إظهار' : '🗑️ إخفاء'}
+                                ${slide.hideCard ? '👁️ إظهار الكرت' : '🗑️ إخفاء الكرت'}
                             </button>
                         </div>
-                        <input type="text" value="${(slide.cardUrl || '').replace(/"/g, '&quot;')}" 
-                               onchange="ReelsEngine.updateCurrentSlideField('cardUrl', this.value)"
-                               class="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-900 text-[10.5px] font-mono outline-none focus:border-emerald-500">
+                        <div class="flex items-center gap-2">
+                            <div class="w-12 h-14 bg-white rounded-xl border border-slate-200 flex items-center justify-center p-1 shadow-2xs shrink-0 overflow-hidden">
+                                <img src="${slide.cardUrl || 'assets/placeholder_card.png'}" alt="Card" class="max-h-full max-w-full object-contain">
+                            </div>
+                            <input type="text" value="${(slide.cardUrl || '').replace(/"/g, '&quot;')}" 
+                                   onchange="ReelsEngine.updateCurrentSlideField('cardUrl', this.value)"
+                                   placeholder="رابط صورة الكرت المباشر..."
+                                   class="flex-1 px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-900 text-[10.5px] font-mono outline-none focus:border-emerald-500 shadow-2xs">
+                        </div>
                     </div>
 
                     <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
@@ -2382,53 +2819,15 @@ window.ReelsEngine = (function() {
                 </div>
             `;
         } else if (slide.type === 'versus_card') {
-            const pA = slide.playerA || {};
-            const pB = slide.playerB || {};
             return `
                 <div class="space-y-3">
                     ${durationControlHtml}
 
                     ${renderTitleLinesBuilderHtml(slide.title || state.title || '', '⚔️ عنوان المقارنة (توزيع الكلمات بالأسطر):', 'hideTitle', slide.hideTitle)}
 
-                    <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
-                        <div class="flex items-center justify-between">
-                            <span class="text-[11px] font-black text-slate-900">اللاعب الأول (اليمين):</span>
-                            <button type="button" onclick="ReelsEngine.toggleElementVisibility('hideCardA')" class="text-[10px] font-bold px-2 py-0.5 rounded ${slide.hideCardA ? 'bg-slate-200 text-slate-600' : 'bg-rose-50 text-rose-600'}">
-                                ${slide.hideCardA ? '👁️ إظهار' : '🗑️ إخفاء'}
-                            </button>
-                        </div>
-                        <div class="grid grid-cols-2 gap-2">
-                            <input type="text" placeholder="الاسم بالعربي" value="${(pA.arName || '').replace(/"/g, '&quot;')}" 
-                                   oninput="ReelsEngine.updateVersusField('playerA', 'arName', this.value)"
-                                   class="px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-bold">
-                            <input type="text" placeholder="أبرز ميزة" value="${(pA.statHighlight || '').replace(/"/g, '&quot;')}" 
-                                   oninput="ReelsEngine.updateVersusField('playerA', 'statHighlight', this.value)"
-                                   class="px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-xs">
-                        </div>
-                        <input type="text" placeholder="رابط كرت اللاعب A" value="${(pA.cardUrl || '').replace(/"/g, '&quot;')}" 
-                               onchange="ReelsEngine.updateVersusField('playerA', 'cardUrl', this.value)"
-                               class="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-[10.5px] font-mono">
-                    </div>
+                    ${renderVersusPlayerFetcherHtml(state.currentSlideIndex, 'playerA', 'اللاعب الأول (اليمين)')}
 
-                    <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
-                        <div class="flex items-center justify-between">
-                            <span class="text-[11px] font-black text-slate-900">اللاعب الثاني (اليسار):</span>
-                            <button type="button" onclick="ReelsEngine.toggleElementVisibility('hideCardB')" class="text-[10px] font-bold px-2 py-0.5 rounded ${slide.hideCardB ? 'bg-slate-200 text-slate-600' : 'bg-rose-50 text-rose-600'}">
-                                ${slide.hideCardB ? '👁️ إظهار' : '🗑️ إخفاء'}
-                            </button>
-                        </div>
-                        <div class="grid grid-cols-2 gap-2">
-                            <input type="text" placeholder="الاسم بالعربي" value="${(pB.arName || '').replace(/"/g, '&quot;')}" 
-                                   oninput="ReelsEngine.updateVersusField('playerB', 'arName', this.value)"
-                                   class="px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-bold">
-                            <input type="text" placeholder="أبرز ميزة" value="${(pB.statHighlight || '').replace(/"/g, '&quot;')}" 
-                                   oninput="ReelsEngine.updateVersusField('playerB', 'statHighlight', this.value)"
-                                   class="px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-xs">
-                        </div>
-                        <input type="text" placeholder="رابط كرت اللاعب B" value="${(pB.cardUrl || '').replace(/"/g, '&quot;')}" 
-                               onchange="ReelsEngine.updateVersusField('playerB', 'cardUrl', this.value)"
-                               class="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-[10.5px] font-mono">
-                    </div>
+                    ${renderVersusPlayerFetcherHtml(state.currentSlideIndex, 'playerB', 'اللاعب الثاني (اليسار)')}
 
                     <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
                         <div class="flex items-center justify-between">
@@ -3182,6 +3581,10 @@ ${state.subtitle}
         saveProjectState,
         loadSavedProjectForSection,
         updateBadges,
+        fetchPlayerCardData,
+        applyStarPresetToSlide,
+        handleCardImageUpload,
+        REELS_PRESET_STARS,
         renderCanvas,
         renderEditorControls,
         renderPlayerToolbar,
