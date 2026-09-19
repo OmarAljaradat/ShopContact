@@ -67,7 +67,7 @@ let nativePage = null;
 let renderQueue = Promise.resolve();
 
 async function ensureNativeBrowser() {
-    if (nativeBrowser && nativeBrowser.isConnected()) {
+    if (nativeBrowser && nativeBrowser.connected) {
         return nativeBrowser;
     }
     if (!puppeteer) return null;
