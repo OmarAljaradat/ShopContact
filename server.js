@@ -250,6 +250,25 @@ async function fetchFutGGSbcPage(targetUrl) {
     });
 }
 
+// Helper to rank search results to prioritize exact names and higher-rated FC 27 stars
+function rankFutGGResults(query, results) {
+    const q = (query || '').toLowerCase().trim();
+    return [...results].sort((a, b) => {
+        const aUrl = (a.meta?.url || '').toLowerCase();
+        const bUrl = (b.meta?.url || '').toLowerCase();
+        const aOvr = parseInt(a.meta?.overall || '0', 10);
+        const bOvr = parseInt(b.meta?.overall || '0', 10);
+
+        const aHasQ = aUrl.includes(q);
+        const bHasQ = bUrl.includes(q);
+
+        if (aHasQ && !bHasQ) return -1;
+        if (!aHasQ && bHasQ) return 1;
+
+        return bOvr - aOvr;
+    });
+}
+
 // Helper to search FUT.GG global player API
 function searchFutGGPlayer(query) {
     return new Promise((resolve) => {
@@ -276,7 +295,8 @@ function searchFutGGPlayer(query) {
                     try {
                         const json = JSON.parse(data);
                         if (json && json.data && json.data.results && json.data.results.length > 0) {
-                            return resolve(json.data.results[0]);
+                            const ranked = rankFutGGResults(cleanQuery, json.data.results);
+                            return resolve(ranked[0]);
                         }
                     } catch(e) {}
                     tryNext();
@@ -288,7 +308,7 @@ function searchFutGGPlayer(query) {
     });
 }
 
-// Helper to fetch FUT.GG player page data
+// Helper to fetch FUT.GG player page data and extract the exact chosen card
 function fetchFutGGPage(targetUrl) {
     return new Promise((resolve, reject) => {
         https.get(targetUrl, {
@@ -307,24 +327,56 @@ function fetchFutGGPage(targetUrl) {
             res.on('data', chunk => data += chunk);
             res.on('end', () => {
                 try {
-                    let cardImage = '';
-                    const cardImgMatch = data.match(/https:\/\/game-assets\.fut\.gg\/cdn-cgi\/image\/[^"'\s]+futgg-player-item-card[^"'\s]+/i) ||
-                                         data.match(/https:\/\/game-assets\.fut\.gg\/cdn-cgi\/image\/[^"'\s]+player-item-card[^"'\s]+/i) ||
-                                         data.match(/https:\/\/game-assets\.fut\.gg\/cdn-cgi\/image\/[^"'\s]+player-item-social-small[^"'\s]+/i) ||
-                                         data.match(/https:\/\/game-assets\.fut\.gg\/cdn-cgi\/image\/[^"'\s]+player-item\/[^"'\s]+/i);
-                    
-                    if (cardImgMatch) {
-                        cardImage = cardImgMatch[0].replace(/width=\d+/, 'width=600');
+                    const urlVersionMatch = targetUrl.match(/\/(\d{2}-\d+)\/?(?:[?#]|$)/);
+                    const targetVersionId = urlVersionMatch ? urlVersionMatch[1] : null;
+
+                    // Match all card images on the page with their year, type, and specific card version ID
+                    const regex = /https:\/\/game-assets\.fut\.gg\/cdn-cgi\/image\/[^"'\s]+?\/(20\d{2})\/(futgg-player-item-card|player-item-card|player-item)\/(\d{2}-\d+)\.[a-f0-9]+\.(?:webp|png)/gi;
+                    let m;
+                    const cards = [];
+                    while ((m = regex.exec(data)) !== null) {
+                        cards.push({
+                            fullUrl: m[0],
+                            year: m[1],
+                            type: m[2],
+                            versionId: m[3]
+                        });
+                    }
+
+                    let chosen = null;
+                    // 1. If user provided a specific version ID in the URL, match it strictly!
+                    if (targetVersionId) {
+                        chosen = cards.find(c => c.versionId === targetVersionId && c.type === 'futgg-player-item-card') ||
+                                 cards.find(c => c.versionId === targetVersionId && c.type === 'player-item-card') ||
+                                 cards.find(c => c.versionId === targetVersionId);
+                    }
+
+                    // 2. If no specific version requested, strictly prioritize FC 27!
+                    if (!chosen) {
+                        chosen = cards.find(c => (c.year === '2027' || c.versionId.startsWith('27-')) && c.type === 'futgg-player-item-card') ||
+                                 cards.find(c => (c.year === '2027' || c.versionId.startsWith('27-')) && c.type === 'player-item-card') ||
+                                 cards.find(c => (c.year === '2027' || c.versionId.startsWith('27-')));
+                    }
+
+                    // 3. Fallback to any card if no 27 card exists
+                    if (!chosen) {
+                        chosen = cards.find(c => c.type === 'futgg-player-item-card') || cards[0];
+                    }
+
+                    let cardImage = chosen ? chosen.fullUrl.replace(/width=\d+/, 'width=600') : '';
+                    if (!cardImage) {
+                        const fallbackMatch = data.match(/https:\/\/game-assets\.fut\.gg\/cdn-cgi\/image\/[^"'\s]+?(?:futgg-player-item-card|player-item-card|player-item)[^"'\s]+/i);
+                        if (fallbackMatch) cardImage = fallbackMatch[0].replace(/width=\d+/, 'width=600');
                     }
 
                     const titleMatch = data.match(/<title>([^<]+)<\/title>/i);
                     let playerName = 'اللاعب';
                     if (titleMatch) {
                         playerName = titleMatch[1]
-                            .replace(/ EA FC.*$/i, '')
+                            .replace(/\s*(?:EA\s*)?FC\s*\d+.*$/i, '')
                             .replace(/ - FUT\.GG.*$/i, '')
-                            .replace(/\s*FC\s*\d+.*$/i, '')
                             .replace(/\s*Rating.*$/i, '')
+                            .replace(/\s*\d{2}\s*OVR.*$/i, '')
                             .trim();
                     }
 
@@ -334,16 +386,17 @@ function fetchFutGGPage(targetUrl) {
                     let rarity = 'Gold Rare';
 
                     if (descMatch) {
-                        const versionMatch = descMatch[1].match(/Latest version:\s*([^\d]+)\s+(\d{2})\s+([A-Z]+)/i) ||
-                                             descMatch[1].match(/(\d{2})\s+([A-Z]+)/i);
-                        if (versionMatch) {
-                            if (versionMatch.length >= 4) {
-                                rarity = versionMatch[1].trim();
-                                rating = versionMatch[2].trim();
-                                position = versionMatch[3].trim();
+                        const ovrMatch = descMatch[1].match(/(\d{2})\s+OVR\s+([A-Z]{2,4})/i) ||
+                                         descMatch[1].match(/Latest version:\s*([^\d]+)\s+(\d{2})\s+([A-Z]+)/i) ||
+                                         descMatch[1].match(/(\d{2})\s+([A-Z]{2,4})/i);
+                        if (ovrMatch) {
+                            if (ovrMatch[0].includes('Latest version:')) {
+                                rarity = ovrMatch[1].trim();
+                                rating = ovrMatch[2].trim();
+                                position = ovrMatch[3].trim();
                             } else {
-                                rating = versionMatch[1].trim();
-                                position = versionMatch[2].trim();
+                                rating = ovrMatch[1].trim();
+                                position = ovrMatch[2].trim();
                             }
                         }
 

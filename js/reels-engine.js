@@ -996,7 +996,7 @@ window.ReelsEngine = (function() {
             name: 'Vinícius Júnior',
             arName: 'فينيسيوس جونيور',
             enQuery: 'vinicius-jr',
-            rating: '90',
+            rating: '89',
             position: 'LW',
             imageUrl: 'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=600/2027/futgg-player-item-card/27-238794.6715e80f49fb5360b92261f8bd984f7178a47066cff3bfcd2c1b7dd57db13fbf.webp',
             badges: ['⚡ سرعة 95', '🪄 مهارات 5 نجوم', '🔥 مراوغات 91']
@@ -1025,7 +1025,7 @@ window.ReelsEngine = (function() {
             enQuery: 'lamine-yamal',
             rating: '87',
             position: 'RW',
-            imageUrl: 'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=600/2027/futgg-player-item-card/27-274438.2435e0037a1f5926c04f9fa847384995f5bbd9e5a87114b7ec82939c049687e1.webp',
+            imageUrl: 'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=600/2027/futgg-player-item-card/27-67386507.a953ece6dcf87cff76b8213692e7d57e1d31a2268e3f32596dd738c7a1591220.webp',
             badges: ['💎 موهبة استثنائية', '⚡ سرعة ورشاقة', '🔥 تسديد مقوس']
         },
         {
@@ -1033,8 +1033,8 @@ window.ReelsEngine = (function() {
             arName: 'محمد صلاح',
             enQuery: 'mohamed-salah',
             rating: '87',
-            position: 'RW',
-            imageUrl: 'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=600/2024/futgg-player-item-card/24-235090355.74fd60fbcdde4e7f51060ab12714cea468e7dad2e624af92aa522a0ccfbeb4e5.webp',
+            position: 'RM',
+            imageUrl: 'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=600/2027/futgg-player-item-card/27-209331.bdfc8b1e25229756f608e53457f6d58285771dcfddb855e6d723a3023f6aa7c2.webp',
             badges: ['👑 فخر العرب', '🎯 إنهاء حاسم', '⚡ سرعة 89']
         },
         {
@@ -1043,7 +1043,7 @@ window.ReelsEngine = (function() {
             enQuery: 'cole-palmer',
             rating: '85',
             position: 'CAM',
-            imageUrl: 'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=600/2025/futgg-player-item-card/25-201584126.500bb2c019821bd061dc27ece4aa1c69f4f59ce35c98a786c40fed1bf2eac4d2.webp',
+            imageUrl: 'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=600/2027/futgg-player-item-card/27-257534.5ab77a65780079d6792225ab1188f2250ca159e3ebe6a26b6375ed6a307622f7.webp',
             badges: ['🥶 كولد بالمر', '🎯 صانع لعب', '🔥 تسديد متقن']
         },
         {
@@ -1061,7 +1061,7 @@ window.ReelsEngine = (function() {
             enQuery: 'rodri',
             rating: '90',
             position: 'CDM',
-            imageUrl: 'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=600/2025/futgg-player-item-card/25-100895162.da4544b2ad9215990f4a0907c95d24704e6a5ec74abb309a919821436807ac98.webp',
+            imageUrl: 'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=600/2027/futgg-player-item-card/27-231866.15741f3f4953470b2b606a68800c4b6ec0eebe161b9435060ba0073494e92618.webp',
             badges: ['🏆 أفضل لاعب بالعالم', '🛡️ صمام أمان', '🎯 تمريرات 90+']
         },
         {
@@ -1124,9 +1124,7 @@ window.ReelsEngine = (function() {
             slide.playerArName = star.arName;
             slide.cardUrl = star.imageUrl;
             slide.rating = star.rating;
-            if (star.badges && Array.isArray(star.badges)) {
-                slide.badges = [...star.badges];
-            }
+            slide.badges = star.badges ? [...star.badges] : [`⚡ سرعة ${star.rating}`, '🔥 ميتّا', '💰 كوينز مناسبة'];
         }
 
         renderCanvas();
@@ -1139,7 +1137,7 @@ window.ReelsEngine = (function() {
         if (!star) return;
         applyStarDataToSlide(slideIndex, star, playerKey);
         if (window.showCopyToast) {
-            window.showCopyToast(`تم تطبيق كرت ${star.arName} (${star.rating}) بنجاح! ⚡`);
+            window.showCopyToast(`تم تطبيق كرت ${star.arName} (${star.rating}) لـ FC 27 بنجاح! ⚡`);
         }
     }
 
@@ -1159,23 +1157,29 @@ window.ReelsEngine = (function() {
         }
 
         try {
-            const cleanLower = query.toLowerCase();
-            const localPreset = REELS_PRESET_STARS.find(s => 
-                s.name.toLowerCase().includes(cleanLower) || 
-                s.arName.includes(query) || 
-                cleanLower.includes(s.enQuery.toLowerCase())
-            );
+            const isUrl = /^https?:\/\//i.test(query) || query.includes('fut.gg') || query.includes('futbin.com');
 
-            if (localPreset) {
-                applyStarDataToSlide(slideIndex, localPreset, playerKey);
-                if (window.showCopyToast) window.showCopyToast(`تم سحب كرت ${localPreset.arName} بنجاح! ⚡`);
-                return;
+            if (!isUrl) {
+                const cleanLower = query.toLowerCase();
+                const localPreset = REELS_PRESET_STARS.find(s => 
+                    s.name.toLowerCase().includes(cleanLower) || 
+                    s.arName.includes(query) || 
+                    cleanLower.includes(s.enQuery.toLowerCase())
+                );
+
+                if (localPreset) {
+                    applyStarDataToSlide(slideIndex, localPreset, playerKey);
+                    if (window.showCopyToast) window.showCopyToast(`تم سحب كرت ${localPreset.arName} بنجاح! ⚡`);
+                    return;
+                }
             }
 
             let searchTarget = query;
-            const arMatchKey = Object.keys(ARABIC_PLAYER_NAME_MAP).find(k => query.includes(k) || k.includes(query));
-            if (arMatchKey) {
-                searchTarget = ARABIC_PLAYER_NAME_MAP[arMatchKey].en;
+            if (!isUrl) {
+                const arMatchKey = Object.keys(ARABIC_PLAYER_NAME_MAP).find(k => query.includes(k) || k.includes(query));
+                if (arMatchKey) {
+                    searchTarget = ARABIC_PLAYER_NAME_MAP[arMatchKey].en;
+                }
             }
 
             const res = await fetch(`/api/fetch-futgg?url=${encodeURIComponent(searchTarget)}`);
