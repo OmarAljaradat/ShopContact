@@ -307,30 +307,364 @@ window.ReelsEngine = (function() {
         return globalAudioCtx;
     }
 
+    // =========================================================================
+    // ---- 1.7 ADVANCED REELS AUDIO & SFX SYNTHESIZER ENGINE (33+ TRACKS) ----
+    // =========================================================================
+    const REELS_MUSIC_LIBRARY = [
+        // --- 1. PHONK & DRIFT (8 tracks) ---
+        {
+            id: 'phonk_drift_king',
+            genre: 'phonk',
+            titleAr: 'ملك الدريفت (Drift King)',
+            titleEn: 'Drift King Anthem',
+            bpm: 132,
+            mood: 'سرعة وحماس عالي 🔥',
+            desc: 'أصوات كاوبيل حادة وإيقاع فونك ناري لكروت الهجوم السريعة',
+            cowbellNotes: [740, 880, 988, 1108, 880, 740, 659, 740]
+        },
+        {
+            id: 'phonk_tokyo_shadow',
+            genre: 'phonk',
+            titleAr: 'طوكيو شادو (Tokyo Shadow)',
+            titleEn: 'Tokyo Shadow Phonk',
+            bpm: 130,
+            mood: 'غموض وهيبة مظلمة 🌑',
+            desc: 'نغمات كاوبيل شرقية عميقة مع بيز 808 زاحف',
+            cowbellNotes: [659, 784, 880, 1046, 880, 784, 659, 587]
+        },
+        {
+            id: 'phonk_neon_overdrive',
+            genre: 'phonk',
+            titleAr: 'نيون أوفر درايف (Neon Overdrive)',
+            titleEn: 'Neon Overdrive',
+            bpm: 136,
+            mood: 'انفجار طاقة ⚡',
+            desc: 'إيقاع سباق سيارات متسارع يرفع الأدرينالين',
+            cowbellNotes: [880, 988, 1175, 1318, 1175, 988, 880, 784]
+        },
+        {
+            id: 'phonk_midnight_rider',
+            genre: 'phonk',
+            titleAr: 'فارس الليل (Midnight Phonk)',
+            titleEn: 'Midnight Phonk Rider',
+            bpm: 128,
+            mood: 'أجواء ليلية سينمائية 🏎️',
+            desc: 'بيز ثقيل مع أصوات تيربو وتدرجات سنث متناغمة',
+            cowbellNotes: [587, 659, 784, 880, 784, 659, 587, 523]
+        },
+        {
+            id: 'phonk_brazilian_rage',
+            genre: 'phonk',
+            titleAr: 'فونك برازيلي ريج (Brazilian Rage)',
+            titleEn: 'Brazilian Phonk Rage',
+            bpm: 138,
+            mood: 'ترند تيك توك الأول 🇧🇷',
+            desc: 'ضربات درامز برازيلية حماسية ومميزة جداً لكروت المهارات',
+            cowbellNotes: [740, 880, 1108, 1480, 1108, 880, 740, 659]
+        },
+        {
+            id: 'phonk_cyber_ghost',
+            genre: 'phonk',
+            titleAr: 'شبح السايبر (Cyber Ghost)',
+            titleEn: 'Cyber Ghost Phonk',
+            bpm: 130,
+            mood: 'رعب تكتيكي وسرعة 👻',
+            desc: 'مؤثرات ديجيتال متداخلة مع كاوبيل إيقاعي مخيف',
+            cowbellNotes: [622, 698, 830, 932, 830, 698, 622, 554]
+        },
+        {
+            id: 'phonk_nightcore_rush',
+            genre: 'phonk',
+            titleAr: 'نايت كور راش (Nightcore Rush)',
+            titleEn: 'Nightcore Rush Phonk',
+            bpm: 140,
+            mood: 'سرعة خارقة 140 BPM 🚀',
+            desc: 'تراك فائق السرعة لكروت الـ Pace 99 والأجنحة السريعة',
+            cowbellNotes: [880, 1046, 1175, 1397, 1175, 1046, 880, 784]
+        },
+        {
+            id: 'phonk_underground_clash',
+            genre: 'phonk',
+            titleAr: 'صراع الشوارع (Underground Clash)',
+            titleEn: 'Underground Clash',
+            bpm: 132,
+            mood: 'تحدي قوي ⚔️',
+            desc: 'إيقاع شوارع خام بمستوى صوت جهير فائق القوة',
+            cowbellNotes: [659, 740, 880, 988, 880, 740, 659, 587]
+        },
+
+        // --- 2. FOOTBALL DRILL & TRAP (8 tracks) ---
+        {
+            id: 'drill_london_808',
+            genre: 'drill',
+            titleAr: 'دريل لندن 808 (London 808 Drill)',
+            titleEn: 'London 808 Football Drill',
+            bpm: 140,
+            mood: 'هيبة كروية إنجليزية 🏴󠁧󠁢󠁥󠁮󠁧󠁿',
+            desc: 'انزلاقات بيز 808 الشهيرة مع سنيير حاد وهاي هات ثلاثي متدحرج',
+            bassNotes: [55.0, 43.65, 65.41, 58.27]
+        },
+        {
+            id: 'drill_golden_boot',
+            genre: 'drill',
+            titleAr: 'الحذاء الذهبي (Golden Boot Trap)',
+            titleEn: 'Golden Boot Trap',
+            bpm: 135,
+            mood: 'ثقة الهدافين ⚽',
+            desc: 'تراب ثقيل متناسق مع كروت المهاجمين وأهداف الـ Finisher',
+            bassNotes: [49.0, 41.2, 58.27, 49.0]
+        },
+        {
+            id: 'drill_wembley_slide',
+            genre: 'drill',
+            titleAr: 'ويمبلي سلايد (Wembley 808 Slide)',
+            titleEn: 'Wembley Slide Anthem',
+            bpm: 142,
+            mood: 'زلزال الملاعب 🏟️',
+            desc: 'تدرج جهير عميق يعطي وزناً وهيبة ضخمة للريلز عند استعراض اللاعب',
+            bassNotes: [51.91, 38.89, 61.74, 51.91]
+        },
+        {
+            id: 'drill_striker_mode',
+            genre: 'drill',
+            titleAr: 'وضع المهاجم 140 (Striker Mode)',
+            titleEn: 'Striker Mode 140',
+            bpm: 140,
+            mood: 'هجوم كاسح 🎯',
+            desc: 'إيقاع ضربات حاسمة وهاي هاتس مكثفة تركز انتباه المشاهد',
+            bassNotes: [58.27, 49.0, 65.41, 55.0]
+        },
+        {
+            id: 'drill_ultimate_team',
+            genre: 'drill',
+            titleAr: 'ألتميت تيم بيلد (Ultimate Team Drill)',
+            titleEn: 'Ultimate Team Drill',
+            bpm: 136,
+            mood: 'تشكيلة المليارات 👑',
+            desc: 'مزيج تراب حديث يركز على الفخامة وقوة التشكيلة',
+            bassNotes: [43.65, 51.91, 58.27, 65.41]
+        },
+        {
+            id: 'drill_street_panenka',
+            genre: 'drill',
+            titleAr: 'بانينكا الشوارع (Street Panenka)',
+            titleEn: 'Street Panenka Trap',
+            bpm: 130,
+            mood: 'مهارة وذكاء 🪄',
+            desc: 'إيقاع كروي فري ستايل حركي مع صدى مميز للكيك',
+            bassNotes: [65.41, 55.0, 49.0, 43.65]
+        },
+        {
+            id: 'drill_stadium_banger',
+            genre: 'drill',
+            titleAr: 'انفجار الاستاد (Stadium Banger)',
+            titleEn: 'Stadium Banger 808',
+            bpm: 144,
+            mood: 'أقصى ضغط جماهيري 🔥',
+            desc: 'ضربات دريل صلبة لا هوادة فيها لكروت الرانك رقم 1',
+            bassNotes: [55.0, 65.41, 73.42, 55.0]
+        },
+        {
+            id: 'drill_var_decision',
+            genre: 'drill',
+            titleAr: 'قرار الفار الحاسم (VAR Decision)',
+            titleEn: 'VAR Decision Dark Trap',
+            bpm: 134,
+            mood: 'ترقب وحسم ⏱️',
+            desc: 'نبضات ترقب متقطعة تتفجر عند ظهور سعر الكوينز',
+            bassNotes: [46.25, 41.2, 55.0, 46.25]
+        },
+
+        // --- 3. CHAMPIONS ORCHESTRAL (6 tracks) ---
+        {
+            id: 'champ_anthem_hype',
+            genre: 'champions',
+            titleAr: 'نشيد الأبطال الحماسي (Champions Anthem Hype)',
+            titleEn: 'Champions Anthem Hype',
+            bpm: 124,
+            mood: 'مجد دوري الأبطال 🏆',
+            desc: 'أبواق نحاسية ملحمية مع إيقاع عصري لكروت الـ TOTY والأيقونات'
+        },
+        {
+            id: 'champ_orchestral_glory',
+            genre: 'champions',
+            titleAr: 'مجد الأوركسترا (Orchestral Glory)',
+            titleEn: 'Orchestral Glory',
+            bpm: 120,
+            mood: 'فخامة ملكية 👑',
+            desc: 'وتريات ملحمية تصاعدية تناسب البطاقات الذهبية الاستثنائية'
+        },
+        {
+            id: 'champ_golden_trophy',
+            genre: 'champions',
+            titleAr: 'الكأس الذهبية (Golden Trophy Fanfare)',
+            titleEn: 'Golden Trophy Fanfare',
+            bpm: 126,
+            mood: 'تتويج الأساطير 🥇',
+            desc: 'لحن نصر احتفالي قوي يمنح شعور الإنجاز والبطولة'
+        },
+        {
+            id: 'champ_stadium_epic',
+            genre: 'champions',
+            titleAr: 'دراما الملاعب الملحمية (Stadium Epic Drama)',
+            titleEn: 'Stadium Epic Drama',
+            bpm: 118,
+            mood: 'توتر وسينما 🎬',
+            desc: 'أصوات أوركسترا سينمائية تهيئ المشاهد لمفاجأة كبرى'
+        },
+        {
+            id: 'champ_world_cup',
+            genre: 'champions',
+            titleAr: 'أفق المونديال (World Cup Horizon)',
+            titleEn: 'World Cup Horizon',
+            bpm: 125,
+            mood: 'أجواء بطولات كبرى 🌍',
+            desc: 'إيقاع بطولي يجمع بين دقات التيمباني وسنث الملاعب الحديثة'
+        },
+        {
+            id: 'champ_symphony_victory',
+            genre: 'champions',
+            titleAr: 'سمفونية الانتصار (Symphony of Victory)',
+            titleEn: 'Symphony of Victory',
+            bpm: 128,
+            mood: 'فرحة الفوز بالدقيقة 90 ⚽',
+            desc: 'تصاعد سريع يختتم بإيقاع قوي عند عرض كروت التوب 1'
+        },
+
+        // --- 4. CYBER GAMING & SYNTHWAVE (6 tracks) ---
+        {
+            id: 'cyber_fut_2077',
+            genre: 'cyber',
+            titleAr: 'سايبر فيفا 2077 (Cyber FUT 2077)',
+            titleEn: 'Cyber FUT 2077',
+            bpm: 128,
+            mood: 'مستقبل ونيون ديجيتال 🤖',
+            desc: 'ألحان سنثويف مستقبلية تناسب تصاميم الكروت الإلكترونية الحديثة'
+        },
+        {
+            id: 'cyber_synthwave_84',
+            genre: 'cyber',
+            titleAr: 'سنثويف 1984 (Retro Synthwave 84)',
+            titleEn: 'Retro Synthwave 84',
+            bpm: 122,
+            mood: 'كلاسيكي عتيق وفخم 🕹️',
+            desc: 'نغمات ريترو الثمانينات دافئة ومميزة تناسب كروت الأساطير والـ Icons'
+        },
+        {
+            id: 'cyber_glitch_overdrive',
+            genre: 'cyber',
+            titleAr: 'غليتش أرينا (Glitch Arena Electro)',
+            titleEn: 'Glitch Arena Electro',
+            bpm: 130,
+            mood: 'أكشن وتكنولوجيا 👾',
+            desc: 'مؤثرات ديجيتال متقطعة مع بيز إلكتروني قوي'
+        },
+        {
+            id: 'cyber_digital_stadium',
+            genre: 'cyber',
+            titleAr: 'الاستاد الرقمي (Digital Stadium)',
+            titleEn: 'Digital Stadium Pulse',
+            bpm: 126,
+            mood: 'حماسي تقني 🌐',
+            desc: 'إيقاع ديجيتال ثابت ومنظم يبرز تفاصيل الأرقام والتقييمات بدقة'
+        },
+        {
+            id: 'cyber_hologram_pulse',
+            genre: 'cyber',
+            titleAr: 'نبض الهولوجرام (Hologram Pulse)',
+            titleEn: 'Hologram Pulse',
+            bpm: 132,
+            mood: 'خيال علمي وسرعة 🌌',
+            desc: 'طبقات صوتية ثلاثية الأبعاد تعزز تأثير البطاقات المتحركة 3D'
+        },
+        {
+            id: 'cyber_pixel_arena',
+            genre: 'cyber',
+            titleAr: 'حلبة البكسل (Pixel Arena Arcade)',
+            titleEn: 'Pixel Arena Arcade',
+            bpm: 134,
+            mood: 'طاقة ألعاب أركيد 🎮',
+            desc: 'أصوات ألعاب كلاسيكية مع إيقاع إلكتروني سريع'
+        },
+
+        // --- 5. LUXURY CHILL & LOFI (5 tracks) ---
+        {
+            id: 'lofi_midnight_packs',
+            genre: 'lofi',
+            titleAr: 'باكات منتصف الليل (Midnight Packs Chill)',
+            titleEn: 'Midnight Packs Chill',
+            bpm: 88,
+            mood: 'هدوء واسترخاء ليلي 🌙',
+            desc: 'بيانو رودز دافئ مع دقات بوم باب هادئة وخربشة فينيل مريحة'
+        },
+        {
+            id: 'lofi_smooth_chemistry',
+            genre: 'lofi',
+            titleAr: 'كيمياء متناغمة (Smooth Chemistry)',
+            titleEn: 'Smooth Chemistry Lofi',
+            bpm: 90,
+            mood: 'سلاسة وتناغم ☕',
+            desc: 'ألحان مريحة للعين والأذن تتيح للمشاهد قراءة إحصائيات الكروت بروقان'
+        },
+        {
+            id: 'lofi_sunday_fut',
+            genre: 'lofi',
+            titleAr: 'أحد الألتميت تيم (Cozy Sunday FUT)',
+            titleEn: 'Cozy Sunday FUT',
+            bpm: 85,
+            mood: 'استرخاء ونوستالجيا 🛋️',
+            desc: 'إيقاع لوفاي راقي ومناسب لشروحات التكتيكات وبناء التشكيلات'
+        },
+        {
+            id: 'lofi_market_trader',
+            genre: 'lofi',
+            titleAr: 'تداول سوق الانتقالات (Market Trader Lofi)',
+            titleEn: 'Market Trader Lofi',
+            bpm: 92,
+            mood: 'تركيز وتجارة 📈',
+            desc: 'موسيقى هادئة تمنح شعور الاحترافية والتداول الذكي لكروت الكوينز'
+        },
+        {
+            id: 'lofi_sunset_lounge',
+            genre: 'lofi',
+            titleAr: 'لاونج الغروب الكروي (Sunset FUT Lounge)',
+            titleEn: 'Sunset FUT Lounge',
+            bpm: 86,
+            mood: 'غروب هادئ وأنيق 🌇',
+            desc: 'كوردات جاز ناعمة مع بيز دافئ يعطي فخامة راقية للريل'
+        }
+    ];
+
     const defaultAudioConfig = {
         masterEnabled: true,
         sfxEnabled: true,
         bgmEnabled: true,
         sfxVolume: 0.85,
         bgmVolume: 0.50,
-        bgmType: 'ambient_hype', // 'ambient_hype' | 'custom'
-        customBgmName: ''
+        bgmType: 'library', // 'library' | 'custom'
+        selectedTrackId: 'drill_london_808',
+        customBgmName: '',
+        selectedCategory: 'all'
     };
 
     let audioState = { ...defaultAudioConfig };
     let customAudioBuffer = null;
-    let synthHypeBuffer = null;
+    const synthTrackCache = new Map();
     let isSynthRendering = false;
     let activeBgmSource = null;
     let activeBgmGain = null;
     let isBgmPlaying = false;
-    let isBgmAuditioning = false;
+    let auditionTrackId = null;
 
     function loadSavedAudioState() {
         try {
             const saved = localStorage.getItem(AUDIO_STORAGE_KEY);
             if (saved) {
-                audioState = { ...defaultAudioConfig, ...JSON.parse(saved) };
+                const parsed = JSON.parse(saved);
+                audioState = { ...defaultAudioConfig, ...parsed };
+                if (!REELS_MUSIC_LIBRARY.some(t => t.id === audioState.selectedTrackId)) {
+                    audioState.selectedTrackId = 'drill_london_808';
+                }
             }
         } catch (e) {}
     }
@@ -345,74 +679,156 @@ window.ReelsEngine = (function() {
                 sfxVolume: audioState.sfxVolume,
                 bgmVolume: audioState.bgmVolume,
                 bgmType: audioState.bgmType,
-                customBgmName: audioState.customBgmName
+                selectedTrackId: audioState.selectedTrackId,
+                customBgmName: audioState.customBgmName,
+                selectedCategory: audioState.selectedCategory
             }));
         } catch (e) {}
     }
 
-    // 1. Procedural Coin Jingle / Cash Chime (EA FC Coin Audio Ding)
-    function playCoinSound(customDest = null, volScale = 1.0, ctxOverride = null) {
+    // =========================================================================
+    // ---- 1. DISTINCT PROCEDURAL SOUND EFFECTS (SFX SUITE) ----
+    // =========================================================================
+
+    // 1.1 Authentic Cash Register Cha-Ching & Gold Coins (FC Coin Price Reveal)
+    // Character: Crisp mechanical latch click ("كا-") + high sparkling twin bells ("-تشنغ!") + falling coins
+    function playCoinCashRegisterSound(customDest = null, volScale = 1.0, ctxOverride = null, timeOffset = 0) {
         if (!audioState.masterEnabled || !audioState.sfxEnabled) return;
         const ctx = ctxOverride || getAudioContext();
         if (!ctx) return;
 
         const masterVol = Math.max(0.01, audioState.sfxVolume * volScale);
         const outNode = customDest || ctx.destination;
-        const mainGain = ctx.createGain();
-        mainGain.connect(outNode);
+        const now = ctx.currentTime + Math.max(0, timeOffset);
 
-        const now = ctx.currentTime;
+        // 1. "Cha-" (Mechanical register drawer latch pop)
+        const clickLen = Math.floor(ctx.sampleRate * 0.045);
+        const clickBuf = ctx.createBuffer(1, clickLen, ctx.sampleRate);
+        const clickData = clickBuf.getChannelData(0);
+        for (let i = 0; i < clickLen; i++) clickData[i] = (Math.random() * 2 - 1) * 0.85;
+        const clickSrc = ctx.createBufferSource();
+        clickSrc.buffer = clickBuf;
+        const clickFilter = ctx.createBiquadFilter();
+        clickFilter.type = 'bandpass';
+        clickFilter.frequency.setValueAtTime(2600, now);
+        clickFilter.Q.setValueAtTime(2.0, now);
+        const clickGain = ctx.createGain();
+        clickGain.gain.setValueAtTime(0.55 * masterVol, now);
+        clickGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.04);
+        clickSrc.connect(clickFilter);
+        clickFilter.connect(clickGain);
+        clickGain.connect(outNode);
+        clickSrc.start(now);
 
-        // Two staggered metallic chimes for realistic gold coin clink
-        // First Ping
+        // 2. "-Ching!" (Twin brilliant cash register bells)
+        const tChing = now + 0.035;
         [
-            { freq: 1950, type: 'sine', vol: 0.35, dur: 0.38 },
-            { freq: 2450, type: 'sine', vol: 0.28, dur: 0.32 },
-            { freq: 3120, type: 'triangle', vol: 0.22, dur: 0.28 }
-        ].forEach(cfg => {
+            { freq: 2489, type: 'sine', vol: 0.55, dur: 0.55 },
+            { freq: 3296, type: 'triangle', vol: 0.42, dur: 0.48 },
+            { freq: 4186, type: 'sine', vol: 0.28, dur: 0.38 }
+        ].forEach(b => {
             const osc = ctx.createOscillator();
             const g = ctx.createGain();
-            osc.type = cfg.type;
-            osc.frequency.setValueAtTime(cfg.freq, now);
-            g.gain.setValueAtTime(0.001, now);
-            g.gain.linearRampToValueAtTime(cfg.vol * masterVol, now + 0.004);
-            g.gain.exponentialRampToValueAtTime(0.0001, now + cfg.dur);
+            osc.type = b.type;
+            osc.frequency.setValueAtTime(b.freq, tChing);
+            g.gain.setValueAtTime(0.001, tChing);
+            g.gain.linearRampToValueAtTime(b.vol * masterVol, tChing + 0.005);
+            g.gain.exponentialRampToValueAtTime(0.0001, tChing + b.dur);
             osc.connect(g);
-            g.connect(mainGain);
-            osc.start(now);
-            osc.stop(now + cfg.dur + 0.05);
+            g.connect(outNode);
+            osc.start(tChing);
+            osc.stop(tChing + b.dur + 0.05);
         });
 
-        // Second Ping (staggered by 65ms at higher harmonic pitch)
-        const t2 = now + 0.065;
+        // 3. Gold Coins Cascade (3 staggered micro-pings)
         [
-            { freq: 2150, type: 'sine', vol: 0.40, dur: 0.45 },
-            { freq: 2700, type: 'sine', vol: 0.32, dur: 0.40 },
-            { freq: 3450, type: 'triangle', vol: 0.25, dur: 0.35 }
-        ].forEach(cfg => {
+            { tOffset: 0.09, freq: 2960, dur: 0.32, vol: 0.32 },
+            { tOffset: 0.16, freq: 3720, dur: 0.28, vol: 0.28 },
+            { tOffset: 0.23, freq: 4430, dur: 0.25, vol: 0.22 }
+        ].forEach(cp => {
+            const pingTime = now + cp.tOffset;
             const osc = ctx.createOscillator();
             const g = ctx.createGain();
-            osc.type = cfg.type;
-            osc.frequency.setValueAtTime(cfg.freq, t2);
-            g.gain.setValueAtTime(0.001, t2);
-            g.gain.linearRampToValueAtTime(cfg.vol * masterVol, t2 + 0.004);
-            g.gain.exponentialRampToValueAtTime(0.0001, t2 + cfg.dur);
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(cp.freq, pingTime);
+            g.gain.setValueAtTime(0.001, pingTime);
+            g.gain.linearRampToValueAtTime(cp.vol * masterVol, pingTime + 0.004);
+            g.gain.exponentialRampToValueAtTime(0.0001, pingTime + cp.dur);
             osc.connect(g);
-            g.connect(mainGain);
-            osc.start(t2);
-            osc.stop(t2 + cfg.dur + 0.05);
+            g.connect(outNode);
+            osc.start(pingTime);
+            osc.stop(pingTime + cp.dur + 0.05);
         });
     }
 
-    // 2. Procedural Whoosh / Fast Cinematic Swoosh
-    function playWhooshSound(customDest = null, volScale = 1.0, ctxOverride = null) {
+    // 1.2 Distinct Player Card Physical Slam (Card Reveal & Entry)
+    // Character: Heavy low sub-bass pitch drop + physical cardboard impact snap + subtle electric energy swell
+    function playCardSlamSound(customDest = null, volScale = 1.0, ctxOverride = null, timeOffset = 0) {
         if (!audioState.masterEnabled || !audioState.sfxEnabled) return;
         const ctx = ctxOverride || getAudioContext();
         if (!ctx) return;
 
         const masterVol = Math.max(0.01, audioState.sfxVolume * volScale);
         const outNode = customDest || ctx.destination;
-        const now = ctx.currentTime;
+        const now = ctx.currentTime + Math.max(0, timeOffset);
+        const dur = 0.45;
+
+        // 1. Heavy physical sub-bass thud (card hitting the pitch/ground)
+        const subOsc = ctx.createOscillator();
+        const subGain = ctx.createGain();
+        subOsc.type = 'sine';
+        subOsc.frequency.setValueAtTime(115, now);
+        subOsc.frequency.exponentialRampToValueAtTime(36, now + 0.22);
+        subGain.gain.setValueAtTime(0.95 * masterVol, now);
+        subGain.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+        subOsc.connect(subGain);
+        subGain.connect(outNode);
+        subOsc.start(now);
+        subOsc.stop(now + dur + 0.05);
+
+        // 2. Physical cardboard slap (textured bandpass noise crack)
+        const snapLen = Math.floor(ctx.sampleRate * 0.08);
+        const snapBuf = ctx.createBuffer(1, snapLen, ctx.sampleRate);
+        const snapData = snapBuf.getChannelData(0);
+        for (let i = 0; i < snapLen; i++) snapData[i] = (Math.random() * 2 - 1) * 0.9;
+        const snapSrc = ctx.createBufferSource();
+        snapSrc.buffer = snapBuf;
+        const snapFilter = ctx.createBiquadFilter();
+        snapFilter.type = 'bandpass';
+        snapFilter.frequency.setValueAtTime(1350, now);
+        snapFilter.Q.setValueAtTime(3.0, now);
+        const snapGain = ctx.createGain();
+        snapGain.gain.setValueAtTime(0.75 * masterVol, now);
+        snapGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.075);
+        snapSrc.connect(snapFilter);
+        snapFilter.connect(snapGain);
+        snapGain.connect(outNode);
+        snapSrc.start(now);
+
+        // 3. Card Holo/Promo Energy Swell
+        const holoOsc = ctx.createOscillator();
+        const holoGain = ctx.createGain();
+        holoOsc.type = 'triangle';
+        holoOsc.frequency.setValueAtTime(440, now);
+        holoOsc.frequency.exponentialRampToValueAtTime(160, now + 0.24);
+        holoGain.gain.setValueAtTime(0.001, now);
+        holoGain.gain.linearRampToValueAtTime(0.35 * masterVol, now + 0.015);
+        holoGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.28);
+        holoOsc.connect(holoGain);
+        holoGain.connect(outNode);
+        holoOsc.start(now);
+        holoOsc.stop(now + 0.32);
+    }
+
+    // 1.3 Procedural Fast Whoosh / Cinematic Slide Transition
+    function playWhooshSound(customDest = null, volScale = 1.0, ctxOverride = null, timeOffset = 0) {
+        if (!audioState.masterEnabled || !audioState.sfxEnabled) return;
+        const ctx = ctxOverride || getAudioContext();
+        if (!ctx) return;
+
+        const masterVol = Math.max(0.01, audioState.sfxVolume * volScale);
+        const outNode = customDest || ctx.destination;
+        const now = ctx.currentTime + Math.max(0, timeOffset);
 
         const dur = 0.28;
         const bufferSize = Math.floor(ctx.sampleRate * dur);
@@ -445,18 +861,17 @@ window.ReelsEngine = (function() {
         noiseSrc.stop(now + dur + 0.02);
     }
 
-    // 3. Procedural Sub-Bass Cinematic Boom / Mystery Drop
-    function playBoomSound(customDest = null, volScale = 1.0, ctxOverride = null) {
+    // 1.4 Procedural Sub-Bass Boom / Mystery Card Intro Drop
+    function playBoomSound(customDest = null, volScale = 1.0, ctxOverride = null, timeOffset = 0) {
         if (!audioState.masterEnabled || !audioState.sfxEnabled) return;
         const ctx = ctxOverride || getAudioContext();
         if (!ctx) return;
 
         const masterVol = Math.max(0.01, audioState.sfxVolume * volScale);
         const outNode = customDest || ctx.destination;
-        const now = ctx.currentTime;
+        const now = ctx.currentTime + Math.max(0, timeOffset);
         const dur = 0.70;
 
-        // Sub Bass Sine with Pitch Drop
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.type = 'sine';
@@ -464,7 +879,7 @@ window.ReelsEngine = (function() {
         osc.frequency.exponentialRampToValueAtTime(40, now + 0.35);
 
         gain.gain.setValueAtTime(0.85 * masterVol, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + dur);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + dur);
 
         const filter = ctx.createBiquadFilter();
         filter.type = 'lowpass';
@@ -489,168 +904,478 @@ window.ReelsEngine = (function() {
         pFilter.frequency.setValueAtTime(600, now);
         const pGain = ctx.createGain();
         pGain.gain.setValueAtTime(0.35 * masterVol, now);
-        pGain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+        pGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.05);
         pSrc.connect(pFilter);
         pFilter.connect(pGain);
         pGain.connect(outNode);
         pSrc.start(now);
     }
 
-    // 4. Procedural Pop / Chirp for Badges & Buttons
-    function playPopSound(customDest = null, volScale = 1.0, ctxOverride = null) {
+    // 1.5 Authentic Referee Stadium Whistle
+    function playWhistleSound(customDest = null, volScale = 1.0, ctxOverride = null, timeOffset = 0) {
         if (!audioState.masterEnabled || !audioState.sfxEnabled) return;
         const ctx = ctxOverride || getAudioContext();
         if (!ctx) return;
+
         const masterVol = Math.max(0.01, audioState.sfxVolume * volScale);
         const outNode = customDest || ctx.destination;
-        const now = ctx.currentTime;
+        const now = ctx.currentTime + Math.max(0, timeOffset);
+        const dur = 0.35;
+
+        // Vibrato modulation (trill)
+        const lfo = ctx.createOscillator();
+        const lfoGain = ctx.createGain();
+        lfo.frequency.value = 26; // 26Hz whistle flutter
+        lfoGain.gain.value = 85;
+
+        const osc1 = ctx.createOscillator();
+        const osc2 = ctx.createOscillator();
+        const mainGain = ctx.createGain();
+
+        osc1.type = 'sine';
+        osc2.type = 'sine';
+        osc1.frequency.setValueAtTime(2850, now);
+        osc2.frequency.setValueAtTime(3120, now);
+
+        lfo.connect(osc1.frequency);
+        lfo.connect(osc2.frequency);
+
+        mainGain.gain.setValueAtTime(0.001, now);
+        mainGain.gain.linearRampToValueAtTime(0.45 * masterVol, now + 0.03);
+        mainGain.gain.setValueAtTime(0.40 * masterVol, now + dur - 0.05);
+        mainGain.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+
+        osc1.connect(mainGain);
+        osc2.connect(mainGain);
+        mainGain.connect(outNode);
+
+        lfo.start(now);
+        osc1.start(now);
+        osc2.start(now);
+        lfo.stop(now + dur + 0.05);
+        osc1.stop(now + dur + 0.05);
+        osc2.stop(now + dur + 0.05);
+    }
+
+    // 1.6 Stadium Crowd Cheer / Roar Swell
+    function playCrowdCheerSound(customDest = null, volScale = 1.0, ctxOverride = null, timeOffset = 0) {
+        if (!audioState.masterEnabled || !audioState.sfxEnabled) return;
+        const ctx = ctxOverride || getAudioContext();
+        if (!ctx) return;
+
+        const masterVol = Math.max(0.01, audioState.sfxVolume * volScale);
+        const outNode = customDest || ctx.destination;
+        const now = ctx.currentTime + Math.max(0, timeOffset);
+        const dur = 1.4;
+
+        const bufLen = Math.floor(ctx.sampleRate * dur);
+        const cBuf = ctx.createBuffer(2, bufLen, ctx.sampleRate);
+        for (let ch = 0; ch < 2; ch++) {
+            const data = cBuf.getChannelData(ch);
+            for (let i = 0; i < bufLen; i++) data[i] = (Math.random() * 2 - 1) * 0.7;
+        }
+
+        const src = ctx.createBufferSource();
+        src.buffer = cBuf;
+
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.setValueAtTime(650, now);
+        filter.frequency.exponentialRampToValueAtTime(1400, now + 0.5);
+        filter.frequency.exponentialRampToValueAtTime(550, now + dur);
+        filter.Q.setValueAtTime(1.5, now);
+
+        const gain = ctx.createGain();
+        gain.gain.setValueAtTime(0.001, now);
+        gain.gain.linearRampToValueAtTime(0.48 * masterVol, now + 0.35);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+
+        src.connect(filter);
+        filter.connect(gain);
+        gain.connect(outNode);
+
+        src.start(now);
+        src.stop(now + dur + 0.05);
+    }
+
+    // 1.7 Electric / Neon Zap
+    function playElectricZapSound(customDest = null, volScale = 1.0, ctxOverride = null, timeOffset = 0) {
+        if (!audioState.masterEnabled || !audioState.sfxEnabled) return;
+        const ctx = ctxOverride || getAudioContext();
+        if (!ctx) return;
+
+        const masterVol = Math.max(0.01, audioState.sfxVolume * volScale);
+        const outNode = customDest || ctx.destination;
+        const now = ctx.currentTime + Math.max(0, timeOffset);
+        const dur = 0.22;
+
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(750, now);
-        osc.frequency.exponentialRampToValueAtTime(1600, now + 0.045);
-        gain.gain.setValueAtTime(0.4 * masterVol, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(1850, now);
+        osc.frequency.exponentialRampToValueAtTime(260, now + dur);
+
+        gain.gain.setValueAtTime(0.45 * masterVol, now);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+
         osc.connect(gain);
         gain.connect(outNode);
         osc.start(now);
-        osc.stop(now + 0.055);
+        osc.stop(now + dur + 0.05);
     }
 
-    // 5. Offline Rendered Ambient Hype Beat Loop (7.5s, 128 BPM)
-    async function renderSynthHypeBuffer(sampleRate = 44100) {
-        if (synthHypeBuffer) return synthHypeBuffer;
-        if (isSynthRendering) {
-            await new Promise(r => setTimeout(r, 80));
-            return synthHypeBuffer;
-        }
-        isSynthRendering = true;
+    // 1.8 Rank Counting Crystal Bell
+    function playRankBellSound(customDest = null, volScale = 1.0, ctxOverride = null, timeOffset = 0) {
+        if (!audioState.masterEnabled || !audioState.sfxEnabled) return;
+        const ctx = ctxOverride || getAudioContext();
+        if (!ctx) return;
+
+        const masterVol = Math.max(0.01, audioState.sfxVolume * volScale);
+        const outNode = customDest || ctx.destination;
+        const now = ctx.currentTime + Math.max(0, timeOffset);
+        const dur = 0.45;
+
+        [
+            { freq: 1760, vol: 0.45 },
+            { freq: 2640, vol: 0.25 },
+            { freq: 3520, vol: 0.15 }
+        ].forEach(item => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(item.freq, now);
+            gain.gain.setValueAtTime(0.001, now);
+            gain.gain.linearRampToValueAtTime(item.vol * masterVol, now + 0.005);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+            osc.connect(gain);
+            gain.connect(outNode);
+            osc.start(now);
+            osc.stop(now + dur + 0.05);
+        });
+    }
+
+    // Backwards-compatible alias for Coin Sound
+    function playCoinSound(customDest = null, volScale = 1.0, ctxOverride = null) {
+        playCoinCashRegisterSound(customDest, volScale, ctxOverride);
+    }
+
+    // SFX Test Router
+    function testSfx(type) {
+        getAudioContext();
+        if (type === 'card_slam') playCardSlamSound(null, 1.0);
+        else if (type === 'coin') playCoinCashRegisterSound(null, 1.15);
+        else if (type === 'whoosh') playWhooshSound(null, 1.0);
+        else if (type === 'boom') playBoomSound(null, 1.0);
+        else if (type === 'whistle') playWhistleSound(null, 1.0);
+        else if (type === 'crowd') playCrowdCheerSound(null, 1.0);
+        else if (type === 'electric') playElectricZapSound(null, 1.0);
+        else if (type === 'rank_bell') playRankBellSound(null, 1.0);
+    }
+
+    // =========================================================================
+    // ---- 2. MULTI-GENRE PROCEDURAL TRACK SYNTHESIZER (33+ TRACKS) ----
+    // =========================================================================
+    async function renderProceduralTrack(track, sampleRate = 44100) {
+        if (!track) return null;
+        if (synthTrackCache.has(track.id)) return synthTrackCache.get(track.id);
+
+        const OfflineCtx = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+        if (!OfflineCtx) return null;
+
+        const bpm = track.bpm || 130;
+        const beatSec = 60 / bpm;
+        const totalBeats = 16; // 4 bars loop
+        const totalDur = totalBeats * beatSec;
 
         try {
-            const OfflineCtx = window.OfflineAudioContext || window.webkitOfflineAudioContext;
-            if (!OfflineCtx) return null;
-
-            const bpm = 128;
-            const beatSec = 60 / bpm; // ~0.46875s
-            const totalBeats = 16; // 4 bars
-            const totalDur = totalBeats * beatSec; // 7.5s
-
             const offCtx = new OfflineCtx(2, Math.ceil(sampleRate * totalDur), sampleRate);
+            const genre = track.genre || 'drill';
 
-            function scheduleKick(t) {
-                const osc = offCtx.createOscillator();
-                const gain = offCtx.createGain();
-                osc.frequency.setValueAtTime(135, t);
-                osc.frequency.exponentialRampToValueAtTime(45, t + 0.09);
-                gain.gain.setValueAtTime(0.85, t);
-                gain.gain.exponentialRampToValueAtTime(0.001, t + 0.28);
-                osc.connect(gain);
-                gain.connect(offCtx.destination);
-                osc.start(t);
-                osc.stop(t + 0.3);
-            }
-
-            function scheduleSnare(t) {
-                const bLen = Math.floor(sampleRate * 0.16);
-                const nBuf = offCtx.createBuffer(1, bLen, sampleRate);
-                const data = nBuf.getChannelData(0);
-                for (let i = 0; i < bLen; i++) data[i] = (Math.random() * 2 - 1);
-                const nSrc = offCtx.createBufferSource();
-                nSrc.buffer = nBuf;
-                const filter = offCtx.createBiquadFilter();
-                filter.type = 'highpass';
-                filter.frequency.value = 950;
-                const gain = offCtx.createGain();
-                gain.gain.setValueAtTime(0.42, t);
-                gain.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
-                nSrc.connect(filter);
-                filter.connect(gain);
-                gain.connect(offCtx.destination);
-                nSrc.start(t);
-            }
-
-            function scheduleHat(t, vol = 0.14) {
-                const bLen = Math.floor(sampleRate * 0.04);
-                const nBuf = offCtx.createBuffer(1, bLen, sampleRate);
-                const data = nBuf.getChannelData(0);
-                for (let i = 0; i < bLen; i++) data[i] = (Math.random() * 2 - 1);
-                const nSrc = offCtx.createBufferSource();
-                nSrc.buffer = nBuf;
-                const filter = offCtx.createBiquadFilter();
-                filter.type = 'highpass';
-                filter.frequency.value = 6800;
-                const gain = offCtx.createGain();
-                gain.gain.setValueAtTime(vol, t);
-                gain.gain.exponentialRampToValueAtTime(0.001, t + 0.035);
-                nSrc.connect(filter);
-                filter.connect(gain);
-                gain.connect(offCtx.destination);
-                nSrc.start(t);
-            }
-
-            function schedule808(t, freq, dur = 0.6) {
+            function scheduleKick(t, punchFreq = 140, endFreq = 42, dur = 0.26, vol = 0.85) {
                 const osc = offCtx.createOscillator();
                 const gain = offCtx.createGain();
                 osc.type = 'sine';
-                osc.frequency.setValueAtTime(freq, t);
-                gain.gain.setValueAtTime(0.65, t);
-                gain.gain.exponentialRampToValueAtTime(0.001, t + dur);
+                osc.frequency.setValueAtTime(punchFreq, t);
+                osc.frequency.exponentialRampToValueAtTime(endFreq, t + 0.08);
+                gain.gain.setValueAtTime(vol, t);
+                gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
                 osc.connect(gain);
                 gain.connect(offCtx.destination);
                 osc.start(t);
                 osc.stop(t + dur + 0.05);
             }
 
-            function scheduleSynthChord(t, freqs, dur = 1.6) {
-                freqs.forEach(f => {
+            function scheduleSnare(t, filterFreq = 1100, dur = 0.16, vol = 0.44) {
+                const bLen = Math.floor(sampleRate * dur);
+                const nBuf = offCtx.createBuffer(1, bLen, sampleRate);
+                const data = nBuf.getChannelData(0);
+                for (let i = 0; i < bLen; i++) data[i] = (Math.random() * 2 - 1);
+                const nSrc = offCtx.createBufferSource();
+                nSrc.buffer = nBuf;
+                const filter = offCtx.createBiquadFilter();
+                filter.type = 'highpass';
+                filter.frequency.value = filterFreq;
+                const gain = offCtx.createGain();
+                gain.gain.setValueAtTime(vol, t);
+                gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+                nSrc.connect(filter);
+                filter.connect(gain);
+                gain.connect(offCtx.destination);
+                nSrc.start(t);
+            }
+
+            function scheduleHat(t, vol = 0.13, dur = 0.038, highCut = 7200) {
+                const bLen = Math.floor(sampleRate * dur);
+                const nBuf = offCtx.createBuffer(1, bLen, sampleRate);
+                const data = nBuf.getChannelData(0);
+                for (let i = 0; i < bLen; i++) data[i] = (Math.random() * 2 - 1);
+                const nSrc = offCtx.createBufferSource();
+                nSrc.buffer = nBuf;
+                const filter = offCtx.createBiquadFilter();
+                filter.type = 'highpass';
+                filter.frequency.value = highCut;
+                const gain = offCtx.createGain();
+                gain.gain.setValueAtTime(vol, t);
+                gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+                nSrc.connect(filter);
+                filter.connect(gain);
+                gain.connect(offCtx.destination);
+                nSrc.start(t);
+            }
+
+            function schedule808(t, startFreq, slideFreq = null, dur = 0.7, vol = 0.7) {
+                const osc = offCtx.createOscillator();
+                const gain = offCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(startFreq, t);
+                if (slideFreq) {
+                    osc.frequency.setValueAtTime(startFreq, t + dur * 0.35);
+                    osc.frequency.exponentialRampToValueAtTime(slideFreq, t + dur * 0.75);
+                }
+                gain.gain.setValueAtTime(vol, t);
+                gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+                osc.connect(gain);
+                gain.connect(offCtx.destination);
+                osc.start(t);
+                osc.stop(t + dur + 0.05);
+            }
+
+            // Genre 1: PHONK
+            if (genre === 'phonk') {
+                const phonkKicks = [0, 1.75, 2.5, 4, 5.75, 6.5, 8, 9.75, 10.5, 12, 13.75, 14.5];
+                phonkKicks.forEach(b => scheduleKick(b * beatSec, 150, 44, 0.28, 0.9));
+                [2, 6, 10, 14].forEach(b => scheduleSnare(b * beatSec, 900, 0.18, 0.5));
+                for (let b = 0; b < totalBeats; b += 0.25) {
+                    scheduleHat(b * beatSec, (b % 1 === 0) ? 0.16 : 0.08, 0.03, 8000);
+                }
+                // Memphis Cowbell Melody
+                const bellNotes = track.cowbellNotes || [740, 880, 988, 1108, 880, 740, 659, 740];
+                const bellRhythm = [0, 0.75, 1.5, 2.25, 3.0, 3.5, 4.0, 4.75, 5.5, 6.25, 7.0, 7.5, 8.0, 8.75, 9.5, 10.25, 11.0, 11.5, 12.0, 12.75, 13.5, 14.25, 15.0];
+                bellRhythm.forEach((r, idx) => {
+                    const t = r * beatSec;
+                    const freq = bellNotes[idx % bellNotes.length];
                     const osc = offCtx.createOscillator();
-                    const gain = offCtx.createGain();
                     const filter = offCtx.createBiquadFilter();
-                    osc.type = 'sawtooth';
-                    osc.frequency.value = f;
-                    filter.type = 'lowpass';
-                    filter.frequency.setValueAtTime(1400, t);
-                    gain.gain.setValueAtTime(0.07, t);
-                    gain.gain.exponentialRampToValueAtTime(0.001, t + dur);
+                    const g = offCtx.createGain();
+                    osc.type = 'square';
+                    osc.frequency.value = freq;
+                    filter.type = 'bandpass';
+                    filter.frequency.value = freq * 1.05;
+                    filter.Q.value = 4.0;
+                    g.gain.setValueAtTime(0.22, t);
+                    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.18);
                     osc.connect(filter);
-                    filter.connect(gain);
-                    gain.connect(offCtx.destination);
+                    filter.connect(g);
+                    g.connect(offCtx.destination);
                     osc.start(t);
-                    osc.stop(t + dur + 0.05);
+                    osc.stop(t + 0.2);
+                });
+                // Distorted Sub Bass
+                schedule808(0 * beatSec, 46.25, 55.0, beatSec * 3.6, 0.75);
+                schedule808(4 * beatSec, 55.0, 61.74, beatSec * 3.6, 0.75);
+                schedule808(8 * beatSec, 61.74, 46.25, beatSec * 3.6, 0.75);
+                schedule808(12 * beatSec, 46.25, null, beatSec * 3.6, 0.75);
+            }
+            // Genre 2: DRILL
+            else if (genre === 'drill') {
+                const drillKicks = [0, 1.5, 4.5, 6, 8, 9.5, 12.5, 14];
+                drillKicks.forEach(b => scheduleKick(b * beatSec, 145, 40, 0.32, 0.95));
+                // Half-time snappy offbeat drill snare on beat 3 of each bar
+                [3, 7, 11, 15].forEach(b => scheduleSnare(b * beatSec, 1250, 0.15, 0.52));
+                // Rolling Triplet Hi-Hats
+                for (let b = 0; b < totalBeats; b += 0.5) {
+                    scheduleHat(b * beatSec, 0.13, 0.035, 7500);
+                    // Ratchet before snare (beats 2.5, 6.5, 10.5, 14.5)
+                    if ([2.5, 6.5, 10.5, 14.5].includes(b)) {
+                        for (let sub = 0.125; sub < 0.5; sub += 0.125) {
+                            scheduleHat((b + sub) * beatSec, 0.18, 0.02, 9000);
+                        }
+                    }
+                }
+                // Signature Sliding 808
+                const bNotes = track.bassNotes || [55.0, 43.65, 65.41, 58.27];
+                schedule808(0 * beatSec, bNotes[0], bNotes[1], beatSec * 3.6, 0.8);
+                schedule808(4 * beatSec, bNotes[1], bNotes[2], beatSec * 3.6, 0.8);
+                schedule808(8 * beatSec, bNotes[2], bNotes[3], beatSec * 3.6, 0.8);
+                schedule808(12 * beatSec, bNotes[3], bNotes[0], beatSec * 3.6, 0.8);
+                // Dark Piano Chords
+                const chordTimes = [0, 4, 8, 12];
+                const chords = [
+                    [220, 261.63, 329.63], // Am
+                    [174.61, 220, 261.63], // F
+                    [261.63, 329.63, 392], // C
+                    [196, 246.94, 293.66]  // G
+                ];
+                chordTimes.forEach((ct, i) => {
+                    chords[i].forEach(f => {
+                        const osc = offCtx.createOscillator();
+                        const g = offCtx.createGain();
+                        const flt = offCtx.createBiquadFilter();
+                        osc.type = 'triangle';
+                        osc.frequency.value = f;
+                        flt.type = 'lowpass';
+                        flt.frequency.setValueAtTime(800, ct * beatSec);
+                        g.gain.setValueAtTime(0.12, ct * beatSec);
+                        g.gain.exponentialRampToValueAtTime(0.0001, (ct + 3.5) * beatSec);
+                        osc.connect(flt);
+                        flt.connect(g);
+                        g.connect(offCtx.destination);
+                        osc.start(ct * beatSec);
+                        osc.stop((ct + 3.6) * beatSec);
+                    });
+                });
+            }
+            // Genre 3: CHAMPIONS
+            else if (genre === 'champions') {
+                // Timpani kicks
+                [0, 4, 8, 12].forEach(b => scheduleKick(b * beatSec, 110, 35, 0.45, 0.95));
+                // Snare rolls leading into beats 4, 8, 12, 16
+                [3, 7, 11, 15].forEach(b => {
+                    for (let r = 0; r < 4; r++) {
+                        scheduleSnare((b + r * 0.25) * beatSec, 1400, 0.08, 0.15 + r * 0.08);
+                    }
+                });
+                // Heroic Brass Horn Chords
+                const brassTimes = [0, 4, 8, 12];
+                const brassChords = [
+                    [146.83, 220, 293.66], // Dm
+                    [116.54, 174.61, 233.08], // Bb
+                    [130.81, 196, 261.63], // C
+                    [146.83, 220, 293.66]  // Dm
+                ];
+                brassTimes.forEach((bt, idx) => {
+                    const t = bt * beatSec;
+                    brassChords[idx].forEach(f => {
+                        const osc = offCtx.createOscillator();
+                        const filter = offCtx.createBiquadFilter();
+                        const g = offCtx.createGain();
+                        osc.type = 'sawtooth';
+                        osc.frequency.value = f;
+                        filter.type = 'lowpass';
+                        filter.frequency.setValueAtTime(350, t);
+                        filter.frequency.exponentialRampToValueAtTime(2200, t + 0.18);
+                        filter.frequency.exponentialRampToValueAtTime(800, t + beatSec * 3.5);
+                        g.gain.setValueAtTime(0.001, t);
+                        g.gain.linearRampToValueAtTime(0.18, t + 0.06);
+                        g.gain.exponentialRampToValueAtTime(0.0001, t + beatSec * 3.6);
+                        osc.connect(filter);
+                        filter.connect(g);
+                        g.connect(offCtx.destination);
+                        osc.start(t);
+                        osc.stop(t + beatSec * 3.8);
+                    });
+                });
+            }
+            // Genre 4: CYBER
+            else if (genre === 'cyber') {
+                // Driving 16th Bassline
+                for (let b = 0; b < totalBeats; b += 0.25) {
+                    const t = b * beatSec;
+                    const osc = offCtx.createOscillator();
+                    const flt = offCtx.createBiquadFilter();
+                    const g = offCtx.createGain();
+                    osc.type = 'sawtooth';
+                    const baseFreq = (b < 4) ? 65.41 : (b < 8) ? 73.42 : (b < 12) ? 82.41 : 65.41;
+                    osc.frequency.value = (b % 0.5 === 0) ? baseFreq : baseFreq * 2;
+                    flt.type = 'lowpass';
+                    flt.frequency.setValueAtTime(1400, t);
+                    g.gain.setValueAtTime(0.24, t);
+                    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.2);
+                    osc.connect(flt);
+                    flt.connect(g);
+                    g.connect(offCtx.destination);
+                    osc.start(t);
+                    osc.stop(t + 0.22);
+                }
+                // Retro Gated Snare
+                [2, 6, 10, 14].forEach(b => scheduleSnare(b * beatSec, 800, 0.14, 0.55));
+                // 4-on-the-floor Kicks
+                for (let b = 0; b < totalBeats; b += 1.0) {
+                    scheduleKick(b * beatSec, 135, 45, 0.22, 0.85);
+                }
+            }
+            // Genre 5: LOFI
+            else if (genre === 'lofi') {
+                // Warm Boom-Bap Kick
+                [0, 1.75, 4.25, 8, 9.75, 12.25].forEach(b => scheduleKick(b * beatSec, 115, 42, 0.32, 0.75));
+                // Dusty Snare
+                [2, 6, 10, 14].forEach(b => scheduleSnare(b * beatSec, 1600, 0.2, 0.38));
+                // Swing Hats
+                for (let b = 0; b < totalBeats; b += 0.5) {
+                    const swingOffset = (b % 1 !== 0) ? 0.04 : 0;
+                    scheduleHat((b + swingOffset) * beatSec, 0.09, 0.04, 6000);
+                }
+                // Warm Rhodes Chords
+                const lofiChords = [
+                    [174.61, 220, 261.63, 329.63], // Fmaj7
+                    [146.83, 174.61, 220, 261.63], // Dm7
+                    [164.81, 196, 246.94, 293.66], // Em7
+                    [130.81, 164.81, 196, 246.94]  // Cmaj7
+                ];
+                [0, 4, 8, 12].forEach((ct, i) => {
+                    const t = ct * beatSec;
+                    lofiChords[i].forEach(f => {
+                        const osc = offCtx.createOscillator();
+                        const g = offCtx.createGain();
+                        const flt = offCtx.createBiquadFilter();
+                        osc.type = 'triangle';
+                        osc.frequency.value = f;
+                        flt.type = 'lowpass';
+                        flt.frequency.setValueAtTime(1200, t);
+                        g.gain.setValueAtTime(0.08, t);
+                        g.gain.exponentialRampToValueAtTime(0.0001, t + beatSec * 3.7);
+                        osc.connect(flt);
+                        flt.connect(g);
+                        g.connect(offCtx.destination);
+                        osc.start(t);
+                        osc.stop(t + beatSec * 3.8);
+                    });
                 });
             }
 
-            const kickBeats = [0, 1.75, 2.5, 4, 5.75, 6.5, 8, 9.75, 10.5, 12, 13.75, 14.5];
-            const snareBeats = [2, 6, 10, 14];
-
-            kickBeats.forEach(b => scheduleKick(b * beatSec));
-            snareBeats.forEach(b => scheduleSnare(b * beatSec));
-
-            for (let b = 0; b < totalBeats; b += 0.5) {
-                scheduleHat(b * beatSec, (b % 1 === 0) ? 0.16 : 0.09);
-            }
-
-            schedule808(0 * beatSec, 43.65, beatSec * 3.5); // F1
-            schedule808(4 * beatSec, 51.91, beatSec * 3.5); // Ab1
-            schedule808(8 * beatSec, 58.27, beatSec * 3.5); // Bb1
-            schedule808(12 * beatSec, 65.41, beatSec * 3.5); // C2
-
-            scheduleSynthChord(0 * beatSec, [174.61, 207.65, 261.63]); // Fm
-            scheduleSynthChord(4 * beatSec, [207.65, 261.63, 311.13]); // Ab
-            scheduleSynthChord(8 * beatSec, [233.08, 277.18, 349.23]); // Bb
-            scheduleSynthChord(12 * beatSec, [261.63, 329.63, 392.00]); // C
-
-            synthHypeBuffer = await offCtx.startRendering();
-            return synthHypeBuffer;
+            const buffer = await offCtx.startRendering();
+            synthTrackCache.set(track.id, buffer);
+            return buffer;
         } catch (e) {
-            console.warn('[Reels Audio] Synth beat render error:', e.message);
+            console.warn('[Reels Audio] Track render note:', e.message);
             return null;
-        } finally {
-            isSynthRendering = false;
         }
     }
 
-    async function startBgm(customDest = null, ctxOverride = null) {
+    async function getTrackAudioBuffer(trackId, sampleRate = 44100) {
+        if (synthTrackCache.has(trackId)) return synthTrackCache.get(trackId);
+        const track = REELS_MUSIC_LIBRARY.find(t => t.id === trackId) || REELS_MUSIC_LIBRARY[0];
+        return await renderProceduralTrack(track, sampleRate);
+    }
+
+    async function renderSynthHypeBuffer(sampleRate = 44100) {
+        return await getTrackAudioBuffer(audioState.selectedTrackId, sampleRate);
+    }
+
+    // =========================================================================
+    // ---- 3. BGM PLAYBACK, AUDITIONING & TRACK SELECTION ----
+    // =========================================================================
+    async function startBgm(customDest = null, ctxOverride = null, trackIdOverride = null) {
         if (!audioState.masterEnabled || !audioState.bgmEnabled) return;
         const ctx = ctxOverride || getAudioContext();
         if (!ctx) return;
@@ -661,7 +1386,8 @@ window.ReelsEngine = (function() {
         if (audioState.bgmType === 'custom' && customAudioBuffer) {
             bufferToPlay = customAudioBuffer;
         } else {
-            bufferToPlay = await renderSynthHypeBuffer(ctx.sampleRate);
+            const trackId = trackIdOverride || audioState.selectedTrackId || 'drill_london_808';
+            bufferToPlay = await getTrackAudioBuffer(trackId, ctx.sampleRate);
         }
 
         if (!bufferToPlay) return;
@@ -681,6 +1407,7 @@ window.ReelsEngine = (function() {
             activeBgmSource = src;
             activeBgmGain = gainNode;
             isBgmPlaying = true;
+            if (trackIdOverride) auditionTrackId = trackIdOverride;
             updateAudioUiButtons();
         } catch (e) {
             console.warn('[Reels Audio] Failed to start BGM:', e.message);
@@ -700,26 +1427,52 @@ window.ReelsEngine = (function() {
             activeBgmGain = null;
         }
         isBgmPlaying = false;
-        isBgmAuditioning = false;
+        auditionTrackId = null;
         updateAudioUiButtons();
     }
 
-    function toggleBgmAudition() {
-        if (isBgmAuditioning || isBgmPlaying) {
+    function toggleBgmAudition(trackId = null) {
+        const targetTrack = trackId || audioState.selectedTrackId;
+        if (isBgmPlaying && auditionTrackId === targetTrack) {
             stopBgm();
             if (window.showCopyToast) window.showCopyToast('تم إيقاف معاينة الموسيقى ⏹️');
         } else {
-            isBgmAuditioning = true;
-            startBgm();
-            if (window.showCopyToast) window.showCopyToast('بدء معاينة موسيقى الخلفية 🎵');
+            startBgm(null, null, targetTrack);
+            const trackObj = REELS_MUSIC_LIBRARY.find(t => t.id === targetTrack);
+            if (window.showCopyToast) {
+                window.showCopyToast(`بدء استماع: ${trackObj ? trackObj.titleAr : 'تراك الريل'} 🎵`);
+            }
+        }
+    }
+
+    function selectMusicTrack(trackId) {
+        const track = REELS_MUSIC_LIBRARY.find(t => t.id === trackId);
+        if (!track) return;
+        audioState.selectedTrackId = trackId;
+        audioState.bgmType = 'library';
+        saveAudioState();
+
+        if (isBgmPlaying) {
+            startBgm(null, null, trackId);
+        }
+
+        renderEditorControls();
+        renderMusicModalHtml();
+        if (window.showCopyToast) {
+            window.showCopyToast(`تم اعتماد التراك: ${track.titleAr} 👑🎵`);
         }
     }
 
     function updateAudioUiButtons() {
         const btn = document.getElementById('btnBgmAudition');
         if (btn) {
-            btn.className = `px-2 py-0.5 rounded-lg text-[10px] font-black transition ${isBgmPlaying ? 'bg-amber-500 text-slate-950 animate-pulse' : 'bg-zinc-700 hover:bg-zinc-600 text-zinc-300'}`;
+            btn.className = `px-2.5 py-1 rounded-lg text-[10px] font-black transition cursor-pointer ${isBgmPlaying ? 'bg-amber-500 text-slate-950 animate-pulse font-black' : 'bg-zinc-700 hover:bg-zinc-600 text-zinc-300'}`;
             btn.textContent = isBgmPlaying ? '⏸️ إيقاف المعاينة' : '▶️ استماع للتراك';
+        }
+        // Update modal audition buttons if open
+        const modal = document.getElementById('reelsMusicModal');
+        if (modal && !modal.classList.contains('hidden')) {
+            renderMusicModalHtml();
         }
     }
 
@@ -760,12 +1513,12 @@ window.ReelsEngine = (function() {
     function removeCustomBgm() {
         stopBgm();
         customAudioBuffer = null;
-        audioState.bgmType = 'ambient_hype';
+        audioState.bgmType = 'library';
         audioState.customBgmName = '';
         saveAudioState();
         renderEditorControls();
         if (window.showCopyToast) {
-            window.showCopyToast('تمت استعادة الإيقاع الكروي المدمج الافتراضي 🎵');
+            window.showCopyToast('تمت استعادة مكتبة الموسيقى المدمجة 🎵');
         }
     }
 
@@ -815,41 +1568,250 @@ window.ReelsEngine = (function() {
         saveAudioState();
     }
 
-    function testSfx(type) {
-        getAudioContext();
-        if (type === 'coin') playCoinSound(null, 1.0);
-        else if (type === 'whoosh') playWhooshSound(null, 1.0);
-        else if (type === 'boom') playBoomSound(null, 1.0);
-        else if (type === 'pop') playPopSound(null, 1.0);
+    // =========================================================================
+    // ---- 4. 33 TRACKS MUSIC BROWSER MODAL ----
+    // =========================================================================
+    let musicModalFilter = { category: 'all', search: '' };
+
+    function openMusicModal() {
+        let modal = document.getElementById('reelsMusicModal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'reelsMusicModal';
+            document.body.appendChild(modal);
+        }
+        modal.className = 'fixed inset-0 z-[99999] bg-black/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-5';
+        renderMusicModalHtml();
+
+        const escHandler = (e) => {
+            if (e.key === 'Escape') {
+                closeMusicModal();
+                window.removeEventListener('keydown', escHandler);
+            }
+        };
+        window.addEventListener('keydown', escHandler);
     }
 
+    function closeMusicModal() {
+        const modal = document.getElementById('reelsMusicModal');
+        if (modal) {
+            modal.className = 'hidden';
+        }
+        if (isBgmPlaying && auditionTrackId) {
+            stopBgm();
+        }
+    }
+
+    function filterMusicCategory(category) {
+        musicModalFilter.category = category;
+        renderMusicModalHtml();
+    }
+
+    function filterMusicSearch(query) {
+        musicModalFilter.search = query.toLowerCase();
+        renderMusicModalHtml();
+    }
+
+    function renderMusicModalHtml() {
+        const modal = document.getElementById('reelsMusicModal');
+        if (!modal) return;
+
+        const categories = [
+            { id: 'all', label: 'الكل (33)', icon: '⚡' },
+            { id: 'phonk', label: 'فونك ودريفت (8)', icon: '🔥' },
+            { id: 'drill', label: 'دريل وتراب كروي (8)', icon: '⚽' },
+            { id: 'champions', label: 'أوركسترا الأبطال (6)', icon: '🏆' },
+            { id: 'cyber', label: 'سايبر جيمنج (6)', icon: '🎮' },
+            { id: 'lofi', label: 'لوفاي واسترخاء (5)', icon: '☕' }
+        ];
+
+        let filtered = REELS_MUSIC_LIBRARY;
+        if (musicModalFilter.category !== 'all') {
+            filtered = filtered.filter(t => t.genre === musicModalFilter.category);
+        }
+        if (musicModalFilter.search && musicModalFilter.search.trim()) {
+            const q = musicModalFilter.search.trim().toLowerCase();
+            filtered = filtered.filter(t => 
+                t.titleAr.toLowerCase().includes(q) ||
+                t.titleEn.toLowerCase().includes(q) ||
+                (t.desc && t.desc.toLowerCase().includes(q)) ||
+                (t.mood && t.mood.toLowerCase().includes(q))
+            );
+        }
+
+        modal.innerHTML = `
+            <div class="relative w-full max-w-4xl max-h-[90vh] bg-slate-950 border border-amber-500/40 rounded-3xl shadow-2xl flex flex-col overflow-hidden text-white" onclick="event.stopPropagation()">
+                <!-- Modal Header -->
+                <div class="p-4 sm:p-5 border-b border-zinc-800 flex items-center justify-between bg-gradient-to-r from-zinc-900 via-slate-900 to-zinc-900">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-xl shadow-inner">
+                            🎵
+                        </div>
+                        <div>
+                            <h3 class="text-base sm:text-lg font-black text-white flex items-center gap-2">
+                                <span>مكتبة موسيقى وتراكات الريلز</span>
+                                <span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/40 font-mono font-bold">33 تراك</span>
+                            </h3>
+                            <p class="text-xs text-zinc-400">تراكات حماسية وتريند تناسب EA FC 27 وتيك توك بدون حقوق</p>
+                        </div>
+                    </div>
+                    <button type="button" onclick="ReelsEngine.closeMusicModal()" class="w-9 h-9 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white flex items-center justify-center text-lg font-bold transition">
+                        ✕
+                    </button>
+                </div>
+
+                <!-- Filters & Search Bar -->
+                <div class="p-3 sm:p-4 bg-zinc-900/90 border-b border-zinc-800 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                    <!-- Category Tabs -->
+                    <div class="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-thin">
+                        ${categories.map(c => `
+                            <button type="button" onclick="ReelsEngine.filterMusicCategory('${c.id}')"
+                                    class="px-3 py-1.5 rounded-xl text-xs font-black shrink-0 transition flex items-center gap-1.5 ${musicModalFilter.category === c.id ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20 font-black' : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-700/60'}">
+                                <span>${c.icon}</span>
+                                <span>${c.label}</span>
+                            </button>
+                        `).join('')}
+                    </div>
+
+                    <!-- Search Input -->
+                    <div class="relative min-w-[220px]">
+                        <input type="text" placeholder="بحث باسم التراك أو النمط..." 
+                               value="${musicModalFilter.search || ''}"
+                               oninput="ReelsEngine.filterMusicSearch(this.value)"
+                               class="w-full pr-8 pl-3 py-1.5 rounded-xl bg-zinc-800/90 border border-zinc-700 text-white placeholder-zinc-500 text-xs font-bold outline-none focus:border-amber-400">
+                        <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-zinc-400 pointer-events-none">🔍</span>
+                    </div>
+                </div>
+
+                <!-- Tracks Grid -->
+                <div class="flex-1 overflow-y-auto p-4 sm:p-5 space-y-2.5 max-h-[60vh] scrollbar-thin">
+                    ${filtered.length === 0 ? `
+                        <div class="p-8 text-center text-zinc-500 space-y-2">
+                            <span class="text-3xl block">🔍</span>
+                            <span class="text-xs font-bold block">لم يتم العثور على تراكات مطابقة للبحث</span>
+                        </div>
+                    ` : `
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            ${filtered.map(track => {
+                                const isSelected = audioState.selectedTrackId === track.id && audioState.bgmType === 'library';
+                                const isAuditioningThis = isBgmPlaying && auditionTrackId === track.id;
+
+                                const genreBadges = {
+                                    phonk: { bg: 'bg-rose-500/20 border-rose-500/40 text-rose-300', icon: '🔥', label: 'فونك ودريفت' },
+                                    drill: { bg: 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300', icon: '⚽', label: 'دريل كروي' },
+                                    champions: { bg: 'bg-amber-500/20 border-amber-500/40 text-amber-300', icon: '🏆', label: 'أوركسترا الأبطال' },
+                                    cyber: { bg: 'bg-sky-500/20 border-sky-500/40 text-sky-300', icon: '🎮', label: 'سايبر جيمنج' },
+                                    lofi: { bg: 'bg-purple-500/20 border-purple-500/40 text-purple-300', icon: '☕', label: 'لوفاي هادئ' }
+                                };
+                                const badge = genreBadges[track.genre] || genreBadges.drill;
+
+                                return `
+                                    <div class="p-3.5 rounded-2xl transition border flex flex-col justify-between gap-3 ${isSelected ? 'bg-gradient-to-br from-amber-500/15 via-zinc-900 to-slate-950 border-amber-400 shadow-lg shadow-amber-500/10' : 'bg-zinc-900/80 hover:bg-zinc-800/80 border-zinc-800'}">
+                                        <div>
+                                            <div class="flex items-center justify-between gap-2 pb-1">
+                                                <div class="flex items-center gap-1.5 flex-wrap">
+                                                    <span class="text-[9.5px] px-2 py-0.5 rounded-md font-black border ${badge.bg}">
+                                                        ${badge.icon} ${badge.label}
+                                                    </span>
+                                                    <span class="text-[9px] px-1.5 py-0.5 rounded-md bg-zinc-800 text-zinc-400 font-mono font-bold">
+                                                        ${track.bpm} BPM
+                                                    </span>
+                                                </div>
+                                                ${isSelected ? `
+                                                    <span class="text-[9.5px] px-2 py-0.5 rounded-full bg-amber-400 text-slate-950 font-black flex items-center gap-1 shadow-xs">
+                                                        <span>👑</span>
+                                                        <span>المعتمد حالياً</span>
+                                                    </span>
+                                                ` : ''}
+                                            </div>
+
+                                            <h4 class="text-sm font-black text-white pt-1">
+                                                ${track.titleAr}
+                                            </h4>
+                                            <p class="text-[10px] text-zinc-400 font-mono">
+                                                ${track.titleEn}
+                                            </p>
+                                            <p class="text-[11px] text-zinc-300 mt-1 leading-relaxed">
+                                                ${track.desc}
+                                            </p>
+                                            <div class="mt-1.5 flex items-center gap-1 text-[10px] text-amber-300 font-bold">
+                                                <span>⚡ المود:</span>
+                                                <span>${track.mood}</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="flex items-center gap-2 pt-2 border-t border-zinc-800/80">
+                                            <button type="button" onclick="ReelsEngine.toggleBgmAudition('${track.id}')"
+                                                    class="flex-1 py-1.5 px-3 rounded-xl text-xs font-black transition flex items-center justify-center gap-1.5 ${isAuditioningThis ? 'bg-amber-500 text-slate-950 animate-pulse font-black' : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700'}">
+                                                <span>${isAuditioningThis ? '⏸️ إيقاف' : '▶️ استماع'}</span>
+                                            </button>
+                                            <button type="button" onclick="ReelsEngine.selectMusicTrack('${track.id}')"
+                                                    class="py-1.5 px-3.5 rounded-xl text-xs font-black transition flex items-center justify-center gap-1 ${isSelected ? 'bg-emerald-600 text-white cursor-default' : 'bg-amber-500 hover:bg-amber-400 text-slate-950 font-black'}">
+                                                <span>${isSelected ? '✓ معتمد' : 'اختيار التراك ✓'}</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    `}
+                </div>
+
+                <!-- Modal Footer -->
+                <div class="p-3 sm:p-4 bg-zinc-900 border-t border-zinc-800 flex items-center justify-between text-xs text-zinc-400">
+                    <div class="flex items-center gap-2">
+                        <span class="text-emerald-400">●</span>
+                        <span>توليد وتراك فوري بدون أي تنزيلات خارجية (Offline Web Audio)</span>
+                    </div>
+                    <button type="button" onclick="ReelsEngine.closeMusicModal()" class="px-4 py-1.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-bold transition">
+                        إغلاق ✕
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+
+    // =========================================================================
+    // ---- 5. SYNCHRONIZED SEQUENTIAL SLIDE AUDIO TRIGGER ----
+    // =========================================================================
+    // Distinct timing separation:
+    // 0.0s: Slide entrance transition whoosh
+    // 0.35s: Player Card physical slam (cardboard + sub punch)
+    // 0.85s: Coin Price cash register cha-ching (bells + coin cascade)
     function triggerSlideAudio(slide, customDest = null, ctxOverride = null) {
         if (!audioState.masterEnabled || !audioState.sfxEnabled || !slide) return;
+        const ctx = ctxOverride || getAudioContext();
+        if (!ctx) return;
 
         if (slide.type === 'intro') {
             if (slide.introHookStyle === 'mystery_card') {
-                playBoomSound(customDest, 1.0, ctxOverride);
+                playBoomSound(customDest, 1.0, ctx, 0);
             } else {
-                playWhooshSound(customDest, 0.9, ctxOverride);
+                playWhooshSound(customDest, 0.85, ctx, 0);
+                playWhistleSound(customDest, 0.75, ctx, 0.15);
             }
         } else if (slide.type === 'player_card') {
-            playWhooshSound(customDest, 0.85, ctxOverride);
-            if (slide.playerPrice) {
-                setTimeout(() => {
-                    playCoinSound(customDest, 1.0, ctxOverride);
-                }, 240);
+            // Step 1: Slide entrance whoosh at 0.0s
+            playWhooshSound(customDest, 0.75, ctx, 0);
+
+            // Step 2: Player Card physical slam at 0.35s
+            playCardSlamSound(customDest, 1.0, ctx, 0.35);
+
+            // Step 3: FC Coin Price Cash Register Cha-Ching at 0.85s (distinctly after card slam!)
+            if (slide.playerPrice && slide.playerPrice.trim()) {
+                playCoinCashRegisterSound(customDest, 1.15, ctx, 0.85);
             }
         } else if (slide.type === 'versus_card') {
-            playBoomSound(customDest, 0.95, ctxOverride);
+            playWhooshSound(customDest, 0.8, ctx, 0);
+            playCardSlamSound(customDest, 0.95, ctx, 0.30);
             if (slide.playerA?.price || slide.playerB?.price) {
-                setTimeout(() => {
-                    playCoinSound(customDest, 0.95, ctxOverride);
-                }, 320);
+                playCoinCashRegisterSound(customDest, 1.05, ctx, 0.85);
             }
         } else if (slide.type === 'outro') {
-            playCoinSound(customDest, 1.15, ctxOverride);
+            playCoinCashRegisterSound(customDest, 1.2, ctx, 0);
+            playCrowdCheerSound(customDest, 0.85, ctx, 0.25);
         } else {
-            playWhooshSound(customDest, 0.8, ctxOverride);
+            playWhooshSound(customDest, 0.8, ctx, 0);
         }
     }
 
@@ -3663,6 +4625,9 @@ window.ReelsEngine = (function() {
         const isSfxOn = audioState.sfxEnabled;
         const isBgmOn = audioState.bgmEnabled;
 
+        const activeTrack = REELS_MUSIC_LIBRARY.find(t => t.id === audioState.selectedTrackId) || REELS_MUSIC_LIBRARY[0];
+        const isAuditioningActive = isBgmPlaying && (auditionTrackId === activeTrack.id || !auditionTrackId);
+
         return `
             <div class="p-3.5 rounded-2xl bg-gradient-to-br from-slate-900 via-zinc-900 to-slate-950 border border-amber-500/30 text-white shadow-xl space-y-3">
                 <!-- Header & Master Toggle -->
@@ -3671,10 +4636,10 @@ window.ReelsEngine = (function() {
                         <span class="text-xl">🎵</span>
                         <div>
                             <h4 class="text-xs font-black text-white flex items-center gap-1.5">
-                                <span>استوديو الصوت والمؤثرات (Audio & SFX)</span>
-                                <span class="text-[9px] px-1.5 py-0.5 rounded bg-amber-400/20 text-amber-300 font-bold border border-amber-400/30">جديد ✨</span>
+                                <span>استوديو الصوت والموسيقى (Audio & SFX)</span>
+                                <span class="text-[9px] px-1.5 py-0.5 rounded bg-amber-400/20 text-amber-300 font-bold border border-amber-400/30">33 تراك ✨</span>
                             </h4>
-                            <p class="text-[10px] text-zinc-400">رنين الكوينز، سحب هوائي، وموسيقى حماسية</p>
+                            <p class="text-[10px] text-zinc-400">صدمة الكرت، رنين الكوينز، وموسيقى تريند حماسية</p>
                         </div>
                     </div>
                     <button type="button" onclick="ReelsEngine.toggleAudioMaster()" 
@@ -3731,56 +4696,125 @@ window.ReelsEngine = (function() {
                         </div>
                     </div>
 
-                    <!-- Quick SFX Preview Test Buttons -->
-                    <div class="p-2 rounded-xl bg-black/40 border border-zinc-800/80 space-y-1.5">
-                        <span class="text-[10px] font-black text-zinc-400 block">تجربة أصوات المؤثرات (SFX Preview):</span>
-                        <div class="grid grid-cols-3 gap-1.5">
+                    <!-- SFX Distinction Preview Test Buttons (8 distinct sounds) -->
+                    <div class="p-2.5 rounded-xl bg-black/40 border border-zinc-800/80 space-y-2">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[10.5px] font-black text-amber-300 flex items-center gap-1">
+                                <span>⚡</span>
+                                <span>تجربة المؤثرات الصوتية (SFX Preview):</span>
+                            </span>
+                            <span class="text-[9px] text-zinc-400 font-bold">صوت اللاعب مفصول تماماً عن الكوينز</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
+                            <!-- Distinct Player Card Slam -->
+                            <button type="button" onclick="ReelsEngine.testSfx('card_slam')" 
+                                    class="px-2 py-2 rounded-xl bg-gradient-to-r from-purple-950/80 to-zinc-900 hover:from-purple-900 border border-purple-500/50 text-[10px] font-black text-purple-200 transition flex flex-col items-center justify-center gap-0.5 active:scale-95 shadow-xs cursor-pointer text-center">
+                                <span>🃏 صدمة الكرت</span>
+                                <span class="text-[8px] text-purple-300 font-mono font-normal">Card Slam</span>
+                            </button>
+
+                            <!-- Distinct Coin Cash Register Cha-Ching -->
                             <button type="button" onclick="ReelsEngine.testSfx('coin')" 
-                                    class="px-2 py-1.5 rounded-lg bg-zinc-800 hover:bg-amber-500/20 border border-zinc-700 hover:border-amber-500/50 text-[10.5px] font-bold text-amber-300 transition flex items-center justify-center gap-1 active:scale-95 shadow-2xs cursor-pointer">
-                                <span>🪙 رنين كوينز</span>
+                                    class="px-2 py-2 rounded-xl bg-gradient-to-r from-amber-950/80 to-zinc-900 hover:from-amber-900 border border-amber-500/60 text-[10px] font-black text-amber-300 transition flex flex-col items-center justify-center gap-0.5 active:scale-95 shadow-xs cursor-pointer text-center">
+                                <span>🪙 كاش ورنين كوينز</span>
+                                <span class="text-[8px] text-amber-200 font-mono font-normal">Cha-Ching!</span>
                             </button>
+
+                            <!-- Whoosh -->
                             <button type="button" onclick="ReelsEngine.testSfx('whoosh')" 
-                                    class="px-2 py-1.5 rounded-lg bg-zinc-800 hover:bg-sky-500/20 border border-zinc-700 hover:border-sky-500/50 text-[10.5px] font-bold text-sky-300 transition flex items-center justify-center gap-1 active:scale-95 shadow-2xs cursor-pointer">
+                                    class="px-2 py-2 rounded-xl bg-zinc-800 hover:bg-sky-500/20 border border-zinc-700 hover:border-sky-500/50 text-[10px] font-bold text-sky-300 transition flex flex-col items-center justify-center gap-0.5 active:scale-95 shadow-xs cursor-pointer text-center">
                                 <span>💨 سحب هوائي</span>
+                                <span class="text-[8px] text-zinc-400 font-mono font-normal">Whoosh</span>
                             </button>
+
+                            <!-- Bass Boom -->
                             <button type="button" onclick="ReelsEngine.testSfx('boom')" 
-                                    class="px-2 py-1.5 rounded-lg bg-zinc-800 hover:bg-rose-500/20 border border-zinc-700 hover:border-rose-500/50 text-[10.5px] font-bold text-rose-300 transition flex items-center justify-center gap-1 active:scale-95 shadow-2xs cursor-pointer">
+                                    class="px-2 py-2 rounded-xl bg-zinc-800 hover:bg-rose-500/20 border border-zinc-700 hover:border-rose-500/50 text-[10px] font-bold text-rose-300 transition flex flex-col items-center justify-center gap-0.5 active:scale-95 shadow-xs cursor-pointer text-center">
                                 <span>💥 ضربة درامية</span>
+                                <span class="text-[8px] text-zinc-400 font-mono font-normal">Bass Boom</span>
+                            </button>
+
+                            <!-- Referee Whistle -->
+                            <button type="button" onclick="ReelsEngine.testSfx('whistle')" 
+                                    class="px-2 py-2 rounded-xl bg-zinc-800 hover:bg-emerald-500/20 border border-zinc-700 hover:border-emerald-500/50 text-[10px] font-bold text-emerald-300 transition flex flex-col items-center justify-center gap-0.5 active:scale-95 shadow-xs cursor-pointer text-center">
+                                <span>📢 صفارة حكم</span>
+                                <span class="text-[8px] text-zinc-400 font-mono font-normal">Whistle</span>
+                            </button>
+
+                            <!-- Stadium Crowd Roar -->
+                            <button type="button" onclick="ReelsEngine.testSfx('crowd')" 
+                                    class="px-2 py-2 rounded-xl bg-zinc-800 hover:bg-yellow-500/20 border border-zinc-700 hover:border-yellow-500/50 text-[10px] font-bold text-yellow-300 transition flex flex-col items-center justify-center gap-0.5 active:scale-95 shadow-xs cursor-pointer text-center">
+                                <span>🏟️ هتاف الجماهير</span>
+                                <span class="text-[8px] text-zinc-400 font-mono font-normal">Crowd Cheer</span>
+                            </button>
+
+                            <!-- Electric Zap -->
+                            <button type="button" onclick="ReelsEngine.testSfx('electric')" 
+                                    class="px-2 py-2 rounded-xl bg-zinc-800 hover:bg-cyan-500/20 border border-zinc-700 hover:border-cyan-500/50 text-[10px] font-bold text-cyan-300 transition flex flex-col items-center justify-center gap-0.5 active:scale-95 shadow-xs cursor-pointer text-center">
+                                <span>⚡ شرارة طاقة</span>
+                                <span class="text-[8px] text-zinc-400 font-mono font-normal">Energy Zap</span>
+                            </button>
+
+                            <!-- Rank Bell -->
+                            <button type="button" onclick="ReelsEngine.testSfx('rank_bell')" 
+                                    class="px-2 py-2 rounded-xl bg-zinc-800 hover:bg-pink-500/20 border border-zinc-700 hover:border-pink-500/50 text-[10px] font-bold text-pink-300 transition flex flex-col items-center justify-center gap-0.5 active:scale-95 shadow-xs cursor-pointer text-center">
+                                <span>🔔 جرس الرانك</span>
+                                <span class="text-[8px] text-zinc-400 font-mono font-normal">Rank Bell</span>
                             </button>
                         </div>
                     </div>
 
-                    <!-- Background Music Controls (Upload or Synth Beat) -->
+                    <!-- 33 Tracks Music Library Selector -->
                     <div class="p-2.5 rounded-xl bg-zinc-800/60 border border-zinc-700/60 space-y-2">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-1.5">
                                 <span class="text-xs">📻</span>
-                                <span class="text-[10.5px] font-black text-zinc-200">تراك الخلفية:</span>
+                                <span class="text-[10.5px] font-black text-zinc-200">موسيقى الخلفية المختارة:</span>
                             </div>
-                            <button type="button" id="btnBgmAudition" onclick="ReelsEngine.toggleBgmAudition()" 
-                                    class="px-2 py-0.5 rounded-lg text-[10px] font-black transition cursor-pointer ${isBgmPlaying ? 'bg-amber-500 text-slate-950 animate-pulse' : 'bg-zinc-700 hover:bg-zinc-600 text-zinc-300'}">
-                                ${isBgmPlaying ? '⏸️ إيقاف المعاينة' : '▶️ استماع للتراك'}
-                            </button>
+                            <div class="flex items-center gap-1.5">
+                                <button type="button" id="btnBgmAudition" onclick="ReelsEngine.toggleBgmAudition()" 
+                                        class="px-2.5 py-1 rounded-lg text-[10px] font-black transition cursor-pointer ${isAuditioningActive ? 'bg-amber-500 text-slate-950 animate-pulse font-black' : 'bg-zinc-700 hover:bg-zinc-600 text-zinc-300'}">
+                                    ${isAuditioningActive ? '⏸️ إيقاف' : '▶️ استماع'}
+                                </button>
+                            </div>
                         </div>
 
-                        <!-- Active BGM Badge -->
-                        <div class="flex items-center justify-between p-1.5 rounded-lg bg-black/50 border border-zinc-800">
-                            <span class="text-[10px] font-bold text-amber-300 truncate max-w-[190px]">
-                                ${audioState.bgmType === 'custom' ? `🎵 ${audioState.customBgmName || 'ملف صوتي مخصص'}` : '⚡ إيقاع كروي حماسي (FC Synth Beat)'}
-                            </span>
+                        <!-- Active Track Info Card -->
+                        <div class="p-2 rounded-xl bg-black/50 border border-zinc-800 flex items-center justify-between gap-2">
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-1.5">
+                                    <span class="text-[9px] px-1.5 py-0.2 rounded bg-amber-400/20 text-amber-300 font-black font-mono">
+                                        ${audioState.bgmType === 'custom' ? 'ملف خاص' : `${activeTrack.bpm} BPM`}
+                                    </span>
+                                    <span class="text-[10.5px] font-black text-white truncate">
+                                        ${audioState.bgmType === 'custom' ? `🎵 ${audioState.customBgmName || 'ملف صوتي مخصص'}` : activeTrack.titleAr}
+                                    </span>
+                                </div>
+                                <p class="text-[9.5px] text-zinc-400 truncate mt-0.5">
+                                    ${audioState.bgmType === 'custom' ? 'ملف صوتي مرفوع من جهازك' : `${activeTrack.mood} — ${activeTrack.titleEn}`}
+                                </p>
+                            </div>
+
                             ${audioState.bgmType === 'custom' ? `
-                                <button type="button" onclick="ReelsEngine.removeCustomBgm()" class="text-[9.5px] font-bold text-rose-400 hover:text-rose-300 px-1.5 py-0.5 rounded hover:bg-rose-950/50 transition cursor-pointer">
+                                <button type="button" onclick="ReelsEngine.removeCustomBgm()" class="text-[9.5px] font-bold text-rose-400 hover:text-rose-300 px-2 py-1 rounded-lg bg-rose-950/40 border border-rose-900 hover:bg-rose-950 transition cursor-pointer shrink-0">
                                     مسح ✕
                                 </button>
                             ` : `
-                                <span class="text-[9px] text-zinc-500 font-medium">مدمج تلقائياً</span>
+                                <button type="button" onclick="ReelsEngine.openMusicModal()" class="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-[10px] font-black transition cursor-pointer shrink-0">
+                                    تغيير التراك ▾
+                                </button>
                             `}
                         </div>
 
-                        <!-- Upload Custom Audio -->
-                        <div class="flex items-center gap-2">
-                            <label class="flex-1 py-1.5 px-2.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 hover:border-zinc-600 text-[10.5px] font-bold text-zinc-300 cursor-pointer transition flex items-center justify-center gap-1.5 text-center">
-                                <span>📁 رفع مقطع صوتي MP3 / WAV</span>
+                        <!-- Browse 33 Tracks Button & Upload Button -->
+                        <div class="grid grid-cols-2 gap-1.5">
+                            <button type="button" onclick="ReelsEngine.openMusicModal()" 
+                                    class="py-2 px-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 hover:brightness-110 text-slate-950 text-[10.5px] font-black transition shadow-md shadow-amber-500/20 flex items-center justify-center gap-1.5 cursor-pointer">
+                                <span>🎵 تصفح مكتبة التراكات (33)</span>
+                            </button>
+
+                            <label class="py-2 px-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 hover:border-zinc-600 text-[10.5px] font-bold text-zinc-300 cursor-pointer transition flex items-center justify-center gap-1 text-center">
+                                <span>📁 رفع MP3 / WAV</span>
                                 <input type="file" accept="audio/*" class="hidden" onchange="ReelsEngine.handleBgmUpload(this)">
                             </label>
                         </div>
@@ -5278,8 +6312,14 @@ ${state.subtitle}
         setBgmVolume,
         testSfx,
         toggleBgmAudition,
+        selectMusicTrack,
+        openMusicModal,
+        closeMusicModal,
+        filterMusicCategory,
+        filterMusicSearch,
         handleBgmUpload,
         removeCustomBgm,
+        REELS_MUSIC_LIBRARY,
         getAudioState: () => audioState
     };
 })();
