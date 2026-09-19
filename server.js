@@ -1023,6 +1023,7 @@ async function processReelJob(jobId, payload, execPath) {
 
         // Move #canvasScaleStage directly to document.body and cleanly hide surrounding studio chrome
         await page.evaluate(() => {
+            window.updateCanvasViewportScale = function() {};
             const stage = document.getElementById('canvasScaleStage');
             if (stage) {
                 document.body.appendChild(stage);
@@ -1048,6 +1049,18 @@ async function processReelJob(jobId, payload, execPath) {
                     direction: ltr !important;
                 }
                 #canvasScaleStage {
+                    position: fixed !important;
+                    top: 0px !important;
+                    left: 0px !important;
+                    width: 1080px !important;
+                    height: 1920px !important;
+                    transform: none !important;
+                    margin: 0 !important;
+                    padding: 0 !important;
+                    background: transparent !important;
+                    z-index: 99999999 !important;
+                }
+                #exportCanvas {
                     position: absolute !important;
                     top: 0px !important;
                     left: 0px !important;
@@ -1057,10 +1070,6 @@ async function processReelJob(jobId, payload, execPath) {
                     transform-origin: 0 0 !important;
                     margin: 0 !important;
                     padding: 0 !important;
-                    background: transparent !important;
-                    z-index: 99999999 !important;
-                }
-                #exportCanvas {
                     box-shadow: none !important;
                     border: none !important;
                     border-radius: 0 !important;
@@ -1077,12 +1086,31 @@ async function processReelJob(jobId, payload, execPath) {
         job.message = 'جاري تجهيز عناصر وبطاقات السلايدات...';
 
         await page.evaluate(async (pState, aState) => {
+            window.updateCanvasViewportScale = function() {};
             if (window.ReelsEngine) {
                 if (pState) window.ReelsEngine.loadProject(pState);
                 if (aState) window.ReelsEngine.setAudioState(aState);
                 window.ReelsEngine.setSelectedElement('');
             }
             if (document.fonts) await document.fonts.ready;
+
+            // Subtle continuous ticker to guarantee Chrome compositor paints continuously throughout the reel
+            const ticker = document.createElement('div');
+            ticker.style.position = 'fixed';
+            ticker.style.bottom = '0';
+            ticker.style.right = '0';
+            ticker.style.width = '2px';
+            ticker.style.height = '2px';
+            ticker.style.backgroundColor = 'rgba(255,255,255,0.02)';
+            ticker.style.zIndex = '9999999';
+            document.body.appendChild(ticker);
+            let c = 0;
+            function step() {
+                c = (c + 1) % 100;
+                ticker.style.opacity = (0.01 + (c / 10000)).toFixed(4);
+                requestAnimationFrame(step);
+            }
+            requestAnimationFrame(step);
 
             const rawUrls = [];
             if (pState && Array.isArray(pState.slides)) {
@@ -1133,12 +1161,17 @@ async function processReelJob(jobId, payload, execPath) {
         job.message = 'جاري التقاط وتسجيل أنيميشن السلايدات بدقة 1080x1920...';
 
         const client = await page.target().createCDPSession();
+        const frameList = [];
         let frameCount = 0;
 
         client.on('Page.screencastFrame', async (event) => {
             const currentIdx = frameCount++;
             const fname = `f_${String(currentIdx).padStart(6, '0')}.jpg`;
             fs.writeFileSync(path.join(framesDir, fname), Buffer.from(event.data, 'base64'));
+            frameList.push({
+                filename: fname,
+                timestamp: event.metadata.timestamp || (Date.now() / 1000)
+            });
             try {
                 await client.send('Page.screencastFrameAck', { sessionId: event.sessionId });
             } catch (e) {}
@@ -1219,20 +1252,47 @@ async function processReelJob(jobId, payload, execPath) {
             fs.writeFileSync(audioFile, Buffer.from(clean, 'base64'));
         }
 
-        const actualFps = Math.max(24, Math.min(30, Math.round(frameCount / Math.max(1, totalDurationSec))));
+        if (frameList.length === 0) {
+            throw new Error('لم يتم التقاط أي إطارات أثناء التسجيل');
+        }
+
+        // Build concat demuxer file to lock frame durations mathematically to exact real-time playback
+        let concatContent = '';
+        const t0 = frameList[0].timestamp;
+        for (let i = 0; i < frameList.length; i++) {
+            const cur = frameList[i];
+            let dur = 0;
+            if (i < frameList.length - 1) {
+                const next = frameList[i + 1];
+                dur = Math.max(0.01, next.timestamp - cur.timestamp);
+            } else {
+                const elapsed = cur.timestamp - t0;
+                dur = Math.max(0.1, totalDurationSec - elapsed);
+            }
+            const absPath = path.join(framesDir, cur.filename).replace(/\\/g, '/');
+            concatContent += `file '${absPath}'\n`;
+            concatContent += `duration ${dur.toFixed(6)}\n`;
+        }
+        const lastAbs = path.join(framesDir, frameList[frameList.length - 1].filename).replace(/\\/g, '/');
+        concatContent += `file '${lastAbs}'\n`;
+
+        const concatPath = path.join(framesDir, 'concat.txt');
+        fs.writeFileSync(concatPath, concatContent);
+
+        const actualFps = Math.round(frameCount / Math.max(1, totalDurationSec));
         const outMp4Path = path.join(runDir, 'final_reel.mp4');
-        const inputPattern = path.join(framesDir, 'f_%06d.jpg');
 
         const ffmpegArgs = [
             '-y',
-            '-framerate', String(actualFps),
-            '-i', inputPattern
+            '-f', 'concat',
+            '-safe', '0',
+            '-i', concatPath
         ];
 
         if (audioFile && fs.existsSync(audioFile) && fs.statSync(audioFile).size > 1000) {
-            ffmpegArgs.push('-i', audioFile, '-c:a', 'aac', '-b:a', '192k', '-shortest');
+            ffmpegArgs.push('-i', audioFile, '-c:a', 'aac', '-b:a', '192k');
         } else {
-            ffmpegArgs.push('-f', 'lavfi', '-i', 'anullsrc=r=44100:cl=stereo', '-c:a', 'aac', '-b:a', '128k', '-shortest');
+            ffmpegArgs.push('-f', 'lavfi', '-i', 'anullsrc=r=44100:cl=stereo', '-c:a', 'aac', '-b:a', '128k');
         }
 
         ffmpegArgs.push(
@@ -1240,6 +1300,7 @@ async function processReelJob(jobId, payload, execPath) {
             '-crf', '20',
             '-preset', 'ultrafast',
             '-pix_fmt', 'yuv420p',
+            '-t', String(totalDurationSec),
             '-movflags', '+faststart',
             outMp4Path
         );
@@ -1278,10 +1339,8 @@ async function processReelJob(jobId, payload, execPath) {
             const directSaveTargets = [
                 path.join(userHome, 'OneDrive', 'Desktop', outFilename),
                 path.join(userHome, 'OneDrive', 'Desktop', 'Reel_FC27_ShopCoin15_Latest.mp4'),
-                path.join(userHome, 'OneDrive', 'Desktop', 'مشاكل.mp4'),
                 path.join(userHome, 'Desktop', outFilename),
                 path.join(userHome, 'Desktop', 'Reel_FC27_ShopCoin15_Latest.mp4'),
-                path.join(userHome, 'Desktop', 'مشاكل.mp4'),
                 path.join(userHome, 'Downloads', outFilename),
                 path.join(userHome, 'Downloads', 'Reel_FC27_ShopCoin15_Latest.mp4')
             ];
