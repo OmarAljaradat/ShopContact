@@ -108,9 +108,19 @@ window.ReelsEngine = (function() {
         ];
     }
 
-    function ensureSelectedDragElement() {
+    function ensureSelectedDragElement(forceSelectIfNull = false) {
+        if (!state.selectedDragElement) {
+            if (forceSelectIfNull) {
+                const elements = getCurrentSlideElements();
+                if (elements.length > 0) state.selectedDragElement = elements[0].id;
+            }
+            return;
+        }
         const elements = getCurrentSlideElements();
-        if (elements.length === 0) return;
+        if (elements.length === 0) {
+            state.selectedDragElement = null;
+            return;
+        }
         const exists = elements.some(e => e.id === state.selectedDragElement);
         if (!exists) {
             state.selectedDragElement = elements[0].id;
@@ -2544,21 +2554,28 @@ window.ReelsEngine = (function() {
         }
     }
 
-    function getSlideTransitionStyle() {
-        if (state.isCapturingExport) return '';
+    function getRawSlideTransitionCss() {
         const trans = state.slideTransition;
         if (!trans || trans.type === 'instant' || trans.type === 'none') return '';
         const dur = trans.duration || 0.35;
         return `animation: reelSlideTrans_${trans.type} ${dur}s cubic-bezier(0.16, 1, 0.3, 1) both; will-change: transform, opacity;`;
     }
 
+    function getSlideTransitionStyle() {
+        if (!state.slideEntrancePending || state.isCapturingExport) return '';
+        return getRawSlideTransitionCss();
+    }
+
     function testSlideTransition(optType) {
         if (optType) setSlideTransitionType(optType);
         const wrapper = document.getElementById('reelSlideTransitionWrapper');
         if (wrapper) {
+            const animCss = getRawSlideTransitionCss();
             wrapper.style.animation = 'none';
             void wrapper.offsetWidth;
-            wrapper.style.cssText = getSlideTransitionStyle();
+            if (animCss) {
+                wrapper.style.cssText = animCss;
+            }
         }
         if (state.slideTransition && state.slideTransition.soundEnabled) {
             playWhooshSound(null, 0.7);
@@ -2926,6 +2943,7 @@ window.ReelsEngine = (function() {
         elementAnimations: loadSavedAnimations(),
         progressBar: loadSavedProgressBar(),
         slideTransition: loadSavedSlideTransition(),
+        slideEntrancePending: true,
         isCapturingExport: false
     };
 
@@ -3127,6 +3145,33 @@ window.ReelsEngine = (function() {
         window.onmouseup = onPointerEnd;
         window.ontouchend = onPointerEnd;
 
+        // Deselect when clicking outside the canvas on the background/side padding of preview container
+        const previewContainer = document.getElementById('previewContainer');
+        if (previewContainer && !previewContainer._hasDeselectAttached) {
+            previewContainer._hasDeselectAttached = true;
+            previewContainer.addEventListener('mousedown', (e) => {
+                if (!e.target.closest('[data-drag-id]') && !e.target.closest('[data-resize-id]') && !e.target.closest('button') && !e.target.closest('input')) {
+                    if (state.selectedDragElement) {
+                        state.selectedDragElement = null;
+                        renderCanvas();
+                        renderEditorControls();
+                    }
+                }
+            });
+        }
+
+        // Global Escape key to deselect
+        if (!window._hasReelsEscapeAttached) {
+            window._hasReelsEscapeAttached = true;
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && state.selectedDragElement) {
+                    state.selectedDragElement = null;
+                    renderCanvas();
+                    renderEditorControls();
+                }
+            });
+        }
+
         // Mouse wheel scale when hovering selected element
         canvas.onwheel = (e) => {
             if (state.dragEnabled && state.selectedDragElement) {
@@ -3141,11 +3186,10 @@ window.ReelsEngine = (function() {
     }
 
     function onPointerStart(e) {
-        if (!state.dragEnabled) return;
-
         // 1. Check if clicking on resize handle
         const resizeHandle = e.target.closest('[data-resize-id]');
         if (resizeHandle) {
+            if (!state.dragEnabled) return;
             e.preventDefault();
             e.stopPropagation();
             const resizeId = resizeHandle.getAttribute('data-resize-id');
@@ -3166,7 +3210,15 @@ window.ReelsEngine = (function() {
 
         // 2. Check if clicking on draggable element
         const target = e.target.closest('[data-drag-id]');
-        if (!target) return;
+        if (!target) {
+            // Clicked on empty area on the canvas -> deselect current element
+            if (state.selectedDragElement) {
+                state.selectedDragElement = null;
+                renderCanvas();
+                renderEditorControls();
+            }
+            return;
+        }
 
         e.preventDefault();
         e.stopPropagation();
@@ -3178,6 +3230,7 @@ window.ReelsEngine = (function() {
         const canvasRect = canvas.getBoundingClientRect();
 
         const dragId = target.getAttribute('data-drag-id');
+        const prevSelected = state.selectedDragElement;
         state.selectedDragElement = dragId;
 
         const secLayout = state.layouts[state.activeSection] || DEFAULT_LAYOUTS[state.activeSection];
@@ -3193,13 +3246,16 @@ window.ReelsEngine = (function() {
             startMouseY: clientY,
             startLeft: startLeft,
             startTop: startTop,
-            canvasRect: canvasRect
+            canvasRect: canvasRect,
+            hasMoved: false
         };
 
-        // Visual selection indicator
-        document.querySelectorAll('[data-drag-id]').forEach(el => el.classList.remove('ring-2', 'ring-emerald-400', 'ring-offset-2', 'shadow-2xl'));
-        target.classList.add('ring-2', 'ring-emerald-400', 'ring-offset-2', 'shadow-2xl');
-        updateSelectedElementInPanel();
+        if (prevSelected !== dragId) {
+            renderCanvas();
+            renderEditorControls();
+        } else {
+            updateSelectedElementInPanel();
+        }
     }
 
     function onPointerMove(e) {
@@ -3238,6 +3294,10 @@ window.ReelsEngine = (function() {
             const canvasRect = activeDrag.canvasRect;
             const dx = clientX - activeDrag.startMouseX;
             const dy = clientY - activeDrag.startMouseY;
+
+            if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+                activeDrag.hasMoved = true;
+            }
 
             const dxPercent = (dx / canvasRect.width) * 100;
             const dyPercent = (dy / canvasRect.height) * 100;
@@ -3296,14 +3356,14 @@ window.ReelsEngine = (function() {
         }
 
         if (activeDrag) {
-            if (activeDrag.target) {
-                activeDrag.target.classList.remove('ring-2', 'ring-emerald-400', 'ring-offset-2', 'shadow-2xl');
-            }
+            const hasMoved = activeDrag.hasMoved;
             activeDrag = null;
             hideMagnetGuides();
-            renderCanvas();
-            renderEditorControls();
-            saveProjectState();
+            if (hasMoved) {
+                renderCanvas();
+                renderEditorControls();
+                saveProjectState();
+            }
         }
     }
 
@@ -3379,14 +3439,18 @@ window.ReelsEngine = (function() {
 
     // ---- 5. POSITION & SCALE ACTIONS ----
     function setSelectedElement(elemId) {
-        state.selectedDragElement = elemId;
+        state.selectedDragElement = elemId || null;
         renderCanvas();
         renderEditorControls();
     }
 
     function centerSelectedElement() {
+        if (!state.selectedDragElement) {
+            if (window.showCopyToast) window.showCopyToast('يرجى تحديد عنصر أولاً بالنقر عليه على الكانفاس 👆');
+            return;
+        }
         const secLayout = state.layouts[state.activeSection];
-        const dragId = state.selectedDragElement || (state.activeSection === 'countdown' ? 'card' : 'cardA');
+        const dragId = state.selectedDragElement;
         if (!secLayout[dragId]) secLayout[dragId] = {};
         secLayout[dragId].left = 50.0;
         renderCanvas();
@@ -3397,8 +3461,9 @@ window.ReelsEngine = (function() {
     }
 
     function nudgeSelected(dir, amount = 1.0) {
+        if (!state.selectedDragElement) return;
         const secLayout = state.layouts[state.activeSection];
-        const dragId = state.selectedDragElement || (state.activeSection === 'countdown' ? 'card' : 'cardA');
+        const dragId = state.selectedDragElement;
         if (!secLayout[dragId]) secLayout[dragId] = {};
 
         let curLeft = (secLayout[dragId].left !== undefined) ? secLayout[dragId].left : 50;
@@ -3417,8 +3482,9 @@ window.ReelsEngine = (function() {
     }
 
     function setScaleSelected(val) {
+        if (!state.selectedDragElement) return;
         const secLayout = state.layouts[state.activeSection];
-        const dragId = state.selectedDragElement || (state.activeSection === 'countdown' ? 'card' : 'cardA');
+        const dragId = state.selectedDragElement;
         if (!secLayout[dragId]) secLayout[dragId] = {};
         secLayout[dragId].scale = parseFloat(val) || 1.0;
         renderCanvas();
@@ -3426,8 +3492,9 @@ window.ReelsEngine = (function() {
     }
 
     function adjustScaleSelected(delta) {
+        if (!state.selectedDragElement) return;
         const secLayout = state.layouts[state.activeSection];
-        const dragId = state.selectedDragElement || (state.activeSection === 'countdown' ? 'card' : 'cardA');
+        const dragId = state.selectedDragElement;
         if (!secLayout[dragId]) secLayout[dragId] = {};
         const cur = secLayout[dragId].scale || 1.0;
         const next = Math.max(0.5, Math.min(1.8, Math.round((cur + delta) * 100) / 100));
@@ -3455,8 +3522,16 @@ window.ReelsEngine = (function() {
 
     function updateSelectedElementInPanel() {
         const select = document.getElementById('selectReelElement');
-        if (select && state.selectedDragElement) {
-            select.value = state.selectedDragElement;
+        if (select) {
+            select.value = state.selectedDragElement || '';
+        }
+        const badge = document.getElementById('dragCoordsBadge');
+        if (!state.selectedDragElement) {
+            if (badge) {
+                badge.textContent = '⚪ غير محدد';
+                badge.className = 'text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded border border-slate-200';
+            }
+            return;
         }
         const secLayout = state.layouts[state.activeSection];
         const cfg = secLayout[state.selectedDragElement] || {};
@@ -4227,7 +4302,8 @@ window.ReelsEngine = (function() {
                 } else {
                     state.currentSlideIndex = 0;
                 }
-                ensureSelectedDragElement();
+                state.slideEntrancePending = true;
+                ensureSelectedDragElement(false);
                 renderCanvas();
                 renderEditorControls();
                 updatePlayerUi();
@@ -4274,7 +4350,8 @@ window.ReelsEngine = (function() {
     function nextSlide() {
         pausePlayback();
         state.currentSlideIndex = (state.currentSlideIndex < state.slides.length - 1) ? state.currentSlideIndex + 1 : 0;
-        ensureSelectedDragElement();
+        state.slideEntrancePending = true;
+        ensureSelectedDragElement(false);
         renderCanvas();
         renderEditorControls();
         updatePlayerUi();
@@ -4286,7 +4363,8 @@ window.ReelsEngine = (function() {
     function prevSlide() {
         pausePlayback();
         state.currentSlideIndex = (state.currentSlideIndex > 0) ? state.currentSlideIndex - 1 : state.slides.length - 1;
-        ensureSelectedDragElement();
+        state.slideEntrancePending = true;
+        ensureSelectedDragElement(false);
         renderCanvas();
         renderEditorControls();
         updatePlayerUi();
@@ -4298,12 +4376,16 @@ window.ReelsEngine = (function() {
     function goToSlide(idx) {
         pausePlayback();
         if (idx >= 0 && idx < state.slides.length) {
+            const changed = (state.currentSlideIndex !== idx);
             state.currentSlideIndex = idx;
-            ensureSelectedDragElement();
+            if (changed) {
+                state.slideEntrancePending = true;
+            }
+            ensureSelectedDragElement(false);
             renderCanvas();
             renderEditorControls();
             updatePlayerUi();
-            if (state.slideTransition && state.slideTransition.soundEnabled) {
+            if (changed && state.slideTransition && state.slideTransition.soundEnabled) {
                 playWhooshSound(null, 0.7);
             }
         }
@@ -4691,9 +4773,8 @@ window.ReelsEngine = (function() {
     }
 
     // ---- 7.5 ANIMATION CONTROLLER METHODS ----
-    function getElemAnimStyle(elemId) {
+    function computeElemAnimStyle(elemId) {
         if (!state.animationsEnabled) return '';
-        if (activeDrag || state.isCapturingExport) return '';
         const cfg = (state.elementAnimations && state.elementAnimations[elemId]) || DEFAULT_ELEMENT_ANIMATIONS[elemId];
         if (!cfg || cfg.type === 'none') return '';
         const dur = cfg.duration || 0.6;
@@ -4702,25 +4783,21 @@ window.ReelsEngine = (function() {
         return `animation: ${animName} ${dur}s cubic-bezier(0.16, 1, 0.3, 1) ${delay}s both; will-change: transform, opacity;`;
     }
 
+    function getElemAnimStyle(elemId) {
+        if (!state.slideEntrancePending || !state.animationsEnabled) return '';
+        if (activeDrag || state.isCapturingExport) return '';
+        return computeElemAnimStyle(elemId);
+    }
+
     function replaySlideAnimations() {
-        const canvas = document.getElementById('exportCanvas');
-        if (!canvas) return;
-        const animLayers = canvas.querySelectorAll('.reel-anim-layer');
-        animLayers.forEach(el => {
-            const dragContainer = el.closest('[data-drag-id]');
-            const elemId = dragContainer ? dragContainer.getAttribute('data-drag-id') : null;
-            const animStyle = elemId ? getElemAnimStyle(elemId) : '';
-            el.style.animation = 'none';
-            void el.offsetWidth; // Force CSS reflow to replay animation
-            if (animStyle) {
-                const match = animStyle.match(/animation:\s*([^;]+);/);
-                if (match) {
-                    el.style.animation = match[1];
-                }
-            }
-        });
+        state.slideEntrancePending = true;
+        renderCanvas();
+        state.slideEntrancePending = false;
+        if (state.slideTransition && state.slideTransition.soundEnabled) {
+            playWhooshSound(null, 0.7);
+        }
         if (window.showCopyToast) {
-            window.showCopyToast('🎬 تم تشغيل ومعاينة حركات السلايد على الشاشة');
+            window.showCopyToast('🎬 تم إعادة تشغيل حركات وانتقال السلايد');
         }
     }
 
@@ -4731,7 +4808,7 @@ window.ReelsEngine = (function() {
         if (!dragContainer) return;
         const layer = dragContainer.querySelector('.reel-anim-layer');
         if (!layer) return;
-        const animStyle = getElemAnimStyle(elemId);
+        const animStyle = computeElemAnimStyle(elemId);
         layer.style.animation = 'none';
         void layer.offsetWidth;
         if (animStyle) {
@@ -5524,6 +5601,9 @@ window.ReelsEngine = (function() {
             </div>
         `;
 
+        // Reset slide entrance flag so subsequent clicks/drags/edits NEVER replay animations
+        state.slideEntrancePending = false;
+
         initCanvasDragHandlers();
 
         if (window.twemoji && typeof window.twemoji.parse === 'function') {
@@ -5884,18 +5964,21 @@ window.ReelsEngine = (function() {
 
         const secLayout = state.layouts[state.activeSection] || DEFAULT_LAYOUTS[state.activeSection];
         const elementsList = getCurrentSlideElements();
-        ensureSelectedDragElement();
-        const selectedId = state.selectedDragElement || (elementsList[0] && elementsList[0].id) || 'card';
-        const curCfg = secLayout[selectedId] || {};
+        ensureSelectedDragElement(false);
+        const selectedId = state.selectedDragElement;
+        const curCfg = selectedId ? (secLayout[selectedId] || {}) : {};
         const curLeft = (curCfg.left !== undefined) ? curCfg.left : 50;
         const curTop = (curCfg.top !== undefined) ? curCfg.top : 30;
         const curScale = (curCfg.scale !== undefined) ? curCfg.scale : 1.0;
 
-        const elementSelectOptions = elementsList.map(item => `
-            <option value="${item.id}" ${item.id === selectedId ? 'selected' : ''}>
-                ${item.name}
-            </option>
-        `).join('');
+        const elementSelectOptions = `
+            <option value="" ${!selectedId ? 'selected' : ''}>⚪ لا يوجد عنصر محدد (اضغط لتحديد عنصر)</option>
+            ${elementsList.map(item => `
+                <option value="${item.id}" ${item.id === selectedId ? 'selected' : ''}>
+                    ${item.name}
+                </option>
+            `).join('')}
+        `;
 
         const hasIntro = state.slides.some(s => s.type === 'intro');
         const hasOutro = state.slides.some(s => s.type === 'outro');
@@ -5975,8 +6058,8 @@ window.ReelsEngine = (function() {
                                 <span>${state.magnetEnabled !== false ? '🧲 مغناطيس: شغال' : '🧲 مغناطيس: مطفأ'}</span>
                             </button>
                             <button type="button" id="btnToggleDragLock" onclick="ReelsEngine.toggleDragLock()" 
-                                    class="px-2.5 py-1 rounded-lg ${state.dragEnabled ? 'bg-slate-900 text-white' : 'bg-slate-400 text-slate-100'} text-[10.5px] font-black transition">
-                                ${state.dragEnabled ? '🔓 سحب بالماوس' : '🔒 مقفول'}
+                                     class="px-2.5 py-1 rounded-lg ${state.dragEnabled ? 'bg-slate-900 text-white' : 'bg-slate-400 text-slate-100'} text-[10.5px] font-black transition">
+                                <span>${state.dragEnabled ? '🔓 سحب بالماوس' : '🔒 مقفول'}</span>
                             </button>
                         </div>
                     </div>
@@ -5988,9 +6071,21 @@ window.ReelsEngine = (function() {
                         <div class="space-y-1">
                             <div class="flex items-center justify-between">
                                 <label class="text-[11px] font-black text-slate-800">العنصر المراد ضبطه:</label>
-                                <span id="dragCoordsBadge" class="text-[10px] font-mono font-black text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                                    X: ${curLeft}% | Y: ${curTop}%
-                                </span>
+                                <div class="flex items-center gap-1.5">
+                                    ${selectedId ? `
+                                        <button type="button" onclick="ReelsEngine.setSelectedElement('')" 
+                                                class="text-[9.5px] px-2 py-0.5 rounded-full bg-slate-100 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 border border-slate-200 text-slate-600 font-bold transition flex items-center gap-1 cursor-pointer" title="إلغاء التحديد">
+                                            <span>إلغاء التحديد ✕</span>
+                                        </button>
+                                        <span id="dragCoordsBadge" class="text-[10px] font-mono font-black text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                                            X: ${curLeft}% | Y: ${curTop}%
+                                        </span>
+                                    ` : `
+                                        <span id="dragCoordsBadge" class="text-[10px] font-bold text-slate-400 bg-slate-100 px-2.5 py-0.5 rounded-full border border-slate-200">
+                                            ⚪ غير محدد
+                                        </span>
+                                    `}
+                                </div>
                             </div>
                             <select id="selectReelElement" onchange="ReelsEngine.setSelectedElement(this.value)" 
                                     class="w-full px-2.5 py-2 rounded-lg bg-slate-50 border border-slate-200 text-xs font-bold text-slate-900 outline-none focus:border-emerald-500">
@@ -5998,73 +6093,83 @@ window.ReelsEngine = (function() {
                             </select>
                         </div>
 
-                        <!-- 1. Size Controls (تحكم الحجم الطبيعي) -->
-                        <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
-                            <div class="flex items-center justify-between">
-                                <span class="text-[11px] font-black text-slate-800 flex items-center gap-1">
-                                    <span>📏</span>
-                                    <span>حجم العنصر (Scale):</span>
-                                </span>
-                                <span id="cardScaleVal" class="text-[11px] font-mono font-black text-emerald-700 bg-white px-2 py-0.5 rounded-md border border-slate-200 shadow-2xs">
-                                    ${Math.round(curScale * 100)}%
-                                </span>
-                            </div>
+                        ${selectedId ? `
+                            <!-- 1. Size Controls (تحكم الحجم الطبيعي) -->
+                            <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[11px] font-black text-slate-800 flex items-center gap-1">
+                                        <span>📏</span>
+                                        <span>حجم العنصر (Scale):</span>
+                                    </span>
+                                    <span id="cardScaleVal" class="text-[11px] font-mono font-black text-emerald-700 bg-white px-2 py-0.5 rounded-md border border-slate-200 shadow-2xs">
+                                        ${Math.round(curScale * 100)}%
+                                    </span>
+                                </div>
 
-                            <!-- Slider with Minus / Plus -->
-                            <div class="flex items-center gap-2">
-                                <button type="button" onclick="ReelsEngine.adjustScaleSelected(-0.05)" 
-                                        class="w-8 h-8 rounded-lg bg-white hover:bg-slate-100 text-slate-800 font-black text-xs border border-slate-200 flex items-center justify-center transition active:scale-95 shadow-2xs" title="تصغير 5%">
-                                    ➖
-                                </button>
-                                <input type="range" id="cardScaleSlider" min="0.50" max="1.60" step="0.02" value="${curScale}" 
-                                       oninput="ReelsEngine.setScaleSelected(this.value)" class="flex-1 accent-emerald-600 cursor-pointer">
-                                <button type="button" onclick="ReelsEngine.adjustScaleSelected(0.05)" 
-                                        class="w-8 h-8 rounded-lg bg-white hover:bg-slate-100 text-slate-800 font-black text-xs border border-slate-200 flex items-center justify-center transition active:scale-95 shadow-2xs" title="تكبير 5%">
-                                    ➕
-                                </button>
-                            </div>
+                                <!-- Slider with Minus / Plus -->
+                                <div class="flex items-center gap-2">
+                                    <button type="button" onclick="ReelsEngine.adjustScaleSelected(-0.05)" 
+                                            class="w-8 h-8 rounded-lg bg-white hover:bg-slate-100 text-slate-800 font-black text-xs border border-slate-200 flex items-center justify-center transition active:scale-95 shadow-2xs" title="تصغير 5%">
+                                        ➖
+                                    </button>
+                                    <input type="range" id="cardScaleSlider" min="0.50" max="1.60" step="0.02" value="${curScale}" 
+                                           oninput="ReelsEngine.setScaleSelected(this.value)" class="flex-1 accent-emerald-600 cursor-pointer">
+                                    <button type="button" onclick="ReelsEngine.adjustScaleSelected(0.05)" 
+                                            class="w-8 h-8 rounded-lg bg-white hover:bg-slate-100 text-slate-800 font-black text-xs border border-slate-200 flex items-center justify-center transition active:scale-95 shadow-2xs" title="تكبير 5%">
+                                        ➕
+                                    </button>
+                                </div>
 
-                            <!-- Quick Size Presets -->
-                            <div class="grid grid-cols-3 gap-1.5 pt-0.5">
-                                <button type="button" onclick="ReelsEngine.setScaleSelected(0.85)" class="py-1 rounded-lg bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 text-[10px] font-bold border border-slate-200 transition">
-                                    صغير 85%
-                                </button>
-                                <button type="button" onclick="ReelsEngine.setScaleSelected(1.00)" class="py-1 rounded-lg bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 text-[10px] font-bold border border-slate-200 transition">
-                                    أصلي 100%
-                                </button>
-                                <button type="button" onclick="ReelsEngine.setScaleSelected(1.18)" class="py-1 rounded-lg bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 text-[10px] font-bold border border-slate-200 transition">
-                                    كبير 118%
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- 2. Position Controls (تحكم الموقع والتوسيط) -->
-                        <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
-                            <div class="flex items-center justify-between">
-                                <span class="text-[11px] font-black text-slate-800 flex items-center gap-1">
-                                    <span>📍</span>
-                                    <span>الموقع والتوسيط:</span>
-                                </span>
-                                <span class="text-[10px] text-slate-400 font-medium">سحب مباشر أو أزرار</span>
-                            </div>
-
-                            <!-- Big Center Button -->
-                            <button type="button" onclick="ReelsEngine.centerSelectedElement()" 
-                                    class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs transition flex items-center justify-center gap-1.5 shadow-sm active:scale-[0.98]">
-                                <span>🎯 وضع في المنتصف تماماً (Center 50%)</span>
-                            </button>
-
-                            <!-- Precision Nudge Arrows -->
-                            <div class="flex items-center justify-between pt-1 border-t border-slate-200/60">
-                                <span class="text-[10.5px] font-bold text-slate-600">تحريك دقيق (1%):</span>
-                                <div class="flex items-center gap-1">
-                                    <button type="button" onclick="ReelsEngine.nudgeSelected('up')" class="w-8 h-8 rounded-lg bg-white hover:bg-emerald-100 text-slate-800 hover:text-emerald-700 font-black text-xs transition border border-slate-200 flex items-center justify-center active:scale-95 shadow-2xs" title="للأعلى">⬆️</button>
-                                    <button type="button" onclick="ReelsEngine.nudgeSelected('down')" class="w-8 h-8 rounded-lg bg-white hover:bg-emerald-100 text-slate-800 hover:text-emerald-700 font-black text-xs transition border border-slate-200 flex items-center justify-center active:scale-95 shadow-2xs" title="للأسفل">⬇️</button>
-                                    <button type="button" onclick="ReelsEngine.nudgeSelected('left')" class="w-8 h-8 rounded-lg bg-white hover:bg-emerald-100 text-slate-800 hover:text-emerald-700 font-black text-xs transition border border-slate-200 flex items-center justify-center active:scale-95 shadow-2xs" title="يسار">⬅️</button>
-                                    <button type="button" onclick="ReelsEngine.nudgeSelected('right')" class="w-8 h-8 rounded-lg bg-white hover:bg-emerald-100 text-slate-800 hover:text-emerald-700 font-black text-xs transition border border-slate-200 flex items-center justify-center active:scale-95 shadow-2xs" title="يمين">➡️</button>
+                                <!-- Quick Size Presets -->
+                                <div class="grid grid-cols-3 gap-1.5 pt-0.5">
+                                    <button type="button" onclick="ReelsEngine.setScaleSelected(0.85)" class="py-1 rounded-lg bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 text-[10px] font-bold border border-slate-200 transition">
+                                        صغير 85%
+                                    </button>
+                                    <button type="button" onclick="ReelsEngine.setScaleSelected(1.00)" class="py-1 rounded-lg bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 text-[10px] font-bold border border-slate-200 transition">
+                                        أصلي 100%
+                                    </button>
+                                    <button type="button" onclick="ReelsEngine.setScaleSelected(1.18)" class="py-1 rounded-lg bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 text-[10px] font-bold border border-slate-200 transition">
+                                        كبير 118%
+                                    </button>
                                 </div>
                             </div>
-                        </div>
+
+                            <!-- 2. Position Controls (تحكم الموقع والتوسيط) -->
+                            <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[11px] font-black text-slate-800 flex items-center gap-1">
+                                        <span>📍</span>
+                                        <span>الموقع والتوسيط:</span>
+                                    </span>
+                                    <span class="text-[10px] text-slate-400 font-medium">سحب مباشر أو أزرار</span>
+                                </div>
+
+                                <!-- Big Center Button -->
+                                <button type="button" onclick="ReelsEngine.centerSelectedElement()" 
+                                        class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs transition flex items-center justify-center gap-1.5 shadow-sm active:scale-[0.98]">
+                                    <span>🎯 وضع في المنتصف تماماً (Center 50%)</span>
+                                </button>
+
+                                <!-- Precision Nudge Arrows -->
+                                <div class="flex items-center justify-between pt-1 border-t border-slate-200/60">
+                                    <span class="text-[10.5px] font-bold text-slate-600">تحريك دقيق (1%):</span>
+                                    <div class="flex items-center gap-1">
+                                        <button type="button" onclick="ReelsEngine.nudgeSelected('up')" class="w-8 h-8 rounded-lg bg-white hover:bg-emerald-100 text-slate-800 hover:text-emerald-700 font-black text-xs transition border border-slate-200 flex items-center justify-center active:scale-95 shadow-2xs" title="للأعلى">⬆️</button>
+                                        <button type="button" onclick="ReelsEngine.nudgeSelected('down')" class="w-8 h-8 rounded-lg bg-white hover:bg-emerald-100 text-slate-800 hover:text-emerald-700 font-black text-xs transition border border-slate-200 flex items-center justify-center active:scale-95 shadow-2xs" title="للأسفل">⬇️</button>
+                                        <button type="button" onclick="ReelsEngine.nudgeSelected('left')" class="w-8 h-8 rounded-lg bg-white hover:bg-emerald-100 text-slate-800 hover:text-emerald-700 font-black text-xs transition border border-slate-200 flex items-center justify-center active:scale-95 shadow-2xs" title="يسار">⬅️</button>
+                                        <button type="button" onclick="ReelsEngine.nudgeSelected('right')" class="w-8 h-8 rounded-lg bg-white hover:bg-emerald-100 text-slate-800 hover:text-emerald-700 font-black text-xs transition border border-slate-200 flex items-center justify-center active:scale-95 shadow-2xs" title="يمين">➡️</button>
+                                    </div>
+                                </div>
+                            </div>
+                        ` : `
+                            <div class="p-3.5 rounded-xl bg-slate-50 border border-dashed border-slate-300 text-center space-y-1">
+                                <div class="text-xs font-black text-slate-700 flex items-center justify-center gap-1.5">
+                                    <span>👆</span>
+                                    <span>لا يوجد عنصر محدد حالياً</span>
+                                </div>
+                                <p class="text-[10.5px] text-slate-500 font-medium">انقر على أي كرت أو عنوان على الكانفاس لتحديده وتعديل حجمه وموقعه، أو اختر عنصراً من القائمة أعلاه.</p>
+                            </div>
+                        `}
 
                         <!-- Save & Reset -->
                         <div class="flex items-center gap-2 pt-0.5">
