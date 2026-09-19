@@ -213,10 +213,10 @@ window.ReelsEngine = (function() {
 
     const DEFAULT_PROGRESS_BAR = {
         enabled: true,
-        style: 'capsule_neon', // 'capsule_neon' | 'laser_beam' | 'ig_vip_pills' | 'gradient_stream' | 'minimal_ticks'
-        color: 'amber', // 'amber' | 'emerald' | 'white' | 'purple' | 'cyan'
-        thickness: 'medium', // 'thin' (3px) | 'medium' (5px) | 'thick' (7px)
-        height: 5,
+        style: 'ig_vip_pills', // نقاط VIP الذكية
+        color: 'emerald',      // زمردي ميتا
+        thickness: 'thin',     // رقيق (3px)
+        height: 3,
         topOffset: 14
     };
 
@@ -224,7 +224,15 @@ window.ReelsEngine = (function() {
         try {
             const saved = localStorage.getItem(PROGRESS_BAR_STORAGE_KEY);
             if (saved) {
-                return { ...DEFAULT_PROGRESS_BAR, ...JSON.parse(saved) };
+                const parsed = JSON.parse(saved);
+                return {
+                    ...DEFAULT_PROGRESS_BAR,
+                    enabled: parsed.enabled !== false,
+                    style: 'ig_vip_pills',
+                    color: 'emerald',
+                    thickness: 'thin',
+                    height: 3
+                };
             }
         } catch (e) {}
         return { ...DEFAULT_PROGRESS_BAR };
@@ -2329,6 +2337,10 @@ window.ReelsEngine = (function() {
     function toggleProgressBar() {
         if (!state.progressBar) state.progressBar = { ...DEFAULT_PROGRESS_BAR };
         state.progressBar.enabled = !state.progressBar.enabled;
+        state.progressBar.style = 'ig_vip_pills';
+        state.progressBar.color = 'emerald';
+        state.progressBar.thickness = 'thin';
+        state.progressBar.height = 3;
         try {
             localStorage.setItem(PROGRESS_BAR_STORAGE_KEY, JSON.stringify(state.progressBar));
         } catch (e) {}
@@ -2336,7 +2348,7 @@ window.ReelsEngine = (function() {
         renderCanvas();
         renderEditorControls();
         if (window.showCopyToast) {
-            window.showCopyToast(state.progressBar.enabled ? 'تم تفعيل وإظهار شريط تقدم الريل ⏳👁️' : 'تم إخفاء شريط التقدم بنجاح ⚪');
+            window.showCopyToast(state.progressBar.enabled ? 'تم إظهار شريط تقدم الريل ⏳' : 'تم إخفاء شريط التقدم ⚪');
         }
     }
 
@@ -6400,104 +6412,24 @@ window.ReelsEngine = (function() {
                 <!-- 5.5 AUDIO & SFX STUDIO -->
                 ${renderAudioStudioHtml()}
 
-                <!-- 5.8 STORY PROGRESS BAR 2.0 (MULTI-STYLE & ONE-CLICK TOGGLE) -->
-                <div class="p-3.5 rounded-2xl bg-gradient-to-br from-slate-900 via-zinc-900 to-slate-950 border border-zinc-800 text-white shadow-md space-y-3">
-                    <div class="flex items-center justify-between flex-wrap gap-2">
-                        <div class="flex items-center gap-2">
-                            <span class="text-xl">⏳</span>
-                            <div>
-                                <h4 class="text-xs font-black text-white flex items-center gap-1.5">
-                                    <span>شريط تقدم الريل العلوي (Story Progress Bar)</span>
-                                    <span class="text-[9.5px] px-2 py-0.5 rounded-full font-black ${state.progressBar.enabled ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-xs' : 'bg-zinc-800 text-zinc-500 border border-zinc-700'}">
-                                        ${state.progressBar.enabled ? 'مفعل وظاهر 👁️' : 'مخفي ⚪'}
-                                    </span>
-                                </h4>
-                                <p class="text-[10px] text-zinc-400">اختر شكل وتصميم شريط تقدم القصة أو قم بإخفائه وتفعيله بنقرة واحدة</p>
+                <!-- 5.8 STORY PROGRESS BAR (COMPACT TOGGLE) -->
+                <div class="p-3 rounded-2xl bg-zinc-900/90 border border-zinc-800 text-white flex items-center justify-between shadow-sm">
+                    <div class="flex items-center gap-2">
+                        <span class="text-base">⏳</span>
+                        <div>
+                            <div class="text-xs font-black text-white flex items-center gap-1.5">
+                                <span>شريط تقدم الريل (Story Bar):</span>
+                                <span class="text-[9.5px] px-2 py-0.5 rounded-full font-bold ${state.progressBar.enabled ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-zinc-800 text-zinc-500'}">
+                                    ${state.progressBar.enabled ? 'نقاط VIP الذكية ⚪' : 'مخفي ✕'}
+                                </span>
                             </div>
+                            <p class="text-[9.5px] text-zinc-400">كبسولات ذكية تتمدد تلقائياً مع حركة وعرض كل سلايد</p>
                         </div>
-                        <button type="button" onclick="ReelsEngine.toggleProgressBar()" 
-                                class="px-3.5 py-1.5 rounded-xl ${state.progressBar.enabled ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-600/30' : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-700'} text-xs font-black transition active:scale-95 cursor-pointer flex items-center gap-1.5 shadow-sm">
-                            <span>${state.progressBar.enabled ? '👁️ إظهار شريط التقدم (مفعل)' : '⚪ إخفاء شريط التقدم (معطل)'}</span>
-                        </button>
                     </div>
-
-                    ${state.progressBar.enabled ? `
-                        <!-- Style Selector Grid -->
-                        <div class="space-y-1.5 pt-2 border-t border-zinc-800/80">
-                            <span class="text-[10.5px] text-zinc-400 font-bold block">اختر شكل وتصميم الشريط:</span>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                                ${REELS_PROGRESS_STYLES.map(st => {
-                                    const isActive = (state.progressBar.style || 'capsule_neon') === st.id;
-                                    return `
-                                        <div onclick="ReelsEngine.setProgressBarStyle('${st.id}')"
-                                             class="p-2.5 rounded-xl transition border cursor-pointer select-none active:scale-[0.98] ${isActive ? 'bg-amber-500/15 border-amber-400 text-white ring-1 ring-amber-400/50 shadow-sm' : 'bg-zinc-900/90 border-zinc-800 text-zinc-300 hover:border-zinc-700 hover:bg-zinc-850'}">
-                                            <div class="flex items-center justify-between mb-1">
-                                                <div class="flex items-center gap-1.5">
-                                                    <span class="text-sm">${st.icon}</span>
-                                                    <span class="text-[11px] font-black">${st.name}</span>
-                                                </div>
-                                                ${isActive ? '<span class="text-[9px] bg-amber-400 text-slate-950 px-1.5 py-0.2 rounded font-black">مفعل ✓</span>' : ''}
-                                            </div>
-                                            <p class="text-[9px] text-zinc-400 leading-snug">${st.desc}</p>
-                                        </div>
-                                    `;
-                                }).join('')}
-                            </div>
-                        </div>
-
-                        <!-- Color & Thickness Options -->
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-zinc-800/80">
-                            <!-- Colors -->
-                            <div class="space-y-1.5">
-                                <span class="text-[10px] text-zinc-400 font-bold block">لون شريط التقدم:</span>
-                                <div class="flex flex-wrap gap-1.5">
-                                    <button type="button" onclick="ReelsEngine.setProgressBarColor('amber')" 
-                                            class="px-2 py-1 rounded-lg text-[10px] font-bold border transition ${state.progressBar.color === 'amber' ? 'bg-amber-400 text-slate-950 border-amber-400 font-black ring-2 ring-amber-400/40 shadow-xs' : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border-zinc-700'}">
-                                        🟡 ذهبي كوينز
-                                    </button>
-                                    <button type="button" onclick="ReelsEngine.setProgressBarColor('emerald')" 
-                                            class="px-2 py-1 rounded-lg text-[10px] font-bold border transition ${state.progressBar.color === 'emerald' ? 'bg-emerald-500 text-white border-emerald-500 font-black ring-2 ring-emerald-500/40 shadow-xs' : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border-zinc-700'}">
-                                        🟢 زمردي ميتا
-                                    </button>
-                                    <button type="button" onclick="ReelsEngine.setProgressBarColor('white')" 
-                                            class="px-2 py-1 rounded-lg text-[10px] font-bold border transition ${state.progressBar.color === 'white' ? 'bg-white text-slate-950 border-white font-black ring-2 ring-white/40 shadow-xs' : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border-zinc-700'}">
-                                        ⚪ أبيض ستوري
-                                    </button>
-                                    <button type="button" onclick="ReelsEngine.setProgressBarColor('purple')" 
-                                            class="px-2 py-1 rounded-lg text-[10px] font-bold border transition ${state.progressBar.color === 'purple' ? 'bg-purple-500 text-white border-purple-500 font-black ring-2 ring-purple-500/40 shadow-xs' : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border-zinc-700'}">
-                                        🟣 نيون سايبر
-                                    </button>
-                                    <button type="button" onclick="ReelsEngine.setProgressBarColor('cyan')" 
-                                            class="px-2 py-1 rounded-lg text-[10px] font-bold border transition ${state.progressBar.color === 'cyan' ? 'bg-cyan-400 text-slate-950 border-cyan-400 font-black ring-2 ring-cyan-400/40 shadow-xs' : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border-zinc-700'}">
-                                        💎 سماوي ماسي
-                                    </button>
-                                </div>
-                            </div>
-
-                            <!-- Thickness -->
-                            <div class="space-y-1.5">
-                                <span class="text-[10px] text-zinc-400 font-bold block">سُمك وحجم الشريط:</span>
-                                <div class="flex items-center gap-1.5">
-                                    <button type="button" onclick="ReelsEngine.setProgressBarThickness('thin')" 
-                                            class="flex-1 py-1 rounded-lg text-[10px] font-bold border transition ${(state.progressBar.thickness || 'medium') === 'thin' ? 'bg-white text-slate-950 border-white font-black' : 'bg-zinc-800 text-zinc-400 border-zinc-700 hover:text-white'}">
-                                        رقيق (3px)
-                                    </button>
-                                    <button type="button" onclick="ReelsEngine.setProgressBarThickness('medium')" 
-                                            class="flex-1 py-1 rounded-lg text-[10px] font-bold border transition ${(state.progressBar.thickness || 'medium') === 'medium' ? 'bg-white text-slate-950 border-white font-black' : 'bg-zinc-800 text-zinc-400 border-zinc-700 hover:text-white'}">
-                                        متوازن (5px)
-                                    </button>
-                                    <button type="button" onclick="ReelsEngine.setProgressBarThickness('thick')" 
-                                            class="flex-1 py-1 rounded-lg text-[10px] font-bold border transition ${(state.progressBar.thickness || 'medium') === 'thick' ? 'bg-white text-slate-950 border-white font-black' : 'bg-zinc-800 text-zinc-400 border-zinc-700 hover:text-white'}">
-                                        بارز (7px)
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    ` : `
-                        <div class="p-3 rounded-xl bg-zinc-900/60 border border-zinc-800 text-center text-[10.5px] text-zinc-400">
-                            💡 شريط التقدم مخفي حالياً من الكانفاس وتصدير الفيديو. اضغط على الزر الأخضر أعلاه لإظهاره واختيار شكله المناسب.
-                        </div>
-                    `}
+                    <button type="button" onclick="ReelsEngine.toggleProgressBar()" 
+                            class="px-3.5 py-1.5 rounded-xl ${state.progressBar.enabled ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-600/30' : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-700'} text-xs font-black transition active:scale-95 cursor-pointer flex items-center gap-1 shadow-sm">
+                        <span>${state.progressBar.enabled ? '👁️ إظهار (مفعل)' : '⚪ إخفاء (معطل)'}</span>
+                    </button>
                 </div>
 
                 <!-- 5.9 SLIDE TRANSITIONS STUDIO -->
