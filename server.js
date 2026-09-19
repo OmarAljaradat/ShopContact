@@ -1213,137 +1213,83 @@ async function processReelJob(jobId, payload, execPath) {
         const totalDurationSec = slides.reduce((acc, s) => acc + (Number(s.duration) || Number(projectState?.slideDuration) || 2.5), 0);
 
         const animEnabled = projectState?.animationsEnabled !== false;
-        job.message = `جاري التقاط وتسجيل حركة السلايدات بدقة 1080x1920 (0/${totalSlides})...`;
+        job.status = 'recording';
+        job.progress = 35;
+        job.message = 'جاري تسجيل حركات السلايدات الحية بدقة 1080x1920 (Live 60 FPS Engine)...';
 
-        let concatContent = '';
-        let globalFrameIdx = 0;
-        const stepMs = 60; // 60ms (~16.6 fps motion during entrance)
+        // 2. Real-time Compositor Screencast: captures the EXACT, 100% fluid preview directly from Chrome
+        const client = await page.target().createCDPSession();
+        const frameBuffers = [];
+        let isRecording = true;
 
-        for (let i = 0; i < totalSlides; i++) {
-            const pct = Math.round(30 + ((i + 1) / totalSlides) * 35);
-            job.progress = pct;
-            job.message = `جاري التقاط السلايدة ${i + 1} من ${totalSlides} وحركاتها (${pct}%)...`;
+        client.on('Page.screencastFrame', async ({ data, sessionId }) => {
+            if (!isRecording) return;
+            frameBuffers.push(Buffer.from(data, 'base64'));
+            try {
+                await client.send('Page.screencastFrameAck', { sessionId });
+            } catch (e) {}
+        });
 
-            const slideDur = Number(slides[i].duration) || Number(projectState?.slideDuration) || 2.5;
+        await client.send('Page.startScreencast', {
+            format: 'jpeg',
+            quality: 85,
+            maxWidth: 1080,
+            maxHeight: 1920,
+            everyNthFrame: 1
+        });
 
-            // Switch to slide and trigger animations
-            await page.evaluate((idx) => {
-                if (window.ReelsEngine && typeof window.ReelsEngine.goToSlide === 'function') {
-                    const state = window.ReelsEngine.getState ? window.ReelsEngine.getState() : null;
-                    if (state) state.slideEntrancePending = true;
-                    window.ReelsEngine.goToSlide(idx);
-                    if (state) {
-                        state.slideEntrancePending = true;
-                        if (typeof window.ReelsEngine.renderCanvas === 'function') {
-                            window.ReelsEngine.renderCanvas();
-                        }
-                    }
-                }
-            }, i);
+        const playbackStart = Date.now();
 
-            // Small settle delay for fonts/images
-            await new Promise(r => setTimeout(r, 60));
-
-            if (animEnabled && slideDur >= 0.8) {
-                // Pause all animations so we control the timeline deterministically
-                await page.evaluate(() => {
-                    const canvas = document.getElementById('exportCanvas');
-                    if (canvas && typeof canvas.getAnimations === 'function') {
-                        const anims = canvas.getAnimations({ subtree: true });
-                        anims.forEach(a => a.pause());
-                    }
+        // Trigger real-time playback in Chrome
+        await page.evaluate(() => {
+            window.__reelPlaybackFinished = false;
+            if (window.ReelsEngine) {
+                window.ReelsEngine.goToSlide(0);
+                window.ReelsEngine.playPlayback(null, null, () => {
+                    window.__reelPlaybackFinished = true;
                 });
-
-                // Optimized 2-point keyframe trajectory + settle frame for maximum rendering speed and fluid motion
-                const currentSlide = slides[i] || {};
-                const targetEntranceDur = Math.min(0.48, Math.max(0.30, slideDur - 0.25));
-                const entranceTimes = [200, 520];
-                const stepCount = entranceTimes.length;
-                const stepDur = targetEntranceDur / stepCount;
-                const holdSec = Math.max(0.1, slideDur - targetEntranceDur);
-
-                // Step through entrance keyframes
-                for (let f = 0; f < entranceTimes.length; f++) {
-                    const ms = entranceTimes[f];
-                    await page.evaluate((t) => {
-                        const canvas = document.getElementById('exportCanvas');
-                        if (canvas && typeof canvas.getAnimations === 'function') {
-                            const anims = canvas.getAnimations({ subtree: true });
-                            anims.forEach(a => {
-                                a.currentTime = t;
-                            });
-                        }
-                    }, ms);
-
-                    const fName = `f_${String(globalFrameIdx++).padStart(5, '0')}.jpg`;
-                    const fPath = path.join(framesDir, fName);
-                    await page.screenshot({ path: fPath, type: 'jpeg', quality: 72, optimizeForSpeed: true });
-
-                    concatContent += `file '${fName}'\n`;
-                    concatContent += `duration ${stepDur.toFixed(6)}\n`;
-                }
-
-                // Settle animations to completion (t = 800ms) for hold frame
-                await page.evaluate(() => {
-                    const canvas = document.getElementById('exportCanvas');
-                    if (canvas && typeof canvas.getAnimations === 'function') {
-                        const anims = canvas.getAnimations({ subtree: true });
-                        anims.forEach(a => {
-                            a.currentTime = 800;
-                        });
-                    }
-                    const layers = document.querySelectorAll('.reel-anim-layer, [class*="reel-anim-layer"], #reelSlideTransitionWrapper');
-                    layers.forEach(l => {
-                        l.style.opacity = '1';
-                    });
-                });
-
-                const holdName = `f_${String(globalFrameIdx++).padStart(5, '0')}.jpg`;
-                const holdPath = path.join(framesDir, holdName);
-                await page.screenshot({ path: holdPath, type: 'jpeg', quality: 75, optimizeForSpeed: true });
-
-                concatContent += `file '${holdName}'\n`;
-                concatContent += `duration ${holdSec.toFixed(6)}\n`;
-            } else {
-                // Static frame fallback (if animations explicitly disabled)
-                await page.evaluate(() => {
-                    const layers = document.querySelectorAll('.reel-anim-layer, [class*="reel-anim-layer"], #reelSlideTransitionWrapper');
-                    layers.forEach(l => {
-                        l.style.animation = 'none';
-                        l.style.opacity = '1';
-                        l.style.transform = 'none';
-                    });
-                });
-
-                const slideFname = `f_${String(globalFrameIdx++).padStart(5, '0')}.jpg`;
-                const slidePath = path.join(framesDir, slideFname);
-                await page.screenshot({ path: slidePath, type: 'jpeg', quality: 78, optimizeForSpeed: true });
-
-                concatContent += `file '${slideFname}'\n`;
-                concatContent += `duration ${slideDur.toFixed(6)}\n`;
             }
+        });
+
+        // Monitor playback and update progress bar
+        const pollInterval = 400;
+        const maxWaitMs = (totalDurationSec + 8) * 1000;
+        while (Date.now() - playbackStart < maxWaitMs) {
+            await new Promise(r => setTimeout(r, pollInterval));
+            const elapsedSec = (Date.now() - playbackStart) / 1000;
+            const pct = Math.min(85, Math.round(35 + (elapsedSec / totalDurationSec) * 50));
+            job.progress = pct;
+            job.message = `جاري التقاط الحركات والانسيابية مباشرة من المعاينة (${elapsedSec.toFixed(1)}ث / ${totalDurationSec.toFixed(1)}ث)...`;
+
+            const isDone = await page.evaluate(() => window.__reelPlaybackFinished === true).catch(() => false);
+            if (isDone) break;
         }
 
-        // Keep page instance warm for subsequent ultra-fast renders
+        const playbackEnd = Date.now();
+        isRecording = false;
+        await client.send('Page.stopScreencast').catch(() => {});
+
+        const actualDurationSec = Math.max(1, (playbackEnd - playbackStart) / 1000);
+        const exactFps = (frameBuffers.length / actualDurationSec).toFixed(3);
+        console.log(`[processReelJob] Live Screencast captured ${frameBuffers.length} frames in ${actualDurationSec.toFixed(2)}s -> exact FPS: ${exactFps}`);
+
+        if (frameBuffers.length === 0) {
+            throw new Error('لم يتم التقاط أي إطارات أثناء المعاينة');
+        }
+
         job.status = 'encoding';
-        job.progress = 75;
-        job.message = 'جاري تجميع وضغط الفيديو والصوت في مسار فائق السرعة...';
-
-        // Concat demuxer requirement: repeat the last image without duration
-        const lastAbsName = `f_${String(globalFrameIdx - 1).padStart(5, '0')}.jpg`;
-        concatContent += `file '${lastAbsName}'\n`;
-
-        const concatPath = path.join(framesDir, 'concat.txt');
-        fs.writeFileSync(concatPath, concatContent);
+        job.progress = 88;
+        job.message = 'جاري ضغط وترميز إطارات الفيديو 1080x1920 (FFmpeg High Profile)...';
 
         const outMp4Path = path.join(runDir, 'final_reel.mp4');
+        const { spawn } = require('child_process');
 
-        // Single-pass high-speed FFmpeg pipeline with real-time 30 FPS motion blending
         const ffmpegArgs = [
             '-y',
-            '-f', 'concat',
-            '-safe', '0',
-            '-i', 'concat.txt'
+            '-f', 'image2pipe',
+            '-vcodec', 'mjpeg',
+            '-r', exactFps,
+            '-i', '-'
         ];
 
         if (audioFile && fs.existsSync(audioFile) && fs.statSync(audioFile).size > 1000) {
@@ -1353,74 +1299,45 @@ async function processReelJob(jobId, payload, execPath) {
         }
 
         ffmpegArgs.push(
-            '-vf', 'framerate=fps=30:interp_start=0:interp_end=255',
             '-c:v', 'libx264',
-            '-crf', '22',
-            '-preset', 'ultrafast',
-            '-tune', 'fastdecode',
-            '-threads', '0',
+            '-preset', 'veryfast',
+            '-crf', '19',
             '-pix_fmt', 'yuv420p',
             '-t', String(totalDurationSec),
             '-movflags', '+faststart',
             outMp4Path.replace(/\\/g, '/')
         );
 
-        const { exec } = require('child_process');
-        job.progress = 85;
-        job.message = 'جاري ضغط وترميز إطارات الفيديو (FFmpeg 30 FPS Motion)...';
-
-        let encodedSuccessfully = false;
-        try {
-            await new Promise((resolve, reject) => {
-                exec(`"${ffmpegPath}" ${ffmpegArgs.map(a => `"${a}"`).join(' ')}`, { cwd: framesDir, maxBuffer: 10 * 1024 * 1024 }, (err) => {
-                    if (err) return reject(err);
-                    resolve();
-                });
+        await new Promise((resolve, reject) => {
+            const proc = spawn(ffmpegPath, ffmpegArgs);
+            proc.stdin.on('error', () => {});
+            proc.on('close', (code) => {
+                if (code === 0) resolve();
+                else reject(new Error('FFmpeg exit code ' + code));
             });
-            encodedSuccessfully = fs.existsSync(outMp4Path);
-        } catch (encErr) {
-            console.warn('[processReelJob] Motion filter notice, falling back to direct concat:', encErr.message);
-        }
 
-        // Resilient Fallback to direct concat if framerate filter encounters any issue
-        if (!encodedSuccessfully) {
-            const fallbackArgs = [
-                '-y',
-                '-f', 'concat',
-                '-safe', '0',
-                '-i', 'concat.txt'
-            ];
-            if (audioFile && fs.existsSync(audioFile) && fs.statSync(audioFile).size > 1000) {
-                fallbackArgs.push('-i', audioFile.replace(/\\/g, '/'), '-c:a', 'aac', '-b:a', '192k');
-            } else {
-                fallbackArgs.push('-f', 'lavfi', '-i', 'anullsrc=r=44100:cl=stereo', '-c:a', 'aac', '-b:a', '128k');
+            // Write all frames with backpressure
+            let idx = 0;
+            function writeNext() {
+                let canWrite = true;
+                while (idx < frameBuffers.length && canWrite) {
+                    canWrite = proc.stdin.write(frameBuffers[idx++]);
+                }
+                if (idx < frameBuffers.length) {
+                    proc.stdin.once('drain', writeNext);
+                } else {
+                    proc.stdin.end();
+                }
             }
-            fallbackArgs.push(
-                '-c:v', 'libx264',
-                '-crf', '22',
-                '-preset', 'ultrafast',
-                '-tune', 'fastdecode',
-                '-threads', '0',
-                '-pix_fmt', 'yuv420p',
-                '-t', String(totalDurationSec),
-                '-movflags', '+faststart',
-                outMp4Path.replace(/\\/g, '/')
-            );
-
-            await new Promise((resolve, reject) => {
-                exec(`"${ffmpegPath}" ${fallbackArgs.map(a => `"${a}"`).join(' ')}`, { cwd: framesDir, maxBuffer: 10 * 1024 * 1024 }, (err) => {
-                    if (err) return reject(err);
-                    resolve();
-                });
-            });
-        }
+            writeNext();
+        });
 
         if (!fs.existsSync(outMp4Path)) {
             throw new Error('فشل توليد ملف الفيديو النهائي عبر FFmpeg');
         }
 
         const mp4Buffer = fs.readFileSync(outMp4Path);
-        console.log(`[Record Studio Reel] Video created successfully! File: ${outFilename}, Size: ${(mp4Buffer.length / (1024 * 1024)).toFixed(2)} MB, Slides: ${totalSlides}, Duration: ${totalDurationSec}s`);
+        console.log(`[Record Studio Reel] Perfect 1:1 Video created! File: ${outFilename}, Size: ${(mp4Buffer.length / (1024 * 1024)).toFixed(2)} MB, Frames: ${frameBuffers.length}, FPS: ${exactFps}`);
 
         // Prune old exports
         pruneExports();
