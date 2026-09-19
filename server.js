@@ -1254,15 +1254,15 @@ async function processReelJob(jobId, payload, execPath) {
                     }
                 });
 
-                // Optimal 4-point trajectory matching the natural preview easing curve (150ms, 320ms, 500ms, 680ms)
+                // Optimized 2-point keyframe trajectory + settle frame for maximum rendering speed and fluid motion
                 const currentSlide = slides[i] || {};
-                const targetEntranceDur = Math.min(0.55, Math.max(0.35, slideDur - 0.25));
-                const stepCount = 4;
+                const targetEntranceDur = Math.min(0.48, Math.max(0.30, slideDur - 0.25));
+                const entranceTimes = [200, 520];
+                const stepCount = entranceTimes.length;
                 const stepDur = targetEntranceDur / stepCount;
-                const entranceTimes = [150, 320, 500, 680];
                 const holdSec = Math.max(0.1, slideDur - targetEntranceDur);
 
-                // Step through keyframes
+                // Step through entrance keyframes
                 for (let f = 0; f < entranceTimes.length; f++) {
                     const ms = entranceTimes[f];
                     await page.evaluate((t) => {
@@ -1277,19 +1277,19 @@ async function processReelJob(jobId, payload, execPath) {
 
                     const fName = `f_${String(globalFrameIdx++).padStart(5, '0')}.jpg`;
                     const fPath = path.join(framesDir, fName);
-                    await page.screenshot({ path: fPath, type: 'jpeg', quality: 80, optimizeForSpeed: true });
+                    await page.screenshot({ path: fPath, type: 'jpeg', quality: 72, optimizeForSpeed: true });
 
                     concatContent += `file '${fName}'\n`;
                     concatContent += `duration ${stepDur.toFixed(6)}\n`;
                 }
 
-                // Settle animations to completion (t = 850ms) for hold frame
+                // Settle animations to completion (t = 800ms) for hold frame
                 await page.evaluate(() => {
                     const canvas = document.getElementById('exportCanvas');
                     if (canvas && typeof canvas.getAnimations === 'function') {
                         const anims = canvas.getAnimations({ subtree: true });
                         anims.forEach(a => {
-                            a.currentTime = 850;
+                            a.currentTime = 800;
                         });
                     }
                     const layers = document.querySelectorAll('.reel-anim-layer, [class*="reel-anim-layer"], #reelSlideTransitionWrapper');
@@ -1300,7 +1300,7 @@ async function processReelJob(jobId, payload, execPath) {
 
                 const holdName = `f_${String(globalFrameIdx++).padStart(5, '0')}.jpg`;
                 const holdPath = path.join(framesDir, holdName);
-                await page.screenshot({ path: holdPath, type: 'jpeg', quality: 86, optimizeForSpeed: true });
+                await page.screenshot({ path: holdPath, type: 'jpeg', quality: 75, optimizeForSpeed: true });
 
                 concatContent += `file '${holdName}'\n`;
                 concatContent += `duration ${holdSec.toFixed(6)}\n`;
@@ -1317,18 +1317,14 @@ async function processReelJob(jobId, payload, execPath) {
 
                 const slideFname = `f_${String(globalFrameIdx++).padStart(5, '0')}.jpg`;
                 const slidePath = path.join(framesDir, slideFname);
-                await page.screenshot({ path: slidePath, type: 'jpeg', quality: 88, optimizeForSpeed: true });
+                await page.screenshot({ path: slidePath, type: 'jpeg', quality: 78, optimizeForSpeed: true });
 
                 concatContent += `file '${slideFname}'\n`;
                 concatContent += `duration ${slideDur.toFixed(6)}\n`;
             }
         }
 
-        // 3. Close tab immediately to release memory
-        await page.close().catch(() => {});
-        nativePage = null;
-        page = null;
-
+        // Keep page instance warm for subsequent ultra-fast renders
         job.status = 'encoding';
         job.progress = 75;
         job.message = 'جاري تجميع وضغط الفيديو والصوت في مسار فائق السرعة...';
@@ -1478,10 +1474,12 @@ async function processReelJob(jobId, payload, execPath) {
         job.status = 'error';
         job.error = err.message || 'حدث خطأ غير متوقع أثناء تسجيل الفيديو';
     } finally {
-        if (page && !page.isClosed()) {
-            try { await page.close(); } catch(e) {}
+        if (job.status === 'error') {
+            if (page && !page.isClosed()) {
+                try { await page.close(); } catch(e) {}
+            }
+            if (page === nativePage) nativePage = null;
         }
-        if (page === nativePage) nativePage = null;
         if (runDir && fs.existsSync(runDir)) {
             try { fs.rmSync(runDir, { recursive: true, force: true }); } catch(e) {}
         }
