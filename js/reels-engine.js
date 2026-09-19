@@ -6673,6 +6673,16 @@ window.ReelsEngine = (function() {
 
                 <!-- 7. EXPORT ACTIONS -->
                 <div class="pt-2 border-t border-slate-200 space-y-2">
+                    <div class="bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-3 text-right space-y-1">
+                        <div class="flex items-center gap-1.5 text-emerald-600 font-black text-xs">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                            <span>⚡ استوديو محلي فائق السرعة (تصدير 5 إلى 8 ثوانٍ)</span>
+                        </div>
+                        <p class="text-slate-600 text-[11px] font-medium leading-relaxed">
+                            يتم إنتاج الفيديو بدقة 1080x1920 Full HD مع الصوت والانسيابية، ويُحفظ تلقائياً ومباشرة على <b class="text-slate-900">سطح المكتب (Desktop)</b>.
+                        </p>
+                    </div>
+
                     <button type="button" onclick="ReelsEngine.exportReelVideo()" id="btnExportVideo" 
                             class="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:brightness-105 text-white font-black text-xs transition flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/25 cursor-pointer">
                         <span>🎬 تحميل فيديو الريل الأصلي (MP4 بدقة 1080x1920 مع الأنيميشن والصوت)</span>
@@ -7083,6 +7093,11 @@ window.ReelsEngine = (function() {
         const bottomContainer = document.getElementById('reelsPlayerToolbarContainer');
         if (!topContainer && !bottomContainer) return;
 
+        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const localBadgeHtml = isLocal
+            ? `<span class="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 font-bold text-[10px] border border-emerald-500/40 flex items-center gap-1" title="يعمل على معالج كمبيوترك الخارق - تصدير فائق في 5 ثوانٍ وحفظ فوري على سطح المكتب"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>🟢 محلي ⚡ (5s)</span>`
+            : `<a href="http://localhost:3000/?suite=suite_reels" target="_blank" class="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 font-bold text-[10px] border border-amber-500/40 hover:bg-amber-500/30 flex items-center gap-1 transition" title="افتح الاستوديو محلياً للتصدير في 5 ثوانٍ وحفظ تلقائي على سطح المكتب">⚡ افتح محلياً (5s)</a>`;
+
         const toolbarHtml = `
             <div class="p-2.5 sm:p-3 bg-slate-900/95 backdrop-blur-md rounded-2xl border border-slate-800 flex items-center justify-between text-white shadow-xl flex-wrap gap-2">
                 <div class="flex items-center gap-1.5 flex-wrap">
@@ -7113,7 +7128,7 @@ window.ReelsEngine = (function() {
                 </div>
 
                 <div class="flex items-center gap-1.5 flex-wrap">
-                    <span class="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 font-mono text-[10px] border border-emerald-500/30" title="محرك التصدير الفائق 1080x1920 مفعّل">v68.0 ⚡</span>
+                    ${localBadgeHtml}
                     <button type="button" id="btnExportVideoFloating" onclick="ReelsEngine.exportReelVideo()" class="btn-export-reel-action px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:brightness-105 text-white font-black text-xs transition flex items-center gap-1 shadow-md shadow-emerald-600/20 active:scale-95" title="تحميل الفيديو بدقة 1080x1920 Full HD مع الأنيميشن والصوت">
                         <span>🎬 تحميل فيديو</span>
                     </button>
@@ -7768,14 +7783,29 @@ window.ReelsEngine = (function() {
             const desktopFile = result.desktopFile || 'Reel_FC27_ShopCoin15_Latest.mp4';
 
             if (downloadUrl) {
-                const a = document.createElement('a');
-                a.href = downloadUrl;
-                a.download = finalName;
-                document.body.appendChild(a);
-                a.click();
-                setTimeout(() => {
-                    if (document.body.contains(a)) document.body.removeChild(a);
-                }, 60000);
+                try {
+                    const a = document.createElement('a');
+                    a.href = downloadUrl;
+                    a.download = finalName;
+                    document.body.appendChild(a);
+                    a.click();
+                    setTimeout(() => {
+                        if (document.body.contains(a)) document.body.removeChild(a);
+                    }, 60000);
+                } catch (linkErr) {
+                    console.warn('[Direct Link Download Warning]', linkErr);
+                }
+
+                // Resilient fallback: hidden iframe triggers attachment download without popup blockers interfering
+                try {
+                    const ifr = document.createElement('iframe');
+                    ifr.style.display = 'none';
+                    ifr.src = downloadUrl;
+                    document.body.appendChild(ifr);
+                    setTimeout(() => {
+                        if (document.body.contains(ifr)) document.body.removeChild(ifr);
+                    }, 60000);
+                } catch (ifrErr) {}
             }
 
             // Always show the unmissable modal with direct download button and desktop path
