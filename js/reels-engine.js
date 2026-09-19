@@ -1657,6 +1657,112 @@ window.ReelsEngine = (function() {
         }
     }
 
+    // ---- 3.1 OFFLINE MASTER SOUNDTRACK RENDERER (BGM + ALL SLIDE SFX TO WAV BASE64) ----
+    async function renderMasterAudioWav(audioStateOverride = null) {
+        const curAudio = Object.assign({}, audioState, audioStateOverride || {});
+        if (!curAudio.masterEnabled) return null;
+
+        const OfflineCtx = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+        if (!OfflineCtx) return null;
+
+        const sampleRate = 44100;
+        const totalDurationSec = state.slides.reduce((acc, s) => acc + (s.duration || state.slideDuration || 2.5), 0);
+        const totalSamples = Math.ceil(sampleRate * (totalDurationSec + 0.5));
+        const offCtx = new OfflineCtx(2, totalSamples, sampleRate);
+
+        // 1. Render BGM Loop
+        if (curAudio.bgmEnabled) {
+            try {
+                let bgmBuffer = null;
+                if (curAudio.bgmType === 'custom' && customAudioBuffer) {
+                    bgmBuffer = customAudioBuffer;
+                } else {
+                    const trackId = curAudio.selectedTrackId || 'drill_london_808';
+                    bgmBuffer = await getTrackAudioBuffer(trackId, sampleRate);
+                }
+
+                if (bgmBuffer) {
+                    const bgmSrc = offCtx.createBufferSource();
+                    bgmSrc.buffer = bgmBuffer;
+                    bgmSrc.loop = true;
+                    const bgmGain = offCtx.createGain();
+                    bgmGain.gain.setValueAtTime(curAudio.bgmVolume, 0);
+                    bgmSrc.connect(bgmGain);
+                    bgmGain.connect(offCtx.destination);
+                    bgmSrc.start(0);
+                    bgmSrc.stop(totalDurationSec);
+                }
+            } catch (bgmErr) {
+                console.warn('[renderMasterAudioWav] BGM note:', bgmErr.message);
+            }
+        }
+
+        // 2. Schedule Slide SFX at exact slide offsets
+        if (curAudio.sfxEnabled) {
+            try {
+                let curOffset = 0;
+                for (let i = 0; i < state.slides.length; i++) {
+                    const slide = state.slides[i];
+                    triggerSlideAudio(slide, offCtx.destination, offCtx, curOffset);
+                    if (state.slideTransition && state.slideTransition.soundEnabled && i > 0) {
+                        playWhooshSound(offCtx.destination, 0.7, offCtx, curOffset);
+                    }
+                    curOffset += (slide.duration || state.slideDuration || 2.5);
+                }
+            } catch (sfxErr) {
+                console.warn('[renderMasterAudioWav] SFX note:', sfxErr.message);
+            }
+        }
+
+        const renderedBuffer = await offCtx.startRendering();
+
+        // Convert AudioBuffer to WAV Base64
+        function bufferToWavBase64(abuffer) {
+            const numOfChan = abuffer.numberOfChannels;
+            const length = abuffer.length * numOfChan * 2 + 44;
+            const out = new DataView(new ArrayBuffer(length));
+            let channels = [], i, sample, offset = 0, pos = 0;
+
+            function setUint16(data) { out.setUint16(pos, data, true); pos += 2; }
+            function setUint32(data) { out.setUint32(pos, data, true); pos += 4; }
+
+            setUint32(0x46464952); // "RIFF"
+            setUint32(length - 8);
+            setUint32(0x45564157); // "WAVE"
+            setUint32(0x20746d66); // "fmt "
+            setUint32(16);
+            setUint16(1); // PCM
+            setUint16(numOfChan);
+            setUint32(abuffer.sampleRate);
+            setUint32(abuffer.sampleRate * 2 * numOfChan);
+            setUint16(numOfChan * 2);
+            setUint16(16);
+            setUint32(0x61746164); // "data"
+            setUint32(length - pos - 4);
+
+            for (i = 0; i < numOfChan; i++) channels.push(abuffer.getChannelData(i));
+
+            while (pos < length) {
+                for (i = 0; i < numOfChan; i++) {
+                    sample = Math.max(-1, Math.min(1, channels[i][offset]));
+                    sample = (0.5 + sample < 0 ? sample * 32768 : sample * 32767) | 0;
+                    out.setInt16(pos, sample, true);
+                    pos += 2;
+                }
+                offset++;
+            }
+            const bytes = new Uint8Array(out.buffer);
+            let binary = '';
+            const len = bytes.byteLength;
+            for (let b = 0; b < len; b++) {
+                binary += String.fromCharCode(bytes[b]);
+            }
+            return btoa(binary);
+        }
+
+        return bufferToWavBase64(renderedBuffer);
+    }
+
     function selectMusicTrack(trackId) {
         const track = REELS_MUSIC_LIBRARY.find(t => t.id === trackId);
         if (!track) return;
@@ -2180,22 +2286,25 @@ window.ReelsEngine = (function() {
         `;
     }
 
-    // Granular Per-Slide Trigger: strictly respects slide.sfxConfig
-    function triggerSlideAudio(slide, customDest = null, ctxOverride = null) {
+    // Granular Per-Slide Trigger: strictly respects slide.sfxConfig (Supports offline timestamp scheduling)
+    function triggerSlideAudio(slide, customDest = null, ctxOverride = null, timeOffset = 0) {
         if (!audioState.masterEnabled || !audioState.sfxEnabled || !slide) return;
         const ctx = ctxOverride || getAudioContext();
         if (!ctx) return;
 
         const cfg = getSlideSfxConfig(slide);
-
-        if (cfg.whoosh) playWhooshSound(customDest, 0.75, ctx, 0);
-        if (cfg.boom) playBoomSound(customDest, 1.0, ctx, 0);
-        if (cfg.whistle) playWhistleSound(customDest, 0.75, ctx, 0.15);
-        if (cfg.rankBell) playRankBellSound(customDest, 0.9, ctx, 0.20);
-        if (cfg.cardSlam) playCardSlamSound(customDest, 1.0, ctx, 0.35);
-        if (cfg.electric) playElectricZapSound(customDest, 0.9, ctx, 0.35);
-        if (cfg.crowd) playCrowdCheerSound(customDest, 0.85, ctx, 0.35);
-        if (cfg.coin) playCoinCashRegisterSound(customDest, 1.15, ctx, 0.85);
+        try {
+            if (cfg.whoosh) playWhooshSound(customDest, 0.75, ctx, timeOffset + 0);
+            if (cfg.boom) playBoomSound(customDest, 1.0, ctx, timeOffset + 0);
+            if (cfg.whistle) playWhistleSound(customDest, 0.75, ctx, timeOffset + 0.15);
+            if (cfg.rankBell) playRankBellSound(customDest, 0.9, ctx, timeOffset + 0.20);
+            if (cfg.cardSlam) playCardSlamSound(customDest, 1.0, ctx, timeOffset + 0.35);
+            if (cfg.electric) playElectricZapSound(customDest, 0.9, ctx, timeOffset + 0.35);
+            if (cfg.crowd) playCrowdCheerSound(customDest, 0.85, ctx, timeOffset + 0.35);
+            if (cfg.coin) playCoinCashRegisterSound(customDest, 1.15, ctx, timeOffset + 0.85);
+        } catch (e) {
+            console.warn('[Reels Audio] triggerSlideAudio warning:', e.message);
+        }
     }
 
     // =========================================================================
@@ -4298,48 +4407,54 @@ window.ReelsEngine = (function() {
         if (state.playbackTimer) clearInterval(state.playbackTimer);
 
         state.playbackTimer = setInterval(() => {
-            const curSlideMs = getCurSlideMs();
-            const elapsed = Date.now() - slideStartTime;
-            state.timelineProgress = Math.min(100, (elapsed / curSlideMs) * 100);
+            try {
+                const curSlideMs = getCurSlideMs();
+                const elapsed = Date.now() - slideStartTime;
+                state.timelineProgress = Math.min(100, (elapsed / curSlideMs) * 100);
 
-            const bars = document.querySelectorAll('.reels-toolbar-timeline-bar, #toolbarTimelineBar, #reelTimelineBar');
-            bars.forEach(b => { if (b) b.style.width = `${state.timelineProgress}%`; });
-            const curStorySeg = document.getElementById('storyProgressSeg_' + state.currentSlideIndex);
-            if (curStorySeg) curStorySeg.style.width = `${state.timelineProgress}%`;
+                const bars = document.querySelectorAll('.reels-toolbar-timeline-bar, #toolbarTimelineBar, #reelTimelineBar');
+                bars.forEach(b => { if (b) b.style.width = `${state.timelineProgress}%`; });
+                const curStorySeg = document.getElementById('storyProgressSeg_' + state.currentSlideIndex);
+                if (curStorySeg) curStorySeg.style.width = `${state.timelineProgress}%`;
 
-            const laserBar = document.getElementById('storyProgressLaserBar');
-            const laserHead = document.getElementById('storyProgressLaserHead');
-            if (laserBar || laserHead) {
-                const total = (state.slides && state.slides.length) || 1;
-                const overallPct = Math.min(100, ((state.currentSlideIndex + ((state.timelineProgress || 0) / 100)) / total) * 100);
-                if (laserBar) laserBar.style.width = `${overallPct}%`;
-                if (laserHead) laserHead.style.left = `${overallPct}%`;
-            }
+                const laserBar = document.getElementById('storyProgressLaserBar');
+                const laserHead = document.getElementById('storyProgressLaserHead');
+                if (laserBar || laserHead) {
+                    const total = (state.slides && state.slides.length) || 1;
+                    const overallPct = Math.min(100, ((state.currentSlideIndex + ((state.timelineProgress || 0) / 100)) / total) * 100);
+                    if (laserBar) laserBar.style.width = `${overallPct}%`;
+                    if (laserHead) laserHead.style.left = `${overallPct}%`;
+                }
 
-            if (elapsed >= curSlideMs) {
-                slideStartTime = Date.now();
-                state.timelineProgress = 0;
-                if (state.currentSlideIndex < state.slides.length - 1) {
-                    state.currentSlideIndex++;
-                } else {
-                    if (typeof onComplete === 'function') {
-                        pausePlayback();
-                        onComplete();
-                        return;
+                if (elapsed >= curSlideMs) {
+                    slideStartTime = Date.now();
+                    state.timelineProgress = 0;
+                    if (state.currentSlideIndex < state.slides.length - 1) {
+                        state.currentSlideIndex++;
+                    } else {
+                        if (typeof onComplete === 'function') {
+                            pausePlayback();
+                            onComplete();
+                            return;
+                        }
+                        state.currentSlideIndex = 0;
                     }
-                    state.currentSlideIndex = 0;
-                }
-                state.slideEntrancePending = true;
-                ensureSelectedDragElement(false);
-                renderCanvas();
-                renderEditorControls();
-                updatePlayerUi();
+                    state.slideEntrancePending = true;
+                    ensureSelectedDragElement(false);
+                    try { renderCanvas(); } catch(e) { console.warn('renderCanvas warning:', e); }
+                    if (!customDest && !onComplete) {
+                        try { renderEditorControls(); } catch(e) {}
+                        try { updatePlayerUi(); } catch(e) {}
+                    }
 
-                // Trigger audio for next slide
-                triggerSlideAudio(state.slides[state.currentSlideIndex], customDest, ctxOverride);
-                if (state.slideTransition && state.slideTransition.soundEnabled) {
-                    playWhooshSound(customDest, 0.7, ctxOverride);
+                    // Trigger audio for next slide
+                    try { triggerSlideAudio(state.slides[state.currentSlideIndex], customDest, ctxOverride); } catch(e) {}
+                    if (state.slideTransition && state.slideTransition.soundEnabled) {
+                        try { playWhooshSound(customDest, 0.7, ctxOverride); } catch(e) {}
+                    }
                 }
+            } catch (tickErr) {
+                console.warn('[playPlayback Interval Tick Warning]', tickErr);
             }
         }, tickMs);
     }
@@ -7929,6 +8044,7 @@ ${state.subtitle}
         getState: () => state,
         loadProject,
         setAudioState,
+        renderMasterAudioWav,
         recordStudioReelViaServer
     };
 })();

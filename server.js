@@ -1081,6 +1081,13 @@ async function processReelJob(jobId, payload, execPath) {
                 .reel-resize-handle, .snap-guide, .layer-toolbar, .ring-2, [class*="ring-"], [id*="Toast"] {
                     display: none !important;
                 }
+                #reelSlideTransitionWrapper,
+                .reel-anim-layer,
+                [class*="reel-anim-layer"] {
+                    animation: none !important;
+                    opacity: 1 !important;
+                    transform: none !important;
+                }
             `
         });
 
@@ -1139,150 +1146,92 @@ async function processReelJob(jobId, payload, execPath) {
             })));
         }, projectState, audioState);
 
-        // Setup in-page audio recorder
-        const hasAudio = await page.evaluate(() => {
-            try {
-                const AudioCtx = window.AudioContext || window.webkitAudioContext;
-                if (!AudioCtx) return false;
-                window.__recAudioCtx = new AudioCtx();
-                window.__recAudioDest = window.__recAudioCtx.createMediaStreamDestination();
-                window.__recAudioChunks = [];
-                window.__recMediaRecorder = new MediaRecorder(window.__recAudioDest.stream);
-                window.__recMediaRecorder.ondataavailable = e => {
-                    if (e.data && e.data.size > 0) window.__recAudioChunks.push(e.data);
-                };
-                window.__recMediaRecorder.start(100);
-                return true;
-            } catch (e) {
-                console.warn('Audio setup error:', e);
-                return false;
-            }
-        });
-
         job.status = 'recording';
         job.progress = 30;
-        job.message = 'جاري التقاط وتسجيل أنيميشن السلايدات بدقة 1080x1920...';
+        job.message = 'جاري توليد المسار الصوتي وتجهيز السلايدات...';
 
-        const client = await page.target().createCDPSession();
-        const frameList = [];
-        let frameCount = 0;
-
-        client.on('Page.screencastFrame', async (event) => {
-            const currentIdx = frameCount++;
-            const fname = `f_${String(currentIdx).padStart(6, '0')}.jpg`;
-            fs.writeFileSync(path.join(framesDir, fname), Buffer.from(event.data, 'base64'));
-            frameList.push({
-                filename: fname,
-                timestamp: event.metadata.timestamp || (Date.now() / 1000)
-            });
-            try {
-                await client.send('Page.screencastFrameAck', { sessionId: event.sessionId });
-            } catch (e) {}
-        });
-
-        // 85 quality gives lossless-level crisp 1080x1920 visuals while cutting frame size by 88%
-        await client.send('Page.startScreencast', {
-            format: 'jpeg',
-            quality: 85,
-            maxWidth: 1080,
-            maxHeight: 1920,
-            everyNthFrame: 1
-        });
-
-        // Start playback with onComplete
-        const totalDurationSec = await page.evaluate(() => {
-            window.ReelsEngine.goToSlide(0);
-            const state = window.ReelsEngine.getState();
-            const totalSec = state.slides.reduce((acc, s) => acc + (s.duration || state.slideDuration || 2.5), 0);
-            window.__studioRecordingFinished = false;
-            window.ReelsEngine.playPlayback(window.__recAudioDest, window.__recAudioCtx, () => {
-                window.__studioRecordingFinished = true;
-            });
-            return totalSec;
-        });
-
-        // Progress interval during playback
-        const startTime = Date.now();
-        const durationMs = Math.max(1000, totalDurationSec * 1000);
-        const progressInterval = setInterval(() => {
-            const elapsed = Date.now() - startTime;
-            const pct = Math.min(65, Math.round(30 + (elapsed / durationMs) * 35));
-            job.progress = pct;
-            job.message = `جاري التقاط إطارات الأنيميشن بدقة 1080x1920 (${pct}%)...`;
-        }, 1000);
-
-        // Wait for playback completion
-        const maxWaitMs = Math.ceil((totalDurationSec + 8) * 1000);
-        await page.waitForFunction(() => window.__studioRecordingFinished === true, {
-            timeout: maxWaitMs
-        }).catch(() => {});
-
-        clearInterval(progressInterval);
-        await new Promise(r => setTimeout(r, 250));
-
-        // Stop screencast and pause
-        await client.send('Page.stopScreencast');
-        await page.evaluate(() => window.ReelsEngine.pausePlayback());
-
-        // Retrieve audio
+        // 1. Synthesize master audio offline in the browser (BGM + all slide SFX)
         let audioBase64 = null;
-        if (hasAudio) {
-            audioBase64 = await page.evaluate(async () => {
-                return new Promise(res => {
-                    if (!window.__recMediaRecorder) return res(null);
-                    window.__recMediaRecorder.onstop = () => {
-                        const blob = new Blob(window.__recAudioChunks, { type: 'audio/webm' });
-                        const reader = new FileReader();
-                        reader.onloadend = () => res(reader.result);
-                        reader.readAsDataURL(blob);
-                    };
-                    window.__recMediaRecorder.stop();
+        try {
+            audioBase64 = await page.evaluate(async (aState) => {
+                if (window.ReelsEngine && typeof window.ReelsEngine.renderMasterAudioWav === 'function') {
+                    return await window.ReelsEngine.renderMasterAudioWav(aState);
+                }
+                return null;
+            }, audioState);
+        } catch (audioErr) {
+            console.warn('[processReelJob] Offline audio note:', audioErr.message);
+        }
+
+        let audioFile = null;
+        if (audioBase64 && typeof audioBase64 === 'string') {
+            audioFile = path.join(runDir, 'audio.wav');
+            const clean = audioBase64.includes(';base64,') ? audioBase64.split(';base64,')[1] : audioBase64;
+            fs.writeFileSync(audioFile, Buffer.from(clean, 'base64'));
+            console.log(`[processReelJob] Master audio WAV generated (${(fs.statSync(audioFile).size / 1024).toFixed(1)} KB)`);
+        }
+
+        // 2. Deterministic frame capture: capture each slide at 1080x1920
+        const slides = (projectState && Array.isArray(projectState.slides) && projectState.slides.length > 0)
+            ? projectState.slides
+            : [{ id: 0, duration: 3 }];
+        const totalSlides = slides.length;
+        const totalDurationSec = slides.reduce((acc, s) => acc + (Number(s.duration) || Number(projectState?.slideDuration) || 2.5), 0);
+
+        job.message = `جاري التقاط السلايدات بدقة 1080x1920 (0/${totalSlides})...`;
+
+        for (let i = 0; i < totalSlides; i++) {
+            const pct = Math.round(30 + ((i + 1) / totalSlides) * 35);
+            job.progress = pct;
+            job.message = `جاري التقاط السلايدة ${i + 1} من ${totalSlides} بدقة 1080x1920 (${pct}%)...`;
+
+            await page.evaluate((idx) => {
+                if (window.ReelsEngine && typeof window.ReelsEngine.goToSlide === 'function') {
+                    window.ReelsEngine.goToSlide(idx);
+                }
+                const layers = document.querySelectorAll('.reel-anim-layer, [class*="reel-anim-layer"], #reelSlideTransitionWrapper');
+                layers.forEach(l => {
+                    l.style.animation = 'none';
+                    l.style.opacity = '1';
+                    l.style.transform = 'none';
                 });
+            }, i);
+
+            // Wait 120ms to allow layout, badges, fonts, and images to settle stably
+            await new Promise(r => setTimeout(r, 120));
+
+            const slideFname = `slide_${String(i).padStart(3, '0')}.jpg`;
+            const slidePath = path.join(framesDir, slideFname);
+            await page.screenshot({
+                path: slidePath,
+                type: 'jpeg',
+                quality: 92
             });
         }
 
+        // 3. Close Chromium immediately to release container memory
         await browser.close();
         browser = null;
 
         job.status = 'encoding';
         job.progress = 70;
-        job.message = 'جاري دمج الصوت ومعالجة الفيديو بجودة فائقة...';
+        job.message = 'جاري تجميع ودمج الفيديو والصوت عبر FFmpeg...';
 
-        let audioFile = null;
-        if (audioBase64 && audioBase64.includes(';base64,')) {
-            audioFile = path.join(runDir, 'audio.webm');
-            const clean = audioBase64.split(';base64,')[1];
-            fs.writeFileSync(audioFile, Buffer.from(clean, 'base64'));
-        }
-
-        if (frameList.length === 0) {
-            throw new Error('لم يتم التقاط أي إطارات أثناء التسجيل');
-        }
-
-        // Build concat demuxer file to lock frame durations mathematically to exact real-time playback
+        // 4. Build concat demuxer file with exact slide durations
         let concatContent = '';
-        const t0 = frameList[0].timestamp;
-        for (let i = 0; i < frameList.length; i++) {
-            const cur = frameList[i];
-            let dur = 0;
-            if (i < frameList.length - 1) {
-                const next = frameList[i + 1];
-                dur = Math.max(0.01, next.timestamp - cur.timestamp);
-            } else {
-                const elapsed = cur.timestamp - t0;
-                dur = Math.max(0.1, totalDurationSec - elapsed);
-            }
-            const absPath = path.join(framesDir, cur.filename).replace(/\\/g, '/');
+        for (let i = 0; i < totalSlides; i++) {
+            const dur = Number(slides[i].duration) || Number(projectState?.slideDuration) || 2.5;
+            const absPath = path.join(framesDir, `slide_${String(i).padStart(3, '0')}.jpg`).replace(/\\/g, '/');
             concatContent += `file '${absPath}'\n`;
             concatContent += `duration ${dur.toFixed(6)}\n`;
         }
-        const lastAbs = path.join(framesDir, frameList[frameList.length - 1].filename).replace(/\\/g, '/');
+        // Concat demuxer requirement: repeat the last image without duration
+        const lastAbs = path.join(framesDir, `slide_${String(totalSlides - 1).padStart(3, '0')}.jpg`).replace(/\\/g, '/');
         concatContent += `file '${lastAbs}'\n`;
 
         const concatPath = path.join(framesDir, 'concat.txt');
         fs.writeFileSync(concatPath, concatContent);
 
-        const actualFps = Math.round(frameCount / Math.max(1, totalDurationSec));
         const outMp4Path = path.join(runDir, 'final_reel.mp4');
 
         const ffmpegArgs = [
@@ -1301,7 +1250,7 @@ async function processReelJob(jobId, payload, execPath) {
         ffmpegArgs.push(
             '-vf', 'scale=1080:1920:flags=lanczos',
             '-c:v', 'libx264',
-            '-crf', '20',
+            '-crf', '19',
             '-preset', 'ultrafast',
             '-pix_fmt', 'yuv420p',
             '-t', String(totalDurationSec),
@@ -1325,7 +1274,7 @@ async function processReelJob(jobId, payload, execPath) {
         }
 
         const mp4Buffer = fs.readFileSync(outMp4Path);
-        console.log(`[Record Studio Reel] Video created successfully! File: ${outFilename}, Size: ${(mp4Buffer.length / (1024 * 1024)).toFixed(2)} MB, Frames: ${frameCount}, FPS: ${actualFps}`);
+        console.log(`[Record Studio Reel] Video created successfully! File: ${outFilename}, Size: ${(mp4Buffer.length / (1024 * 1024)).toFixed(2)} MB, Slides: ${totalSlides}, Duration: ${totalDurationSec}s`);
 
         // Prune old exports
         pruneExports();
