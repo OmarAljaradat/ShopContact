@@ -145,6 +145,56 @@ window.ReelsEngine = (function() {
         return 'thmanyah';
     }
 
+    const PROGRESS_BAR_STORAGE_KEY = 'shopcoin15_reels_progressbar_v1';
+
+    const DEFAULT_PROGRESS_BAR = {
+        enabled: true,
+        color: 'white', // 'white' | 'amber' | 'emerald'
+        height: 4,
+        topOffset: 16
+    };
+
+    function loadSavedProgressBar() {
+        try {
+            const saved = localStorage.getItem(PROGRESS_BAR_STORAGE_KEY);
+            if (saved) {
+                return { ...DEFAULT_PROGRESS_BAR, ...JSON.parse(saved) };
+            }
+        } catch (e) {}
+        return { ...DEFAULT_PROGRESS_BAR };
+    }
+
+    // ---- 1.4 CURATED PRESET STICKERS & BADGES ----
+    const REELS_PRESET_BADGES = {
+        sales: [
+            { text: '⚡ تسليم فوري خلال دقيقة', style: 'emerald' },
+            { text: '🔒 ضمان كامل من التصفير', style: 'emerald' },
+            { text: '💰 أرخص كوينز بالسوق', style: 'gold' },
+            { text: '👑 توصية المتجر', style: 'gold' },
+            { text: '🔥 الأكثر طلباً وشراءً', style: 'fire' },
+            { text: '🚨 اشحن بأمان واحذر الباند', style: 'dark' },
+            { text: '⏳ عرض لفترة محدودة', style: 'fire' },
+            { text: '🏆 كرت الفوت تشامبيونز', style: 'purple' }
+        ],
+        meta: [
+            { text: '⭐ ميتا 100% مكسر اللعبة', style: 'gold' },
+            { text: '⚡ سرعة خارقة +93', style: 'fire' },
+            { text: '🧱 جدار دفاعي صلب', style: 'dark' },
+            { text: '🎯 إنهاء خيالي 5/5 Weak Foot', style: 'gold' },
+            { text: '🪄 5 نجوم مهارات (5★ Skills)', style: 'purple' },
+            { text: '💎 أفضل قيمة مقابل سعر', style: 'emerald' },
+            { text: '💪 بدنيات مرعبة 99 Strength', style: 'dark' },
+            { text: '🧤 حارس أخطبوطي خارق', style: 'emerald' }
+        ],
+        cta: [
+            { text: '📩 اطلب الآن على الخاص', style: 'emerald' },
+            { text: '👇 صوت بالتعليقات: يستاهل؟', style: 'dark' },
+            { text: '❤️ لايك وفولو للمزيد', style: 'fire' },
+            { text: '👀 احفظ الريل لبداية اللعبة', style: 'gold' },
+            { text: '🔥 منشن خويك اللي يحتاجه', style: 'fire' }
+        ]
+    };
+
     // ---- 1.5 REELS ENTRANCE ANIMATIONS CONFIG & STYLES ----
     const ANIMATION_STORAGE_KEY = 'shopcoin15_reels_animations_v2';
     const ANIM_ENABLED_STORAGE_KEY = 'shopcoin15_reels_anim_enabled_v2';
@@ -1986,6 +2036,385 @@ window.ReelsEngine = (function() {
         if (cfg.coin) playCoinCashRegisterSound(customDest, 1.15, ctx, 0.85);
     }
 
+    // =========================================================================
+    // ---- 6. STORY PROGRESS BAR & BADGES/STICKERS ENGINE ----
+    // =========================================================================
+    function toggleProgressBar() {
+        if (!state.progressBar) state.progressBar = { ...DEFAULT_PROGRESS_BAR };
+        state.progressBar.enabled = !state.progressBar.enabled;
+        try {
+            localStorage.setItem(PROGRESS_BAR_STORAGE_KEY, JSON.stringify(state.progressBar));
+        } catch (e) {}
+        saveProjectState();
+        renderCanvas();
+        renderEditorControls();
+        if (window.showCopyToast) {
+            window.showCopyToast(state.progressBar.enabled ? 'تم تفعيل شريط تقدم الريل العلوي ⏳' : 'تم إخفاء شريط التقدم ⚪');
+        }
+    }
+
+    function setProgressBarColor(col) {
+        if (!state.progressBar) state.progressBar = { ...DEFAULT_PROGRESS_BAR };
+        if (!['white', 'amber', 'emerald'].includes(col)) col = 'white';
+        state.progressBar.color = col;
+        try {
+            localStorage.setItem(PROGRESS_BAR_STORAGE_KEY, JSON.stringify(state.progressBar));
+        } catch (e) {}
+        saveProjectState();
+        renderCanvas();
+        renderEditorControls();
+    }
+
+    function renderStoryProgressBarHtml() {
+        if (state.isCapturingExport || !state.progressBar || !state.progressBar.enabled) return '';
+        const total = (state.slides && state.slides.length) || 1;
+        if (total <= 0) return '';
+
+        const colorKey = state.progressBar.color || 'white';
+        const fillBgClass = (colorKey === 'amber') 
+            ? 'bg-amber-400' 
+            : ((colorKey === 'emerald') ? 'bg-emerald-400' : 'bg-white');
+        const shadowClass = (colorKey === 'amber') 
+            ? 'shadow-[0_0_8px_rgba(251,191,36,0.6)]' 
+            : ((colorKey === 'emerald') ? 'shadow-[0_0_8px_rgba(52,211,153,0.6)]' : 'shadow-[0_0_8px_rgba(255,255,255,0.7)]');
+
+        const curIdx = state.currentSlideIndex || 0;
+        const height = state.progressBar.height || 4;
+
+        return `
+            <div id="storyProgressBarContainer" 
+                 class="absolute top-3.5 left-3.5 right-3.5 z-35 flex items-center gap-1.5 pointer-events-none" 
+                 style="direction: ltr;" dir="ltr">
+                ${Array.from({ length: total }).map((_, i) => {
+                    let fillWidth = '0%';
+                    if (i < curIdx) {
+                        fillWidth = '100%';
+                    } else if (i === curIdx) {
+                        fillWidth = state.isPlaying ? `${state.timelineProgress || 0}%` : '100%';
+                    }
+                    return `
+                        <div class="flex-1 rounded-full overflow-hidden bg-black/35 backdrop-blur-xs border border-white/20" 
+                             style="height: ${height}px;">
+                            <div id="storyProgressSeg_${i}" 
+                                 class="h-full rounded-full transition-[width] duration-75 ease-linear ${fillBgClass} ${shadowClass}" 
+                                 style="width: ${fillWidth};"></div>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        `;
+    }
+
+    // Canvas 2D frame drawing for 60FPS Video Export
+    function drawCanvasStoryProgressBar(ctx, canvasWidth, canvasHeight, totalSlides, currentSlideIdx, slideProgress, cfg = {}) {
+        if (!cfg || !cfg.enabled || totalSlides <= 0) return;
+
+        const margin = 36;
+        const top = 38;
+        const height = 9;
+        const gap = 8;
+        const radius = 4;
+        const availableWidth = canvasWidth - (margin * 2);
+        const totalGaps = (totalSlides - 1) * gap;
+        const segWidth = (availableWidth - totalGaps) / totalSlides;
+
+        const colorKey = cfg.color || 'white';
+        const fillColor = (colorKey === 'amber') ? '#FBBF24' : ((colorKey === 'emerald') ? '#34D399' : '#FFFFFF');
+
+        for (let s = 0; s < totalSlides; s++) {
+            const segX = margin + s * (segWidth + gap);
+            const segY = top;
+
+            // 1. Draw segment background track (semi-transparent dark pill)
+            ctx.save();
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.40)';
+            ctx.beginPath();
+            if (ctx.roundRect) {
+                ctx.roundRect(segX, segY, segWidth, height, radius);
+            } else {
+                ctx.rect(segX, segY, segWidth, height);
+            }
+            ctx.fill();
+
+            // Track border
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            ctx.restore();
+
+            // 2. Determine fill fraction
+            let fillFraction = 0;
+            if (s < currentSlideIdx) {
+                fillFraction = 1.0;
+            } else if (s === currentSlideIdx) {
+                fillFraction = Math.max(0, Math.min(1, slideProgress));
+            }
+
+            // 3. Draw active fill
+            if (fillFraction > 0) {
+                const filledW = Math.max(radius * 2, segWidth * fillFraction);
+                ctx.save();
+                ctx.fillStyle = fillColor;
+                ctx.shadowColor = fillColor;
+                ctx.shadowBlur = 6;
+                ctx.beginPath();
+                if (ctx.roundRect) {
+                    ctx.roundRect(segX, segY, Math.min(segWidth, filledW), height, radius);
+                } else {
+                    ctx.rect(segX, segY, Math.min(segWidth, filledW), height);
+                }
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+    }
+
+    // Returns stylish Tailwind classes for each badge
+    function getBadgeStyleClass(badgeText) {
+        if (!badgeText) return 'bg-white/95 text-slate-900 border-slate-200';
+        const str = String(badgeText).toLowerCase();
+
+        if (str.includes('أرخص') || str.includes('كوينز') || str.includes('ميتا') || str.includes('توصية') || str.includes('ضعف') || str.includes('weak foot') || str.includes('⭐') || str.includes('👑') || str.includes('💰')) {
+            return 'bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 text-slate-950 border border-amber-300 shadow-[0_2px_10px_rgba(245,158,11,0.35)]';
+        }
+        if (str.includes('تسليم') || str.includes('ضمان') || str.includes('اطلب') || str.includes('قيمة') || str.includes('حارس') || str.includes('🔒') || str.includes('💎') || str.includes('🧤') || str.includes('📩')) {
+            return 'bg-gradient-to-r from-emerald-600 via-teal-500 to-emerald-600 text-white border border-emerald-400/50 shadow-[0_2px_10px_rgba(16,185,129,0.35)]';
+        }
+        if (str.includes('طلب') || str.includes('سرعة') || str.includes('عرض') || str.includes('لايك') || str.includes('منشن') || str.includes('فولو') || str.includes('🔥') || str.includes('🚨') || str.includes('❤️') || str.includes('⏳')) {
+            return 'bg-gradient-to-r from-rose-600 via-red-500 to-amber-600 text-white border border-rose-400/50 shadow-[0_2px_10px_rgba(244,63,94,0.35)]';
+        }
+        if (str.includes('مهارات') || str.includes('فوت') || str.includes('skills') || str.includes('🪄') || str.includes('🏆')) {
+            return 'bg-gradient-to-r from-purple-600 via-indigo-500 to-purple-600 text-white border border-purple-400/50 shadow-[0_2px_10px_rgba(168,85,247,0.35)]';
+        }
+        return 'bg-slate-950/90 text-white border border-slate-700 shadow-md';
+    }
+
+    // Toggle badge on current slide
+    function toggleBadgeOnCurrentSlide(badgeText) {
+        const slide = state.slides[state.currentSlideIndex];
+        if (!slide) return;
+        if (!Array.isArray(slide.badges)) slide.badges = [];
+
+        const existingIdx = slide.badges.indexOf(badgeText);
+        if (existingIdx !== -1) {
+            slide.badges.splice(existingIdx, 1);
+            if (window.showCopyToast) window.showCopyToast(`تم حذف الشارة: ${badgeText}`);
+        } else {
+            slide.badges.push(badgeText);
+            testSfx('coin');
+            if (window.showCopyToast) window.showCopyToast(`تمت إضافة الشارة: ${badgeText} ✨`);
+        }
+
+        renderCanvas();
+        renderEditorControls();
+        saveProjectState();
+    }
+
+    function addCustomBadgeToCurrentSlide(inputVal) {
+        if (!inputVal || !inputVal.trim()) return;
+        const text = inputVal.trim();
+        const slide = state.slides[state.currentSlideIndex];
+        if (!slide) return;
+        if (!Array.isArray(slide.badges)) slide.badges = [];
+        if (!slide.badges.includes(text)) {
+            slide.badges.push(text);
+            testSfx('coin');
+            if (window.showCopyToast) window.showCopyToast(`تمت إضافة الشارة: ${text} ✨`);
+        }
+        renderCanvas();
+        renderEditorControls();
+        saveProjectState();
+    }
+
+    function removeBadgeFromCurrentSlide(idx) {
+        const slide = state.slides[state.currentSlideIndex];
+        if (!slide || !Array.isArray(slide.badges)) return;
+        if (idx >= 0 && idx < slide.badges.length) {
+            const removed = slide.badges.splice(idx, 1);
+            renderCanvas();
+            renderEditorControls();
+            saveProjectState();
+            if (window.showCopyToast) window.showCopyToast(`تم حذف الشارة: ${removed[0]}`);
+        }
+    }
+
+    function clearSlideBadges() {
+        const slide = state.slides[state.currentSlideIndex];
+        if (!slide) return;
+        slide.badges = [];
+        renderCanvas();
+        renderEditorControls();
+        saveProjectState();
+        if (window.showCopyToast) window.showCopyToast('تم مسح كافة شارات هذا السلايد 🗑️');
+    }
+
+    function applyBadgesToAllPlayerCards() {
+        const slide = state.slides[state.currentSlideIndex];
+        if (!slide || !Array.isArray(slide.badges)) return;
+        const badgesCopy = [...slide.badges];
+
+        state.slides.forEach(s => {
+            if (s.type === 'player_card' || s.type === 'versus_card') {
+                s.badges = [...badgesCopy];
+            }
+        });
+
+        renderCanvas();
+        renderEditorControls();
+        saveProjectState();
+        if (window.showCopyToast) {
+            window.showCopyToast('تم تطبيق الشارات على كافة كروت اللاعبين! 📋👑');
+        }
+    }
+
+    // HTML generator for the Badges on Canvas
+    function renderSlideBadgesHtml(slide) {
+        if (!slide || slide.hideBadges || !Array.isArray(slide.badges) || slide.badges.length === 0) return '';
+
+        return `
+            <div class="mt-3 flex items-center justify-center gap-1.5 flex-wrap max-w-xs pointer-events-none" dir="rtl">
+                ${slide.badges.map(b => `
+                    <span class="px-3 py-1 rounded-xl text-[11px] font-black tracking-wide ${getBadgeStyleClass(b)}">
+                        ${escapeHtml(b)}
+                    </span>
+                `).join('')}
+            </div>
+        `;
+    }
+
+    // Rich Interactive Badges & Stickers Manager in Slide Form
+    function renderSlideBadgesManagerHtml(slide) {
+        if (!slide) return '';
+        const currentBadges = Array.isArray(slide.badges) ? slide.badges : [];
+
+        return `
+            <div class="p-3 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-2.5">
+                <div class="flex items-center justify-between pb-1.5 border-b border-slate-100">
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-sm">🏷️</span>
+                        <label class="text-[11px] font-black text-slate-800">الملصقات والشارات التفاعلية (Stickers & Badges):</label>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        ${currentBadges.length > 0 ? `
+                            <button type="button" onclick="ReelsEngine.clearSlideBadges()" 
+                                    class="text-[9.5px] font-bold px-2 py-0.5 rounded bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 transition">
+                                مسح الكل ✕
+                            </button>
+                        ` : ''}
+                        <button type="button" onclick="ReelsEngine.toggleElementVisibility('hideBadges')" 
+                                class="text-[9.5px] font-bold px-2 py-0.5 rounded ${slide.hideBadges ? 'bg-slate-200 text-slate-600' : 'bg-rose-50 text-rose-600 border border-rose-200'}">
+                            ${slide.hideBadges ? '👁️ إظهار' : '🗑️ إخفاء'}
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Active Badges Display Chips -->
+                <div>
+                    <div class="text-[10px] font-black text-slate-500 mb-1">الشارات المفعلة في هذا السلايد (${currentBadges.length}):</div>
+                    ${currentBadges.length > 0 ? `
+                        <div class="flex items-center gap-1.5 flex-wrap p-2 rounded-xl bg-slate-50 border border-slate-200">
+                            ${currentBadges.map((b, idx) => `
+                                <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10.5px] font-black ${getBadgeStyleClass(b)}">
+                                    <span>${escapeHtml(b)}</span>
+                                    <button type="button" onclick="ReelsEngine.removeBadgeFromCurrentSlide(${idx})" class="hover:opacity-80 text-xs cursor-pointer font-mono" title="حذف">✕</button>
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : `
+                        <div class="p-2 text-center text-[10px] text-slate-400 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                            لا توجد شارات مفعلة حالياً — انقر على أي شارة جاهزة أدناه لإضافتها فوراً 👇
+                        </div>
+                    `}
+                </div>
+
+                <!-- 1-Click Preset Gallery -->
+                <div class="space-y-2 pt-1 border-t border-slate-100">
+                    <!-- Category 1: Sales & Store -->
+                    <div>
+                        <div class="text-[10px] font-black text-amber-950 flex items-center gap-1 mb-1">
+                            <span>🏪</span>
+                            <span>عروض وضمانات المتجر (ShopCoin15):</span>
+                        </div>
+                        <div class="flex items-center gap-1 flex-wrap">
+                            ${REELS_PRESET_BADGES.sales.map(item => {
+                                const isActive = currentBadges.includes(item.text);
+                                return `
+                                    <button type="button" onclick="ReelsEngine.toggleBadgeOnCurrentSlide('${item.text.replace(/'/g, "\\'")}')" 
+                                            class="px-2 py-1 rounded-lg text-[10px] font-bold border transition flex items-center gap-1 active:scale-95 cursor-pointer ${isActive ? 'bg-amber-400 text-slate-950 border-amber-400 font-black ring-1 ring-amber-400 shadow-2xs' : 'bg-slate-100/80 hover:bg-white text-slate-700 border-slate-200'}">
+                                        <span>${item.text}</span>
+                                        ${isActive ? '<span class="text-xs">✓</span>' : ''}
+                                    </button>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+
+                    <!-- Category 2: Player & Meta -->
+                    <div>
+                        <div class="text-[10px] font-black text-emerald-950 flex items-center gap-1 mb-1">
+                            <span>⭐</span>
+                            <span>قوة ومميزات اللاعبين (Meta & Stats):</span>
+                        </div>
+                        <div class="flex items-center gap-1 flex-wrap">
+                            ${REELS_PRESET_BADGES.meta.map(item => {
+                                const isActive = currentBadges.includes(item.text);
+                                return `
+                                    <button type="button" onclick="ReelsEngine.toggleBadgeOnCurrentSlide('${item.text.replace(/'/g, "\\'")}')" 
+                                            class="px-2 py-1 rounded-lg text-[10px] font-bold border transition flex items-center gap-1 active:scale-95 cursor-pointer ${isActive ? 'bg-emerald-600 text-white border-emerald-600 font-black ring-1 ring-emerald-600 shadow-2xs' : 'bg-slate-100/80 hover:bg-white text-slate-700 border-slate-200'}">
+                                        <span>${item.text}</span>
+                                        ${isActive ? '<span class="text-xs">✓</span>' : ''}
+                                    </button>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+
+                    <!-- Category 3: Engagement & CTA -->
+                    <div>
+                        <div class="text-[10px] font-black text-rose-950 flex items-center gap-1 mb-1">
+                            <span>💬</span>
+                            <span>ملصقات التفاعل والطلب (CTA):</span>
+                        </div>
+                        <div class="flex items-center gap-1 flex-wrap">
+                            ${REELS_PRESET_BADGES.cta.map(item => {
+                                const isActive = currentBadges.includes(item.text);
+                                return `
+                                    <button type="button" onclick="ReelsEngine.toggleBadgeOnCurrentSlide('${item.text.replace(/'/g, "\\'")}')" 
+                                            class="px-2 py-1 rounded-lg text-[10px] font-bold border transition flex items-center gap-1 active:scale-95 cursor-pointer ${isActive ? 'bg-rose-600 text-white border-rose-600 font-black ring-1 ring-rose-600 shadow-2xs' : 'bg-slate-100/80 hover:bg-white text-slate-700 border-slate-200'}">
+                                        <span>${item.text}</span>
+                                        ${isActive ? '<span class="text-xs">✓</span>' : ''}
+                                    </button>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Custom Badge Input Field -->
+                <div class="pt-1.5 border-t border-slate-100 flex items-center gap-1.5">
+                    <input type="text" id="inputCustomBadge_${state.currentSlideIndex}" 
+                           placeholder="اكتب شارة مخصصة يدوياً..." 
+                           onkeydown="if (event.key === 'Enter') { ReelsEngine.addCustomBadgeToCurrentSlide(this.value); this.value = ''; }"
+                           class="flex-1 px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+                    <button type="button" 
+                            onclick="const inp = document.getElementById('inputCustomBadge_${state.currentSlideIndex}'); if (inp) { ReelsEngine.addCustomBadgeToCurrentSlide(inp.value); inp.value = ''; }"
+                            class="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white font-black text-xs transition active:scale-95">
+                        ➕ إضافة
+                    </button>
+                </div>
+
+                <!-- Bulk Apply Footer -->
+                <div class="pt-1 border-t border-slate-100 flex items-center justify-between">
+                    <span class="text-[9.5px] text-slate-400">انقر على أي شارة لإضافتها أو إزالتها فوراً</span>
+                    <button type="button" onclick="ReelsEngine.applyBadgesToAllPlayerCards()" 
+                            class="py-1 px-2.5 rounded-lg bg-slate-100 hover:bg-amber-100 text-slate-800 hover:text-amber-950 border border-slate-200 hover:border-amber-300 font-black text-[10px] transition flex items-center gap-1 active:scale-95 cursor-pointer">
+                        <span>📋 تطبيق على كافة كروت اللاعبين</span>
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+
     // ---- 2. CURATED VIRAL IDEAS (Hooks ONLY - User picks players) ----
     const VIRAL_IDEAS = {
         countdown: [
@@ -2099,6 +2528,7 @@ window.ReelsEngine = (function() {
         layouts: loadSavedLayouts(),
         animationsEnabled: loadSavedAnimEnabled(),
         elementAnimations: loadSavedAnimations(),
+        progressBar: loadSavedProgressBar(),
         isCapturingExport: false
     };
 
@@ -3380,6 +3810,8 @@ window.ReelsEngine = (function() {
 
             const bars = [document.getElementById('reelTimelineBar'), document.getElementById('toolbarTimelineBar')];
             bars.forEach(b => { if (b) b.style.width = `${state.timelineProgress}%`; });
+            const curStorySeg = document.getElementById('storyProgressSeg_' + state.currentSlideIndex);
+            if (curStorySeg) curStorySeg.style.width = `${state.timelineProgress}%`;
 
             if (elapsed >= curSlideMs) {
                 elapsed = 0;
@@ -3777,6 +4209,7 @@ window.ReelsEngine = (function() {
                 layouts: state.layouts,
                 animationsEnabled: state.animationsEnabled,
                 elementAnimations: state.elementAnimations,
+                progressBar: state.progressBar,
                 savedAt: Date.now()
             };
             localStorage.setItem(PROJECT_STORAGE_KEY_PREFIX + sec, JSON.stringify(payload));
@@ -3813,6 +4246,9 @@ window.ReelsEngine = (function() {
                     }
                     if (data.animationsEnabled !== undefined) {
                         state.animationsEnabled = data.animationsEnabled;
+                    }
+                    if (data.progressBar) {
+                        state.progressBar = { ...DEFAULT_PROGRESS_BAR, ...data.progressBar };
                     }
                     ensureSelectedDragElement();
                     return true;
@@ -4416,15 +4852,7 @@ window.ReelsEngine = (function() {
                             ` : ''}
 
                             <!-- Badges -->
-                            ${!currentSlide.hideBadges && currentSlide.badges && currentSlide.badges.length ? `
-                                <div class="mt-3 flex items-center justify-center gap-1.5 flex-wrap max-w-xs pointer-events-none" dir="rtl">
-                                    ${currentSlide.badges.map(b => `
-                                        <span class="px-2.5 py-1 rounded-xl bg-white/95 text-slate-900 border border-slate-200 text-[11px] font-black shadow-xs">
-                                            ${b}
-                                        </span>
-                                    `).join('')}
-                                </div>
-                            ` : ''}
+                            ${renderSlideBadgesHtml(currentSlide)}
                         </div>
                         ${renderResizeHandle('card')}
                     </div>
@@ -4638,9 +5066,11 @@ window.ReelsEngine = (function() {
         ` : '';
 
         const introHookHtml = (currentSlide.type === 'intro') ? renderIntroVisualHookHtml(currentSlide) : '';
+        const storyProgressBarHtml = renderStoryProgressBarHtml();
 
         canvas.innerHTML = `
             <div class="absolute inset-0 overflow-hidden bg-cover bg-center" style="background-image: url('${bgUrl}'); direction: ltr;">
+                ${storyProgressBarHtml}
                 ${fcLogoHtml}
                 ${scLogoHtml}
                 ${introHookHtml}
@@ -5240,6 +5670,48 @@ window.ReelsEngine = (function() {
                 <!-- 5.5 AUDIO & SFX STUDIO -->
                 ${renderAudioStudioHtml()}
 
+                <!-- 5.8 STORY PROGRESS BAR (TOP SEGMENTED BAR) -->
+                <div class="p-3.5 rounded-2xl bg-gradient-to-br from-slate-900 via-zinc-900 to-slate-950 border border-zinc-800 text-white shadow-md space-y-2.5">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="text-lg">⏳</span>
+                            <div>
+                                <h4 class="text-xs font-black text-white flex items-center gap-1.5">
+                                    <span>شريط تقدم الريل العلوي (Story Bar)</span>
+                                    <span class="text-[9.5px] px-2 py-0.5 rounded-full font-bold ${state.progressBar.enabled ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-zinc-800 text-zinc-500 border border-zinc-700'}">
+                                        ${state.progressBar.enabled ? 'مفعل ✓' : 'معطل ✕'}
+                                    </span>
+                                </h4>
+                                <p class="text-[10px] text-zinc-400">شريط مقسم يمتلئ مع كل سلايد في العرض والتصدير (60FPS)</p>
+                            </div>
+                        </div>
+                        <button type="button" onclick="ReelsEngine.toggleProgressBar()" 
+                                class="px-3 py-1.5 rounded-xl ${state.progressBar.enabled ? 'bg-emerald-600 text-white' : 'bg-zinc-800 text-zinc-400 border border-zinc-700'} text-xs font-black transition active:scale-95 cursor-pointer">
+                            ${state.progressBar.enabled ? 'مفعل 🟢' : 'معطل ⚪'}
+                        </button>
+                    </div>
+
+                    ${state.progressBar.enabled ? `
+                        <div class="flex items-center justify-between gap-2 pt-1.5 border-t border-zinc-800">
+                            <span class="text-[10.5px] text-zinc-400 font-bold">لون شريط التقدم:</span>
+                            <div class="flex items-center gap-1.5">
+                                <button type="button" onclick="ReelsEngine.setProgressBarColor('white')" 
+                                        class="px-2.5 py-1 rounded-lg text-[10px] font-bold border transition ${state.progressBar.color === 'white' ? 'bg-white text-slate-950 border-white font-black ring-2 ring-white/30 shadow-xs' : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border-zinc-700'}">
+                                    ⚪ أبيض ستوري
+                                </button>
+                                <button type="button" onclick="ReelsEngine.setProgressBarColor('amber')" 
+                                        class="px-2.5 py-1 rounded-lg text-[10px] font-bold border transition ${state.progressBar.color === 'amber' ? 'bg-amber-400 text-slate-950 border-amber-400 font-black ring-2 ring-amber-400/30 shadow-xs' : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border-zinc-700'}">
+                                    🟡 ذهبي كوينز
+                                </button>
+                                <button type="button" onclick="ReelsEngine.setProgressBarColor('emerald')" 
+                                        class="px-2.5 py-1 rounded-lg text-[10px] font-bold border transition ${state.progressBar.color === 'emerald' ? 'bg-emerald-500 text-white border-emerald-500 font-black ring-2 ring-emerald-500/30 shadow-xs' : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border-zinc-700'}">
+                                    🟢 زمردي ميتا
+                                </button>
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+
                 <!-- 6. SAFE ZONE -->
                 <div class="p-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs flex items-center justify-between">
                     <div class="flex items-center gap-1.5">
@@ -5602,17 +6074,7 @@ window.ReelsEngine = (function() {
                         </div>
                     </div>
 
-                    <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
-                        <div class="flex items-center justify-between">
-                            <label class="text-[11px] font-black text-slate-700">شارات ومميزات الكرت (افصل بفاصلة):</label>
-                            <button type="button" onclick="ReelsEngine.toggleElementVisibility('hideBadges')" class="text-[10px] font-bold px-2 py-0.5 rounded ${slide.hideBadges ? 'bg-slate-200 text-slate-600' : 'bg-rose-50 text-rose-600'}">
-                                ${slide.hideBadges ? '👁️ إظهار' : '🗑️ إخفاء'}
-                            </button>
-                        </div>
-                        <input type="text" value="${(slide.badges || []).join(' , ')}" 
-                               onchange="ReelsEngine.updateBadges(this.value)"
-                               class="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-800 text-xs font-medium outline-none focus:border-emerald-500">
-                    </div>
+                    ${renderSlideBadgesManagerHtml(slide)}
 
                     ${deleteSlideButtonHtml}
                 </div>
@@ -5640,6 +6102,8 @@ window.ReelsEngine = (function() {
                                oninput="ReelsEngine.updateCurrentSlideField('question', this.value)"
                                class="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs font-bold outline-none focus:border-emerald-500">
                     </div>
+
+                    ${renderSlideBadgesManagerHtml(slide)}
 
                     ${deleteSlideButtonHtml}
                 </div>
@@ -6046,6 +6510,11 @@ window.ReelsEngine = (function() {
 
                     ctx.clearRect(0, 0, 1080, 1920);
                     ctx.drawImage(item.img, x, y, w, h);
+
+                    // Draw animated segmented Story Progress Bar on recorded video frame
+                    if (state.progressBar && state.progressBar.enabled) {
+                        drawCanvasStoryProgressBar(ctx, 1080, 1920, totalSlides, i, progress, state.progressBar);
+                    }
 
                     const elapsedThisFrame = performance.now() - frameStart;
                     const sleepTime = Math.max(1, frameIntervalMs - elapsedThisFrame);
@@ -6501,6 +6970,15 @@ ${state.subtitle}
         muteSlideSfx,
         enableAllSlideSfx,
         applySlideSfxToAllSlides,
-        getSlideSfxConfig
+        getSlideSfxConfig,
+        toggleProgressBar,
+        setProgressBarColor,
+        toggleBadgeOnCurrentSlide,
+        addCustomBadgeToCurrentSlide,
+        removeBadgeFromCurrentSlide,
+        clearSlideBadges,
+        applyBadgesToAllPlayerCards,
+        REELS_PRESET_BADGES,
+        getProgressBarState: () => state.progressBar
     };
 })();
