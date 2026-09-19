@@ -47,22 +47,40 @@ const POSSIBLE_BROWSER_PATHS = [
     'C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe'
 ];
 
+let cachedExecutablePath = null;
+let executablePathPromise = null;
+
 async function getBrowserExecutable() {
-    for (const p of POSSIBLE_BROWSER_PATHS) {
-        if (fs.existsSync(p)) return p;
-    }
-    if (sparticuzChromium) {
-        try {
-            const p = await sparticuzChromium.executablePath();
-            if (p) return p;
-        } catch (e) {
-            console.warn('[Sparticuz Chromium Notice]', e.message);
+    if (cachedExecutablePath) return cachedExecutablePath;
+    if (executablePathPromise) return executablePathPromise;
+
+    executablePathPromise = (async () => {
+        for (const p of POSSIBLE_BROWSER_PATHS) {
+            if (fs.existsSync(p)) {
+                cachedExecutablePath = p;
+                return p;
+            }
         }
-    }
-    return null;
+        if (sparticuzChromium) {
+            try {
+                const p = await sparticuzChromium.executablePath();
+                if (p && fs.existsSync(p)) {
+                    await new Promise(r => setTimeout(r, 200));
+                    cachedExecutablePath = p;
+                    return p;
+                }
+            } catch (e) {
+                console.warn('[Sparticuz Chromium Notice]', e.message);
+            }
+        }
+        return null;
+    })();
+
+    return executablePathPromise;
 }
 
 let nativeBrowser = null;
+let nativeBrowserPromise = null;
 let nativePage = null;
 let renderQueue = Promise.resolve();
 
@@ -70,31 +88,59 @@ async function ensureNativeBrowser() {
     if (nativeBrowser && nativeBrowser.connected) {
         return nativeBrowser;
     }
-    if (!puppeteer) return null;
-    const execPath = await getBrowserExecutable();
-    if (!execPath) return null;
+    if (nativeBrowserPromise) {
+        return nativeBrowserPromise;
+    }
 
-    const warmupProfile = path.join(__dirname, 'scratch', 'warmup_profile');
-    fs.mkdirSync(warmupProfile, { recursive: true });
-    const launchArgs = [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-gpu',
-        '--disable-dev-shm-usage',
-        '--hide-scrollbars',
-        '--disable-web-security',
-        '--disable-background-timer-throttling',
-        '--disable-backgrounding-occluded-windows',
-        '--disable-renderer-backgrounding',
-        `--user-data-dir=${warmupProfile}`
-    ];
-    nativeBrowser = await puppeteer.launch({
-        executablePath: execPath,
-        headless: 'new',
-        args: launchArgs,
-        protocolTimeout: 240000
+    nativeBrowserPromise = (async () => {
+        if (!puppeteer) return null;
+        const execPath = await getBrowserExecutable();
+        if (!execPath) return null;
+
+        const warmupProfile = path.join(__dirname, 'scratch', 'warmup_profile');
+        fs.mkdirSync(warmupProfile, { recursive: true });
+        const launchArgs = [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-gpu',
+            '--disable-dev-shm-usage',
+            '--hide-scrollbars',
+            '--disable-web-security',
+            '--disable-background-timer-throttling',
+            '--disable-backgrounding-occluded-windows',
+            '--disable-renderer-backgrounding',
+            `--user-data-dir=${warmupProfile}`
+        ];
+
+        let lastErr = null;
+        for (let attempt = 1; attempt <= 4; attempt++) {
+            try {
+                nativeBrowser = await puppeteer.launch({
+                    executablePath: execPath,
+                    headless: 'new',
+                    args: launchArgs,
+                    protocolTimeout: 240000
+                });
+                break;
+            } catch (err) {
+                lastErr = err;
+                if (err.message && err.message.includes('ETXTBSY') && attempt < 4) {
+                    console.warn(`[Browser Launch] ETXTBSY on attempt ${attempt}, retrying in 1.5s...`);
+                    await new Promise(r => setTimeout(r, 1500));
+                } else {
+                    throw err;
+                }
+            }
+        }
+
+        nativeBrowserPromise = null;
+        return nativeBrowser;
+    })().catch(err => {
+        nativeBrowserPromise = null;
+        throw err;
     });
-    return nativeBrowser;
+
+    return nativeBrowserPromise;
 }
 
 async function ensureNativePage(port) {
