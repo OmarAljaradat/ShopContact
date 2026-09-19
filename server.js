@@ -1252,14 +1252,18 @@ async function processReelJob(jobId, payload, execPath) {
                     }
                 });
 
-                const maxEntranceSec = Math.min(0.66, slideDur * 0.5);
-                const numEntranceFrames = Math.max(1, Math.round(maxEntranceSec / (stepMs / 1000)));
-                const actualEntranceSec = numEntranceFrames * (stepMs / 1000);
-                const holdSec = Math.max(0.1, slideDur - actualEntranceSec);
+                // 3 highly responsive keyframe offsets for smooth pop/fade/scale motion
+                const keyframes = [
+                    { ms: 120, dur: 0.16 },
+                    { ms: 280, dur: 0.18 },
+                    { ms: 480, dur: 0.20 }
+                ];
+                const entranceDurTotal = keyframes.reduce((acc, k) => acc + k.dur, 0);
+                const holdSec = Math.max(0.1, slideDur - entranceDurTotal);
 
-                // Step through entrance frames
-                for (let f = 0; f < numEntranceFrames; f++) {
-                    const currentMs = f * stepMs;
+                // Step through the 3 keyframes
+                for (let f = 0; f < keyframes.length; f++) {
+                    const kf = keyframes[f];
                     await page.evaluate((ms) => {
                         const canvas = document.getElementById('exportCanvas');
                         if (canvas && typeof canvas.getAnimations === 'function') {
@@ -1268,14 +1272,14 @@ async function processReelJob(jobId, payload, execPath) {
                                 a.currentTime = ms;
                             });
                         }
-                    }, currentMs);
+                    }, kf.ms);
 
                     const fName = `f_${String(globalFrameIdx++).padStart(5, '0')}.jpg`;
                     const fPath = path.join(framesDir, fName);
-                    await page.screenshot({ path: fPath, type: 'jpeg', quality: 88 });
+                    await page.screenshot({ path: fPath, type: 'jpeg', quality: 82, optimizeForSpeed: true });
 
                     concatContent += `file '${fPath.replace(/\\/g, '/')}'\n`;
-                    concatContent += `duration ${(stepMs / 1000).toFixed(6)}\n`;
+                    concatContent += `duration ${kf.dur.toFixed(6)}\n`;
                 }
 
                 // Settle animations to completion (t = 800ms) for hold frame
@@ -1295,7 +1299,7 @@ async function processReelJob(jobId, payload, execPath) {
 
                 const holdName = `f_${String(globalFrameIdx++).padStart(5, '0')}.jpg`;
                 const holdPath = path.join(framesDir, holdName);
-                await page.screenshot({ path: holdPath, type: 'jpeg', quality: 92 });
+                await page.screenshot({ path: holdPath, type: 'jpeg', quality: 88, optimizeForSpeed: true });
 
                 concatContent += `file '${holdPath.replace(/\\/g, '/')}'\n`;
                 concatContent += `duration ${holdSec.toFixed(6)}\n`;
@@ -1312,7 +1316,7 @@ async function processReelJob(jobId, payload, execPath) {
 
                 const slideFname = `f_${String(globalFrameIdx++).padStart(5, '0')}.jpg`;
                 const slidePath = path.join(framesDir, slideFname);
-                await page.screenshot({ path: slidePath, type: 'jpeg', quality: 92 });
+                await page.screenshot({ path: slidePath, type: 'jpeg', quality: 88, optimizeForSpeed: true });
 
                 concatContent += `file '${slidePath.replace(/\\/g, '/')}'\n`;
                 concatContent += `duration ${slideDur.toFixed(6)}\n`;
@@ -1350,10 +1354,10 @@ async function processReelJob(jobId, payload, execPath) {
         }
 
         ffmpegArgs.push(
-            '-vf', 'scale=1080:1920:flags=lanczos',
             '-c:v', 'libx264',
-            '-crf', '19',
+            '-crf', '22',
             '-preset', 'ultrafast',
+            '-tune', 'fastdecode',
             '-pix_fmt', 'yuv420p',
             '-t', String(totalDurationSec),
             '-movflags', '+faststart',

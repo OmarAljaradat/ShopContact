@@ -7426,9 +7426,9 @@ window.ReelsEngine = (function() {
         const jobId = initData.jobId;
         const statusUrl = getReelsApiUrl(`/api/reel-job-status?jobId=${encodeURIComponent(jobId)}`);
 
-        // Poll every 1.2s until job completes or fails (safety timeout 5 minutes = 300s)
+        // Poll every 1.2s until job completes or fails (safety timeout)
         const pollStart = Date.now();
-        while (Date.now() - pollStart < 300000) {
+        while (Date.now() - pollStart < 400000) {
             await new Promise(r => setTimeout(r, 1200));
 
             let statusRes;
