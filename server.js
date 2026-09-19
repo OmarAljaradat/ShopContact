@@ -1053,15 +1053,17 @@ async function processReelJob(jobId, payload, execPath) {
         const framesDir = path.join(runDir, 'frames');
         fs.mkdirSync(framesDir, { recursive: true });
 
-        const b = await ensureNativeBrowser();
-        if (!b) {
+        page = await ensureNativePage(PORT);
+        if (!page) {
             throw new Error('تعذر تشغيل محرك المتصفح Chromium على السيرفر');
         }
 
-        page = await b.newPage();
         await page.setViewport({ width: 1080, height: 1920, deviceScaleFactor: 1 });
-        await page.goto(`http://127.0.0.1:${PORT}/?suite=suite_reels`, { waitUntil: 'domcontentloaded', timeout: 60000 });
-        await page.waitForSelector('#canvasScaleStage', { timeout: 30000 });
+        await page.evaluate(() => {
+            if (typeof window.switchStudioSuite === 'function') {
+                window.switchStudioSuite('suite_reels');
+            }
+        });
 
         // Move #canvasScaleStage directly to document.body and cleanly hide surrounding studio chrome
         await page.evaluate(() => {
@@ -1323,7 +1325,8 @@ async function processReelJob(jobId, payload, execPath) {
         }
 
         // 3. Close tab immediately to release memory
-        await page.close();
+        await page.close().catch(() => {});
+        nativePage = null;
         page = null;
 
         job.status = 'encoding';
@@ -1478,6 +1481,7 @@ async function processReelJob(jobId, payload, execPath) {
         if (page && !page.isClosed()) {
             try { await page.close(); } catch(e) {}
         }
+        if (page === nativePage) nativePage = null;
         if (runDir && fs.existsSync(runDir)) {
             try { fs.rmSync(runDir, { recursive: true, force: true }); } catch(e) {}
         }
