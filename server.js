@@ -75,19 +75,21 @@ async function ensureNativePage(port) {
     if (!execPath) return null;
 
     if (!nativeBrowser || !nativeBrowser.isConnected()) {
+        const warmupProfile = path.join(__dirname, 'scratch', 'warmup_profile');
+        fs.mkdirSync(warmupProfile, { recursive: true });
         const launchArgs = [
-            ...(sparticuzChromium ? sparticuzChromium.args : []),
             '--no-sandbox',
             '--disable-setuid-sandbox',
             '--disable-gpu',
             '--disable-dev-shm-usage',
             '--hide-scrollbars',
-            '--disable-web-security'
+            '--disable-web-security',
+            `--user-data-dir=${warmupProfile}`
         ];
         nativeBrowser = await puppeteer.launch({
             executablePath: execPath,
-            headless: sparticuzChromium ? sparticuzChromium.headless : 'new',
-            args: [...new Set(launchArgs)],
+            headless: 'new',
+            args: launchArgs,
             protocolTimeout: 180000
         });
     }
@@ -939,6 +941,388 @@ function sendTelegramRequest({ botToken, endpoint, fields = {}, fileField = null
             req.end();
         }
     });
+}
+
+// In-memory queue and management for Studio Reel export jobs
+const reelJobs = new Map();
+
+function pruneExports() {
+    try {
+        const exportsDir = path.join(__dirname, 'exports');
+        if (!fs.existsSync(exportsDir)) return;
+        const files = fs.readdirSync(exportsDir).map(name => {
+            const fullPath = path.join(exportsDir, name);
+            try {
+                const stat = fs.statSync(fullPath);
+                return { name, fullPath, time: stat.mtimeMs };
+            } catch (e) {
+                return null;
+            }
+        }).filter(Boolean);
+        files.sort((a, b) => b.time - a.time);
+        const twoHoursAgo = Date.now() - 2 * 60 * 60 * 1000;
+        files.forEach((f, idx) => {
+            if (idx >= 10 || f.time < twoHoursAgo) {
+                try { fs.unlinkSync(f.fullPath); } catch(e) {}
+            }
+        });
+    } catch(e) {}
+}
+
+setInterval(() => {
+    const now = Date.now();
+    for (const [id, job] of reelJobs.entries()) {
+        if (now - (job.createdAt || now) > 1800000) {
+            reelJobs.delete(id);
+        }
+    }
+    pruneExports();
+}, 300000);
+
+async function processReelJob(jobId, payload, execPath) {
+    const job = reelJobs.get(jobId);
+    if (!job) return;
+
+    let browser = null;
+    let runDir = null;
+    try {
+        job.status = 'preparing';
+        job.progress = 10;
+        job.message = 'جاري إطلاق محرك المتصفح الفائق (1080x1920)...';
+
+        const { projectState, audioState, filename } = payload;
+        const outFilename = filename || `Reel_FC27_ShopCoin15_${Date.now()}.mp4`;
+
+        runDir = path.join(__dirname, 'scratch', jobId);
+        const framesDir = path.join(runDir, 'frames');
+        const profileDir = path.join(runDir, 'profile');
+        fs.mkdirSync(framesDir, { recursive: true });
+        fs.mkdirSync(profileDir, { recursive: true });
+
+        const launchArgs = [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--window-size=1080,1920',
+            '--autoplay-policy=no-user-gesture-required',
+            '--disable-gpu',
+            '--disable-dev-shm-usage',
+            '--hide-scrollbars',
+            '--disable-web-security',
+            `--user-data-dir=${profileDir}`
+        ];
+        browser = await puppeteer.launch({
+            executablePath: execPath,
+            headless: 'new',
+            args: launchArgs
+        });
+
+        const page = await browser.newPage();
+        await page.setViewport({ width: 1080, height: 1920, deviceScaleFactor: 1 });
+        await page.goto(`http://127.0.0.1:${PORT}/?suite=suite_reels`, { waitUntil: 'load', timeout: 25000 });
+        await page.waitForSelector('#canvasScaleStage', { timeout: 15000 });
+
+        // Move #canvasScaleStage directly to document.body and cleanly hide surrounding studio chrome
+        await page.evaluate(() => {
+            const stage = document.getElementById('canvasScaleStage');
+            if (stage) {
+                document.body.appendChild(stage);
+            }
+            Array.from(document.body.children).forEach(child => {
+                if (child.id !== 'canvasScaleStage' && child.tagName !== 'SCRIPT' && child.tagName !== 'STYLE') {
+                    child.style.display = 'none';
+                }
+            });
+            if (window.ReelsEngine) window.ReelsEngine.setSelectedElement('');
+        });
+
+        // Inject pure 1080x1920 isolated canvas scaling
+        await page.addStyleTag({
+            content: `
+                html, body {
+                    margin: 0 !important;
+                    padding: 0 !important;
+                    width: 1080px !important;
+                    height: 1920px !important;
+                    overflow: hidden !important;
+                    background: #070709 !important;
+                    direction: ltr !important;
+                }
+                #canvasScaleStage {
+                    position: absolute !important;
+                    top: 0px !important;
+                    left: 0px !important;
+                    width: 450px !important;
+                    height: 800px !important;
+                    transform: scale(2.4) !important;
+                    transform-origin: 0 0 !important;
+                    margin: 0 !important;
+                    padding: 0 !important;
+                    background: transparent !important;
+                    z-index: 99999999 !important;
+                }
+                #exportCanvas {
+                    box-shadow: none !important;
+                    border: none !important;
+                    border-radius: 0 !important;
+                    outline: none !important;
+                }
+                .reel-resize-handle, .snap-guide, .layer-toolbar, .ring-2, [class*="ring-"], [id*="Toast"] {
+                    display: none !important;
+                }
+            `
+        });
+
+        // Load state and preload images
+        job.progress = 20;
+        job.message = 'جاري تجهيز عناصر وبطاقات السلايدات...';
+
+        await page.evaluate(async (pState, aState) => {
+            if (window.ReelsEngine) {
+                if (pState) window.ReelsEngine.loadProject(pState);
+                if (aState) window.ReelsEngine.setAudioState(aState);
+                window.ReelsEngine.setSelectedElement('');
+            }
+            if (document.fonts) await document.fonts.ready;
+
+            const rawUrls = [];
+            if (pState && Array.isArray(pState.slides)) {
+                pState.slides.forEach(s => {
+                    if (s.cardUrl) rawUrls.push(s.cardUrl);
+                    if (s.playerA && s.playerA.cardUrl) rawUrls.push(s.playerA.cardUrl);
+                    if (s.playerB && s.playerB.cardUrl) rawUrls.push(s.playerB.cardUrl);
+                });
+            }
+            const urls = rawUrls.map(u => {
+                if (u && (u.startsWith('http://') || u.startsWith('https://')) && !u.includes('/api/image-proxy')) {
+                    return `/api/image-proxy?url=${encodeURIComponent(u)}`;
+                }
+                return u;
+            });
+            await Promise.all(urls.map(u => new Promise(res => {
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                img.onload = res;
+                img.onerror = res;
+                img.src = u;
+                setTimeout(res, 5000);
+            })));
+        }, projectState, audioState);
+
+        // Setup in-page audio recorder
+        const hasAudio = await page.evaluate(() => {
+            try {
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                if (!AudioCtx) return false;
+                window.__recAudioCtx = new AudioCtx();
+                window.__recAudioDest = window.__recAudioCtx.createMediaStreamDestination();
+                window.__recAudioChunks = [];
+                window.__recMediaRecorder = new MediaRecorder(window.__recAudioDest.stream);
+                window.__recMediaRecorder.ondataavailable = e => {
+                    if (e.data && e.data.size > 0) window.__recAudioChunks.push(e.data);
+                };
+                window.__recMediaRecorder.start(100);
+                return true;
+            } catch (e) {
+                console.warn('Audio setup error:', e);
+                return false;
+            }
+        });
+
+        job.status = 'recording';
+        job.progress = 30;
+        job.message = 'جاري التقاط وتسجيل أنيميشن السلايدات بدقة 1080x1920...';
+
+        const client = await page.target().createCDPSession();
+        let frameCount = 0;
+
+        client.on('Page.screencastFrame', async (event) => {
+            const currentIdx = frameCount++;
+            const fname = `f_${String(currentIdx).padStart(6, '0')}.jpg`;
+            fs.writeFileSync(path.join(framesDir, fname), Buffer.from(event.data, 'base64'));
+            try {
+                await client.send('Page.screencastFrameAck', { sessionId: event.sessionId });
+            } catch (e) {}
+        });
+
+        // 85 quality gives lossless-level crisp 1080x1920 visuals while cutting frame size by 88%
+        await client.send('Page.startScreencast', {
+            format: 'jpeg',
+            quality: 85,
+            maxWidth: 1080,
+            maxHeight: 1920,
+            everyNthFrame: 1
+        });
+
+        // Start playback with onComplete
+        const totalDurationSec = await page.evaluate(() => {
+            window.ReelsEngine.goToSlide(0);
+            const state = window.ReelsEngine.getState();
+            const totalSec = state.slides.reduce((acc, s) => acc + (s.duration || state.slideDuration || 2.5), 0);
+            window.__studioRecordingFinished = false;
+            window.ReelsEngine.playPlayback(window.__recAudioDest, window.__recAudioCtx, () => {
+                window.__studioRecordingFinished = true;
+            });
+            return totalSec;
+        });
+
+        // Progress interval during playback
+        const startTime = Date.now();
+        const durationMs = Math.max(1000, totalDurationSec * 1000);
+        const progressInterval = setInterval(() => {
+            const elapsed = Date.now() - startTime;
+            const pct = Math.min(65, Math.round(30 + (elapsed / durationMs) * 35));
+            job.progress = pct;
+            job.message = `جاري التقاط إطارات الأنيميشن بدقة 1080x1920 (${pct}%)...`;
+        }, 1000);
+
+        // Wait for playback completion
+        const maxWaitMs = Math.ceil((totalDurationSec + 8) * 1000);
+        await page.waitForFunction(() => window.__studioRecordingFinished === true, {
+            timeout: maxWaitMs
+        }).catch(() => {});
+
+        clearInterval(progressInterval);
+        await new Promise(r => setTimeout(r, 250));
+
+        // Stop screencast and pause
+        await client.send('Page.stopScreencast');
+        await page.evaluate(() => window.ReelsEngine.pausePlayback());
+
+        // Retrieve audio
+        let audioBase64 = null;
+        if (hasAudio) {
+            audioBase64 = await page.evaluate(async () => {
+                return new Promise(res => {
+                    if (!window.__recMediaRecorder) return res(null);
+                    window.__recMediaRecorder.onstop = () => {
+                        const blob = new Blob(window.__recAudioChunks, { type: 'audio/webm' });
+                        const reader = new FileReader();
+                        reader.onloadend = () => res(reader.result);
+                        reader.readAsDataURL(blob);
+                    };
+                    window.__recMediaRecorder.stop();
+                });
+            });
+        }
+
+        await browser.close();
+        browser = null;
+
+        job.status = 'encoding';
+        job.progress = 70;
+        job.message = 'جاري دمج الصوت ومعالجة الفيديو بجودة فائقة...';
+
+        let audioFile = null;
+        if (audioBase64 && audioBase64.includes(';base64,')) {
+            audioFile = path.join(runDir, 'audio.webm');
+            const clean = audioBase64.split(';base64,')[1];
+            fs.writeFileSync(audioFile, Buffer.from(clean, 'base64'));
+        }
+
+        const actualFps = Math.max(24, Math.min(30, Math.round(frameCount / Math.max(1, totalDurationSec))));
+        const outMp4Path = path.join(runDir, 'final_reel.mp4');
+        const inputPattern = path.join(framesDir, 'f_%06d.jpg');
+
+        const ffmpegArgs = [
+            '-y',
+            '-framerate', String(actualFps),
+            '-i', inputPattern
+        ];
+
+        if (audioFile && fs.existsSync(audioFile) && fs.statSync(audioFile).size > 1000) {
+            ffmpegArgs.push('-i', audioFile, '-c:a', 'aac', '-b:a', '192k', '-shortest');
+        } else {
+            ffmpegArgs.push('-f', 'lavfi', '-i', 'anullsrc=r=44100:cl=stereo', '-c:a', 'aac', '-b:a', '128k', '-shortest');
+        }
+
+        ffmpegArgs.push(
+            '-c:v', 'libx264',
+            '-crf', '20',
+            '-preset', 'ultrafast',
+            '-pix_fmt', 'yuv420p',
+            '-movflags', '+faststart',
+            outMp4Path
+        );
+
+        const { exec } = require('child_process');
+        const cmd = `"${ffmpegPath}" ${ffmpegArgs.map(a => `"${a}"`).join(' ')}`;
+        job.progress = 85;
+        job.message = 'جاري ضغط وترميز إطارات الفيديو (FFmpeg Ultrafast)...';
+        await new Promise((resolve, reject) => {
+            exec(cmd, { maxBuffer: 10 * 1024 * 1024 }, (err) => {
+                if (err) return reject(err);
+                resolve();
+            });
+        });
+
+        if (!fs.existsSync(outMp4Path)) {
+            throw new Error('فشل توليد ملف الفيديو النهائي عبر FFmpeg');
+        }
+
+        const mp4Buffer = fs.readFileSync(outMp4Path);
+        console.log(`[Record Studio Reel] Video created successfully! File: ${outFilename}, Size: ${(mp4Buffer.length / (1024 * 1024)).toFixed(2)} MB, Frames: ${frameCount}, FPS: ${actualFps}`);
+
+        // Prune old exports
+        pruneExports();
+
+        // 1. Save persistent copy to exports folder
+        const exportsDir = path.join(__dirname, 'exports');
+        if (!fs.existsSync(exportsDir)) fs.mkdirSync(exportsDir, { recursive: true });
+        const exportFilePath = path.join(exportsDir, outFilename);
+        fs.writeFileSync(exportFilePath, mp4Buffer);
+
+        // 2. Direct-save to Desktop and Downloads if local user exists
+        const os = require('os');
+        try {
+            const userHome = os.homedir();
+            const directSaveTargets = [
+                path.join(userHome, 'OneDrive', 'Desktop', outFilename),
+                path.join(userHome, 'OneDrive', 'Desktop', 'Reel_FC27_ShopCoin15_Latest.mp4'),
+                path.join(userHome, 'OneDrive', 'Desktop', 'مشاكل.mp4'),
+                path.join(userHome, 'Desktop', outFilename),
+                path.join(userHome, 'Desktop', 'Reel_FC27_ShopCoin15_Latest.mp4'),
+                path.join(userHome, 'Desktop', 'مشاكل.mp4'),
+                path.join(userHome, 'Downloads', outFilename),
+                path.join(userHome, 'Downloads', 'Reel_FC27_ShopCoin15_Latest.mp4')
+            ];
+            directSaveTargets.forEach(targetPath => {
+                try {
+                    const targetDir = path.dirname(targetPath);
+                    if (fs.existsSync(targetDir)) {
+                        fs.writeFileSync(targetPath, mp4Buffer);
+                    }
+                } catch (saveErr) {}
+            });
+        } catch (e) {}
+
+        // 3. Immediately clean up framesDir to free disk space
+        try {
+            if (fs.existsSync(framesDir)) fs.rmSync(framesDir, { recursive: true, force: true });
+        } catch (e) {}
+
+        // 4. Update Job Status to Done
+        job.status = 'done';
+        job.progress = 100;
+        job.message = 'اكتمل إنتاج الفيديو بنجاح!';
+        job.filename = outFilename;
+        job.downloadUrl = `/api/download-reel?jobId=${jobId}`;
+        job.desktopFile = 'Reel_FC27_ShopCoin15_Latest.mp4';
+        job.savedDesktop = true;
+        job.sizeMB = (mp4Buffer.length / (1024 * 1024)).toFixed(2);
+        job.completedAt = Date.now();
+
+    } catch (err) {
+        console.error(`[Record Studio Reel Job Error] [${jobId}]`, err);
+        job.status = 'error';
+        job.error = err.message || 'حدث خطأ غير متوقع أثناء تسجيل الفيديو';
+    } finally {
+        if (browser) {
+            try { await browser.close(); } catch(e) {}
+        }
+        if (runDir && fs.existsSync(runDir)) {
+            try { fs.rmSync(runDir, { recursive: true, force: true }); } catch(e) {}
+        }
+    }
 }
 
 const server = http.createServer((req, res) => {
@@ -1837,19 +2221,14 @@ const server = http.createServer((req, res) => {
         return;
     }
 
-    // API: Record Studio Reel Video (1080x1920 Full HD with 100% Native Animations & Audio)
+    // API: Record Studio Reel Video (Async Job Queue with 1080x1920 Full HD Native Animations)
     if (reqPath === '/api/record-studio-reel' && req.method === 'POST') {
-        req.setTimeout(360000);
-        res.setTimeout(360000);
         const chunks = [];
         req.on('data', chunk => chunks.push(chunk));
         req.on('end', async () => {
-            let browser = null;
-            let runDir = null;
             try {
                 const bodyStr = Buffer.concat(chunks).toString('utf-8');
                 const payload = JSON.parse(bodyStr || '{}');
-                const { projectState, audioState, filename } = payload;
 
                 if (!puppeteer) {
                     res.writeHead(500, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
@@ -1864,326 +2243,78 @@ const server = http.createServer((req, res) => {
                     return;
                 }
 
-                const runId = 'reel_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
-                runDir = path.join(__dirname, 'scratch', runId);
-                const framesDir = path.join(runDir, 'frames');
-                fs.mkdirSync(framesDir, { recursive: true });
+                const jobId = 'reel_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+                const outFilename = payload.filename || `Reel_FC27_ShopCoin15_${Date.now()}.mp4`;
 
-                console.log(`[Record Studio Reel] Launching headless browser for recording...`);
-                const launchArgs = [
-                    ...(sparticuzChromium ? sparticuzChromium.args : []),
-                    '--no-sandbox',
-                    '--disable-setuid-sandbox',
-                    '--window-size=1080,1920',
-                    '--autoplay-policy=no-user-gesture-required',
-                    '--disable-gpu',
-                    '--disable-dev-shm-usage',
-                    '--hide-scrollbars',
-                    '--disable-web-security'
-                ];
-                browser = await puppeteer.launch({
-                    executablePath: execPath,
-                    headless: sparticuzChromium ? sparticuzChromium.headless : 'new',
-                    args: [...new Set(launchArgs)]
+                reelJobs.set(jobId, {
+                    id: jobId,
+                    status: 'queued',
+                    progress: 5,
+                    message: 'تم استلام طلب الفيديو وجاري تجهيز بيئة التسجيل...',
+                    filename: outFilename,
+                    createdAt: Date.now()
                 });
 
-                const page = await browser.newPage();
-                await page.setViewport({ width: 1080, height: 1920, deviceScaleFactor: 1 });
-                await page.goto(`http://127.0.0.1:${PORT}/?suite=suite_reels`, { waitUntil: 'domcontentloaded', timeout: 15000 });
-                await page.waitForSelector('#canvasScaleStage', { timeout: 10000 }).catch(() => {});
+                // Respond immediately in < 15ms so Cloudflare and Render NEVER timeout!
+                res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+                res.end(JSON.stringify({
+                    success: true,
+                    jobId,
+                    status: 'queued',
+                    message: 'تم استلام طلب التصدير بنجاح'
+                }));
 
-                // Move #canvasScaleStage directly to document.body and remove all surrounding toolbars/sidebars
-                await page.evaluate(() => {
-                    const stage = document.getElementById('canvasScaleStage');
-                    if (stage) document.body.appendChild(stage);
-                    Array.from(document.body.children).forEach(child => {
-                        if (child.id !== 'canvasScaleStage' && child.tagName !== 'SCRIPT' && child.tagName !== 'STYLE') {
-                            child.remove();
-                        }
-                    });
-                    if (window.ReelsEngine) window.ReelsEngine.setSelectedElement('');
-                });
-
-                // Inject pure 1080x1920 isolated canvas scaling
-                await page.addStyleTag({
-                    content: `
-                        html, body {
-                            margin: 0 !important;
-                            padding: 0 !important;
-                            width: 1080px !important;
-                            height: 1920px !important;
-                            overflow: hidden !important;
-                            background: #070709 !important;
-                            direction: ltr !important;
-                        }
-                        #canvasScaleStage {
-                            position: absolute !important;
-                            top: 0px !important;
-                            left: 0px !important;
-                            width: 450px !important;
-                            height: 800px !important;
-                            transform: scale(2.4) !important;
-                            transform-origin: 0 0 !important;
-                            margin: 0 !important;
-                            padding: 0 !important;
-                            background: transparent !important;
-                            z-index: 99999999 !important;
-                        }
-                        #exportCanvas {
-                            box-shadow: none !important;
-                            border: none !important;
-                            border-radius: 0 !important;
-                            outline: none !important;
-                        }
-                        .reel-resize-handle, .snap-guide, .layer-toolbar, .ring-2, [class*="ring-"], [id*="Toast"] {
-                            display: none !important;
-                        }
-                    `
-                });
-
-                // Load state and preload images
-                await page.evaluate(async (pState, aState) => {
-                    if (window.ReelsEngine) {
-                        if (pState) window.ReelsEngine.loadProject(pState);
-                        if (aState) window.ReelsEngine.setAudioState(aState);
-                        window.ReelsEngine.setSelectedElement('');
-                    }
-                    if (document.fonts) await document.fonts.ready;
-
-                    // Preload all card images via proxy to prevent 403
-                    const rawUrls = [];
-                    if (pState && Array.isArray(pState.slides)) {
-                        pState.slides.forEach(s => {
-                            if (s.cardUrl) rawUrls.push(s.cardUrl);
-                            if (s.playerA && s.playerA.cardUrl) rawUrls.push(s.playerA.cardUrl);
-                            if (s.playerB && s.playerB.cardUrl) rawUrls.push(s.playerB.cardUrl);
-                        });
-                    }
-                    const urls = rawUrls.map(u => {
-                        if (u && (u.startsWith('http://') || u.startsWith('https://')) && !u.includes('/api/image-proxy')) {
-                            return `/api/image-proxy?url=${encodeURIComponent(u)}`;
-                        }
-                        return u;
-                    });
-                    await Promise.all(urls.map(u => new Promise(res => {
-                        const img = new Image();
-                        img.crossOrigin = 'anonymous';
-                        img.onload = res;
-                        img.onerror = res;
-                        img.src = u;
-                        setTimeout(res, 5000);
-                    })));
-                }, projectState, audioState);
-
-                // Setup in-page audio recorder
-                const hasAudio = await page.evaluate(() => {
-                    try {
-                        const AudioCtx = window.AudioContext || window.webkitAudioContext;
-                        if (!AudioCtx) return false;
-                        window.__recAudioCtx = new AudioCtx();
-                        window.__recAudioDest = window.__recAudioCtx.createMediaStreamDestination();
-                        window.__recAudioChunks = [];
-                        window.__recMediaRecorder = new MediaRecorder(window.__recAudioDest.stream);
-                        window.__recMediaRecorder.ondataavailable = e => {
-                            if (e.data && e.data.size > 0) window.__recAudioChunks.push(e.data);
-                        };
-                        window.__recMediaRecorder.start(100);
-                        return true;
-                    } catch (e) {
-                        console.warn('Audio setup error:', e);
-                        return false;
+                // Process job asynchronously in background
+                processReelJob(jobId, payload, execPath).catch(err => {
+                    console.error(`[Background Reel Job Exception] [${jobId}]`, err);
+                    const j = reelJobs.get(jobId);
+                    if (j) {
+                        j.status = 'error';
+                        j.error = err.message || 'حدث خطأ أثناء معالجة الفيديو';
                     }
                 });
-
-                // Setup CDP Screencast
-                const client = await page.target().createCDPSession();
-                let frameCount = 0;
-
-                client.on('Page.screencastFrame', async (event) => {
-                    const currentIdx = frameCount++;
-                    const fname = `f_${String(currentIdx).padStart(6, '0')}.jpg`;
-                    fs.writeFileSync(path.join(framesDir, fname), Buffer.from(event.data, 'base64'));
-                    try {
-                        await client.send('Page.screencastFrameAck', { sessionId: event.sessionId });
-                    } catch (e) {}
-                });
-
-                await client.send('Page.startScreencast', {
-                    format: 'jpeg',
-                    quality: 98,
-                    maxWidth: 1080,
-                    maxHeight: 1920,
-                    everyNthFrame: 1
-                });
-
-                // Start playback with onComplete
-                const totalDurationSec = await page.evaluate(() => {
-                    window.ReelsEngine.goToSlide(0);
-                    const state = window.ReelsEngine.getState();
-                    const totalSec = state.slides.reduce((acc, s) => acc + (s.duration || state.slideDuration || 2.5), 0);
-                    window.__studioRecordingFinished = false;
-                    window.ReelsEngine.playPlayback(window.__recAudioDest, window.__recAudioCtx, () => {
-                        window.__studioRecordingFinished = true;
-                    });
-                    return totalSec;
-                });
-
-                // Wait for playback completion
-                const maxWaitMs = Math.ceil((totalDurationSec + 8) * 1000);
-                await page.waitForFunction(() => window.__studioRecordingFinished === true, {
-                    timeout: maxWaitMs
-                }).catch(() => {});
-
-                await new Promise(r => setTimeout(r, 250));
-
-                // Stop screencast and pause
-                await client.send('Page.stopScreencast');
-                await page.evaluate(() => window.ReelsEngine.pausePlayback());
-
-                // Retrieve audio
-                let audioBase64 = null;
-                if (hasAudio) {
-                    audioBase64 = await page.evaluate(async () => {
-                        return new Promise(res => {
-                            if (!window.__recMediaRecorder) return res(null);
-                            window.__recMediaRecorder.onstop = () => {
-                                const blob = new Blob(window.__recAudioChunks, { type: 'audio/webm' });
-                                const reader = new FileReader();
-                                reader.onloadend = () => res(reader.result);
-                                reader.readAsDataURL(blob);
-                            };
-                            window.__recMediaRecorder.stop();
-                        });
-                    });
-                }
-
-                await browser.close();
-                browser = null;
-
-                let audioFile = null;
-                if (audioBase64 && audioBase64.includes(';base64,')) {
-                    audioFile = path.join(runDir, 'audio.webm');
-                    const clean = audioBase64.split(';base64,')[1];
-                    fs.writeFileSync(audioFile, Buffer.from(clean, 'base64'));
-                }
-
-                const actualFps = Math.max(24, Math.min(60, Math.round(frameCount / Math.max(1, totalDurationSec))));
-                const outMp4Path = path.join(runDir, 'final_reel.mp4');
-                const inputPattern = path.join(framesDir, 'f_%06d.jpg');
-
-                const ffmpegArgs = [
-                    '-y',
-                    '-framerate', String(actualFps),
-                    '-i', inputPattern
-                ];
-
-                if (audioFile && fs.existsSync(audioFile) && fs.statSync(audioFile).size > 1000) {
-                    ffmpegArgs.push('-i', audioFile, '-c:a', 'aac', '-b:a', '192k', '-shortest');
-                } else {
-                    ffmpegArgs.push('-f', 'lavfi', '-i', 'anullsrc=r=44100:cl=stereo', '-c:a', 'aac', '-b:a', '128k', '-shortest');
-                }
-
-                ffmpegArgs.push(
-                    '-c:v', 'libx264',
-                    '-crf', '18',
-                    '-preset', 'fast',
-                    '-pix_fmt', 'yuv420p',
-                    '-movflags', '+faststart',
-                    outMp4Path
-                );
-
-                const { execSync } = require('child_process');
-                const cmd = `"${ffmpegPath}" ${ffmpegArgs.map(a => `"${a}"`).join(' ')}`;
-                execSync(cmd);
-
-                if (!fs.existsSync(outMp4Path)) {
-                    throw new Error('فشل توليد ملف الفيديو النهائي عبر FFmpeg');
-                }
-
-                const mp4Buffer = fs.readFileSync(outMp4Path);
-                const outFilename = filename || `Reel_FC27_ShopCoin15_${Date.now()}.mp4`;
-                console.log(`[Record Studio Reel] Video created successfully! File: ${outFilename}, Size: ${(mp4Buffer.length / (1024 * 1024)).toFixed(2)} MB, Frames: ${frameCount}, FPS: ${actualFps}`);
-
-                // 1. Save persistent copy to exports folder
-                const exportsDir = path.join(__dirname, 'exports');
-                if (!fs.existsSync(exportsDir)) fs.mkdirSync(exportsDir, { recursive: true });
-                const exportFilePath = path.join(exportsDir, outFilename);
-                fs.writeFileSync(exportFilePath, mp4Buffer);
-
-                // 2. Direct-save to Desktop and Downloads for 100% fail-safe user access
-                const os = require('os');
-                const userHome = os.homedir();
-                const directSaveTargets = [
-                    path.join(userHome, 'OneDrive', 'Desktop', outFilename),
-                    path.join(userHome, 'OneDrive', 'Desktop', 'Reel_FC27_ShopCoin15_Latest.mp4'),
-                    path.join(userHome, 'OneDrive', 'Desktop', 'مشاكل.mp4'),
-                    path.join(userHome, 'Desktop', outFilename),
-                    path.join(userHome, 'Desktop', 'Reel_FC27_ShopCoin15_Latest.mp4'),
-                    path.join(userHome, 'Desktop', 'مشاكل.mp4'),
-                    path.join(userHome, 'Downloads', outFilename),
-                    path.join(userHome, 'Downloads', 'Reel_FC27_ShopCoin15_Latest.mp4')
-                ];
-                directSaveTargets.forEach(targetPath => {
-                    try {
-                        const targetDir = path.dirname(targetPath);
-                        if (fs.existsSync(targetDir)) {
-                            fs.writeFileSync(targetPath, mp4Buffer);
-                            console.log(`[Auto-Saver] Saved video copy to: ${targetPath}`);
-                        }
-                    } catch (saveErr) {
-                        console.warn(`[Auto-Saver Notice] Could not write to ${targetPath}: ${saveErr.message}`);
-                    }
-                });
-
-                const downloadUrl = `/api/download-reel?file=${encodeURIComponent(outFilename)}`;
-
-                // 3. Respond with JSON if client accepts JSON, else binary MP4
-                const acceptHeader = req.headers['accept'] || '';
-                if (acceptHeader.includes('application/json')) {
-                    res.writeHead(200, {
-                        'Content-Type': 'application/json',
-                        'Access-Control-Allow-Origin': '*'
-                    });
-                    res.end(JSON.stringify({
-                        success: true,
-                        filename: outFilename,
-                        downloadUrl,
-                        desktopFile: 'Reel_FC27_ShopCoin15_Latest.mp4',
-                        savedDesktop: true,
-                        sizeMB: (mp4Buffer.length / (1024 * 1024)).toFixed(2)
-                    }));
-                } else {
-                    res.writeHead(200, {
-                        'Content-Type': 'video/mp4',
-                        'Content-Disposition': `attachment; filename="${encodeURIComponent(outFilename)}"`,
-                        'Content-Length': mp4Buffer.length,
-                        'Access-Control-Allow-Origin': '*'
-                    });
-                    res.end(mp4Buffer);
-                }
 
             } catch (err) {
-                console.error('[Record Studio Reel Error]', err);
+                console.error('[Record Studio Reel API Error]', err);
                 if (!res.headersSent) {
                     res.writeHead(500, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
                     res.end(JSON.stringify({ success: false, error: err.message }));
-                }
-            } finally {
-                if (browser) {
-                    try { await browser.close(); } catch(e) {}
-                }
-                if (runDir && fs.existsSync(runDir)) {
-                    try { fs.rmSync(runDir, { recursive: true, force: true }); } catch(e) {}
                 }
             }
         });
         return;
     }
 
+    // API: Reel Job Status Polling
+    if (reqPath === '/api/reel-job-status' && req.method === 'GET') {
+        const urlObj = new URL(req.url, `http://localhost:${PORT}`);
+        const jobId = urlObj.searchParams.get('jobId');
+        if (!jobId || !reelJobs.has(jobId)) {
+            res.writeHead(404, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+            res.end(JSON.stringify({ success: false, error: 'المهمة غير موجودة أو انتهت صلاحيتها' }));
+            return;
+        }
+        const job = reelJobs.get(jobId);
+        res.writeHead(200, {
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-store, no-cache, must-revalidate',
+            'Access-Control-Allow-Origin': '*'
+        });
+        res.end(JSON.stringify({ success: true, ...job }));
+        return;
+    }
+
     // API: Direct Download Reel Video
     if (reqPath === '/api/download-reel' && req.method === 'GET') {
         const urlObj = new URL(req.url, `http://localhost:${PORT}`);
-        const file = urlObj.searchParams.get('file');
+        const jobId = urlObj.searchParams.get('jobId');
+        let file = urlObj.searchParams.get('file');
+
+        if (jobId && reelJobs.has(jobId)) {
+            const job = reelJobs.get(jobId);
+            if (job.filename) file = job.filename;
+        }
+
         const safeFile = path.basename(file || '');
         const filePath = path.join(__dirname, 'exports', safeFile);
         if (!safeFile || !fs.existsSync(filePath)) {

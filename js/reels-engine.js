@@ -5271,7 +5271,7 @@ window.ReelsEngine = (function() {
         }
 
         const currentSlide = state.slides[state.currentSlideIndex] || state.slides[0];
-        const layout = state.layouts[state.activeSection] || DEFAULT_LAYOUTS[state.activeSection];
+        const layout = (state.layouts && state.layouts[state.activeSection]) || DEFAULT_LAYOUTS[state.activeSection] || DEFAULT_LAYOUTS.countdown || {};
 
         const bgUrl = getAsset('STORE_BG_PURE', 'assets/store-bg-pure.png');
         const fcLogoUrl = getAsset('FC27_OFFICIAL_LOGO', 'assets/fc27-official-logo.png');
@@ -7234,7 +7234,7 @@ window.ReelsEngine = (function() {
         document.body.appendChild(modal);
     }
 
-    // Unified 100% Native 1080x1920 Studio Reel Recorder
+    // Unified 100% Native 1080x1920 Studio Reel Recorder (Async Queue with Realtime Polling)
     async function recordStudioReelViaServer(filename, progressCallback) {
         const apiUrl = getReelsApiUrl('/api/record-studio-reel');
 
@@ -7256,19 +7256,19 @@ window.ReelsEngine = (function() {
         };
 
         const curAudioState = (typeof getAudioState === 'function') ? getAudioState() : audioState;
-
         const totalSec = state.slides.reduce((acc, s) => acc + (s.duration || state.slideDuration || 2.5), 0);
+
         if (progressCallback) {
-            progressCallback(`🚀 جاري تسجيل كافة أنيميشن السلايدات بدقة 1080x1920 (${totalSec.toFixed(1)} ثانية)...`);
+            progressCallback(`🚀 بدء تجهيز مهمة تصدير الريلز بدقة 1080x1920 (${totalSec.toFixed(1)} ثانية)...`);
         }
 
-        let res;
+        let initRes;
         try {
-            res = await fetch(apiUrl, {
+            initRes = await fetch(apiUrl, {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',
-                    'Accept': 'application/json, video/mp4, */*'
+                    'Accept': 'application/json, */*'
                 },
                 body: JSON.stringify({
                     projectState,
@@ -7278,34 +7278,91 @@ window.ReelsEngine = (function() {
             });
         } catch (netErr) {
             console.error('[Record Studio Reel Fetch Error]', netErr);
-            throw new Error(`تعذر الاتصال بمحرك تسجيل الفيديو عالي الدقة (1080x1920). يرجى التأكد من تشغيل السيرفر المحلي عبر تشغيل node server.js أو npm start على المنفذ 3000.`);
+            throw new Error(`تعذر الاتصال بمحرك تسجيل الفيديو عالي الدقة (1080x1920). يرجى التأكد من تشغيل السيرفر.`);
         }
 
-        if (!res.ok) {
+        if (!initRes.ok) {
             let errMsg = 'فشل تسجيل الفيديو في السيرفر';
             try {
-                const errJson = await res.json();
+                const errJson = await initRes.json();
                 if (errJson.error) errMsg = errJson.error;
             } catch(e) {}
             throw new Error(errMsg);
         }
 
-        if (progressCallback) {
-            progressCallback('⚡ جاري استلام وتجهيز الفيديو عالي الدقة...');
+        let initData;
+        try {
+            initData = await initRes.json();
+        } catch (e) {
+            throw new Error('فشل قراءة رد السيرفر الأولي');
         }
 
-        const contentType = res.headers.get('content-type') || '';
-        if (contentType.includes('application/json')) {
-            const data = await res.json();
-            if (!data.success) throw new Error(data.error || 'فشل تسجيل الفيديو');
-            return data;
-        } else {
-            const blob = await res.blob();
-            if (!blob || blob.size < 1000) {
-                throw new Error('ملف الفيديو المستلم فارغ أو غير مكتمل');
-            }
-            return { blob, filename: filename || `Reel_FC27_ShopCoin15_${Date.now()}.mp4` };
+        if (!initData.success) {
+            throw new Error(initData.error || 'فشل بدء تسجيل الفيديو');
         }
+
+        // If server responded directly with binary or non-job format (backward compat)
+        if (!initData.jobId) {
+            return initData;
+        }
+
+        const jobId = initData.jobId;
+        const statusUrl = getReelsApiUrl(`/api/reel-job-status?jobId=${encodeURIComponent(jobId)}`);
+
+        // Poll every 1.2s until job completes or fails (safety timeout 5 minutes = 300s)
+        const pollStart = Date.now();
+        while (Date.now() - pollStart < 300000) {
+            await new Promise(r => setTimeout(r, 1200));
+
+            let statusRes;
+            try {
+                statusRes = await fetch(statusUrl, { cache: 'no-store' });
+            } catch (pollErr) {
+                console.warn('[Poll Job Status Warning]', pollErr);
+                continue;
+            }
+
+            if (!statusRes.ok) continue;
+
+            const job = await statusRes.json().catch(() => null);
+            if (!job || !job.success) continue;
+
+            if (progressCallback) {
+                const p = job.progress || 0;
+                const msg = job.message || 'جاري إنتاج الفيديو...';
+                progressCallback(`${msg} (${p}%)`);
+            }
+
+            if (job.status === 'done') {
+                const downloadUrl = getReelsApiUrl(job.downloadUrl || `/api/download-reel?jobId=${encodeURIComponent(jobId)}`);
+                let blob = null;
+                try {
+                    const blobRes = await fetch(downloadUrl);
+                    if (blobRes.ok) {
+                        blob = await blobRes.blob();
+                    }
+                } catch (bErr) {
+                    console.warn('[Blob Download Warning]', bErr);
+                }
+
+                return {
+                    success: true,
+                    jobId,
+                    filename: job.filename || filename || `Reel_FC27_ShopCoin15_${Date.now()}.mp4`,
+                    downloadUrl,
+                    desktopFile: job.desktopFile || 'Reel_FC27_ShopCoin15_Latest.mp4',
+                    savedDesktop: job.savedDesktop,
+                    sizeMB: job.sizeMB,
+                    blob
+                };
+            }
+
+            if (job.status === 'error') {
+                throw new Error(job.error || 'حدث خطأ أثناء تسجيل الفيديو في السيرفر');
+            }
+        }
+
+        throw new Error('استغرق تسجيل الفيديو وقتاً طويلاً وتجاوز المهلة المحددة.');
     }
 
     // Forward legacy calls directly to the native 1080x1920 recorder with 0% fake zoom
