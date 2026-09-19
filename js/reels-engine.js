@@ -2890,7 +2890,6 @@ window.ReelsEngine = (function() {
         if (!container) return;
 
         const isCountdown = state.activeSection === 'countdown';
-        const ideaList = VIRAL_IDEAS[state.activeSection] || [];
         const currentSlide = state.slides[state.currentSlideIndex];
 
         const secLayout = state.layouts[state.activeSection] || DEFAULT_LAYOUTS[state.activeSection];
@@ -3090,34 +3089,6 @@ window.ReelsEngine = (function() {
                         </div>
                     </div>
 
-                </div>
-
-                <!-- 3. VIRAL HOOKS BANK -->
-                <div class="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-2.5">
-                    <div class="flex items-center justify-between">
-                        <span class="text-xs font-black text-slate-900 flex items-center gap-1.5">
-                            <span>💡 بنك أفكار ${isCountdown ? 'الترتيب التنازلي' : 'صراع العمالقة'}:</span>
-                        </span>
-                        <span class="text-[10px] text-emerald-600 font-bold">بضغطة واحدة ✨</span>
-                    </div>
-
-                    <div class="space-y-2 max-h-52 overflow-y-auto pr-1">
-                        ${ideaList.map(idea => `
-                            <div class="p-2.5 rounded-xl border border-slate-200 hover:border-emerald-500 bg-slate-50/70 hover:bg-white transition space-y-1.5">
-                                <div class="flex items-center justify-between">
-                                    <span class="text-[10px] font-black text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">${idea.badge}</span>
-                                    <span class="text-[9.5px] font-bold text-slate-400">${idea.musicTip || 'موسيقى تريند'}</span>
-                                </div>
-                                <div class="font-black text-slate-900 text-xs leading-snug">${idea.title}</div>
-                                <div class="text-[10.5px] text-slate-500 line-clamp-1">${idea.subtitle}</div>
-                                <div class="pt-1 flex items-center justify-end border-t border-slate-100">
-                                    <button type="button" onclick='ReelsEngine.loadIdeaById("${idea.id}")' class="px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[10.5px] transition flex items-center gap-1 shadow-xs">
-                                        <span>تطبيق هذه الفكرة 🎬</span>
-                                    </button>
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
                 </div>
 
                 <!-- 4. SLIDE & PLAYER CUSTOMIZER -->
