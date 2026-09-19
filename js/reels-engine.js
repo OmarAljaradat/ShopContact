@@ -145,6 +145,129 @@ window.ReelsEngine = (function() {
         return 'thmanyah';
     }
 
+    // ---- 1.5 REELS ENTRANCE ANIMATIONS CONFIG & STYLES ----
+    const ANIMATION_STORAGE_KEY = 'shopcoin15_reels_animations_v2';
+    const ANIM_ENABLED_STORAGE_KEY = 'shopcoin15_reels_anim_enabled_v2';
+
+    const DEFAULT_ELEMENT_ANIMATIONS = {
+        title: { type: 'fadeUp', delay: 0.05, duration: 0.6 },
+        card: { type: 'popScale', delay: 0.2, duration: 0.65 },
+        cardA: { type: 'slideRight', delay: 0.15, duration: 0.6 },
+        cardB: { type: 'slideLeft', delay: 0.25, duration: 0.6 },
+        vsBadge: { type: 'popScale', delay: 0.35, duration: 0.5 },
+        playerName: { type: 'fadeUp', delay: 0.3, duration: 0.6 },
+        rank: { type: 'popScale', delay: 0.05, duration: 0.5 },
+        scLogo: { type: 'glowPulse', delay: 0.4, duration: 0.7 },
+        fcLogo: { type: 'fadeDown', delay: 0.1, duration: 0.6 },
+        introTitle: { type: 'fadeUp', delay: 0.1, duration: 0.6 },
+        introBadge: { type: 'fadeDown', delay: 0.0, duration: 0.5 },
+        introSubtitle: { type: 'fadeUp', delay: 0.25, duration: 0.6 },
+        introCta: { type: 'popScale', delay: 0.4, duration: 0.6 },
+        outroLogo: { type: 'glowPulse', delay: 0.1, duration: 0.7 },
+        outroTitle: { type: 'fadeUp', delay: 0.2, duration: 0.6 },
+        outroSubtitle: { type: 'fadeUp', delay: 0.3, duration: 0.6 },
+        outroFeatures: { type: 'popScale', delay: 0.35, duration: 0.6 },
+        outroCta: { type: 'popScale', delay: 0.5, duration: 0.6 },
+        question: { type: 'fadeUp', delay: 0.4, duration: 0.6 }
+    };
+
+    const ANIMATION_TYPES = [
+        { id: 'none', label: '⏹️ ثابت (بدون حركة)' },
+        { id: 'fadeUp', label: '⬆️ انزلاق صاعد ناعم (Fade Up)' },
+        { id: 'fadeDown', label: '⬇️ انزلاق هابط أنيق (Fade Down)' },
+        { id: 'popScale', label: '💥 تكبير مرن وقوي (Pop & Scale)' },
+        { id: 'slideRight', label: '➡️ دخول سلس من اليمين (Slide Right)' },
+        { id: 'slideLeft', label: '⬅️ دخول سلس من اليسار (Slide Left)' },
+        { id: 'glowPulse', label: '✨ وميض وتوهج ذهبي (Glow Burst)' },
+        { id: 'cinematicZoom', label: '🔍 تكبير سينمائي تدريجي (Zoom In)' },
+        { id: 'flip3d', label: '🔄 دوران ثلاثي الأبعاد (3D Flip)' },
+        { id: 'heartbeat', label: '💓 نبضة حيوية (Heartbeat)' }
+    ];
+
+    function loadSavedAnimations() {
+        try {
+            const saved = localStorage.getItem(ANIMATION_STORAGE_KEY);
+            if (saved) {
+                return { ...DEFAULT_ELEMENT_ANIMATIONS, ...JSON.parse(saved) };
+            }
+        } catch (e) {}
+        return JSON.parse(JSON.stringify(DEFAULT_ELEMENT_ANIMATIONS));
+    }
+
+    function loadSavedAnimEnabled() {
+        try {
+            const val = localStorage.getItem(ANIM_ENABLED_STORAGE_KEY);
+            if (val !== null) return val === '1';
+        } catch (e) {}
+        return true;
+    }
+
+    function saveAnimationsState() {
+        try {
+            localStorage.setItem(ANIMATION_STORAGE_KEY, JSON.stringify(state.elementAnimations));
+            localStorage.setItem(ANIM_ENABLED_STORAGE_KEY, state.animationsEnabled ? '1' : '0');
+        } catch (e) {}
+    }
+
+    function injectAnimationStyles() {
+        if (typeof document === 'undefined') return;
+        if (document.getElementById('reels-animations-style')) return;
+        const style = document.createElement('style');
+        style.id = 'reels-animations-style';
+        style.textContent = `
+            @keyframes reelAnim_fadeUp {
+                0% { opacity: 0; transform: translateY(32px); }
+                100% { opacity: 1; transform: translateY(0); }
+            }
+            @keyframes reelAnim_fadeDown {
+                0% { opacity: 0; transform: translateY(-32px); }
+                100% { opacity: 1; transform: translateY(0); }
+            }
+            @keyframes reelAnim_popScale {
+                0% { opacity: 0; transform: scale(0.65); }
+                70% { opacity: 1; transform: scale(1.05); }
+                100% { opacity: 1; transform: scale(1.0); }
+            }
+            @keyframes reelAnim_slideRight {
+                0% { opacity: 0; transform: translateX(55px); }
+                100% { opacity: 1; transform: translateX(0); }
+            }
+            @keyframes reelAnim_slideLeft {
+                0% { opacity: 0; transform: translateX(-55px); }
+                100% { opacity: 1; transform: translateX(0); }
+            }
+            @keyframes reelAnim_glowPulse {
+                0% { opacity: 0; transform: scale(0.88); filter: drop-shadow(0 0 0px rgba(245,158,11,0)); }
+                60% { opacity: 1; transform: scale(1.06); filter: drop-shadow(0 0 22px rgba(245,158,11,0.9)); }
+                100% { opacity: 1; transform: scale(1.0); filter: drop-shadow(0 0 6px rgba(245,158,11,0.35)); }
+            }
+            @keyframes reelAnim_cinematicZoom {
+                0% { opacity: 0; transform: scale(1.16); filter: blur(3px); }
+                100% { opacity: 1; transform: scale(1.0); filter: blur(0px); }
+            }
+            @keyframes reelAnim_flip3d {
+                0% { opacity: 0; transform: perspective(500px) rotateX(40deg) translateY(20px); }
+                100% { opacity: 1; transform: perspective(500px) rotateX(0deg) translateY(0); }
+            }
+            @keyframes reelAnim_heartbeat {
+                0% { opacity: 0; transform: scale(0.85); }
+                35% { opacity: 1; transform: scale(1.08); }
+                65% { transform: scale(0.96); }
+                100% { opacity: 1; transform: scale(1.0); }
+            }
+            .reel-anim-layer {
+                width: 100%;
+                height: 100%;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    injectAnimationStyles();
+
     // ---- 2. CURATED VIRAL IDEAS (Hooks ONLY - User picks players) ----
     const VIRAL_IDEAS = {
         countdown: [
@@ -255,7 +378,10 @@ window.ReelsEngine = (function() {
         dragEnabled: true,
         magnetEnabled: true,
         selectedDragElement: 'card',
-        layouts: loadSavedLayouts()
+        layouts: loadSavedLayouts(),
+        animationsEnabled: loadSavedAnimEnabled(),
+        elementAnimations: loadSavedAnimations(),
+        isCapturingExport: false
     };
 
     function getAsset(key, fallbackPath) {
@@ -1905,6 +2031,8 @@ window.ReelsEngine = (function() {
                 currentSlideIndex: state.currentSlideIndex,
                 slideDuration: state.slideDuration,
                 layouts: state.layouts,
+                animationsEnabled: state.animationsEnabled,
+                elementAnimations: state.elementAnimations,
                 savedAt: Date.now()
             };
             localStorage.setItem(PROJECT_STORAGE_KEY_PREFIX + sec, JSON.stringify(payload));
@@ -1936,6 +2064,12 @@ window.ReelsEngine = (function() {
                             versus: { ...DEFAULT_LAYOUTS.versus, ...(data.layouts.versus || {}) }
                         };
                     }
+                    if (data.elementAnimations) {
+                        state.elementAnimations = { ...DEFAULT_ELEMENT_ANIMATIONS, ...data.elementAnimations };
+                    }
+                    if (data.animationsEnabled !== undefined) {
+                        state.animationsEnabled = data.animationsEnabled;
+                    }
                     ensureSelectedDragElement();
                     return true;
                 }
@@ -1944,6 +2078,176 @@ window.ReelsEngine = (function() {
             console.warn('[Reels] Load section error:', e);
         }
         return false;
+    }
+
+    // ---- 7.5 ANIMATION CONTROLLER METHODS ----
+    function getElemAnimStyle(elemId) {
+        if (!state.animationsEnabled) return '';
+        if (activeDrag || state.isCapturingExport) return '';
+        const cfg = (state.elementAnimations && state.elementAnimations[elemId]) || DEFAULT_ELEMENT_ANIMATIONS[elemId];
+        if (!cfg || cfg.type === 'none') return '';
+        const dur = cfg.duration || 0.6;
+        const delay = (cfg.delay !== undefined) ? cfg.delay : 0.1;
+        const animName = `reelAnim_${cfg.type}`;
+        return `animation: ${animName} ${dur}s cubic-bezier(0.16, 1, 0.3, 1) ${delay}s both; will-change: transform, opacity;`;
+    }
+
+    function replaySlideAnimations() {
+        const canvas = document.getElementById('exportCanvas');
+        if (!canvas) return;
+        const animLayers = canvas.querySelectorAll('.reel-anim-layer');
+        animLayers.forEach(el => {
+            const dragContainer = el.closest('[data-drag-id]');
+            const elemId = dragContainer ? dragContainer.getAttribute('data-drag-id') : null;
+            const animStyle = elemId ? getElemAnimStyle(elemId) : '';
+            el.style.animation = 'none';
+            void el.offsetWidth; // Force CSS reflow to replay animation
+            if (animStyle) {
+                const match = animStyle.match(/animation:\s*([^;]+);/);
+                if (match) {
+                    el.style.animation = match[1];
+                }
+            }
+        });
+        if (window.showCopyToast) {
+            window.showCopyToast('🎬 تم تشغيل ومعاينة حركات السلايد على الشاشة');
+        }
+    }
+
+    function testElementAnimation(elemId) {
+        const canvas = document.getElementById('exportCanvas');
+        if (!canvas) return;
+        const dragContainer = canvas.querySelector(`[data-drag-id="${elemId}"]`);
+        if (!dragContainer) return;
+        const layer = dragContainer.querySelector('.reel-anim-layer');
+        if (!layer) return;
+        const animStyle = getElemAnimStyle(elemId);
+        layer.style.animation = 'none';
+        void layer.offsetWidth;
+        if (animStyle) {
+            const match = animStyle.match(/animation:\s*([^;]+);/);
+            if (match) {
+                layer.style.animation = match[1];
+            }
+        }
+    }
+
+    function toggleAnimationsMaster() {
+        state.animationsEnabled = !state.animationsEnabled;
+        saveAnimationsState();
+        saveProjectState();
+        renderCanvas();
+        renderEditorControls();
+        if (window.showCopyToast) {
+            window.showCopyToast(state.animationsEnabled ? 'تم تفعيل حركات الريلز 🎬✨' : 'تم إيقاف الحركات (الريل أصبح ثابتاً ⏹️)');
+        }
+    }
+
+    function setElementAnimation(elemId, key, value) {
+        if (!state.elementAnimations) state.elementAnimations = JSON.parse(JSON.stringify(DEFAULT_ELEMENT_ANIMATIONS));
+        if (!state.elementAnimations[elemId]) {
+            state.elementAnimations[elemId] = { type: 'fadeUp', delay: 0.1, duration: 0.6 };
+        }
+        state.elementAnimations[elemId][key] = value;
+        saveAnimationsState();
+        saveProjectState();
+        renderCanvas();
+        testElementAnimation(elemId);
+    }
+
+    function applyAnimationPreset(presetName) {
+        state.animationsEnabled = true;
+        if (presetName === 'none') {
+            state.animationsEnabled = false;
+            if (!state.elementAnimations) state.elementAnimations = {};
+            Object.keys(DEFAULT_ELEMENT_ANIMATIONS).forEach(k => {
+                if (!state.elementAnimations[k]) state.elementAnimations[k] = {};
+                state.elementAnimations[k].type = 'none';
+            });
+            saveAnimationsState();
+            saveProjectState();
+            renderCanvas();
+            renderEditorControls();
+            if (window.showCopyToast) window.showCopyToast('تم إيقاف كافة الحركات (وضع ثابت ⏹️)');
+            return;
+        }
+
+        if (presetName === 'cinematic') {
+            state.elementAnimations = {
+                title: { type: 'fadeUp', delay: 0.05, duration: 0.7 },
+                card: { type: 'cinematicZoom', delay: 0.15, duration: 0.7 },
+                cardA: { type: 'cinematicZoom', delay: 0.15, duration: 0.7 },
+                cardB: { type: 'cinematicZoom', delay: 0.25, duration: 0.7 },
+                vsBadge: { type: 'popScale', delay: 0.35, duration: 0.5 },
+                playerName: { type: 'fadeUp', delay: 0.3, duration: 0.6 },
+                rank: { type: 'popScale', delay: 0.05, duration: 0.5 },
+                scLogo: { type: 'glowPulse', delay: 0.4, duration: 0.8 },
+                fcLogo: { type: 'fadeDown', delay: 0.1, duration: 0.6 },
+                introTitle: { type: 'fadeUp', delay: 0.1, duration: 0.7 },
+                introBadge: { type: 'fadeDown', delay: 0.0, duration: 0.5 },
+                introSubtitle: { type: 'fadeUp', delay: 0.25, duration: 0.6 },
+                introCta: { type: 'popScale', delay: 0.4, duration: 0.6 },
+                outroLogo: { type: 'glowPulse', delay: 0.1, duration: 0.8 },
+                outroTitle: { type: 'fadeUp', delay: 0.2, duration: 0.6 },
+                outroSubtitle: { type: 'fadeUp', delay: 0.3, duration: 0.6 },
+                outroFeatures: { type: 'cinematicZoom', delay: 0.35, duration: 0.6 },
+                outroCta: { type: 'popScale', delay: 0.5, duration: 0.6 },
+                question: { type: 'fadeUp', delay: 0.35, duration: 0.6 }
+            };
+        } else if (presetName === 'dynamic') {
+            state.elementAnimations = {
+                title: { type: 'popScale', delay: 0.05, duration: 0.5 },
+                card: { type: 'popScale', delay: 0.15, duration: 0.55 },
+                cardA: { type: 'slideRight', delay: 0.1, duration: 0.5 },
+                cardB: { type: 'slideLeft', delay: 0.2, duration: 0.5 },
+                vsBadge: { type: 'flip3d', delay: 0.25, duration: 0.5 },
+                playerName: { type: 'popScale', delay: 0.25, duration: 0.5 },
+                rank: { type: 'popScale', delay: 0.05, duration: 0.45 },
+                scLogo: { type: 'glowPulse', delay: 0.3, duration: 0.6 },
+                fcLogo: { type: 'fadeDown', delay: 0.05, duration: 0.5 },
+                introTitle: { type: 'popScale', delay: 0.05, duration: 0.55 },
+                introBadge: { type: 'popScale', delay: 0.0, duration: 0.45 },
+                introSubtitle: { type: 'slideRight', delay: 0.2, duration: 0.5 },
+                introCta: { type: 'heartbeat', delay: 0.35, duration: 0.6 },
+                outroLogo: { type: 'glowPulse', delay: 0.1, duration: 0.6 },
+                outroTitle: { type: 'popScale', delay: 0.15, duration: 0.5 },
+                outroSubtitle: { type: 'slideRight', delay: 0.25, duration: 0.5 },
+                outroFeatures: { type: 'popScale', delay: 0.3, duration: 0.5 },
+                outroCta: { type: 'heartbeat', delay: 0.45, duration: 0.6 },
+                question: { type: 'popScale', delay: 0.3, duration: 0.5 }
+            };
+        } else if (presetName === 'staggered') {
+            state.elementAnimations = {
+                title: { type: 'fadeDown', delay: 0.0, duration: 0.6 },
+                rank: { type: 'fadeDown', delay: 0.1, duration: 0.5 },
+                card: { type: 'fadeUp', delay: 0.2, duration: 0.6 },
+                cardA: { type: 'slideRight', delay: 0.2, duration: 0.6 },
+                cardB: { type: 'slideLeft', delay: 0.3, duration: 0.6 },
+                vsBadge: { type: 'popScale', delay: 0.35, duration: 0.5 },
+                playerName: { type: 'fadeUp', delay: 0.35, duration: 0.6 },
+                fcLogo: { type: 'fadeDown', delay: 0.15, duration: 0.6 },
+                scLogo: { type: 'glowPulse', delay: 0.5, duration: 0.7 },
+                introBadge: { type: 'fadeDown', delay: 0.0, duration: 0.5 },
+                introTitle: { type: 'fadeDown', delay: 0.1, duration: 0.6 },
+                introSubtitle: { type: 'fadeUp', delay: 0.25, duration: 0.6 },
+                introCta: { type: 'fadeUp', delay: 0.4, duration: 0.6 },
+                outroTitle: { type: 'fadeDown', delay: 0.05, duration: 0.6 },
+                outroLogo: { type: 'glowPulse', delay: 0.2, duration: 0.7 },
+                outroSubtitle: { type: 'fadeUp', delay: 0.3, duration: 0.6 },
+                outroFeatures: { type: 'fadeUp', delay: 0.4, duration: 0.6 },
+                outroCta: { type: 'fadeUp', delay: 0.5, duration: 0.6 },
+                question: { type: 'fadeUp', delay: 0.4, duration: 0.6 }
+            };
+        }
+
+        saveAnimationsState();
+        saveProjectState();
+        renderCanvas();
+        renderEditorControls();
+        replaySlideAnimations();
+        if (window.showCopyToast) {
+            window.showCopyToast('تم تطبيق حزمة الحركات بنجاح! 🎬✨');
+        }
     }
 
     function resetSectionToDefault(showPrompt = true) {
@@ -2084,7 +2388,9 @@ window.ReelsEngine = (function() {
         // FC 27 Logo Block
         const fcLogoHtml = `
             <div data-drag-id="fcLogo" class="z-30 select-none relative ${dragCursor} ${selectRing('fcLogo')}" style="${posStyle(layout.fcLogo)}">
-                <img src="${fcLogoUrl}" alt="EA FC 27" class="w-12 h-auto object-contain drop-shadow-md pointer-events-none">
+                <div class="reel-anim-layer" style="${getElemAnimStyle('fcLogo')}">
+                    <img src="${fcLogoUrl}" alt="EA FC 27" class="w-12 h-auto object-contain drop-shadow-md pointer-events-none">
+                </div>
                 ${renderResizeHandle('fcLogo')}
             </div>
         `;
@@ -2092,7 +2398,9 @@ window.ReelsEngine = (function() {
         // Shop Coin Logo Block
         const scLogoHtml = `
             <div data-drag-id="scLogo" class="z-30 select-none relative flex flex-col items-center justify-center ${dragCursor} ${selectRing('scLogo')}" style="${posStyle(layout.scLogo)}">
-                <img src="${scLogoUrl}" alt="ShopCoin15" class="w-14 h-auto object-contain drop-shadow-md pointer-events-none">
+                <div class="reel-anim-layer" style="${getElemAnimStyle('scLogo')}">
+                    <img src="${scLogoUrl}" alt="ShopCoin15" class="w-14 h-auto object-contain drop-shadow-md pointer-events-none">
+                </div>
                 ${renderResizeHandle('scLogo')}
             </div>
         `;
@@ -2104,8 +2412,10 @@ window.ReelsEngine = (function() {
                 <!-- 1. Intro Badge -->
                 ${!currentSlide.hideBadge ? `
                     <div data-drag-id="introBadge" class="z-20 select-none relative ${dragCursor} ${selectRing('introBadge')}" style="${posStyle(layout.introBadge)}">
-                        <div class="px-4 py-1.5 rounded-full bg-slate-900 text-white text-xs font-black shadow-sm tracking-wide pointer-events-none" dir="rtl">
-                            ${currentSlide.badge || state.badge}
+                        <div class="reel-anim-layer" style="${getElemAnimStyle('introBadge')}">
+                            <div class="px-4 py-1.5 rounded-full bg-slate-900 text-white text-xs font-black shadow-sm tracking-wide pointer-events-none" dir="rtl">
+                                ${currentSlide.badge || state.badge}
+                            </div>
                         </div>
                         ${renderResizeHandle('introBadge')}
                     </div>
@@ -2114,10 +2424,12 @@ window.ReelsEngine = (function() {
                 <!-- 2. Intro Title -->
                 ${!currentSlide.hideTitle ? `
                     <div data-drag-id="introTitle" class="z-20 select-none relative ${dragCursor} ${selectRing('introTitle')}" style="${posStyle(layout.introTitle)}">
-                        <div class="w-max max-w-none text-center px-2" dir="rtl">
-                            <h1 class="${getTitleFontClass(currentSlide.title || state.title)} font-black text-slate-950 leading-snug drop-shadow-sm pointer-events-none space-y-0.5">
-                                ${formatTitleLines(currentSlide.title || state.title, 'أفضل 5 مهاجمين للبدايات')}
-                            </h1>
+                        <div class="reel-anim-layer" style="${getElemAnimStyle('introTitle')}">
+                            <div class="w-max max-w-none text-center px-2" dir="rtl">
+                                <h1 class="${getTitleFontClass(currentSlide.title || state.title)} font-black text-slate-950 leading-snug drop-shadow-sm pointer-events-none space-y-0.5">
+                                    ${formatTitleLines(currentSlide.title || state.title, 'أفضل 5 مهاجمين للبدايات')}
+                                </h1>
+                            </div>
                         </div>
                         ${renderResizeHandle('introTitle')}
                     </div>
@@ -2126,10 +2438,12 @@ window.ReelsEngine = (function() {
                 <!-- 3. Intro Subtitle -->
                 ${!currentSlide.hideSubtitle ? `
                     <div data-drag-id="introSubtitle" class="z-20 select-none relative ${dragCursor} ${selectRing('introSubtitle')}" style="${posStyle(layout.introSubtitle)}">
-                        <div class="w-max max-w-none text-center px-3" dir="rtl">
-                            <p class="text-sm md:text-base font-bold text-slate-600 leading-relaxed pointer-events-none space-y-0.5">
-                                ${formatTitleLines(currentSlide.subtitle || state.subtitle, 'الوصف والتحفيز')}
-                            </p>
+                        <div class="reel-anim-layer" style="${getElemAnimStyle('introSubtitle')}">
+                            <div class="w-max max-w-none text-center px-3" dir="rtl">
+                                <p class="text-sm md:text-base font-bold text-slate-600 leading-relaxed pointer-events-none space-y-0.5">
+                                    ${formatTitleLines(currentSlide.subtitle || state.subtitle, 'الوصف والتحفيز')}
+                                </p>
+                            </div>
                         </div>
                         ${renderResizeHandle('introSubtitle')}
                     </div>
@@ -2138,11 +2452,13 @@ window.ReelsEngine = (function() {
                 <!-- 4. Intro CTA Button -->
                 ${!currentSlide.hideCta ? `
                     <div data-drag-id="introCta" class="z-20 select-none relative ${dragCursor} ${selectRing('introCta')}" style="${posStyle(layout.introCta)}">
-                        <div class="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-white/95 border border-slate-200 backdrop-blur-md shadow-xs animate-bounce pointer-events-none" dir="rtl">
-                            <span class="text-base">👇</span>
-                            <span class="text-xs font-black text-slate-800">
-                                ${currentSlide.ctaText || (state.activeSection === 'versus' ? 'شاهد المقارنة المباشرة' : 'شاهد الترتيب بالكامل')}
-                            </span>
+                        <div class="reel-anim-layer" style="${getElemAnimStyle('introCta')}">
+                            <div class="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-white/95 border border-slate-200 backdrop-blur-md shadow-xs animate-bounce pointer-events-none" dir="rtl">
+                                <span class="text-base">👇</span>
+                                <span class="text-xs font-black text-slate-800">
+                                    ${currentSlide.ctaText || (state.activeSection === 'versus' ? 'شاهد المقارنة المباشرة' : 'شاهد الترتيب بالكامل')}
+                                </span>
+                            </div>
                         </div>
                         ${renderResizeHandle('introCta')}
                     </div>
@@ -2153,8 +2469,10 @@ window.ReelsEngine = (function() {
                 <!-- 1. Rank Block -->
                 ${!currentSlide.hideRank ? `
                     <div data-drag-id="rank" class="z-20 flex flex-col items-center text-center select-none relative ${dragCursor} ${selectRing('rank')}" style="${posStyle(layout.rank)}">
-                        <div class="text-6xl md:text-7xl font-black text-[#0E382B] drop-shadow-md leading-none pointer-events-none">
-                            ${currentSlide.rank || '1'}
+                        <div class="reel-anim-layer" style="${getElemAnimStyle('rank')}">
+                            <div class="text-6xl md:text-7xl font-black text-[#0E382B] drop-shadow-md leading-none pointer-events-none">
+                                ${currentSlide.rank || '1'}
+                            </div>
                         </div>
                         ${renderResizeHandle('rank')}
                     </div>
@@ -2163,9 +2481,11 @@ window.ReelsEngine = (function() {
                 <!-- 2. Title Block (Flexible width container with exact line breaks) -->
                 ${!currentSlide.hideTitle ? `
                     <div data-drag-id="title" class="z-20 select-none relative ${dragCursor} ${selectRing('title')}" style="${posStyle(layout.title)}">
-                        <div class="w-max max-w-none text-center px-2" dir="rtl">
-                            <div class="text-base md:text-lg font-black text-slate-950 leading-tight drop-shadow-xs pointer-events-none space-y-0.5">
-                                ${formatTitleLines(state.title, 'عنوان الريل')}
+                        <div class="reel-anim-layer" style="${getElemAnimStyle('title')}">
+                            <div class="w-max max-w-none text-center px-2" dir="rtl">
+                                <div class="text-base md:text-lg font-black text-slate-950 leading-tight drop-shadow-xs pointer-events-none space-y-0.5">
+                                    ${formatTitleLines(state.title, 'عنوان الريل')}
+                                </div>
                             </div>
                         </div>
                         ${renderResizeHandle('title')}
@@ -2175,32 +2495,34 @@ window.ReelsEngine = (function() {
                 <!-- 3. Card & Badges Block -->
                 ${!currentSlide.hideCard ? `
                     <div data-drag-id="card" class="z-20 flex flex-col items-center justify-center select-none relative ${dragCursor} ${selectRing('card')}" style="${posStyle(layout.card)}">
-                        <div class="relative flex flex-col items-center justify-center">
-                            <div class="absolute -inset-6 bg-emerald-500/15 blur-3xl rounded-full pointer-events-none"></div>
-                            <img src="${currentSlide.cardUrl}" alt="${currentSlide.playerName}" 
-                                 class="w-64 md:w-72 h-auto max-h-[400px] object-contain drop-shadow-[0_20px_35px_rgba(0,0,0,0.4)] pointer-events-none">
-                        </div>
-
-                        <!-- 3.1 Player Coin Price Pill (Optional - Official FC Coin) -->
-                        ${currentSlide.playerPrice && currentSlide.playerPrice.trim() ? `
-                            <div class="mt-2.5 px-4 py-1.5 rounded-full bg-slate-950/90 border border-amber-400/80 shadow-[0_8px_25px_rgba(245,158,11,0.45)] backdrop-blur-md flex items-center gap-2 pointer-events-none" dir="ltr">
-                                <img src="assets/fc-coin.webp" alt="FC Coins" class="w-5 h-5 object-contain drop-shadow-[0_0_8px_rgba(251,191,36,0.85)]">
-                                <span class="font-black text-sm tracking-wider text-amber-300 drop-shadow-xs font-mono">
-                                    ${currentSlide.playerPrice.trim()}
-                                </span>
+                        <div class="reel-anim-layer flex flex-col items-center" style="${getElemAnimStyle('card')}">
+                            <div class="relative flex flex-col items-center justify-center">
+                                <div class="absolute -inset-6 bg-emerald-500/15 blur-3xl rounded-full pointer-events-none"></div>
+                                <img src="${currentSlide.cardUrl}" alt="${currentSlide.playerName}" 
+                                     class="w-64 md:w-72 h-auto max-h-[400px] object-contain drop-shadow-[0_20px_35px_rgba(0,0,0,0.4)] pointer-events-none">
                             </div>
-                        ` : ''}
 
-                        <!-- Badges -->
-                        ${!currentSlide.hideBadges && currentSlide.badges && currentSlide.badges.length ? `
-                            <div class="mt-3 flex items-center justify-center gap-1.5 flex-wrap max-w-xs pointer-events-none" dir="rtl">
-                                ${currentSlide.badges.map(b => `
-                                    <span class="px-2.5 py-1 rounded-xl bg-white/95 text-slate-900 border border-slate-200 text-[11px] font-black shadow-xs">
-                                        ${b}
+                            <!-- 3.1 Player Coin Price Pill (Optional - Official FC Coin) -->
+                            ${currentSlide.playerPrice && currentSlide.playerPrice.trim() ? `
+                                <div class="mt-2.5 px-4 py-1.5 rounded-full bg-slate-950/90 border border-amber-400/80 shadow-[0_8px_25px_rgba(245,158,11,0.45)] backdrop-blur-md flex items-center gap-2 pointer-events-none" dir="ltr">
+                                    <img src="assets/fc-coin.webp" alt="FC Coins" class="w-5 h-5 object-contain drop-shadow-[0_0_8px_rgba(251,191,36,0.85)]">
+                                    <span class="font-black text-sm tracking-wider text-amber-300 drop-shadow-xs font-mono">
+                                        ${currentSlide.playerPrice.trim()}
                                     </span>
-                                `).join('')}
-                            </div>
-                        ` : ''}
+                                </div>
+                            ` : ''}
+
+                            <!-- Badges -->
+                            ${!currentSlide.hideBadges && currentSlide.badges && currentSlide.badges.length ? `
+                                <div class="mt-3 flex items-center justify-center gap-1.5 flex-wrap max-w-xs pointer-events-none" dir="rtl">
+                                    ${currentSlide.badges.map(b => `
+                                        <span class="px-2.5 py-1 rounded-xl bg-white/95 text-slate-900 border border-slate-200 text-[11px] font-black shadow-xs">
+                                            ${b}
+                                        </span>
+                                    `).join('')}
+                                </div>
+                            ` : ''}
+                        </div>
                         ${renderResizeHandle('card')}
                     </div>
                 ` : ''}
@@ -2208,12 +2530,14 @@ window.ReelsEngine = (function() {
                 <!-- 4. Player Name Block (Fixed 340px width container) -->
                 ${!currentSlide.hidePlayerName ? `
                     <div data-drag-id="playerName" class="z-20 select-none relative ${dragCursor} ${selectRing('playerName')}" style="${posStyle(layout.playerName)}">
-                        <div class="w-[340px] text-center px-4" dir="rtl">
-                            <div class="text-2xl md:text-3xl font-black text-slate-950 drop-shadow-sm pointer-events-none">
-                                ${currentSlide.playerArName || currentSlide.playerName}
-                            </div>
-                            <div class="text-xs font-black text-[#00A84D] mt-0.5 pointer-events-none">
-                                في FC 27
+                        <div class="reel-anim-layer" style="${getElemAnimStyle('playerName')}">
+                            <div class="w-[340px] text-center px-4" dir="rtl">
+                                <div class="text-2xl md:text-3xl font-black text-slate-950 drop-shadow-sm pointer-events-none">
+                                    ${currentSlide.playerArName || currentSlide.playerName}
+                                </div>
+                                <div class="text-xs font-black text-[#00A84D] mt-0.5 pointer-events-none">
+                                    في FC 27
+                                </div>
                             </div>
                         </div>
                         ${renderResizeHandle('playerName')}
@@ -2228,13 +2552,15 @@ window.ReelsEngine = (function() {
                 <!-- 1. Title Header -->
                 ${!currentSlide.hideTitle ? `
                     <div data-drag-id="title" class="z-20 select-none relative ${dragCursor} ${selectRing('title')}" style="${posStyle(layout.title)}">
-                        <div class="w-max max-w-none text-center px-2" dir="rtl">
-                            <span class="inline-block px-3 py-1 rounded-full bg-slate-900 text-white text-[10px] font-black mb-1 shadow-xs pointer-events-none">
-                                ${state.badge || '⚔️ صراع العمالقة'}
-                            </span>
-                            <h2 class="${getTitleFontClass(currentSlide.title || state.title)} font-black text-slate-950 leading-snug drop-shadow-xs pointer-events-none space-y-0.5">
-                                ${formatTitleLines(currentSlide.title || state.title, 'عنوان المقارنة')}
-                            </h2>
+                        <div class="reel-anim-layer" style="${getElemAnimStyle('title')}">
+                            <div class="w-max max-w-none text-center px-2" dir="rtl">
+                                <span class="inline-block px-3 py-1 rounded-full bg-slate-900 text-white text-[10px] font-black mb-1 shadow-xs pointer-events-none">
+                                    ${state.badge || '⚔️ صراع العمالقة'}
+                                </span>
+                                <h2 class="${getTitleFontClass(currentSlide.title || state.title)} font-black text-slate-950 leading-snug drop-shadow-xs pointer-events-none space-y-0.5">
+                                    ${formatTitleLines(currentSlide.title || state.title, 'عنوان المقارنة')}
+                                </h2>
+                            </div>
                         </div>
                         ${renderResizeHandle('title')}
                     </div>
@@ -2243,19 +2569,21 @@ window.ReelsEngine = (function() {
                 <!-- 2. Player Card A (Right side in RTL) -->
                 ${!currentSlide.hideCardA ? `
                     <div data-drag-id="cardA" class="z-20 select-none relative ${dragCursor} ${selectRing('cardA')}" style="${posStyle(layout.cardA)}">
-                        <div class="w-[190px] flex flex-col items-center" dir="rtl">
-                            <div class="relative h-[230px] flex items-center justify-center">
-                                <img src="${pA.cardUrl}" alt="${pA.name}" class="max-h-[230px] w-auto object-contain drop-shadow-2xl pointer-events-none">
-                            </div>
-                            <div class="mt-2 text-center pointer-events-none">
-                                <div class="text-sm font-black text-slate-950">${pA.arName || pA.name}</div>
-                                <div class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-200 mt-1">${pA.statHighlight || ''}</div>
-                                ${pA.price && pA.price.trim() ? `
-                                    <div class="mt-1.5 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-950/90 border border-amber-400/80 shadow-md backdrop-blur-xs pointer-events-none" dir="ltr">
-                                        <img src="assets/fc-coin.webp" alt="Coin" class="w-3.5 h-3.5 object-contain drop-shadow-[0_0_6px_rgba(251,191,36,0.7)]">
-                                        <span class="font-black text-[11px] text-amber-300 font-mono">${pA.price.trim()}</span>
-                                    </div>
-                                ` : ''}
+                        <div class="reel-anim-layer" style="${getElemAnimStyle('cardA')}">
+                            <div class="w-[190px] flex flex-col items-center" dir="rtl">
+                                <div class="relative h-[230px] flex items-center justify-center">
+                                    <img src="${pA.cardUrl}" alt="${pA.name}" class="max-h-[230px] w-auto object-contain drop-shadow-2xl pointer-events-none">
+                                </div>
+                                <div class="mt-2 text-center pointer-events-none">
+                                    <div class="text-sm font-black text-slate-950">${pA.arName || pA.name}</div>
+                                    <div class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-200 mt-1">${pA.statHighlight || ''}</div>
+                                    ${pA.price && pA.price.trim() ? `
+                                        <div class="mt-1.5 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-950/90 border border-amber-400/80 shadow-md backdrop-blur-xs pointer-events-none" dir="ltr">
+                                            <img src="assets/fc-coin.webp" alt="Coin" class="w-3.5 h-3.5 object-contain drop-shadow-[0_0_6px_rgba(251,191,36,0.7)]">
+                                            <span class="font-black text-[11px] text-amber-300 font-mono">${pA.price.trim()}</span>
+                                        </div>
+                                    ` : ''}
+                                </div>
                             </div>
                         </div>
                         ${renderResizeHandle('cardA')}
@@ -2265,8 +2593,10 @@ window.ReelsEngine = (function() {
                 <!-- 3. VS Badge Center (Centered X & Y) -->
                 ${!currentSlide.hideVsBadge ? `
                     <div data-drag-id="vsBadge" class="z-25 flex items-center justify-center select-none relative ${dragCursor} ${selectRing('vsBadge')}" style="${posStyle(layout.vsBadge, 'translateY(-50%)')}">
-                        <div class="w-13 h-13 rounded-full bg-gradient-to-tr from-rose-600 via-red-600 to-amber-500 text-white font-black text-base flex items-center justify-center shadow-xl border-2 border-white animate-pulse pointer-events-none">
-                            VS
+                        <div class="reel-anim-layer" style="${getElemAnimStyle('vsBadge')}">
+                            <div class="w-13 h-13 rounded-full bg-gradient-to-tr from-rose-600 via-red-600 to-amber-500 text-white font-black text-base flex items-center justify-center shadow-xl border-2 border-white animate-pulse pointer-events-none">
+                                VS
+                            </div>
                         </div>
                         ${renderResizeHandle('vsBadge')}
                     </div>
@@ -2275,19 +2605,21 @@ window.ReelsEngine = (function() {
                 <!-- 4. Player Card B (Left side in RTL) -->
                 ${!currentSlide.hideCardB ? `
                     <div data-drag-id="cardB" class="z-20 select-none relative ${dragCursor} ${selectRing('cardB')}" style="${posStyle(layout.cardB)}">
-                        <div class="w-[190px] flex flex-col items-center" dir="rtl">
-                            <div class="relative h-[230px] flex items-center justify-center">
-                                <img src="${pB.cardUrl}" alt="${pB.name}" class="max-h-[230px] w-auto object-contain drop-shadow-2xl pointer-events-none">
-                            </div>
-                            <div class="mt-2 text-center pointer-events-none">
-                                <div class="text-sm font-black text-slate-950">${pB.arName || pB.name}</div>
-                                <div class="text-[10px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-lg border border-blue-200 mt-1">${pB.statHighlight || ''}</div>
-                                ${pB.price && pB.price.trim() ? `
-                                    <div class="mt-1.5 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-950/90 border border-amber-400/80 shadow-md backdrop-blur-xs pointer-events-none" dir="ltr">
-                                        <img src="assets/fc-coin.webp" alt="Coin" class="w-3.5 h-3.5 object-contain drop-shadow-[0_0_6px_rgba(251,191,36,0.7)]">
-                                        <span class="font-black text-[11px] text-amber-300 font-mono">${pB.price.trim()}</span>
-                                    </div>
-                                ` : ''}
+                        <div class="reel-anim-layer" style="${getElemAnimStyle('cardB')}">
+                            <div class="w-[190px] flex flex-col items-center" dir="rtl">
+                                <div class="relative h-[230px] flex items-center justify-center">
+                                    <img src="${pB.cardUrl}" alt="${pB.name}" class="max-h-[230px] w-auto object-contain drop-shadow-2xl pointer-events-none">
+                                </div>
+                                <div class="mt-2 text-center pointer-events-none">
+                                    <div class="text-sm font-black text-slate-950">${pB.arName || pB.name}</div>
+                                    <div class="text-[10px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-lg border border-blue-200 mt-1">${pB.statHighlight || ''}</div>
+                                    ${pB.price && pB.price.trim() ? `
+                                        <div class="mt-1.5 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-950/90 border border-amber-400/80 shadow-md backdrop-blur-xs pointer-events-none" dir="ltr">
+                                            <img src="assets/fc-coin.webp" alt="Coin" class="w-3.5 h-3.5 object-contain drop-shadow-[0_0_6px_rgba(251,191,36,0.7)]">
+                                            <span class="font-black text-[11px] text-amber-300 font-mono">${pB.price.trim()}</span>
+                                        </div>
+                                    ` : ''}
+                                </div>
                             </div>
                         </div>
                         ${renderResizeHandle('cardB')}
@@ -2297,9 +2629,11 @@ window.ReelsEngine = (function() {
                 <!-- 5. Bottom Interactive Question Hook -->
                 ${!currentSlide.hideQuestion ? `
                     <div data-drag-id="question" class="z-20 select-none relative ${dragCursor} ${selectRing('question')}" style="${posStyle(layout.question)}">
-                        <div class="w-[340px] text-center px-4" dir="rtl">
-                            <div class="inline-block px-5 py-2.5 rounded-2xl bg-white/95 border border-slate-200 text-slate-950 font-black text-xs md:text-sm shadow-md pointer-events-none">
-                                ${currentSlide.question || 'صوت بالتعليقات: من تختار لفريقك؟ 👇'}
+                        <div class="reel-anim-layer" style="${getElemAnimStyle('question')}">
+                            <div class="w-[340px] text-center px-4" dir="rtl">
+                                <div class="inline-block px-5 py-2.5 rounded-2xl bg-white/95 border border-slate-200 text-slate-950 font-black text-xs md:text-sm shadow-md pointer-events-none">
+                                    ${currentSlide.question || 'صوت بالتعليقات: من تختار لفريقك؟ 👇'}
+                                </div>
                             </div>
                         </div>
                         ${renderResizeHandle('question')}
@@ -2311,7 +2645,9 @@ window.ReelsEngine = (function() {
                 <!-- 1. Outro Logo -->
                 ${!currentSlide.hideLogo ? `
                     <div data-drag-id="outroLogo" class="z-20 select-none relative ${dragCursor} ${selectRing('outroLogo')}" style="${posStyle(layout.outroLogo)}">
-                        <img src="${scLogoUrl}" alt="ShopCoin15" class="w-20 h-auto object-contain drop-shadow-lg animate-pulse pointer-events-none">
+                        <div class="reel-anim-layer" style="${getElemAnimStyle('outroLogo')}">
+                            <img src="${scLogoUrl}" alt="ShopCoin15" class="w-20 h-auto object-contain drop-shadow-lg animate-pulse pointer-events-none">
+                        </div>
                         ${renderResizeHandle('outroLogo')}
                     </div>
                 ` : ''}
@@ -2319,10 +2655,12 @@ window.ReelsEngine = (function() {
                 <!-- 2. Outro Title -->
                 ${!currentSlide.hideTitle ? `
                     <div data-drag-id="outroTitle" class="z-20 select-none relative ${dragCursor} ${selectRing('outroTitle')}" style="${posStyle(layout.outroTitle)}">
-                        <div class="w-max max-w-none text-center px-2" dir="rtl">
-                            <h2 class="${getTitleFontClass(currentSlide.title || 'متجر ShopCoin15')} font-black text-slate-950 leading-snug pointer-events-none space-y-0.5">
-                                ${formatTitleLines(currentSlide.title || 'متجر ShopCoin15', 'متجر ShopCoin15')}
-                            </h2>
+                        <div class="reel-anim-layer" style="${getElemAnimStyle('outroTitle')}">
+                            <div class="w-max max-w-none text-center px-2" dir="rtl">
+                                <h2 class="${getTitleFontClass(currentSlide.title || 'متجر ShopCoin15')} font-black text-slate-950 leading-snug pointer-events-none space-y-0.5">
+                                    ${formatTitleLines(currentSlide.title || 'متجر ShopCoin15', 'متجر ShopCoin15')}
+                                </h2>
+                            </div>
                         </div>
                         ${renderResizeHandle('outroTitle')}
                     </div>
@@ -2331,8 +2669,10 @@ window.ReelsEngine = (function() {
                 <!-- 3. Outro Subtitle -->
                 ${!currentSlide.hideSubtitle ? `
                     <div data-drag-id="outroSubtitle" class="z-20 select-none relative ${dragCursor} ${selectRing('outroSubtitle')}" style="${posStyle(layout.outroSubtitle)}">
-                        <div class="text-sm font-bold text-emerald-700 pointer-events-none" dir="rtl">
-                            ${currentSlide.subtitle || 'شحن كوينز فوري وآمن 100% ⚡'}
+                        <div class="reel-anim-layer" style="${getElemAnimStyle('outroSubtitle')}">
+                            <div class="text-sm font-bold text-emerald-700 pointer-events-none" dir="rtl">
+                                ${currentSlide.subtitle || 'شحن كوينز فوري وآمن 100% ⚡'}
+                            </div>
                         </div>
                         ${renderResizeHandle('outroSubtitle')}
                     </div>
@@ -2341,19 +2681,21 @@ window.ReelsEngine = (function() {
                 <!-- 4. Outro Features Box -->
                 ${!currentSlide.hideFeatures ? `
                     <div data-drag-id="outroFeatures" class="z-20 select-none relative ${dragCursor} ${selectRing('outroFeatures')}" style="${posStyle(layout.outroFeatures)}">
-                        <div class="space-y-2.5 w-[330px] text-right pointer-events-none" dir="rtl">
-                            <div class="flex items-center gap-3 p-3 rounded-2xl bg-white border border-slate-200 shadow-xs">
-                                <span class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 font-black flex items-center justify-center text-sm shrink-0">🔒</span>
-                                <div>
-                                    <div class="text-xs font-black text-slate-900">ضمان نادي كامل</div>
-                                    <div class="text-[10.5px] text-slate-500">حماية تامة من التصفير ببروتوكول تحويل آمن</div>
+                        <div class="reel-anim-layer" style="${getElemAnimStyle('outroFeatures')}">
+                            <div class="space-y-2.5 w-[330px] text-right pointer-events-none" dir="rtl">
+                                <div class="flex items-center gap-3 p-3 rounded-2xl bg-white border border-slate-200 shadow-xs">
+                                    <span class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 font-black flex items-center justify-center text-sm shrink-0">🔒</span>
+                                    <div>
+                                        <div class="text-xs font-black text-slate-900">ضمان نادي كامل</div>
+                                        <div class="text-[10.5px] text-slate-500">حماية تامة من التصفير ببروتوكول تحويل آمن</div>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="flex items-center gap-3 p-3 rounded-2xl bg-white border border-slate-200 shadow-xs">
-                                <span class="w-8 h-8 rounded-xl bg-blue-100 text-blue-700 font-black flex items-center justify-center text-sm shrink-0">⚡</span>
-                                <div>
-                                    <div class="text-xs font-black text-slate-900">سرعة تنفيذ قياسية</div>
-                                    <div class="text-[10.5px] text-slate-500">المليون ينشحن خلال دقيقة واحدة بس</div>
+                                <div class="flex items-center gap-3 p-3 rounded-2xl bg-white border border-slate-200 shadow-xs">
+                                    <span class="w-8 h-8 rounded-xl bg-blue-100 text-blue-700 font-black flex items-center justify-center text-sm shrink-0">⚡</span>
+                                    <div>
+                                        <div class="text-xs font-black text-slate-900">سرعة تنفيذ قياسية</div>
+                                        <div class="text-[10.5px] text-slate-500">المليون ينشحن خلال دقيقة واحدة بس</div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -2364,8 +2706,10 @@ window.ReelsEngine = (function() {
                 <!-- 5. Outro CTA -->
                 ${!currentSlide.hideCta ? `
                     <div data-drag-id="outroCta" class="z-20 select-none relative ${dragCursor} ${selectRing('outroCta')}" style="${posStyle(layout.outroCta)}">
-                        <div class="px-6 py-3 rounded-2xl bg-slate-900 text-white font-black text-xs shadow-lg pointer-events-none" dir="rtl">
-                            ${currentSlide.ctaText || 'للطلب حياك على الخاص: @shop_coin15 📩'}
+                        <div class="reel-anim-layer" style="${getElemAnimStyle('outroCta')}">
+                            <div class="px-6 py-3 rounded-2xl bg-slate-900 text-white font-black text-xs shadow-lg pointer-events-none" dir="rtl">
+                                ${currentSlide.ctaText || 'للطلب حياك على الخاص: @shop_coin15 📩'}
+                            </div>
                         </div>
                         ${renderResizeHandle('outroCta')}
                     </div>
@@ -2404,6 +2748,140 @@ window.ReelsEngine = (function() {
         if (window.twemoji && typeof window.twemoji.parse === 'function') {
             window.twemoji.parse(canvas, { folder: 'svg', ext: '.svg', base: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/' });
         }
+    }
+
+    // ---- 8.5 REELS ENTRANCE ANIMATION TABLE CONTROLS ----
+    function renderAnimationTableHtml() {
+        const elementsList = getCurrentSlideElements();
+        if (!elementsList || elementsList.length === 0) return '';
+
+        const rowsHtml = elementsList.map(item => {
+            const animCfg = (state.elementAnimations && state.elementAnimations[item.id]) || DEFAULT_ELEMENT_ANIMATIONS[item.id] || { type: 'fadeUp', delay: 0.1 };
+            const curType = animCfg.type || 'fadeUp';
+            const curDelay = (animCfg.delay !== undefined) ? animCfg.delay : 0.1;
+
+            const typeOptions = ANIMATION_TYPES.map(t => 
+                `<option value="${t.id}" ${t.id === curType ? 'selected' : ''}>${t.label}</option>`
+            ).join('');
+
+            return `
+                <tr class="hover:bg-purple-50/40 transition">
+                    <td class="p-2.5 pr-3 font-black text-slate-800 text-[11px] whitespace-nowrap">
+                        ${item.name}
+                    </td>
+                    <td class="p-2">
+                        <select onchange="ReelsEngine.setElementAnimation('${item.id}', 'type', this.value)" 
+                                class="w-full px-2 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-[10.5px] font-bold outline-none focus:border-purple-500 focus:bg-white shadow-2xs cursor-pointer">
+                            ${typeOptions}
+                        </select>
+                    </td>
+                    <td class="p-2">
+                        <select onchange="ReelsEngine.setElementAnimation('${item.id}', 'delay', parseFloat(this.value))" 
+                                class="w-24 px-1.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-[10.5px] font-mono font-bold outline-none focus:border-purple-500 focus:bg-white shadow-2xs cursor-pointer">
+                            <option value="0.0" ${curDelay === 0.0 ? 'selected' : ''}>0.0s (مباشر)</option>
+                            <option value="0.05" ${curDelay === 0.05 ? 'selected' : ''}>0.05s</option>
+                            <option value="0.1" ${curDelay === 0.1 ? 'selected' : ''}>0.10s</option>
+                            <option value="0.15" ${curDelay === 0.15 ? 'selected' : ''}>0.15s</option>
+                            <option value="0.2" ${curDelay === 0.2 ? 'selected' : ''}>0.20s</option>
+                            <option value="0.25" ${curDelay === 0.25 ? 'selected' : ''}>0.25s</option>
+                            <option value="0.3" ${curDelay === 0.3 ? 'selected' : ''}>0.30s</option>
+                            <option value="0.35" ${curDelay === 0.35 ? 'selected' : ''}>0.35s</option>
+                            <option value="0.4" ${curDelay === 0.4 ? 'selected' : ''}>0.40s</option>
+                            <option value="0.5" ${curDelay === 0.5 ? 'selected' : ''}>0.50s</option>
+                            <option value="0.6" ${curDelay === 0.6 ? 'selected' : ''}>0.60s</option>
+                        </select>
+                    </td>
+                    <td class="p-2 text-center">
+                        <button type="button" onclick="ReelsEngine.testElementAnimation('${item.id}')" 
+                                class="w-8 h-8 rounded-lg bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 font-black text-xs inline-flex items-center justify-center transition active:scale-95 shadow-2xs cursor-pointer" 
+                                title="تجربة حركة هذا العنصر الآن">
+                            ▶️
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+
+        return `
+            <div class="p-3.5 rounded-2xl bg-gradient-to-br from-purple-50/80 via-indigo-50/50 to-purple-50/80 border border-purple-200 shadow-xs space-y-3">
+                
+                <!-- Header with Master Toggle and Replay -->
+                <div class="flex items-center justify-between flex-wrap gap-2">
+                    <div class="flex items-center gap-2">
+                        <span class="w-7 h-7 rounded-xl bg-purple-600 text-white flex items-center justify-center text-sm font-black shadow-xs">🎬</span>
+                        <div>
+                            <h4 class="text-xs font-black text-slate-900 flex items-center gap-1.5">
+                                <span>جدول حركات عناصر السلايد (Animations):</span>
+                                <span class="text-[9.5px] px-2 py-0.5 rounded-full ${state.animationsEnabled ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-700'} font-black">
+                                    ${state.animationsEnabled ? 'شغّالة ✓' : 'موقوفة ⏹️'}
+                                </span>
+                            </h4>
+                            <p class="text-[10px] text-purple-900/80 font-bold">حركات دخول سينمائية لعناصر السلايد - اختيارية بالكامل</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <button type="button" onclick="ReelsEngine.toggleAnimationsMaster()" 
+                                class="px-2.5 py-1.5 rounded-xl text-[11px] font-black transition flex items-center gap-1 shadow-2xs cursor-pointer ${state.animationsEnabled ? 'bg-emerald-600 hover:bg-emerald-500 text-white' : 'bg-slate-300 hover:bg-slate-400 text-slate-800'}">
+                            <span>${state.animationsEnabled ? '🟢 الحركات مفعلة' : '⚪ معطلة (ثابت)'}</span>
+                        </button>
+                        <button type="button" onclick="ReelsEngine.replaySlideAnimations()" 
+                                class="px-2.5 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-[11px] font-black transition flex items-center gap-1 shadow-2xs cursor-pointer">
+                            <span>▶️ معاينة الحركة</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Fast Preset Buttons -->
+                <div class="p-2.5 rounded-xl bg-white border border-purple-100 space-y-1.5">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[10.5px] font-black text-slate-700">أنماط حركات جاهزة سريعة:</span>
+                        <span class="text-[9.5px] text-purple-700 font-bold">تطبيق بنقرة واحدة ✨</span>
+                    </div>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+                        <button type="button" onclick="ReelsEngine.applyAnimationPreset('cinematic')" 
+                                class="py-1.5 px-2 rounded-lg bg-purple-50 hover:bg-purple-100 text-purple-900 text-[10.5px] font-black border border-purple-200 transition text-center shadow-2xs active:scale-95 cursor-pointer">
+                            💎 سينمائي هادئ
+                        </button>
+                        <button type="button" onclick="ReelsEngine.applyAnimationPreset('dynamic')" 
+                                class="py-1.5 px-2 rounded-lg bg-purple-50 hover:bg-purple-100 text-purple-900 text-[10.5px] font-black border border-purple-200 transition text-center shadow-2xs active:scale-95 cursor-pointer">
+                            ⚡ تيك توك حماسي
+                        </button>
+                        <button type="button" onclick="ReelsEngine.applyAnimationPreset('staggered')" 
+                                class="py-1.5 px-2 rounded-lg bg-purple-50 hover:bg-purple-100 text-purple-900 text-[10.5px] font-black border border-purple-200 transition text-center shadow-2xs active:scale-95 cursor-pointer">
+                            🌊 تتالي احترافي
+                        </button>
+                        <button type="button" onclick="ReelsEngine.applyAnimationPreset('none')" 
+                                class="py-1.5 px-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10.5px] font-black border border-slate-300 transition text-center shadow-2xs active:scale-95 cursor-pointer">
+                            ⏹️ إيقاف الكل (ثابت)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Elements Table for Current Slide -->
+                <div class="overflow-x-auto rounded-xl border border-purple-200 bg-white shadow-2xs">
+                    <table class="w-full text-right text-xs">
+                        <thead class="bg-purple-50/90 text-purple-950 font-black border-b border-purple-100 text-[11px]">
+                            <tr>
+                                <th class="p-2.5 pr-3">العنصر</th>
+                                <th class="p-2.5">نوع الحركة الدخول</th>
+                                <th class="p-2.5">توقيت الدخول</th>
+                                <th class="p-2.5 text-center">تجربة</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            ${rowsHtml}
+                        </tbody>
+                    </table>
+                </div>
+
+                ${!state.animationsEnabled ? `
+                    <div class="p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-[10.5px] text-amber-900 font-bold text-center">
+                        ⚠️ الحركات معطلة حالياً — تظهر كافة العناصر بشكل ثابت 100%. اضغط "🟢 الحركات مفعلة" بالأعلى لإعادة تشغيل الحركات.
+                    </div>
+                ` : ''}
+
+            </div>
+        `;
     }
 
     // ---- 9. EDITOR CONTROLS PANEL (NATURAL POSITION & SCALE CONTROLS) ----
@@ -2670,7 +3148,10 @@ window.ReelsEngine = (function() {
                     ${renderSlideForm(currentSlide)}
                 </div>
 
-                <!-- 5. SAFE ZONE -->
+                <!-- 5. SLIDE ENTRANCE ANIMATIONS TABLE -->
+                ${renderAnimationTableHtml()}
+
+                <!-- 6. SAFE ZONE -->
                 <div class="p-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs flex items-center justify-between">
                     <div class="flex items-center gap-1.5">
                         <span>📐</span>
@@ -3065,6 +3546,9 @@ window.ReelsEngine = (function() {
                     <button type="button" onclick="ReelsEngine.nextSlide()" class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-black transition" title="السلايد التالي">
                         التالي ⏩
                     </button>
+                    <button type="button" onclick="ReelsEngine.replaySlideAnimations()" class="px-2.5 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-black transition flex items-center gap-1 shadow-sm" title="إعادة تشغيل حركات السلايد الحالي">
+                        <span>✨ إعادة الحركة</span>
+                    </button>
                 </div>
 
                 <div class="flex flex-col items-center gap-1">
@@ -3101,6 +3585,22 @@ window.ReelsEngine = (function() {
         draggables.forEach(d => {
             d.style.outline = 'none';
             d.style.boxShadow = 'none';
+        });
+
+        // 2.5 Force full opacity and freeze animations during capture so exports are crisp & complete
+        state.isCapturingExport = true;
+        const animLayers = domNode.querySelectorAll('.reel-anim-layer');
+        const prevAnimStyles = [];
+        animLayers.forEach(el => {
+            prevAnimStyles.push({
+                el,
+                animation: el.style.animation,
+                opacity: el.style.opacity,
+                transform: el.style.transform
+            });
+            el.style.setProperty('animation', 'none', 'important');
+            el.style.setProperty('opacity', '1', 'important');
+            el.style.setProperty('transform', 'none', 'important');
         });
 
         let resultUrl = '';
@@ -3145,7 +3645,13 @@ window.ReelsEngine = (function() {
                 }
             }
         } finally {
-            // 4. Restore original viewport transform and handles
+            // 4. Restore original viewport transform, handles and animation states
+            state.isCapturingExport = false;
+            prevAnimStyles.forEach(item => {
+                item.el.style.animation = item.animation;
+                item.el.style.opacity = item.opacity;
+                item.el.style.transform = item.transform;
+            });
             domNode.style.transform = prevTransform;
             domNode.style.transformOrigin = prevOrigin;
             handles.forEach(h => h.style.display = '');
@@ -3737,6 +4243,11 @@ ${state.subtitle}
         applyStarPresetToSlide,
         handleCardImageUpload,
         REELS_PRESET_STARS,
+        replaySlideAnimations,
+        toggleAnimationsMaster,
+        applyAnimationPreset,
+        setElementAnimation,
+        testElementAnimation,
         renderCanvas,
         renderEditorControls,
         renderPlayerToolbar,
