@@ -781,7 +781,7 @@ ${targetGuidance}
 }
 
 // Helper for Telegram Bot API requests (Supports JSON and Multipart/form-data for image buffers)
-function sendTelegramRequest({ botToken, endpoint, fields = {}, fileField = null, fileBuffer = null, fileName = null, fileMime = null }) {
+function sendTelegramRequest({ botToken, endpoint, fields = {}, fileField = null, fileBuffer = null, fileName = null, fileMime = null, timeoutMs = 60000 }) {
     return new Promise((resolve, reject) => {
         if (!botToken) return reject(new Error('يرجى تزويد رمز البوت (Bot Token)'));
         
@@ -853,9 +853,9 @@ function sendTelegramRequest({ botToken, endpoint, fields = {}, fileField = null
             });
 
             req.on('error', (err) => reject(new Error('تعذر الاتصال بخوادم تيليجرام: ' + err.message)));
-            req.setTimeout(25000, () => {
+            req.setTimeout(timeoutMs, () => {
                 req.destroy();
-                reject(new Error('انتهت مهلة الاتصال مع خوادم تيليجرام (25s)'));
+                reject(new Error(`انتهت مهلة الاتصال مع خوادم تيليجرام (${Math.round(timeoutMs / 1000)}s)`));
             });
             req.write(fullPayload);
             req.end();
@@ -1323,6 +1323,116 @@ const server = http.createServer((req, res) => {
                 res.end(JSON.stringify({ success: true, message: 'تم إرسال التصميم والكابشن إلى تليجرام بنجاح! 🚀📱' }));
             } catch (err) {
                 console.error('[Telegram Send Error]', err);
+                res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*' });
+                res.end(JSON.stringify({ success: false, error: err.message }));
+            }
+        });
+        return;
+    }
+
+    // API: Telegram Send Video (Reels Video 60FPS with Audio & Animations)
+    if (reqPath === '/api/telegram-send-video' && req.method === 'POST') {
+        const chunks = [];
+        req.on('data', chunk => chunks.push(chunk));
+        req.on('end', async () => {
+            try {
+                const bodyStr = Buffer.concat(chunks).toString('utf-8');
+                const payload = JSON.parse(bodyStr || '{}');
+                const botToken = (payload.botToken || '').trim();
+                const chatId = (payload.chatId || '').trim();
+                const videoData = payload.videoBase64 || payload.dataUrl || '';
+                const caption = (payload.caption || '').trim();
+                const asDocument = !!payload.asDocument;
+                const customFileName = (payload.fileName || '').trim();
+
+                if (!botToken || !chatId) {
+                    res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*' });
+                    res.end(JSON.stringify({ success: false, error: 'يرجى ضبط رمز البوت (Bot Token) ومعرّف المحادثة (Chat ID) من الإعدادات أولاً' }));
+                    return;
+                }
+                if (!videoData) {
+                    res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*' });
+                    res.end(JSON.stringify({ success: false, error: 'لم يتم استلام بيانات فيديو الريلز' }));
+                    return;
+                }
+
+                const isWebm = videoData.startsWith('data:video/webm') || (customFileName && customFileName.endsWith('.webm'));
+                const ext = isWebm ? 'webm' : 'mp4';
+                const mimeType = isWebm ? 'video/webm' : 'video/mp4';
+                const base64Data = videoData.replace(/^data:video\/[^;]+;base64,/, '');
+                const fileBuffer = Buffer.from(base64Data, 'base64');
+                const fileName = customFileName || `shopcoin_reel_${Date.now()}.${ext}`;
+
+                // Telegram caption limit is 1024 characters for media
+                const videoCaption = caption.length > 1024 ? caption.slice(0, 1000) + '...' : caption;
+
+                if (!asDocument) {
+                    try {
+                        await sendTelegramRequest({
+                            botToken,
+                            endpoint: 'sendVideo',
+                            fields: {
+                                chat_id: chatId,
+                                caption: videoCaption,
+                                supports_streaming: 'true',
+                                width: 1080,
+                                height: 1920
+                            },
+                            fileField: 'video',
+                            fileBuffer,
+                            fileName,
+                            fileMime: mimeType,
+                            timeoutMs: 120000
+                        });
+                    } catch (videoErr) {
+                        console.warn('[Telegram sendVideo error, falling back to sendDocument]:', videoErr.message);
+                        // Automatic fallback to sendDocument if sendVideo encounters video profile/container issue
+                        await sendTelegramRequest({
+                            botToken,
+                            endpoint: 'sendDocument',
+                            fields: {
+                                chat_id: chatId,
+                                caption: videoCaption
+                            },
+                            fileField: 'document',
+                            fileBuffer,
+                            fileName,
+                            fileMime: mimeType,
+                            timeoutMs: 120000
+                        });
+                    }
+                } else {
+                    await sendTelegramRequest({
+                        botToken,
+                        endpoint: 'sendDocument',
+                        fields: {
+                            chat_id: chatId,
+                            caption: videoCaption
+                        },
+                        fileField: 'document',
+                        fileBuffer,
+                        fileName,
+                        fileMime: mimeType,
+                        timeoutMs: 120000
+                    });
+                }
+
+                // If caption was long, send the full text in a second message
+                if (caption.length > 1024) {
+                    await sendTelegramRequest({
+                        botToken,
+                        endpoint: 'sendMessage',
+                        fields: {
+                            chat_id: chatId,
+                            text: caption
+                        }
+                    }).catch(e => console.warn('[Telegram Full Video Caption Followup Warning]', e.message));
+                }
+
+                res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*' });
+                res.end(JSON.stringify({ success: true, message: 'تم إرسال فيديو الريلز بنجاح إلى حسابك في تليجرام! 🚀🎬' }));
+            } catch (err) {
+                console.error('[Telegram Send Video Error]', err);
                 res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*' });
                 res.end(JSON.stringify({ success: false, error: err.message }));
             }

@@ -6464,12 +6464,16 @@ window.ReelsEngine = (function() {
                             class="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:brightness-105 text-white font-black text-xs transition flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/25 cursor-pointer">
                         <span>🎬 تصدير فيديو الريل بدقة 60FPS (MP4 / WebM)</span>
                     </button>
+                    <button type="button" onclick="ReelsEngine.sendReelVideoTelegram()" id="btnSendReelVideoTelegram"
+                            class="w-full py-3 px-4 rounded-2xl bg-gradient-to-r from-sky-500 via-sky-600 to-blue-600 hover:brightness-105 text-white font-black text-xs transition flex items-center justify-center gap-2 shadow-lg shadow-sky-500/25 cursor-pointer active:scale-[0.99]">
+                        <span>🚀 إرسال فيديو الريلز إلى تيليجرام (60FPS كامل مع الصوت)</span>
+                    </button>
                     <div class="grid grid-cols-2 gap-2">
                         <button type="button" onclick="ReelsEngine.exportAllSlidesBatch()" class="py-2.5 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-black text-[11px] transition flex items-center justify-center gap-1 shadow-sm">
                             <span>📸 تحميل كافة السلايدات</span>
                         </button>
-                        <button type="button" onclick="ReelsEngine.sendReelTelegram()" class="py-2.5 px-3 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-black text-[11px] transition flex items-center justify-center gap-1 shadow-sm">
-                            <span>🚀 إرسال لتليجرام</span>
+                        <button type="button" onclick="ReelsEngine.sendReelSlideTelegram()" class="py-2.5 px-3 rounded-xl bg-sky-100 hover:bg-sky-200 text-sky-800 border border-sky-300 font-bold text-[11px] transition flex items-center justify-center gap-1 shadow-sm">
+                            <span>🖼️ إرسال السلايد صورة</span>
                         </button>
                     </div>
                 </div>
@@ -6892,9 +6896,14 @@ window.ReelsEngine = (function() {
                     </div>
                 </div>
 
-                <button type="button" onclick="ReelsEngine.exportReelVideo()" class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:brightness-105 text-white font-black text-xs transition flex items-center gap-1 shadow-md shadow-emerald-600/20 active:scale-95">
-                    <span>🎬 تحميل فيديو</span>
-                </button>
+                <div class="flex items-center gap-1.5 flex-wrap">
+                    <button type="button" onclick="ReelsEngine.exportReelVideo()" class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:brightness-105 text-white font-black text-xs transition flex items-center gap-1 shadow-md shadow-emerald-600/20 active:scale-95" title="تحميل الفيديو بصيغة MP4 / WebM">
+                        <span>🎬 تحميل فيديو</span>
+                    </button>
+                    <button type="button" onclick="ReelsEngine.sendReelVideoTelegram()" class="btn-telegram-action px-3 py-1.5 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 hover:brightness-105 text-white font-black text-xs transition flex items-center gap-1 shadow-md shadow-sky-500/20 active:scale-95" title="إرسال فيديو الريلز مباشرة إلى تيليجرام">
+                        <span>🚀 فيديو لتليجرام</span>
+                    </button>
+                </div>
             </div>
         `;
 
@@ -7572,7 +7581,79 @@ window.ReelsEngine = (function() {
         }
     }
 
-    async function sendReelTelegram() {
+    async function sendReelVideoTelegram() {
+        if (!window.TelegramManager) {
+            alert('مدير التليجرام غير متاح.');
+            return;
+        }
+        if (!window.TelegramManager.isConfigured()) {
+            window.TelegramManager.openSettingsModal();
+            window.TelegramManager.showStatus('info', '💡 يرجى إدخال رمز البوت والـ Chat ID لتفعيل إرسال فيديو الريلز للتليجرام!');
+            return;
+        }
+
+        const btnSide = document.getElementById('btnSendReelVideoTelegram');
+        const origSideHtml = btnSide ? btnSide.innerHTML : '';
+        const allTgBtns = document.querySelectorAll('.btn-telegram-action, #btnSendReelVideoTelegram');
+
+        allTgBtns.forEach(b => {
+            b.disabled = true;
+            b.classList.add('opacity-70', 'pointer-events-none');
+        });
+
+        if (btnSide) {
+            btnSide.innerHTML = '<span>⏳ جاري معالجة وتجهيز فيديو الريلز...</span>';
+        }
+        if (window.showCopyToast) {
+            window.showCopyToast('🎬 بدأ تسجيل فيديو الريلز (60FPS) وتجهيزه للإرسال عبر تيليجرام...');
+        }
+
+        try {
+            const { blob, mimeType } = await recordReelVideoBlob((cur, total, msg) => {
+                if (btnSide) btnSide.innerHTML = `<span>⏳ ${msg || `معالجة ${cur}/${total}...`}</span>`;
+                if (window.showCopyToast && (cur === 1 || cur === total)) {
+                    window.showCopyToast(msg || `تسجيل فيديو الريلز: السلايد ${cur} من ${total}... ⏳`);
+                }
+            });
+
+            if (btnSide) {
+                btnSide.innerHTML = '<span>🚀 جاري رفع الفيديو إلى تيليجرام...</span>';
+            }
+            if (window.showCopyToast) {
+                window.showCopyToast('🚀 جاري رفع فيديو الريلز عالي الجودة إلى تيليجرام مباشرة...');
+            }
+
+            const totalDuration = state.slides.reduce((acc, s) => acc + (s.duration || 2.5), 0);
+            const ext = mimeType.includes('mp4') ? 'mp4' : 'webm';
+            const fileName = `Reel_FC27_ShopCoin15_${Date.now()}.${ext}`;
+
+            const caption = `🎬 فيديو ريلز متجر ShopCoin15 جاهز للنشر! 🚀✨
+📌 ${state.title || 'أقوى كروت ومقارنات FC 27'}
+📝 ${state.subtitle || ''}
+⏱️ مدة الفيديو: ${totalDuration.toFixed(1)} ثانية (${state.slides.length} سلايدات)
+
+👑 @shop_coin15 | متجر كوينز FC 27`;
+
+            await window.TelegramManager.sendVideoInternal(blob, caption, null, fileName);
+
+            if (window.showCopyToast) {
+                window.showCopyToast('تم إرسال فيديو الريلز إلى تيليجرام بنجاح! 🚀📱 افتح التيليجرام لمشاهدته وتنزيله');
+            }
+        } catch (err) {
+            console.error('Reel Telegram video error:', err);
+            alert('حدث خطأ أثناء إرسال فيديو الريلز للتليجرام:\n' + err.message);
+        } finally {
+            allTgBtns.forEach(b => {
+                b.disabled = false;
+                b.classList.remove('opacity-70', 'pointer-events-none');
+            });
+            if (btnSide) {
+                btnSide.innerHTML = origSideHtml || '<span>🚀 إرسال فيديو الريلز إلى تيليجرام (60FPS كامل مع الصوت)</span>';
+            }
+        }
+    }
+
+    async function sendReelSlideTelegram() {
         if (!window.TelegramManager) {
             alert('مدير التليجرام غير متاح.');
             return;
@@ -7585,17 +7666,28 @@ window.ReelsEngine = (function() {
         renderCanvas();
         await new Promise(r => setTimeout(r, 200));
 
-        const caption = `🎬 ريلز FC 27 جاهز للنشر:
+        const caption = `🖼️ سلايد ريلز FC 27 (${state.currentSlideIndex + 1}/${state.slides.length}):
 ${state.title}
 ${state.subtitle}
 
 @shop_coin15`;
-        await window.TelegramManager.sendDesignInternal('exportCanvas', caption);
 
-        state.showSafeZone = prevSafe;
-        state.dragEnabled = prevDrag;
-        renderCanvas();
+        try {
+            await window.TelegramManager.sendDesignInternal('exportCanvas', caption);
+            if (window.showCopyToast) {
+                window.showCopyToast('تم إرسال السلايد صورة لتليجرام بنجاح! 🖼️📱');
+            }
+        } catch (e) {
+            alert('تعذر إرسال السلايد للتليجرام: ' + e.message);
+        } finally {
+            state.showSafeZone = prevSafe;
+            state.dragEnabled = prevDrag;
+            renderCanvas();
+        }
     }
+
+    // Default Telegram action for Reels Studio is sending the full video
+    const sendReelTelegram = sendReelVideoTelegram;
 
     // Initial setup & Persistent project state restoration
     let bootSection = 'countdown';
@@ -7697,6 +7789,8 @@ ${state.subtitle}
         exportReelVideo,
         exportAllSlidesBatch,
         sendReelTelegram,
+        sendReelVideoTelegram,
+        sendReelSlideTelegram,
         checkTikTokStatus,
         loginTikTok,
         reconnectDirectPublish,

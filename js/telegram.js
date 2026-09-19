@@ -269,11 +269,70 @@ const TelegramManager = {
         }
     },
 
+    async sendVideoInternal(videoBlobOrBase64, captionOverride = null, asDoc = null, customFileName = null) {
+        if (!this.isConfigured()) {
+            this.openSettingsModal();
+            this.showStatus('info', '💡 يرجى إدخال رمز البوت والـ Chat ID مرة واحدة لتفعيل الإرسال لتليجرام!');
+            throw new Error('يرجى ضبط إعدادات تيليجرام أولاً');
+        }
+
+        const token = this.getToken();
+        const chatId = this.getChatId();
+        const isDoc = asDoc !== null ? !!asDoc : this.getAsDocument();
+
+        let dataUrl = null;
+        if (typeof videoBlobOrBase64 === 'string') {
+            dataUrl = videoBlobOrBase64;
+        } else if (videoBlobOrBase64 instanceof Blob) {
+            dataUrl = await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(videoBlobOrBase64);
+            });
+        } else {
+            throw new Error('بيانات الفيديو غير صالحة');
+        }
+
+        let caption = captionOverride;
+        if (!caption) {
+            const captionEl = document.getElementById('captionText');
+            caption = captionEl ? captionEl.value : '';
+            if (!caption && typeof CopywriterEngine !== 'undefined' && typeof currentTemplate !== 'undefined' && typeof appState !== 'undefined') {
+                caption = CopywriterEngine.generate(currentTemplate, appState, typeof currentCopyStyle !== 'undefined' ? currentCopyStyle : 'direct');
+            }
+        }
+
+        const sendRes = await fetch('/api/telegram-send-video', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                botToken: token,
+                chatId: chatId,
+                videoBase64: dataUrl,
+                caption: caption,
+                asDocument: isDoc,
+                fileName: customFileName || undefined
+            })
+        });
+
+        const sendData = await sendRes.json();
+        if (!sendRes.ok || !sendData.success) {
+            throw new Error(sendData.error || 'تعذر إرسال الفيديو إلى تيليجرام');
+        }
+        return sendData;
+    },
+
     async sendCurrentDesign() {
         if (!this.isConfigured()) {
             this.openSettingsModal();
             this.showStatus('info', '💡 يرجى إدخال رمز البوت والـ Chat ID مرة واحدة فقط لتفعيل الإرسال السريع بهاتفك!');
             return;
+        }
+
+        // If in Reels Studio, dispatch the full 60FPS Reels video directly
+        if (window.currentStudioSuite === 'suite_reels' && window.ReelsEngine && typeof window.ReelsEngine.sendReelVideoTelegram === 'function') {
+            return await window.ReelsEngine.sendReelVideoTelegram();
         }
 
         if (window.showCopyToast) {
