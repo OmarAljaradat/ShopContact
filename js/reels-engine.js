@@ -3808,7 +3808,7 @@ window.ReelsEngine = (function() {
             const curSlideMs = getCurSlideMs();
             state.timelineProgress = Math.min(100, (elapsed / curSlideMs) * 100);
 
-            const bars = [document.getElementById('reelTimelineBar'), document.getElementById('toolbarTimelineBar')];
+            const bars = document.querySelectorAll('.reels-toolbar-timeline-bar, #toolbarTimelineBar, #reelTimelineBar');
             bars.forEach(b => { if (b) b.style.width = `${state.timelineProgress}%`; });
             const curStorySeg = document.getElementById('storyProgressSeg_' + state.currentSlideIndex);
             if (curStorySeg) curStorySeg.style.width = `${state.timelineProgress}%`;
@@ -3839,7 +3839,7 @@ window.ReelsEngine = (function() {
             state.playbackTimer = null;
         }
         state.timelineProgress = 0;
-        const bars = [document.getElementById('reelTimelineBar'), document.getElementById('toolbarTimelineBar')];
+        const bars = document.querySelectorAll('.reels-toolbar-timeline-bar, #toolbarTimelineBar, #reelTimelineBar');
         bars.forEach(b => { if (b) b.style.width = '0%'; });
         updatePlayerUi();
 
@@ -4464,19 +4464,21 @@ window.ReelsEngine = (function() {
     }
 
     function updatePlayerUi() {
-        const btnPlay = document.getElementById('reelBtnPlay');
-        const toolbarBtnPlay = document.getElementById('toolbarBtnPlay');
         const playText = state.isPlaying ? '<span>⏸️ إيقاف</span>' : '<span>▶️ تشغيل</span>';
+
+        const btnPlay = document.getElementById('reelBtnPlay');
         if (btnPlay) {
             btnPlay.innerHTML = playText;
             btnPlay.classList.toggle('bg-amber-500', state.isPlaying);
             btnPlay.classList.toggle('bg-emerald-600', !state.isPlaying);
         }
-        if (toolbarBtnPlay) {
-            toolbarBtnPlay.innerHTML = state.isPlaying ? '<span>⏸️ إيقاف</span>' : '<span>▶️ تشغيل</span>';
-            toolbarBtnPlay.classList.toggle('bg-amber-500', state.isPlaying);
-            toolbarBtnPlay.classList.toggle('bg-emerald-600', !state.isPlaying);
-        }
+
+        const allPlayBtns = document.querySelectorAll('.reels-toolbar-btn-play, #toolbarBtnPlay');
+        allPlayBtns.forEach(btn => {
+            btn.innerHTML = playText;
+            btn.classList.toggle('bg-amber-500', state.isPlaying);
+            btn.classList.toggle('bg-emerald-600', !state.isPlaying);
+        });
 
         const current = state.slides[state.currentSlideIndex];
         let name = 'خطاف البداية';
@@ -4486,11 +4488,20 @@ window.ReelsEngine = (function() {
             if (current.type === 'outro') name = 'سلايد الختام';
         }
         const slideText = `سلايد ${state.currentSlideIndex + 1}/${state.slides.length} (${name})`;
+        const slideShortText = `سلايد ${state.currentSlideIndex + 1}/${state.slides.length}`;
 
         const ind = document.getElementById('reelSlideIndicator');
         if (ind) ind.textContent = slideText;
-        const toolInd = document.getElementById('toolbarSlideIndicator');
-        if (toolInd) toolInd.textContent = `سلايد ${state.currentSlideIndex + 1}/${state.slides.length}`;
+
+        const allSlideInds = document.querySelectorAll('.reels-toolbar-slide-ind, #toolbarSlideIndicator');
+        allSlideInds.forEach(el => {
+            el.textContent = slideShortText;
+        });
+
+        const quickInds = document.querySelectorAll('.reels-quick-slide-counter');
+        quickInds.forEach(el => {
+            el.textContent = `${state.currentSlideIndex + 1}/${state.slides.length}`;
+        });
 
         const dots = document.getElementById('reelDotsContainer');
         if (dots) {
@@ -5639,9 +5650,20 @@ window.ReelsEngine = (function() {
                 <!-- 4. SLIDE & PLAYER CUSTOMIZER -->
                 <div class="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-3">
                     <div class="flex items-center justify-between flex-wrap gap-2">
-                        <span class="text-xs font-black text-slate-900">
-                            تعديل السلايد الحالي (${state.currentSlideIndex + 1}/${state.slides.length}):
-                        </span>
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <span class="text-xs font-black text-slate-900">
+                                تعديل السلايد الحالي:
+                            </span>
+                            <!-- Quick Switcher in Header -->
+                            <div class="flex items-center gap-1 bg-slate-100 p-0.5 rounded-xl border border-slate-200">
+                                <button type="button" onclick="ReelsEngine.prevSlide()" class="px-2 py-0.5 rounded-lg hover:bg-white text-[10.5px] font-black text-slate-700 transition" title="السلايد السابق">⏪ السابق</button>
+                                <span class="reels-quick-slide-counter px-1.5 py-0.5 text-[10.5px] font-black text-emerald-700 bg-white rounded-md border border-slate-200 shadow-2xs">${state.currentSlideIndex + 1}/${state.slides.length}</span>
+                                <button type="button" onclick="ReelsEngine.nextSlide()" class="px-2 py-0.5 rounded-lg hover:bg-white text-[10.5px] font-black text-slate-700 transition" title="السلايد التالي">التالي ⏩</button>
+                                <button type="button" onclick="ReelsEngine.togglePlayPause()" class="reels-toolbar-btn-play px-2.5 py-0.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[10.5px] font-black transition flex items-center gap-1 shadow-2xs" title="تشغيل / إيقاف">
+                                    <span>▶️</span>
+                                </button>
+                            </div>
+                        </div>
                         <div class="flex items-center gap-1.5 flex-wrap">
                             ${!hasIntro ? `
                                 <button type="button" onclick="ReelsEngine.addSlide('intro')" class="px-2.5 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 text-[10.5px] font-black transition flex items-center gap-1 shadow-2xs">
@@ -6164,42 +6186,46 @@ window.ReelsEngine = (function() {
         if (idea) applyIdea(idea, true);
     }
 
-    // ---- 10. PLAYER TOOLBAR (BELOW CANVAS) ----
+    // ---- 10. PLAYER TOOLBAR (TOP & BOTTOM OF CANVAS) ----
     function renderPlayerToolbar() {
-        const container = document.getElementById('reelsPlayerToolbarContainer');
-        if (!container) return;
+        const topContainer = document.getElementById('reelsPlayerToolbarTopContainer');
+        const bottomContainer = document.getElementById('reelsPlayerToolbarContainer');
+        if (!topContainer && !bottomContainer) return;
 
-        container.innerHTML = `
-            <div class="p-3 bg-slate-900/95 backdrop-blur-md rounded-2xl border border-slate-800 flex items-center justify-between text-white shadow-xl">
-                <div class="flex items-center gap-1.5">
-                    <button type="button" onclick="ReelsEngine.prevSlide()" class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-black transition" title="السلايد السابق">
+        const toolbarHtml = `
+            <div class="p-2.5 sm:p-3 bg-slate-900/95 backdrop-blur-md rounded-2xl border border-slate-800 flex items-center justify-between text-white shadow-xl flex-wrap gap-2">
+                <div class="flex items-center gap-1.5 flex-wrap">
+                    <button type="button" onclick="ReelsEngine.prevSlide()" class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-black transition active:scale-95" title="السلايد السابق">
                         ⏪ السابق
                     </button>
-                    <button type="button" id="toolbarBtnPlay" onclick="ReelsEngine.togglePlayPause()" class="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black transition flex items-center gap-1 shadow-sm">
+                    <button type="button" onclick="ReelsEngine.togglePlayPause()" class="reels-toolbar-btn-play px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black transition flex items-center gap-1 shadow-sm active:scale-95" title="تشغيل / إيقاف">
                         <span>▶️ تشغيل</span>
                     </button>
-                    <button type="button" onclick="ReelsEngine.nextSlide()" class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-black transition" title="السلايد التالي">
+                    <button type="button" onclick="ReelsEngine.nextSlide()" class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-black transition active:scale-95" title="السلايد التالي">
                         التالي ⏩
                     </button>
-                    <button type="button" onclick="ReelsEngine.replaySlideAnimations()" class="px-2.5 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-black transition flex items-center gap-1 shadow-sm" title="إعادة تشغيل حركات السلايد الحالي">
+                    <button type="button" onclick="ReelsEngine.replaySlideAnimations()" class="px-2.5 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-black transition flex items-center gap-1 shadow-sm active:scale-95" title="إعادة تشغيل حركات السلايد الحالي">
                         <span>✨ إعادة الحركة</span>
                     </button>
                 </div>
 
                 <div class="flex flex-col items-center gap-1">
-                    <span id="toolbarSlideIndicator" class="text-[11px] font-black text-emerald-400">
+                    <span class="reels-toolbar-slide-ind text-[11px] font-black text-emerald-400">
                         سلايد ${state.currentSlideIndex + 1}/${state.slides.length}
                     </span>
                     <div class="w-24 bg-slate-800 h-1.5 rounded-full overflow-hidden">
-                        <div id="toolbarTimelineBar" class="bg-emerald-400 h-full w-0 transition-all duration-75"></div>
+                        <div class="reels-toolbar-timeline-bar bg-emerald-400 h-full w-0 transition-all duration-75"></div>
                     </div>
                 </div>
 
-                <button type="button" onclick="ReelsEngine.exportReelVideo()" class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:brightness-105 text-white font-black text-xs transition flex items-center gap-1 shadow-md shadow-emerald-600/20">
+                <button type="button" onclick="ReelsEngine.exportReelVideo()" class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:brightness-105 text-white font-black text-xs transition flex items-center gap-1 shadow-md shadow-emerald-600/20 active:scale-95">
                     <span>🎬 تحميل فيديو</span>
                 </button>
             </div>
         `;
+
+        if (topContainer) topContainer.innerHTML = toolbarHtml;
+        if (bottomContainer) bottomContainer.innerHTML = toolbarHtml;
         updatePlayerUi();
     }
 
@@ -6979,6 +7005,7 @@ ${state.subtitle}
         clearSlideBadges,
         applyBadgesToAllPlayerCards,
         REELS_PRESET_BADGES,
-        getProgressBarState: () => state.progressBar
+        getProgressBarState: () => state.progressBar,
+        getState: () => state
     };
 })();

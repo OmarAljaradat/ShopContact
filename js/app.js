@@ -1064,6 +1064,7 @@ window.switchStudioSuite = function(suiteKey) {
     const aiAssistantCard = document.getElementById('aiPromptInput')?.closest('.double-bezel');
 
     const reelsToolbar = document.getElementById('reelsPlayerToolbarContainer');
+    const reelsToolbarTop = document.getElementById('reelsPlayerToolbarTopContainer');
 
     if (suiteKey === 'suite_stories') {
         if (templateSection) templateSection.style.display = '';
@@ -1073,6 +1074,7 @@ window.switchStudioSuite = function(suiteKey) {
         if (reelsPanel) reelsPanel.classList.add('hidden');
         if (filmstripContainer) filmstripContainer.classList.add('hidden');
         if (reelsToolbar) reelsToolbar.classList.add('hidden');
+        if (reelsToolbarTop) reelsToolbarTop.classList.add('hidden');
         if (captionSection) captionSection.style.display = 'none';
         if (ratioContainer) ratioContainer.style.display = '';
         if (aiAssistantCard) aiAssistantCard.style.display = '';
@@ -1097,6 +1099,7 @@ window.switchStudioSuite = function(suiteKey) {
         if (reelsPanel) reelsPanel.classList.add('hidden');
         if (filmstripContainer) filmstripContainer.classList.add('hidden');
         if (reelsToolbar) reelsToolbar.classList.add('hidden');
+        if (reelsToolbarTop) reelsToolbarTop.classList.add('hidden');
         if (captionSection) captionSection.style.display = '';
         if (ratioContainer) ratioContainer.style.display = '';
         if (aiAssistantCard) aiAssistantCard.style.display = '';
@@ -1124,6 +1127,7 @@ window.switchStudioSuite = function(suiteKey) {
         if (reelsPanel) reelsPanel.classList.add('hidden');
         if (filmstripContainer) filmstripContainer.classList.remove('hidden');
         if (reelsToolbar) reelsToolbar.classList.add('hidden');
+        if (reelsToolbarTop) reelsToolbarTop.classList.add('hidden');
         if (ratioContainer) ratioContainer.style.display = 'none';
         if (aiAssistantCard) aiAssistantCard.style.display = 'none';
 
@@ -1141,6 +1145,7 @@ window.switchStudioSuite = function(suiteKey) {
         if (reelsPanel) reelsPanel.classList.remove('hidden');
         if (filmstripContainer) filmstripContainer.classList.add('hidden');
         if (reelsToolbar) reelsToolbar.classList.remove('hidden');
+        if (reelsToolbarTop) reelsToolbarTop.classList.remove('hidden');
         if (ratioContainer) ratioContainer.style.display = 'none';
         if (aiAssistantCard) aiAssistantCard.style.display = 'none';
 
