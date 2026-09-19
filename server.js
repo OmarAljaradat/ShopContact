@@ -1016,13 +1016,14 @@ async function processReelJob(jobId, payload, execPath) {
         browser = await puppeteer.launch({
             executablePath: execPath,
             headless: 'new',
-            args: launchArgs
+            args: launchArgs,
+            protocolTimeout: 240000
         });
 
         const page = await browser.newPage();
         await page.setViewport({ width: 1080, height: 1920, deviceScaleFactor: 1 });
-        await page.goto(`http://127.0.0.1:${PORT}/?suite=suite_reels`, { waitUntil: 'load', timeout: 25000 });
-        await page.waitForSelector('#canvasScaleStage', { timeout: 15000 });
+        await page.goto(`http://127.0.0.1:${PORT}/?suite=suite_reels`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForSelector('#canvasScaleStage', { timeout: 30000 });
 
         // Move #canvasScaleStage directly to document.body and cleanly hide surrounding studio chrome
         await page.evaluate(() => {
