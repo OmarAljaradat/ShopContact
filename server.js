@@ -1252,7 +1252,7 @@ async function processReelJob(jobId, payload, execPath) {
                     }
                 });
 
-                // Smart keyframes: 2 entrance keyframes for player/versus cards (overshoot pop), 1 for intro/outro text
+                // Fluid high-framerate entrance keyframes (45ms per frame = 22 FPS continuous smooth motion)
                 const currentSlide = slides[i] || {};
                 const isCardSlide = (
                     currentSlide.type === 'player_card' ||
@@ -1265,11 +1265,16 @@ async function processReelJob(jobId, payload, execPath) {
 
                 const keyframes = isCardSlide
                     ? [
-                        { ms: 280, dur: 0.16 },
-                        { ms: 480, dur: 0.18 }
+                        { ms: 120, dur: 0.045 },
+                        { ms: 220, dur: 0.045 },
+                        { ms: 320, dur: 0.045 },
+                        { ms: 420, dur: 0.045 },
+                        { ms: 520, dur: 0.050 }
                     ]
                     : [
-                        { ms: 280, dur: 0.20 }
+                        { ms: 140, dur: 0.050 },
+                        { ms: 300, dur: 0.050 },
+                        { ms: 460, dur: 0.050 }
                     ];
 
                 const entranceDurTotal = keyframes.reduce((acc, k) => acc + k.dur, 0);
