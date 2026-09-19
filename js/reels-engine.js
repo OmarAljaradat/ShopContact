@@ -288,6 +288,571 @@ window.ReelsEngine = (function() {
     }
     injectAnimationStyles();
 
+    // =========================================================================
+    // ---- 1.7 ADVANCED REELS AUDIO & SFX SYNTHESIZER ENGINE ----
+    // =========================================================================
+    const AUDIO_STORAGE_KEY = 'shopcoin15_reels_audio_v2';
+    let globalAudioCtx = null;
+
+    function getAudioContext() {
+        if (!globalAudioCtx && typeof window !== 'undefined') {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            if (AudioCtx) {
+                globalAudioCtx = new AudioCtx();
+            }
+        }
+        if (globalAudioCtx && globalAudioCtx.state === 'suspended') {
+            globalAudioCtx.resume().catch(() => {});
+        }
+        return globalAudioCtx;
+    }
+
+    const defaultAudioConfig = {
+        masterEnabled: true,
+        sfxEnabled: true,
+        bgmEnabled: true,
+        sfxVolume: 0.85,
+        bgmVolume: 0.50,
+        bgmType: 'ambient_hype', // 'ambient_hype' | 'custom'
+        customBgmName: ''
+    };
+
+    let audioState = { ...defaultAudioConfig };
+    let customAudioBuffer = null;
+    let synthHypeBuffer = null;
+    let isSynthRendering = false;
+    let activeBgmSource = null;
+    let activeBgmGain = null;
+    let isBgmPlaying = false;
+    let isBgmAuditioning = false;
+
+    function loadSavedAudioState() {
+        try {
+            const saved = localStorage.getItem(AUDIO_STORAGE_KEY);
+            if (saved) {
+                audioState = { ...defaultAudioConfig, ...JSON.parse(saved) };
+            }
+        } catch (e) {}
+    }
+    loadSavedAudioState();
+
+    function saveAudioState() {
+        try {
+            localStorage.setItem(AUDIO_STORAGE_KEY, JSON.stringify({
+                masterEnabled: audioState.masterEnabled,
+                sfxEnabled: audioState.sfxEnabled,
+                bgmEnabled: audioState.bgmEnabled,
+                sfxVolume: audioState.sfxVolume,
+                bgmVolume: audioState.bgmVolume,
+                bgmType: audioState.bgmType,
+                customBgmName: audioState.customBgmName
+            }));
+        } catch (e) {}
+    }
+
+    // 1. Procedural Coin Jingle / Cash Chime (EA FC Coin Audio Ding)
+    function playCoinSound(customDest = null, volScale = 1.0, ctxOverride = null) {
+        if (!audioState.masterEnabled || !audioState.sfxEnabled) return;
+        const ctx = ctxOverride || getAudioContext();
+        if (!ctx) return;
+
+        const masterVol = Math.max(0.01, audioState.sfxVolume * volScale);
+        const outNode = customDest || ctx.destination;
+        const mainGain = ctx.createGain();
+        mainGain.connect(outNode);
+
+        const now = ctx.currentTime;
+
+        // Two staggered metallic chimes for realistic gold coin clink
+        // First Ping
+        [
+            { freq: 1950, type: 'sine', vol: 0.35, dur: 0.38 },
+            { freq: 2450, type: 'sine', vol: 0.28, dur: 0.32 },
+            { freq: 3120, type: 'triangle', vol: 0.22, dur: 0.28 }
+        ].forEach(cfg => {
+            const osc = ctx.createOscillator();
+            const g = ctx.createGain();
+            osc.type = cfg.type;
+            osc.frequency.setValueAtTime(cfg.freq, now);
+            g.gain.setValueAtTime(0.001, now);
+            g.gain.linearRampToValueAtTime(cfg.vol * masterVol, now + 0.004);
+            g.gain.exponentialRampToValueAtTime(0.0001, now + cfg.dur);
+            osc.connect(g);
+            g.connect(mainGain);
+            osc.start(now);
+            osc.stop(now + cfg.dur + 0.05);
+        });
+
+        // Second Ping (staggered by 65ms at higher harmonic pitch)
+        const t2 = now + 0.065;
+        [
+            { freq: 2150, type: 'sine', vol: 0.40, dur: 0.45 },
+            { freq: 2700, type: 'sine', vol: 0.32, dur: 0.40 },
+            { freq: 3450, type: 'triangle', vol: 0.25, dur: 0.35 }
+        ].forEach(cfg => {
+            const osc = ctx.createOscillator();
+            const g = ctx.createGain();
+            osc.type = cfg.type;
+            osc.frequency.setValueAtTime(cfg.freq, t2);
+            g.gain.setValueAtTime(0.001, t2);
+            g.gain.linearRampToValueAtTime(cfg.vol * masterVol, t2 + 0.004);
+            g.gain.exponentialRampToValueAtTime(0.0001, t2 + cfg.dur);
+            osc.connect(g);
+            g.connect(mainGain);
+            osc.start(t2);
+            osc.stop(t2 + cfg.dur + 0.05);
+        });
+    }
+
+    // 2. Procedural Whoosh / Fast Cinematic Swoosh
+    function playWhooshSound(customDest = null, volScale = 1.0, ctxOverride = null) {
+        if (!audioState.masterEnabled || !audioState.sfxEnabled) return;
+        const ctx = ctxOverride || getAudioContext();
+        if (!ctx) return;
+
+        const masterVol = Math.max(0.01, audioState.sfxVolume * volScale);
+        const outNode = customDest || ctx.destination;
+        const now = ctx.currentTime;
+
+        const dur = 0.28;
+        const bufferSize = Math.floor(ctx.sampleRate * dur);
+        const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+        const data = noiseBuffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+            data[i] = (Math.random() * 2 - 1) * 0.8;
+        }
+
+        const noiseSrc = ctx.createBufferSource();
+        noiseSrc.buffer = noiseBuffer;
+
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.Q.setValueAtTime(2.2, now);
+        filter.frequency.setValueAtTime(280, now);
+        filter.frequency.exponentialRampToValueAtTime(3200, now + 0.12);
+        filter.frequency.exponentialRampToValueAtTime(280, now + dur);
+
+        const gain = ctx.createGain();
+        gain.gain.setValueAtTime(0.001, now);
+        gain.gain.linearRampToValueAtTime(0.65 * masterVol, now + 0.11);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+
+        noiseSrc.connect(filter);
+        filter.connect(gain);
+        gain.connect(outNode);
+
+        noiseSrc.start(now);
+        noiseSrc.stop(now + dur + 0.02);
+    }
+
+    // 3. Procedural Sub-Bass Cinematic Boom / Mystery Drop
+    function playBoomSound(customDest = null, volScale = 1.0, ctxOverride = null) {
+        if (!audioState.masterEnabled || !audioState.sfxEnabled) return;
+        const ctx = ctxOverride || getAudioContext();
+        if (!ctx) return;
+
+        const masterVol = Math.max(0.01, audioState.sfxVolume * volScale);
+        const outNode = customDest || ctx.destination;
+        const now = ctx.currentTime;
+        const dur = 0.70;
+
+        // Sub Bass Sine with Pitch Drop
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(145, now);
+        osc.frequency.exponentialRampToValueAtTime(40, now + 0.35);
+
+        gain.gain.setValueAtTime(0.85 * masterVol, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + dur);
+
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(350, now);
+
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(outNode);
+
+        osc.start(now);
+        osc.stop(now + dur + 0.05);
+
+        // Punch noise attack
+        const pLen = Math.floor(ctx.sampleRate * 0.06);
+        const pBuf = ctx.createBuffer(1, pLen, ctx.sampleRate);
+        const pData = pBuf.getChannelData(0);
+        for (let i = 0; i < pLen; i++) pData[i] = (Math.random() * 2 - 1) * 0.5;
+        const pSrc = ctx.createBufferSource();
+        pSrc.buffer = pBuf;
+        const pFilter = ctx.createBiquadFilter();
+        pFilter.type = 'lowpass';
+        pFilter.frequency.setValueAtTime(600, now);
+        const pGain = ctx.createGain();
+        pGain.gain.setValueAtTime(0.35 * masterVol, now);
+        pGain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+        pSrc.connect(pFilter);
+        pFilter.connect(pGain);
+        pGain.connect(outNode);
+        pSrc.start(now);
+    }
+
+    // 4. Procedural Pop / Chirp for Badges & Buttons
+    function playPopSound(customDest = null, volScale = 1.0, ctxOverride = null) {
+        if (!audioState.masterEnabled || !audioState.sfxEnabled) return;
+        const ctx = ctxOverride || getAudioContext();
+        if (!ctx) return;
+        const masterVol = Math.max(0.01, audioState.sfxVolume * volScale);
+        const outNode = customDest || ctx.destination;
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(750, now);
+        osc.frequency.exponentialRampToValueAtTime(1600, now + 0.045);
+        gain.gain.setValueAtTime(0.4 * masterVol, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+        osc.connect(gain);
+        gain.connect(outNode);
+        osc.start(now);
+        osc.stop(now + 0.055);
+    }
+
+    // 5. Offline Rendered Ambient Hype Beat Loop (7.5s, 128 BPM)
+    async function renderSynthHypeBuffer(sampleRate = 44100) {
+        if (synthHypeBuffer) return synthHypeBuffer;
+        if (isSynthRendering) {
+            await new Promise(r => setTimeout(r, 80));
+            return synthHypeBuffer;
+        }
+        isSynthRendering = true;
+
+        try {
+            const OfflineCtx = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+            if (!OfflineCtx) return null;
+
+            const bpm = 128;
+            const beatSec = 60 / bpm; // ~0.46875s
+            const totalBeats = 16; // 4 bars
+            const totalDur = totalBeats * beatSec; // 7.5s
+
+            const offCtx = new OfflineCtx(2, Math.ceil(sampleRate * totalDur), sampleRate);
+
+            function scheduleKick(t) {
+                const osc = offCtx.createOscillator();
+                const gain = offCtx.createGain();
+                osc.frequency.setValueAtTime(135, t);
+                osc.frequency.exponentialRampToValueAtTime(45, t + 0.09);
+                gain.gain.setValueAtTime(0.85, t);
+                gain.gain.exponentialRampToValueAtTime(0.001, t + 0.28);
+                osc.connect(gain);
+                gain.connect(offCtx.destination);
+                osc.start(t);
+                osc.stop(t + 0.3);
+            }
+
+            function scheduleSnare(t) {
+                const bLen = Math.floor(sampleRate * 0.16);
+                const nBuf = offCtx.createBuffer(1, bLen, sampleRate);
+                const data = nBuf.getChannelData(0);
+                for (let i = 0; i < bLen; i++) data[i] = (Math.random() * 2 - 1);
+                const nSrc = offCtx.createBufferSource();
+                nSrc.buffer = nBuf;
+                const filter = offCtx.createBiquadFilter();
+                filter.type = 'highpass';
+                filter.frequency.value = 950;
+                const gain = offCtx.createGain();
+                gain.gain.setValueAtTime(0.42, t);
+                gain.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+                nSrc.connect(filter);
+                filter.connect(gain);
+                gain.connect(offCtx.destination);
+                nSrc.start(t);
+            }
+
+            function scheduleHat(t, vol = 0.14) {
+                const bLen = Math.floor(sampleRate * 0.04);
+                const nBuf = offCtx.createBuffer(1, bLen, sampleRate);
+                const data = nBuf.getChannelData(0);
+                for (let i = 0; i < bLen; i++) data[i] = (Math.random() * 2 - 1);
+                const nSrc = offCtx.createBufferSource();
+                nSrc.buffer = nBuf;
+                const filter = offCtx.createBiquadFilter();
+                filter.type = 'highpass';
+                filter.frequency.value = 6800;
+                const gain = offCtx.createGain();
+                gain.gain.setValueAtTime(vol, t);
+                gain.gain.exponentialRampToValueAtTime(0.001, t + 0.035);
+                nSrc.connect(filter);
+                filter.connect(gain);
+                gain.connect(offCtx.destination);
+                nSrc.start(t);
+            }
+
+            function schedule808(t, freq, dur = 0.6) {
+                const osc = offCtx.createOscillator();
+                const gain = offCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, t);
+                gain.gain.setValueAtTime(0.65, t);
+                gain.gain.exponentialRampToValueAtTime(0.001, t + dur);
+                osc.connect(gain);
+                gain.connect(offCtx.destination);
+                osc.start(t);
+                osc.stop(t + dur + 0.05);
+            }
+
+            function scheduleSynthChord(t, freqs, dur = 1.6) {
+                freqs.forEach(f => {
+                    const osc = offCtx.createOscillator();
+                    const gain = offCtx.createGain();
+                    const filter = offCtx.createBiquadFilter();
+                    osc.type = 'sawtooth';
+                    osc.frequency.value = f;
+                    filter.type = 'lowpass';
+                    filter.frequency.setValueAtTime(1400, t);
+                    gain.gain.setValueAtTime(0.07, t);
+                    gain.gain.exponentialRampToValueAtTime(0.001, t + dur);
+                    osc.connect(filter);
+                    filter.connect(gain);
+                    gain.connect(offCtx.destination);
+                    osc.start(t);
+                    osc.stop(t + dur + 0.05);
+                });
+            }
+
+            const kickBeats = [0, 1.75, 2.5, 4, 5.75, 6.5, 8, 9.75, 10.5, 12, 13.75, 14.5];
+            const snareBeats = [2, 6, 10, 14];
+
+            kickBeats.forEach(b => scheduleKick(b * beatSec));
+            snareBeats.forEach(b => scheduleSnare(b * beatSec));
+
+            for (let b = 0; b < totalBeats; b += 0.5) {
+                scheduleHat(b * beatSec, (b % 1 === 0) ? 0.16 : 0.09);
+            }
+
+            schedule808(0 * beatSec, 43.65, beatSec * 3.5); // F1
+            schedule808(4 * beatSec, 51.91, beatSec * 3.5); // Ab1
+            schedule808(8 * beatSec, 58.27, beatSec * 3.5); // Bb1
+            schedule808(12 * beatSec, 65.41, beatSec * 3.5); // C2
+
+            scheduleSynthChord(0 * beatSec, [174.61, 207.65, 261.63]); // Fm
+            scheduleSynthChord(4 * beatSec, [207.65, 261.63, 311.13]); // Ab
+            scheduleSynthChord(8 * beatSec, [233.08, 277.18, 349.23]); // Bb
+            scheduleSynthChord(12 * beatSec, [261.63, 329.63, 392.00]); // C
+
+            synthHypeBuffer = await offCtx.startRendering();
+            return synthHypeBuffer;
+        } catch (e) {
+            console.warn('[Reels Audio] Synth beat render error:', e.message);
+            return null;
+        } finally {
+            isSynthRendering = false;
+        }
+    }
+
+    async function startBgm(customDest = null, ctxOverride = null) {
+        if (!audioState.masterEnabled || !audioState.bgmEnabled) return;
+        const ctx = ctxOverride || getAudioContext();
+        if (!ctx) return;
+
+        stopBgm();
+
+        let bufferToPlay = null;
+        if (audioState.bgmType === 'custom' && customAudioBuffer) {
+            bufferToPlay = customAudioBuffer;
+        } else {
+            bufferToPlay = await renderSynthHypeBuffer(ctx.sampleRate);
+        }
+
+        if (!bufferToPlay) return;
+
+        try {
+            const src = ctx.createBufferSource();
+            src.buffer = bufferToPlay;
+            src.loop = true;
+
+            const gainNode = ctx.createGain();
+            gainNode.gain.setValueAtTime(audioState.bgmVolume, ctx.currentTime);
+
+            src.connect(gainNode);
+            gainNode.connect(customDest || ctx.destination);
+
+            src.start(0);
+            activeBgmSource = src;
+            activeBgmGain = gainNode;
+            isBgmPlaying = true;
+            updateAudioUiButtons();
+        } catch (e) {
+            console.warn('[Reels Audio] Failed to start BGM:', e.message);
+        }
+    }
+
+    function stopBgm() {
+        if (activeBgmSource) {
+            try {
+                activeBgmSource.stop();
+                activeBgmSource.disconnect();
+            } catch (e) {}
+            activeBgmSource = null;
+        }
+        if (activeBgmGain) {
+            try { activeBgmGain.disconnect(); } catch (e) {}
+            activeBgmGain = null;
+        }
+        isBgmPlaying = false;
+        isBgmAuditioning = false;
+        updateAudioUiButtons();
+    }
+
+    function toggleBgmAudition() {
+        if (isBgmAuditioning || isBgmPlaying) {
+            stopBgm();
+            if (window.showCopyToast) window.showCopyToast('تم إيقاف معاينة الموسيقى ⏹️');
+        } else {
+            isBgmAuditioning = true;
+            startBgm();
+            if (window.showCopyToast) window.showCopyToast('بدء معاينة موسيقى الخلفية 🎵');
+        }
+    }
+
+    function updateAudioUiButtons() {
+        const btn = document.getElementById('btnBgmAudition');
+        if (btn) {
+            btn.className = `px-2 py-0.5 rounded-lg text-[10px] font-black transition ${isBgmPlaying ? 'bg-amber-500 text-slate-950 animate-pulse' : 'bg-zinc-700 hover:bg-zinc-600 text-zinc-300'}`;
+            btn.textContent = isBgmPlaying ? '⏸️ إيقاف المعاينة' : '▶️ استماع للتراك';
+        }
+    }
+
+    async function handleBgmUpload(inputEl) {
+        const file = inputEl?.files?.[0];
+        if (!file) return;
+
+        try {
+            const ctx = getAudioContext();
+            if (!ctx) {
+                alert('المتصفح لا يدعم معالجة الصوت.');
+                return;
+            }
+
+            if (window.showCopyToast) {
+                window.showCopyToast('جاري معالجة وتجهيز ملف الصوت... ⏳');
+            }
+
+            const arrayBuffer = await file.arrayBuffer();
+            const decoded = await ctx.decodeAudioData(arrayBuffer);
+
+            customAudioBuffer = decoded;
+            audioState.bgmType = 'custom';
+            audioState.customBgmName = file.name;
+            audioState.bgmEnabled = true;
+            saveAudioState();
+
+            renderEditorControls();
+            if (window.showCopyToast) {
+                window.showCopyToast(`تم تحميل المقطع بنجاح: ${file.name} 🎵👑`);
+            }
+        } catch (err) {
+            console.error('Audio upload error:', err);
+            alert('تعذر قراءة ملف الصوت: ' + err.message);
+        }
+    }
+
+    function removeCustomBgm() {
+        stopBgm();
+        customAudioBuffer = null;
+        audioState.bgmType = 'ambient_hype';
+        audioState.customBgmName = '';
+        saveAudioState();
+        renderEditorControls();
+        if (window.showCopyToast) {
+            window.showCopyToast('تمت استعادة الإيقاع الكروي المدمج الافتراضي 🎵');
+        }
+    }
+
+    function toggleAudioMaster() {
+        audioState.masterEnabled = !audioState.masterEnabled;
+        if (!audioState.masterEnabled) {
+            stopBgm();
+        }
+        saveAudioState();
+        renderEditorControls();
+        if (window.showCopyToast) {
+            window.showCopyToast(audioState.masterEnabled ? 'تم تفعيل الصوت والمؤثرات في الريل 🔊' : 'تم كتم الصوت 🔇');
+        }
+    }
+
+    function toggleSfxMaster() {
+        audioState.sfxEnabled = !audioState.sfxEnabled;
+        saveAudioState();
+        renderEditorControls();
+        if (window.showCopyToast) {
+            window.showCopyToast(audioState.sfxEnabled ? 'تم تفعيل المؤثرات الصوتية (SFX) 🔔' : 'تم إيقاف المؤثرات الصوتية 🔕');
+        }
+    }
+
+    function toggleBgmMaster() {
+        audioState.bgmEnabled = !audioState.bgmEnabled;
+        if (!audioState.bgmEnabled) {
+            stopBgm();
+        }
+        saveAudioState();
+        renderEditorControls();
+        if (window.showCopyToast) {
+            window.showCopyToast(audioState.bgmEnabled ? 'تم تفعيل موسيقى الخلفية (BGM) 🎶' : 'تم إيقاف موسيقى الخلفية ⏹️');
+        }
+    }
+
+    function setSfxVolume(val) {
+        audioState.sfxVolume = parseFloat(val) || 0.85;
+        saveAudioState();
+    }
+
+    function setBgmVolume(val) {
+        audioState.bgmVolume = parseFloat(val) || 0.50;
+        if (activeBgmGain && globalAudioCtx) {
+            activeBgmGain.gain.setValueAtTime(audioState.bgmVolume, globalAudioCtx.currentTime);
+        }
+        saveAudioState();
+    }
+
+    function testSfx(type) {
+        getAudioContext();
+        if (type === 'coin') playCoinSound(null, 1.0);
+        else if (type === 'whoosh') playWhooshSound(null, 1.0);
+        else if (type === 'boom') playBoomSound(null, 1.0);
+        else if (type === 'pop') playPopSound(null, 1.0);
+    }
+
+    function triggerSlideAudio(slide, customDest = null, ctxOverride = null) {
+        if (!audioState.masterEnabled || !audioState.sfxEnabled || !slide) return;
+
+        if (slide.type === 'intro') {
+            if (slide.introHookStyle === 'mystery_card') {
+                playBoomSound(customDest, 1.0, ctxOverride);
+            } else {
+                playWhooshSound(customDest, 0.9, ctxOverride);
+            }
+        } else if (slide.type === 'player_card') {
+            playWhooshSound(customDest, 0.85, ctxOverride);
+            if (slide.playerPrice) {
+                setTimeout(() => {
+                    playCoinSound(customDest, 1.0, ctxOverride);
+                }, 240);
+            }
+        } else if (slide.type === 'versus_card') {
+            playBoomSound(customDest, 0.95, ctxOverride);
+            if (slide.playerA?.price || slide.playerB?.price) {
+                setTimeout(() => {
+                    playCoinSound(customDest, 0.95, ctxOverride);
+                }, 320);
+            }
+        } else if (slide.type === 'outro') {
+            playCoinSound(customDest, 1.15, ctxOverride);
+        } else {
+            playWhooshSound(customDest, 0.8, ctxOverride);
+        }
+    }
+
     // ---- 2. CURATED VIRAL IDEAS (Hooks ONLY - User picks players) ----
     const VIRAL_IDEAS = {
         countdown: [
@@ -1659,6 +2224,12 @@ window.ReelsEngine = (function() {
         state.isPlaying = true;
         updatePlayerUi();
 
+        // 1. Trigger background music
+        startBgm();
+
+        // 2. Trigger audio for current starting slide
+        triggerSlideAudio(state.slides[state.currentSlideIndex]);
+
         const tickMs = 50;
         let elapsed = 0;
 
@@ -1689,6 +2260,9 @@ window.ReelsEngine = (function() {
                 renderCanvas();
                 renderEditorControls();
                 updatePlayerUi();
+
+                // Trigger audio for next slide
+                triggerSlideAudio(state.slides[state.currentSlideIndex]);
             }
         }, tickMs);
     }
@@ -1703,6 +2277,9 @@ window.ReelsEngine = (function() {
         const bars = [document.getElementById('reelTimelineBar'), document.getElementById('toolbarTimelineBar')];
         bars.forEach(b => { if (b) b.style.width = '0%'; });
         updatePlayerUi();
+
+        // Stop background music
+        stopBgm();
     }
 
     function togglePlayPause() {
@@ -1717,6 +2294,7 @@ window.ReelsEngine = (function() {
         renderCanvas();
         renderEditorControls();
         updatePlayerUi();
+        playWhooshSound(null, 0.7);
     }
 
     function prevSlide() {
@@ -1726,6 +2304,7 @@ window.ReelsEngine = (function() {
         renderCanvas();
         renderEditorControls();
         updatePlayerUi();
+        playWhooshSound(null, 0.7);
     }
 
     function goToSlide(idx) {
@@ -3078,6 +3657,143 @@ window.ReelsEngine = (function() {
         `;
     }
 
+    // ---- 8.5 AUDIO & SFX STUDIO CONTROL PANEL ----
+    function renderAudioStudioHtml() {
+        const isMasterOn = audioState.masterEnabled;
+        const isSfxOn = audioState.sfxEnabled;
+        const isBgmOn = audioState.bgmEnabled;
+
+        return `
+            <div class="p-3.5 rounded-2xl bg-gradient-to-br from-slate-900 via-zinc-900 to-slate-950 border border-amber-500/30 text-white shadow-xl space-y-3">
+                <!-- Header & Master Toggle -->
+                <div class="flex items-center justify-between pb-2 border-b border-zinc-800">
+                    <div class="flex items-center gap-2">
+                        <span class="text-xl">🎵</span>
+                        <div>
+                            <h4 class="text-xs font-black text-white flex items-center gap-1.5">
+                                <span>استوديو الصوت والمؤثرات (Audio & SFX)</span>
+                                <span class="text-[9px] px-1.5 py-0.5 rounded bg-amber-400/20 text-amber-300 font-bold border border-amber-400/30">جديد ✨</span>
+                            </h4>
+                            <p class="text-[10px] text-zinc-400">رنين الكوينز، سحب هوائي، وموسيقى حماسية</p>
+                        </div>
+                    </div>
+                    <button type="button" onclick="ReelsEngine.toggleAudioMaster()" 
+                            class="px-2.5 py-1 rounded-xl text-[10.5px] font-black transition flex items-center gap-1 shadow-sm ${isMasterOn ? 'bg-amber-500 hover:bg-amber-400 text-slate-950' : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-400 border border-zinc-700'}">
+                        <span>${isMasterOn ? '🔊 مفعل' : '🔇 مكتوم'}</span>
+                    </button>
+                </div>
+
+                ${isMasterOn ? `
+                    <!-- Sub Toggles (SFX & BGM) -->
+                    <div class="grid grid-cols-2 gap-2">
+                        <!-- SFX Toggle -->
+                        <div class="p-2 rounded-xl bg-zinc-800/80 border border-zinc-700/80 space-y-1.5">
+                            <div class="flex items-center justify-between">
+                                <span class="text-[10.5px] font-black text-zinc-200 flex items-center gap-1">
+                                    <span>🔔</span>
+                                    <span>المؤثرات (SFX)</span>
+                                </span>
+                                <button type="button" onclick="ReelsEngine.toggleSfxMaster()" 
+                                        class="text-[9.5px] font-bold px-2 py-0.5 rounded transition ${isSfxOn ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' : 'bg-zinc-700 text-zinc-400'}">
+                                    ${isSfxOn ? 'مفعلة ✓' : 'معطلة ✕'}
+                                </button>
+                            </div>
+                            <!-- SFX Volume -->
+                            <div class="flex items-center gap-1.5 pt-1">
+                                <span class="text-[9px] text-zinc-400 shrink-0">شدة:</span>
+                                <input type="range" min="0.1" max="1.0" step="0.05" value="${audioState.sfxVolume}" 
+                                       oninput="ReelsEngine.setSfxVolume(this.value)" 
+                                       class="w-full accent-amber-500 h-1 rounded bg-zinc-700 cursor-pointer">
+                                <span class="text-[9px] font-mono text-amber-300 shrink-0">${Math.round(audioState.sfxVolume * 100)}%</span>
+                            </div>
+                        </div>
+
+                        <!-- BGM Toggle -->
+                        <div class="p-2 rounded-xl bg-zinc-800/80 border border-zinc-700/80 space-y-1.5">
+                            <div class="flex items-center justify-between">
+                                <span class="text-[10.5px] font-black text-zinc-200 flex items-center gap-1">
+                                    <span>🎶</span>
+                                    <span>الموسيقى (BGM)</span>
+                                </span>
+                                <button type="button" onclick="ReelsEngine.toggleBgmMaster()" 
+                                        class="text-[9.5px] font-bold px-2 py-0.5 rounded transition ${isBgmOn ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' : 'bg-zinc-700 text-zinc-400'}">
+                                    ${isBgmOn ? 'مفعلة ✓' : 'معطلة ✕'}
+                                </button>
+                            </div>
+                            <!-- BGM Volume -->
+                            <div class="flex items-center gap-1.5 pt-1">
+                                <span class="text-[9px] text-zinc-400 shrink-0">شدة:</span>
+                                <input type="range" min="0.1" max="1.0" step="0.05" value="${audioState.bgmVolume}" 
+                                       oninput="ReelsEngine.setBgmVolume(this.value)" 
+                                       class="w-full accent-amber-500 h-1 rounded bg-zinc-700 cursor-pointer">
+                                <span class="text-[9px] font-mono text-amber-300 shrink-0">${Math.round(audioState.bgmVolume * 100)}%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick SFX Preview Test Buttons -->
+                    <div class="p-2 rounded-xl bg-black/40 border border-zinc-800/80 space-y-1.5">
+                        <span class="text-[10px] font-black text-zinc-400 block">تجربة أصوات المؤثرات (SFX Preview):</span>
+                        <div class="grid grid-cols-3 gap-1.5">
+                            <button type="button" onclick="ReelsEngine.testSfx('coin')" 
+                                    class="px-2 py-1.5 rounded-lg bg-zinc-800 hover:bg-amber-500/20 border border-zinc-700 hover:border-amber-500/50 text-[10.5px] font-bold text-amber-300 transition flex items-center justify-center gap-1 active:scale-95 shadow-2xs cursor-pointer">
+                                <span>🪙 رنين كوينز</span>
+                            </button>
+                            <button type="button" onclick="ReelsEngine.testSfx('whoosh')" 
+                                    class="px-2 py-1.5 rounded-lg bg-zinc-800 hover:bg-sky-500/20 border border-zinc-700 hover:border-sky-500/50 text-[10.5px] font-bold text-sky-300 transition flex items-center justify-center gap-1 active:scale-95 shadow-2xs cursor-pointer">
+                                <span>💨 سحب هوائي</span>
+                            </button>
+                            <button type="button" onclick="ReelsEngine.testSfx('boom')" 
+                                    class="px-2 py-1.5 rounded-lg bg-zinc-800 hover:bg-rose-500/20 border border-zinc-700 hover:border-rose-500/50 text-[10.5px] font-bold text-rose-300 transition flex items-center justify-center gap-1 active:scale-95 shadow-2xs cursor-pointer">
+                                <span>💥 ضربة درامية</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Background Music Controls (Upload or Synth Beat) -->
+                    <div class="p-2.5 rounded-xl bg-zinc-800/60 border border-zinc-700/60 space-y-2">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-1.5">
+                                <span class="text-xs">📻</span>
+                                <span class="text-[10.5px] font-black text-zinc-200">تراك الخلفية:</span>
+                            </div>
+                            <button type="button" id="btnBgmAudition" onclick="ReelsEngine.toggleBgmAudition()" 
+                                    class="px-2 py-0.5 rounded-lg text-[10px] font-black transition cursor-pointer ${isBgmPlaying ? 'bg-amber-500 text-slate-950 animate-pulse' : 'bg-zinc-700 hover:bg-zinc-600 text-zinc-300'}">
+                                ${isBgmPlaying ? '⏸️ إيقاف المعاينة' : '▶️ استماع للتراك'}
+                            </button>
+                        </div>
+
+                        <!-- Active BGM Badge -->
+                        <div class="flex items-center justify-between p-1.5 rounded-lg bg-black/50 border border-zinc-800">
+                            <span class="text-[10px] font-bold text-amber-300 truncate max-w-[190px]">
+                                ${audioState.bgmType === 'custom' ? `🎵 ${audioState.customBgmName || 'ملف صوتي مخصص'}` : '⚡ إيقاع كروي حماسي (FC Synth Beat)'}
+                            </span>
+                            ${audioState.bgmType === 'custom' ? `
+                                <button type="button" onclick="ReelsEngine.removeCustomBgm()" class="text-[9.5px] font-bold text-rose-400 hover:text-rose-300 px-1.5 py-0.5 rounded hover:bg-rose-950/50 transition cursor-pointer">
+                                    مسح ✕
+                                </button>
+                            ` : `
+                                <span class="text-[9px] text-zinc-500 font-medium">مدمج تلقائياً</span>
+                            `}
+                        </div>
+
+                        <!-- Upload Custom Audio -->
+                        <div class="flex items-center gap-2">
+                            <label class="flex-1 py-1.5 px-2.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 hover:border-zinc-600 text-[10.5px] font-bold text-zinc-300 cursor-pointer transition flex items-center justify-center gap-1.5 text-center">
+                                <span>📁 رفع مقطع صوتي MP3 / WAV</span>
+                                <input type="file" accept="audio/*" class="hidden" onchange="ReelsEngine.handleBgmUpload(this)">
+                            </label>
+                        </div>
+                    </div>
+                ` : `
+                    <div class="p-2 rounded-xl bg-zinc-800/40 border border-zinc-800 text-center">
+                        <span class="text-[10.5px] text-zinc-500 font-bold">تم كتم كافة الأصوات والموسيقى في المعاينة والفيديو</span>
+                    </div>
+                `}
+            </div>
+        `;
+    }
+
     // ---- 9. EDITOR CONTROLS PANEL (NATURAL POSITION & SCALE CONTROLS) ----
     function renderEditorControls() {
         const container = document.getElementById('suite_reels_panel');
@@ -3315,6 +4031,9 @@ window.ReelsEngine = (function() {
 
                 <!-- 5. SLIDE ENTRANCE ANIMATIONS TABLE -->
                 ${renderAnimationTableHtml()}
+
+                <!-- 5.5 AUDIO & SFX STUDIO -->
+                ${renderAudioStudioHtml()}
 
                 <!-- 6. SAFE ZONE -->
                 <div class="p-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs flex items-center justify-between">
@@ -3976,11 +4695,11 @@ window.ReelsEngine = (function() {
 
                 const curSlideObj = state.slides[i];
                 const slideSec = Math.max(0.5, (curSlideObj && typeof curSlideObj.duration === 'number') ? curSlideObj.duration : (state.slideDuration || 2.5));
-                preloadedSlides.push({ img: slideImg, duration: slideSec });
+                preloadedSlides.push({ img: slideImg, duration: slideSec, slide: curSlideObj });
             }
 
             // =========================================================================
-            // PHASE 2: INITIALIZE 1080x1920 CANVAS, SILENT AUDIO & MEDIARECORDER
+            // PHASE 2: INITIALIZE 1080x1920 CANVAS, REAL AUDIO & MEDIARECORDER
             // =========================================================================
             const recordCanvas = document.createElement('canvas');
             recordCanvas.width = 1080;
@@ -3998,12 +4717,54 @@ window.ReelsEngine = (function() {
             const frameIntervalMs = 1000 / fps; // 33.333ms
 
             const canvasStream = recordCanvas.captureStream(fps);
-            const silentAudioObj = createSilentAudioTrack();
-
             const combinedTracks = [...canvasStream.getVideoTracks()];
-            if (silentAudioObj && silentAudioObj.track) {
-                combinedTracks.push(silentAudioObj.track);
+
+            let recordAudioCtx = null;
+            let recordAudioDest = null;
+            let recordBgmSource = null;
+            let silentAudioObj = null;
+
+            if (audioState.masterEnabled) {
+                try {
+                    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                    if (AudioCtx) {
+                        recordAudioCtx = new AudioCtx();
+                        recordAudioDest = recordAudioCtx.createMediaStreamDestination();
+
+                        if (audioState.bgmEnabled) {
+                            let bgmBuf = (audioState.bgmType === 'custom' && customAudioBuffer) 
+                                ? customAudioBuffer 
+                                : await renderSynthHypeBuffer(recordAudioCtx.sampleRate);
+
+                            if (bgmBuf) {
+                                recordBgmSource = recordAudioCtx.createBufferSource();
+                                recordBgmSource.buffer = bgmBuf;
+                                recordBgmSource.loop = true;
+                                const bgmGain = recordAudioCtx.createGain();
+                                bgmGain.gain.setValueAtTime(audioState.bgmVolume, recordAudioCtx.currentTime);
+                                recordBgmSource.connect(bgmGain);
+                                bgmGain.connect(recordAudioDest);
+                                recordBgmSource.start(0);
+                            }
+                        }
+
+                        const audioTrack = recordAudioDest.stream.getAudioTracks()[0];
+                        if (audioTrack) {
+                            combinedTracks.push(audioTrack);
+                        }
+                    }
+                } catch (audioErr) {
+                    console.warn('[Reels Video] Record audio init note:', audioErr.message);
+                }
             }
+
+            if (combinedTracks.length === 1) {
+                silentAudioObj = createSilentAudioTrack();
+                if (silentAudioObj && silentAudioObj.track) {
+                    combinedTracks.push(silentAudioObj.track);
+                }
+            }
+
             const stream = new MediaStream(combinedTracks);
 
             // Select best supported MIME type
@@ -4045,9 +4806,7 @@ window.ReelsEngine = (function() {
             await new Promise(r => setTimeout(r, 60));
 
             // =========================================================================
-            // PHASE 3: DETERMINISTIC FRAME PUMPING WITH EXACT FRAME COUNTS
-            // totalFrames = Math.max(15, Math.round(item.duration * 30))
-            // Each frame rendered at exactly 33.3ms => 100% exact in TikTok & all players!
+            // PHASE 3: DETERMINISTIC FRAME PUMPING WITH EXACT FRAME COUNTS & AUDIO TRIGGERS
             // =========================================================================
             let totalExpectedMs = 0;
             for (let i = 0; i < preloadedSlides.length; i++) {
@@ -4057,6 +4816,11 @@ window.ReelsEngine = (function() {
 
                 if (progressCallback) {
                     progressCallback(i + 1, totalSlides, `تسجيل السلايد ${i + 1}/${totalSlides} (${item.duration.toFixed(1)} ثانية)...`);
+                }
+
+                // Trigger synchronized real audio for this slide into the recorded video stream!
+                if (recordAudioCtx && recordAudioDest && audioState.masterEnabled) {
+                    triggerSlideAudio(item.slide, recordAudioDest, recordAudioCtx);
                 }
 
                 for (let f = 0; f < totalFrames; f++) {
@@ -4083,6 +4847,12 @@ window.ReelsEngine = (function() {
             try { recorder.requestData(); } catch(e) {}
             await new Promise(r => setTimeout(r, 120));
             recorder.stop();
+            if (recordBgmSource) {
+                try { recordBgmSource.stop(); recordBgmSource.disconnect(); } catch(e) {}
+            }
+            if (recordAudioCtx) {
+                try { recordAudioCtx.close(); } catch(e) {}
+            }
             if (silentAudioObj) silentAudioObj.stop();
 
             let { blob, mimeType: recordedMime } = await recordingComplete;
@@ -4500,6 +5270,16 @@ ${state.subtitle}
         loginTikTok,
         reconnectDirectPublish,
         disconnectTikTok,
-        publishToTikTok
+        publishToTikTok,
+        toggleAudioMaster,
+        toggleSfxMaster,
+        toggleBgmMaster,
+        setSfxVolume,
+        setBgmVolume,
+        testSfx,
+        toggleBgmAudition,
+        handleBgmUpload,
+        removeCustomBgm,
+        getAudioState: () => audioState
     };
 })();
