@@ -8,3 +8,5 @@ Thumbs.db
 .gemini/
 .agents/
 scratch/
+exports/
+*.mp4

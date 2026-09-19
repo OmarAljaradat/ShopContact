@@ -3,8 +3,23 @@ const https = require('https');
 const fs = require('fs');
 const path = require('path');
 const { URL } = require('url');
+const { execFile } = require('child_process');
 const autoWatcher = require('./auto-watcher-engine');
 const tiktokEngine = require('./tiktok-engine');
+
+let ffmpegPath = null;
+try {
+    const ffmpegInstaller = require('@ffmpeg-installer/ffmpeg');
+    if (ffmpegInstaller && ffmpegInstaller.path && fs.existsSync(ffmpegInstaller.path)) {
+        ffmpegPath = ffmpegInstaller.path;
+    }
+} catch (e) {
+    // optional
+}
+if (!ffmpegPath) {
+    ffmpegPath = 'ffmpeg';
+}
+console.log('[Server Engine] FFmpeg ready at:', ffmpegPath);
 
 let puppeteer = null;
 try {
@@ -552,31 +567,53 @@ const resolvePlayerCard = resolveSbcOrPlayer;
 // Helper to proxy images for CORS safety
 function proxyImage(imageUrl, clientRes) {
     try {
+        if (!imageUrl || typeof imageUrl !== 'string') {
+            clientRes.writeHead(400, { 'Content-Type': 'text/plain', 'Access-Control-Allow-Origin': '*' });
+            return clientRes.end('Missing or invalid image URL');
+        }
+
+        if (imageUrl.startsWith('data:')) {
+            const matches = imageUrl.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+            if (matches && matches.length === 3) {
+                const buffer = Buffer.from(matches[2], 'base64');
+                clientRes.writeHead(200, {
+                    'Content-Type': matches[1],
+                    'Content-Length': buffer.length,
+                    'Access-Control-Allow-Origin': '*'
+                });
+                return clientRes.end(buffer);
+            }
+        }
+
         const parsed = new URL(imageUrl);
         const protocol = parsed.protocol === 'https:' ? https : http;
+        const referer = parsed.hostname.includes('futbin') ? 'https://www.futbin.com/' : 'https://www.fut.gg/';
 
         protocol.get(imageUrl, {
             headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                'Referer': 'https://www.fut.gg/'
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+                'Referer': referer,
+                'Accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8'
             }
         }, (imgRes) => {
             if (imgRes.statusCode >= 300 && imgRes.statusCode < 400 && imgRes.headers.location) {
                 const nextUrl = imgRes.headers.location.startsWith('http') ? imgRes.headers.location : new URL(imgRes.headers.location, imageUrl).href;
                 return proxyImage(nextUrl, clientRes);
             }
-            clientRes.writeHead(imgRes.statusCode, {
+            clientRes.writeHead(imgRes.statusCode || 200, {
                 'Content-Type': imgRes.headers['content-type'] || 'image/webp',
                 'Access-Control-Allow-Origin': '*',
-                'Cache-Control': 'public, max-age=86400'
+                'Access-Control-Allow-Methods': 'GET, OPTIONS',
+                'Access-Control-Allow-Headers': '*',
+                'Cache-Control': 'public, max-age=604800'
             });
             imgRes.pipe(clientRes);
         }).on('error', (err) => {
-            clientRes.writeHead(500, { 'Content-Type': 'text/plain' });
+            clientRes.writeHead(500, { 'Content-Type': 'text/plain', 'Access-Control-Allow-Origin': '*' });
             clientRes.end('Image proxy error: ' + err.message);
         });
     } catch (err) {
-        clientRes.writeHead(400, { 'Content-Type': 'text/plain' });
+        clientRes.writeHead(400, { 'Content-Type': 'text/plain', 'Access-Control-Allow-Origin': '*' });
         clientRes.end('Invalid Image URL');
     }
 }
@@ -905,6 +942,18 @@ function sendTelegramRequest({ botToken, endpoint, fields = {}, fileField = null
 }
 
 const server = http.createServer((req, res) => {
+    // Global CORS Preflight Handling (Allows seamless cross-origin and file:// access)
+    if (req.method === 'OPTIONS') {
+        res.writeHead(204, {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
+            'Access-Control-Max-Age': '86400'
+        });
+        res.end();
+        return;
+    }
+
     const parsedUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
     const reqPath = decodeURIComponent(parsedUrl.pathname);
 
@@ -992,7 +1041,7 @@ const server = http.createServer((req, res) => {
                 const authHeader = req.headers.authorization || '';
                 const clientToken = (authHeader.replace(/^Bearer\s+/i, '') || accessToken || '').trim();
 
-                const cleanBase64 = videoBase64.replace(/^data:video\/[a-z0-9]+;base64,/, '');
+                const cleanBase64 = videoBase64.includes(';base64,') ? videoBase64.split(';base64,')[1] : videoBase64;
                 const videoBuffer = Buffer.from(cleanBase64, 'base64');
 
                 const result = await tiktokEngine.publishVideo(videoBuffer, caption, privacyLevel || 'PUBLIC_TO_EVERYONE', clientToken || null);
@@ -1115,6 +1164,93 @@ const server = http.createServer((req, res) => {
             } catch (err) {
                 res.writeHead(400, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
                 res.end(JSON.stringify({ error: err.message }));
+            }
+        });
+        return;
+    }
+
+    // API: Finalize & Transcode Reel Video to FastStart Universal MP4 (Ultra Smooth, No Freezes)
+    if (reqPath === '/api/finalize-reel-video' && req.method === 'POST') {
+        let body = '';
+        req.on('data', chunk => body += chunk);
+        req.on('end', async () => {
+            try {
+                const payload = JSON.parse(body || '{}');
+                const { videoBase64, filename = `Reel_FC27_ShopCoin15_${Date.now()}.mp4` } = payload;
+                if (!videoBase64) {
+                    res.writeHead(400, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+                    res.end(JSON.stringify({ success: false, error: 'لم يتم استلام ملف الفيديو' }));
+                    return;
+                }
+
+                const cleanBase64 = videoBase64.includes(';base64,') ? videoBase64.split(';base64,')[1] : videoBase64;
+                const rawBuffer = Buffer.from(cleanBase64, 'base64');
+
+                const tempDir = path.join(__dirname, 'scratch');
+                if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true });
+
+                const tempId = Date.now() + '_' + Math.random().toString(36).substring(2, 8);
+                const inputPath = path.join(tempDir, `raw_${tempId}.tmp`);
+                const outputPath = path.join(tempDir, `final_${tempId}.mp4`);
+
+                fs.writeFileSync(inputPath, rawBuffer);
+
+                // Run FFmpeg to remux & transcode to universal, faststart MP4 (H.264 + AAC)
+                // -movflags +faststart puts moov box at beginning for instant seeking & zero freeze
+                // -pix_fmt yuv420p ensures 100% compatibility with Windows Media Player, iOS, Android, and social media
+                const ffmpegArgs = [
+                    '-y',
+                    '-i', inputPath,
+                    '-c:v', 'libx264',
+                    '-preset', 'veryfast',
+                    '-pix_fmt', 'yuv420p',
+                    '-movflags', '+faststart',
+                    '-c:a', 'aac',
+                    '-b:a', '192k',
+                    outputPath
+                ];
+
+                console.log(`[FFmpeg Finalize] Processing video (${(rawBuffer.length / (1024 * 1024)).toFixed(2)} MB)...`);
+                execFile(ffmpegPath, ffmpegArgs, (err, stdout, stderr) => {
+                    // Always clean input
+                    try { if (fs.existsSync(inputPath)) fs.unlinkSync(inputPath); } catch (e) {}
+
+                    if (err) {
+                        console.error('[FFmpeg Finalize Error]', err.message);
+                        try { if (fs.existsSync(outputPath)) fs.unlinkSync(outputPath); } catch (e) {}
+                        res.writeHead(500, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+                        res.end(JSON.stringify({ success: false, error: 'FFmpeg processing error: ' + err.message }));
+                        return;
+                    }
+
+                    if (!fs.existsSync(outputPath)) {
+                        res.writeHead(500, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+                        res.end(JSON.stringify({ success: false, error: 'تعذر إنشاء ملف الفيديو النهائي' }));
+                        return;
+                    }
+
+                    const finalBuffer = fs.readFileSync(outputPath);
+                    try { fs.unlinkSync(outputPath); } catch (e) {}
+
+                    console.log(`[FFmpeg Finalize] Succeeded! Final MP4 size: ${(finalBuffer.length / (1024 * 1024)).toFixed(2)} MB with +faststart`);
+
+                    const finalBase64 = `data:video/mp4;base64,${finalBuffer.toString('base64')}`;
+                    res.writeHead(200, {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': '*',
+                        'Access-Control-Allow-Headers': 'Content-Type'
+                    });
+                    res.end(JSON.stringify({
+                        success: true,
+                        videoBase64: finalBase64,
+                        size: finalBuffer.length,
+                        filename: filename.replace(/\.(webm|tmp)$/i, '.mp4')
+                    }));
+                });
+            } catch (e) {
+                console.error('[Finalize Endpoint Error]', e);
+                res.writeHead(500, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+                res.end(JSON.stringify({ success: false, error: e.message }));
             }
         });
         return;
@@ -1632,6 +1768,441 @@ const server = http.createServer((req, res) => {
         return;
     }
 
+    // API: Finalize Reel Video (FastStart Universal MP4)
+    if (reqPath === '/api/finalize-reel-video' && req.method === 'POST') {
+        const chunks = [];
+        req.on('data', chunk => chunks.push(chunk));
+        req.on('end', async () => {
+            let tmpIn = null;
+            let tmpOut = null;
+            try {
+                const bodyStr = Buffer.concat(chunks).toString('utf-8');
+                const payload = JSON.parse(bodyStr || '{}');
+                const videoData = payload.videoBase64 || '';
+                const filename = payload.filename || 'finalized_reel.mp4';
+
+                if (!videoData) {
+                    res.writeHead(400, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+                    res.end(JSON.stringify({ success: false, error: 'No video data provided' }));
+                    return;
+                }
+
+                const base64Clean = videoData.replace(/^data:video\/[^;]+;base64,/, '');
+                const fileBuf = Buffer.from(base64Clean, 'base64');
+
+                const runId = 'fin_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
+                const scratchDir = path.join(__dirname, 'scratch');
+                if (!fs.existsSync(scratchDir)) fs.mkdirSync(scratchDir, { recursive: true });
+                tmpIn = path.join(scratchDir, `${runId}_in.webm`);
+                tmpOut = path.join(scratchDir, `${runId}_out.mp4`);
+                fs.writeFileSync(tmpIn, fileBuf);
+
+                const { execSync } = require('child_process');
+                execSync(`"${ffmpegPath}" -y -i "${tmpIn}" -c:v libx264 -crf 18 -preset fast -pix_fmt yuv420p -movflags +faststart "${tmpOut}"`);
+
+                const outBuf = fs.readFileSync(tmpOut);
+                const outB64 = `data:video/mp4;base64,${outBuf.toString('base64')}`;
+
+                res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+                res.end(JSON.stringify({ success: true, videoBase64: outB64, filename }));
+            } catch (err) {
+                console.error('[Finalize Video Error]', err);
+                res.writeHead(500, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+                res.end(JSON.stringify({ success: false, error: err.message }));
+            } finally {
+                if (tmpIn && fs.existsSync(tmpIn)) try { fs.unlinkSync(tmpIn); } catch(e) {}
+                if (tmpOut && fs.existsSync(tmpOut)) try { fs.unlinkSync(tmpOut); } catch(e) {}
+            }
+        });
+        return;
+    }
+
+    // API: Save Active Project State (Ensures project backup on server)
+    if (reqPath === '/api/reels/save-active-project' && req.method === 'POST') {
+        const chunks = [];
+        req.on('data', c => chunks.push(c));
+        req.on('end', () => {
+            try {
+                const data = Buffer.concat(chunks).toString('utf-8');
+                const scratchDir = path.join(__dirname, 'scratch');
+                if (!fs.existsSync(scratchDir)) fs.mkdirSync(scratchDir, { recursive: true });
+                fs.writeFileSync(path.join(scratchDir, 'active_reel_project.json'), data);
+                res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+                res.end(JSON.stringify({ success: true }));
+            } catch (e) {
+                res.writeHead(500, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+                res.end(JSON.stringify({ success: false, error: e.message }));
+            }
+        });
+        return;
+    }
+
+    // API: Record Studio Reel Video (1080x1920 Full HD with 100% Native Animations & Audio)
+    if (reqPath === '/api/record-studio-reel' && req.method === 'POST') {
+        req.setTimeout(360000);
+        res.setTimeout(360000);
+        const chunks = [];
+        req.on('data', chunk => chunks.push(chunk));
+        req.on('end', async () => {
+            let browser = null;
+            let runDir = null;
+            try {
+                const bodyStr = Buffer.concat(chunks).toString('utf-8');
+                const payload = JSON.parse(bodyStr || '{}');
+                const { projectState, audioState, filename } = payload;
+
+                if (!puppeteer) {
+                    res.writeHead(500, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+                    res.end(JSON.stringify({ success: false, error: 'محرك المتصفح Puppeteer غير مثبت على السيرفر' }));
+                    return;
+                }
+
+                const execPath = await getBrowserExecutable();
+                if (!execPath) {
+                    res.writeHead(500, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+                    res.end(JSON.stringify({ success: false, error: 'لم يتم العثور على متصفح Chrome أو Edge على النظام' }));
+                    return;
+                }
+
+                const runId = 'reel_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+                runDir = path.join(__dirname, 'scratch', runId);
+                const framesDir = path.join(runDir, 'frames');
+                fs.mkdirSync(framesDir, { recursive: true });
+
+                console.log(`[Record Studio Reel] Launching headless browser for recording...`);
+                const launchArgs = [
+                    ...(sparticuzChromium ? sparticuzChromium.args : []),
+                    '--no-sandbox',
+                    '--disable-setuid-sandbox',
+                    '--window-size=1080,1920',
+                    '--autoplay-policy=no-user-gesture-required',
+                    '--disable-gpu',
+                    '--disable-dev-shm-usage',
+                    '--hide-scrollbars',
+                    '--disable-web-security'
+                ];
+                browser = await puppeteer.launch({
+                    executablePath: execPath,
+                    headless: sparticuzChromium ? sparticuzChromium.headless : 'new',
+                    args: [...new Set(launchArgs)]
+                });
+
+                const page = await browser.newPage();
+                await page.setViewport({ width: 1080, height: 1920, deviceScaleFactor: 1 });
+                await page.goto(`http://127.0.0.1:${PORT}/?suite=suite_reels`, { waitUntil: 'domcontentloaded', timeout: 15000 });
+                await page.waitForSelector('#canvasScaleStage', { timeout: 10000 }).catch(() => {});
+
+                // Move #canvasScaleStage directly to document.body and remove all surrounding toolbars/sidebars
+                await page.evaluate(() => {
+                    const stage = document.getElementById('canvasScaleStage');
+                    if (stage) document.body.appendChild(stage);
+                    Array.from(document.body.children).forEach(child => {
+                        if (child.id !== 'canvasScaleStage' && child.tagName !== 'SCRIPT' && child.tagName !== 'STYLE') {
+                            child.remove();
+                        }
+                    });
+                    if (window.ReelsEngine) window.ReelsEngine.setSelectedElement('');
+                });
+
+                // Inject pure 1080x1920 isolated canvas scaling
+                await page.addStyleTag({
+                    content: `
+                        html, body {
+                            margin: 0 !important;
+                            padding: 0 !important;
+                            width: 1080px !important;
+                            height: 1920px !important;
+                            overflow: hidden !important;
+                            background: #070709 !important;
+                            direction: ltr !important;
+                        }
+                        #canvasScaleStage {
+                            position: absolute !important;
+                            top: 0px !important;
+                            left: 0px !important;
+                            width: 450px !important;
+                            height: 800px !important;
+                            transform: scale(2.4) !important;
+                            transform-origin: 0 0 !important;
+                            margin: 0 !important;
+                            padding: 0 !important;
+                            background: transparent !important;
+                            z-index: 99999999 !important;
+                        }
+                        #exportCanvas {
+                            box-shadow: none !important;
+                            border: none !important;
+                            border-radius: 0 !important;
+                            outline: none !important;
+                        }
+                        .reel-resize-handle, .snap-guide, .layer-toolbar, .ring-2, [class*="ring-"], [id*="Toast"] {
+                            display: none !important;
+                        }
+                    `
+                });
+
+                // Load state and preload images
+                await page.evaluate(async (pState, aState) => {
+                    if (window.ReelsEngine) {
+                        if (pState) window.ReelsEngine.loadProject(pState);
+                        if (aState) window.ReelsEngine.setAudioState(aState);
+                        window.ReelsEngine.setSelectedElement('');
+                    }
+                    if (document.fonts) await document.fonts.ready;
+
+                    // Preload all card images via proxy to prevent 403
+                    const rawUrls = [];
+                    if (pState && Array.isArray(pState.slides)) {
+                        pState.slides.forEach(s => {
+                            if (s.cardUrl) rawUrls.push(s.cardUrl);
+                            if (s.playerA && s.playerA.cardUrl) rawUrls.push(s.playerA.cardUrl);
+                            if (s.playerB && s.playerB.cardUrl) rawUrls.push(s.playerB.cardUrl);
+                        });
+                    }
+                    const urls = rawUrls.map(u => {
+                        if (u && (u.startsWith('http://') || u.startsWith('https://')) && !u.includes('/api/image-proxy')) {
+                            return `/api/image-proxy?url=${encodeURIComponent(u)}`;
+                        }
+                        return u;
+                    });
+                    await Promise.all(urls.map(u => new Promise(res => {
+                        const img = new Image();
+                        img.crossOrigin = 'anonymous';
+                        img.onload = res;
+                        img.onerror = res;
+                        img.src = u;
+                        setTimeout(res, 5000);
+                    })));
+                }, projectState, audioState);
+
+                // Setup in-page audio recorder
+                const hasAudio = await page.evaluate(() => {
+                    try {
+                        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                        if (!AudioCtx) return false;
+                        window.__recAudioCtx = new AudioCtx();
+                        window.__recAudioDest = window.__recAudioCtx.createMediaStreamDestination();
+                        window.__recAudioChunks = [];
+                        window.__recMediaRecorder = new MediaRecorder(window.__recAudioDest.stream);
+                        window.__recMediaRecorder.ondataavailable = e => {
+                            if (e.data && e.data.size > 0) window.__recAudioChunks.push(e.data);
+                        };
+                        window.__recMediaRecorder.start(100);
+                        return true;
+                    } catch (e) {
+                        console.warn('Audio setup error:', e);
+                        return false;
+                    }
+                });
+
+                // Setup CDP Screencast
+                const client = await page.target().createCDPSession();
+                let frameCount = 0;
+
+                client.on('Page.screencastFrame', async (event) => {
+                    const currentIdx = frameCount++;
+                    const fname = `f_${String(currentIdx).padStart(6, '0')}.jpg`;
+                    fs.writeFileSync(path.join(framesDir, fname), Buffer.from(event.data, 'base64'));
+                    try {
+                        await client.send('Page.screencastFrameAck', { sessionId: event.sessionId });
+                    } catch (e) {}
+                });
+
+                await client.send('Page.startScreencast', {
+                    format: 'jpeg',
+                    quality: 98,
+                    maxWidth: 1080,
+                    maxHeight: 1920,
+                    everyNthFrame: 1
+                });
+
+                // Start playback with onComplete
+                const totalDurationSec = await page.evaluate(() => {
+                    window.ReelsEngine.goToSlide(0);
+                    const state = window.ReelsEngine.getState();
+                    const totalSec = state.slides.reduce((acc, s) => acc + (s.duration || state.slideDuration || 2.5), 0);
+                    window.__studioRecordingFinished = false;
+                    window.ReelsEngine.playPlayback(window.__recAudioDest, window.__recAudioCtx, () => {
+                        window.__studioRecordingFinished = true;
+                    });
+                    return totalSec;
+                });
+
+                // Wait for playback completion
+                const maxWaitMs = Math.ceil((totalDurationSec + 8) * 1000);
+                await page.waitForFunction(() => window.__studioRecordingFinished === true, {
+                    timeout: maxWaitMs
+                }).catch(() => {});
+
+                await new Promise(r => setTimeout(r, 250));
+
+                // Stop screencast and pause
+                await client.send('Page.stopScreencast');
+                await page.evaluate(() => window.ReelsEngine.pausePlayback());
+
+                // Retrieve audio
+                let audioBase64 = null;
+                if (hasAudio) {
+                    audioBase64 = await page.evaluate(async () => {
+                        return new Promise(res => {
+                            if (!window.__recMediaRecorder) return res(null);
+                            window.__recMediaRecorder.onstop = () => {
+                                const blob = new Blob(window.__recAudioChunks, { type: 'audio/webm' });
+                                const reader = new FileReader();
+                                reader.onloadend = () => res(reader.result);
+                                reader.readAsDataURL(blob);
+                            };
+                            window.__recMediaRecorder.stop();
+                        });
+                    });
+                }
+
+                await browser.close();
+                browser = null;
+
+                let audioFile = null;
+                if (audioBase64 && audioBase64.includes(';base64,')) {
+                    audioFile = path.join(runDir, 'audio.webm');
+                    const clean = audioBase64.split(';base64,')[1];
+                    fs.writeFileSync(audioFile, Buffer.from(clean, 'base64'));
+                }
+
+                const actualFps = Math.max(24, Math.min(60, Math.round(frameCount / Math.max(1, totalDurationSec))));
+                const outMp4Path = path.join(runDir, 'final_reel.mp4');
+                const inputPattern = path.join(framesDir, 'f_%06d.jpg');
+
+                const ffmpegArgs = [
+                    '-y',
+                    '-framerate', String(actualFps),
+                    '-i', inputPattern
+                ];
+
+                if (audioFile && fs.existsSync(audioFile) && fs.statSync(audioFile).size > 1000) {
+                    ffmpegArgs.push('-i', audioFile, '-c:a', 'aac', '-b:a', '192k', '-shortest');
+                } else {
+                    ffmpegArgs.push('-f', 'lavfi', '-i', 'anullsrc=r=44100:cl=stereo', '-c:a', 'aac', '-b:a', '128k', '-shortest');
+                }
+
+                ffmpegArgs.push(
+                    '-c:v', 'libx264',
+                    '-crf', '18',
+                    '-preset', 'fast',
+                    '-pix_fmt', 'yuv420p',
+                    '-movflags', '+faststart',
+                    outMp4Path
+                );
+
+                const { execSync } = require('child_process');
+                const cmd = `"${ffmpegPath}" ${ffmpegArgs.map(a => `"${a}"`).join(' ')}`;
+                execSync(cmd);
+
+                if (!fs.existsSync(outMp4Path)) {
+                    throw new Error('فشل توليد ملف الفيديو النهائي عبر FFmpeg');
+                }
+
+                const mp4Buffer = fs.readFileSync(outMp4Path);
+                const outFilename = filename || `Reel_FC27_ShopCoin15_${Date.now()}.mp4`;
+                console.log(`[Record Studio Reel] Video created successfully! File: ${outFilename}, Size: ${(mp4Buffer.length / (1024 * 1024)).toFixed(2)} MB, Frames: ${frameCount}, FPS: ${actualFps}`);
+
+                // 1. Save persistent copy to exports folder
+                const exportsDir = path.join(__dirname, 'exports');
+                if (!fs.existsSync(exportsDir)) fs.mkdirSync(exportsDir, { recursive: true });
+                const exportFilePath = path.join(exportsDir, outFilename);
+                fs.writeFileSync(exportFilePath, mp4Buffer);
+
+                // 2. Direct-save to Desktop and Downloads for 100% fail-safe user access
+                const os = require('os');
+                const userHome = os.homedir();
+                const directSaveTargets = [
+                    path.join(userHome, 'OneDrive', 'Desktop', outFilename),
+                    path.join(userHome, 'OneDrive', 'Desktop', 'Reel_FC27_ShopCoin15_Latest.mp4'),
+                    path.join(userHome, 'OneDrive', 'Desktop', 'مشاكل.mp4'),
+                    path.join(userHome, 'Desktop', outFilename),
+                    path.join(userHome, 'Desktop', 'Reel_FC27_ShopCoin15_Latest.mp4'),
+                    path.join(userHome, 'Desktop', 'مشاكل.mp4'),
+                    path.join(userHome, 'Downloads', outFilename),
+                    path.join(userHome, 'Downloads', 'Reel_FC27_ShopCoin15_Latest.mp4')
+                ];
+                directSaveTargets.forEach(targetPath => {
+                    try {
+                        const targetDir = path.dirname(targetPath);
+                        if (fs.existsSync(targetDir)) {
+                            fs.writeFileSync(targetPath, mp4Buffer);
+                            console.log(`[Auto-Saver] Saved video copy to: ${targetPath}`);
+                        }
+                    } catch (saveErr) {
+                        console.warn(`[Auto-Saver Notice] Could not write to ${targetPath}: ${saveErr.message}`);
+                    }
+                });
+
+                const downloadUrl = `/api/download-reel?file=${encodeURIComponent(outFilename)}`;
+
+                // 3. Respond with JSON if client accepts JSON, else binary MP4
+                const acceptHeader = req.headers['accept'] || '';
+                if (acceptHeader.includes('application/json')) {
+                    res.writeHead(200, {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': '*'
+                    });
+                    res.end(JSON.stringify({
+                        success: true,
+                        filename: outFilename,
+                        downloadUrl,
+                        desktopFile: 'Reel_FC27_ShopCoin15_Latest.mp4',
+                        savedDesktop: true,
+                        sizeMB: (mp4Buffer.length / (1024 * 1024)).toFixed(2)
+                    }));
+                } else {
+                    res.writeHead(200, {
+                        'Content-Type': 'video/mp4',
+                        'Content-Disposition': `attachment; filename="${encodeURIComponent(outFilename)}"`,
+                        'Content-Length': mp4Buffer.length,
+                        'Access-Control-Allow-Origin': '*'
+                    });
+                    res.end(mp4Buffer);
+                }
+
+            } catch (err) {
+                console.error('[Record Studio Reel Error]', err);
+                if (!res.headersSent) {
+                    res.writeHead(500, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+                    res.end(JSON.stringify({ success: false, error: err.message }));
+                }
+            } finally {
+                if (browser) {
+                    try { await browser.close(); } catch(e) {}
+                }
+                if (runDir && fs.existsSync(runDir)) {
+                    try { fs.rmSync(runDir, { recursive: true, force: true }); } catch(e) {}
+                }
+            }
+        });
+        return;
+    }
+
+    // API: Direct Download Reel Video
+    if (reqPath === '/api/download-reel' && req.method === 'GET') {
+        const urlObj = new URL(req.url, `http://localhost:${PORT}`);
+        const file = urlObj.searchParams.get('file');
+        const safeFile = path.basename(file || '');
+        const filePath = path.join(__dirname, 'exports', safeFile);
+        if (!safeFile || !fs.existsSync(filePath)) {
+            res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8', 'Access-Control-Allow-Origin': '*' });
+            res.end('File not found');
+            return;
+        }
+        const stat = fs.statSync(filePath);
+        res.writeHead(200, {
+            'Content-Type': 'video/mp4',
+            'Content-Disposition': `attachment; filename="${encodeURIComponent(safeFile)}"`,
+            'Content-Length': stat.size,
+            'Cache-Control': 'no-store, no-cache, must-revalidate',
+            'Access-Control-Allow-Origin': '*'
+        });
+        fs.createReadStream(filePath).pipe(res);
+        return;
+    }
+
     // Static Files Handling
     let filePath = reqPath === '/' || reqPath === '' ? '/index.html' : reqPath;
     const safePath = path.normalize(path.join(__dirname, filePath));
@@ -1654,7 +2225,9 @@ const server = http.createServer((req, res) => {
 
         res.writeHead(200, {
             'Content-Type': contentType,
-            'Cache-Control': 'no-cache',
+            'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+            'Pragma': 'no-cache',
+            'Expires': '0',
             'Access-Control-Allow-Origin': '*'
         });
 

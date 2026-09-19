@@ -13,28 +13,28 @@
  */
 
 window.ReelsEngine = (function() {
-    const STORAGE_KEY = 'shopcoin15_reel_layouts_v5';
+    const STORAGE_KEY = 'shopcoin15_reel_layouts_v6';
 
     // ---- 1. DEFAULT PERFECT-ALIGNED LAYOUTS (Percentages) ----
     const DEFAULT_LAYOUTS = {
         countdown: {
-            rank: { top: 7.5, left: 50, scale: 1.0 },
-            title: { top: 16.5, left: 50, scale: 1.0 },
-            card: { top: 28.5, left: 50, scale: 1.0 },
-            playerName: { top: 78.5, left: 50, scale: 1.0 },
+            rank: { top: 7.0, left: 50, scale: 1.0 },
+            title: { top: 15.0, left: 50, scale: 1.0 },
+            card: { top: 21.0, left: 50, scale: 0.95 },
+            playerName: { top: 81.5, left: 50, scale: 1.0 },
             fcLogo: { top: 4, left: 88, scale: 1.0 },
-            scLogo: { top: 91, left: 50, scale: 1.0 },
+            scLogo: { top: 92.5, left: 50, scale: 0.95 },
             // Intro slide elements
             introBadge: { top: 20, left: 50, scale: 1.0 },
             introTitle: { top: 28, left: 50, scale: 1.0 },
             introSubtitle: { top: 56, left: 50, scale: 1.0 },
             introCta: { top: 66, left: 50, scale: 1.0 },
-            // Outro slide elements
-            outroLogo: { top: 16, left: 50, scale: 1.0 },
-            outroTitle: { top: 28, left: 50, scale: 1.0 },
-            outroSubtitle: { top: 35, left: 50, scale: 1.0 },
-            outroFeatures: { top: 44, left: 50, scale: 1.0 },
-            outroCta: { top: 75, left: 50, scale: 1.0 }
+            // Outro slide elements (Optimized spacing: zero collisions)
+            outroLogo: { top: 11, left: 50, scale: 1.0 },
+            outroTitle: { top: 21, left: 50, scale: 1.0 },
+            outroSubtitle: { top: 33, left: 50, scale: 1.0 },
+            outroFeatures: { top: 45, left: 50, scale: 1.0 },
+            outroCta: { top: 76, left: 50, scale: 1.0 }
         },
         versus: {
             title: { top: 12.5, left: 50, scale: 1.0 },
@@ -49,14 +49,34 @@ window.ReelsEngine = (function() {
             introTitle: { top: 28, left: 50, scale: 1.0 },
             introSubtitle: { top: 56, left: 50, scale: 1.0 },
             introCta: { top: 66, left: 50, scale: 1.0 },
-            // Outro slide elements
-            outroLogo: { top: 16, left: 50, scale: 1.0 },
-            outroTitle: { top: 28, left: 50, scale: 1.0 },
-            outroSubtitle: { top: 35, left: 50, scale: 1.0 },
-            outroFeatures: { top: 44, left: 50, scale: 1.0 },
-            outroCta: { top: 75, left: 50, scale: 1.0 }
+            // Outro slide elements (Optimized spacing: zero collisions)
+            outroLogo: { top: 11, left: 50, scale: 1.0 },
+            outroTitle: { top: 21, left: 50, scale: 1.0 },
+            outroSubtitle: { top: 33, left: 50, scale: 1.0 },
+            outroFeatures: { top: 45, left: 50, scale: 1.0 },
+            outroCta: { top: 76, left: 50, scale: 1.0 }
         }
     };
+
+    // Safe Image Proxy Resolver (Bypasses FUT.GG 403 & CORS Hotlink Protection)
+    function toProxyUrl(url) {
+        if (!url || typeof url !== 'string') return '';
+        const trimmed = url.trim();
+        if (trimmed.startsWith('data:') || trimmed.startsWith('blob:') || trimmed.startsWith('assets/') || trimmed.startsWith('/assets/')) {
+            return trimmed;
+        }
+        if (trimmed.includes('/api/image-proxy')) return trimmed;
+        if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+            try {
+                const u = new URL(trimmed);
+                if (typeof window !== 'undefined' && (u.hostname === window.location.hostname || u.hostname === 'localhost' || u.hostname === '127.0.0.1')) {
+                    return trimmed;
+                }
+            } catch (e) {}
+            return `/api/image-proxy?url=${encodeURIComponent(trimmed)}`;
+        }
+        return trimmed;
+    }
 
     function getCurrentSlideElements() {
         const currentSlide = state.slides[state.currentSlideIndex];
@@ -4208,7 +4228,7 @@ window.ReelsEngine = (function() {
 
                 <div class="flex items-center gap-1.5">
                     <div class="w-8 h-10 bg-slate-100 rounded border border-slate-200 flex items-center justify-center p-0.5 shrink-0 overflow-hidden">
-                        <img src="${pObj.cardUrl || 'assets/placeholder_card.png'}" alt="Card" class="max-h-full max-w-full object-contain">
+                        <img src="${pObj.cardUrl ? toProxyUrl(pObj.cardUrl) : 'assets/placeholder_card.png'}" alt="Card" class="max-h-full max-w-full object-contain" crossorigin="anonymous">
                     </div>
                     <input type="text" placeholder="رابط كرت ${labelText}" value="${(pObj.cardUrl || '').replace(/"/g, '&quot;')}" 
                            onchange="ReelsEngine.updateVersusField('${playerKey}', 'cardUrl', this.value)"
@@ -4254,16 +4274,16 @@ window.ReelsEngine = (function() {
     }
 
     // ---- 7. INTERACTIVE VIDEO PLAYER ----
-    function playPlayback() {
+    function playPlayback(customDest = null, ctxOverride = null, onComplete = null) {
         if (state.isPlaying) return;
         state.isPlaying = true;
         updatePlayerUi();
 
         // 1. Trigger background music
-        startBgm();
+        startBgm(customDest, ctxOverride);
 
         // 2. Trigger audio for current starting slide
-        triggerSlideAudio(state.slides[state.currentSlideIndex]);
+        triggerSlideAudio(state.slides[state.currentSlideIndex], customDest, ctxOverride);
 
         const tickMs = 50;
         let elapsed = 0;
@@ -4300,6 +4320,11 @@ window.ReelsEngine = (function() {
                 if (state.currentSlideIndex < state.slides.length - 1) {
                     state.currentSlideIndex++;
                 } else {
+                    if (typeof onComplete === 'function') {
+                        pausePlayback();
+                        onComplete();
+                        return;
+                    }
                     state.currentSlideIndex = 0;
                 }
                 state.slideEntrancePending = true;
@@ -4309,9 +4334,9 @@ window.ReelsEngine = (function() {
                 updatePlayerUi();
 
                 // Trigger audio for next slide
-                triggerSlideAudio(state.slides[state.currentSlideIndex]);
+                triggerSlideAudio(state.slides[state.currentSlideIndex], customDest, ctxOverride);
                 if (state.slideTransition && state.slideTransition.soundEnabled) {
-                    playWhooshSound(null, 0.7);
+                    playWhooshSound(customDest, 0.7, ctxOverride);
                 }
             }
         }, tickMs);
@@ -4407,7 +4432,7 @@ window.ReelsEngine = (function() {
         if (!text) return '';
         const lines = text.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
         if (lines.length === 0) return '';
-        return lines.map(line => `<span class="block whitespace-nowrap leading-tight">${escapeHtml(line)}</span>`).join('');
+        return lines.map(line => `<span class="block max-w-[325px] mx-auto text-center leading-tight whitespace-normal break-words">${escapeHtml(line)}</span>`).join('');
     }
 
     function getTitleFontClass(rawText, defaultText = '') {
@@ -4724,6 +4749,13 @@ window.ReelsEngine = (function() {
             localStorage.setItem(PROJECT_STORAGE_KEY_PREFIX + sec, JSON.stringify(payload));
             localStorage.setItem(PROJECT_STORAGE_KEY_PREFIX + 'last_active', sec);
             showSavedToastIndicator();
+            try {
+                fetch(getReelsApiUrl('/api/reels/save-active-project'), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                }).catch(() => {});
+            } catch (syncErr) {}
         } catch (e) {
             console.warn('[Reels] Auto-save error:', e);
         }
@@ -4770,6 +4802,36 @@ window.ReelsEngine = (function() {
             console.warn('[Reels] Load section error:', e);
         }
         return false;
+    }
+
+    function loadProject(data) {
+        if (!data) return;
+        if (data.slides && Array.isArray(data.slides)) state.slides = data.slides;
+        if (data.activeSection) state.activeSection = data.activeSection;
+        if (data.theme) state.theme = data.theme;
+        if (data.fontFamily) state.fontFamily = data.fontFamily;
+        if (data.title !== undefined) state.title = data.title;
+        if (data.subtitle !== undefined) state.subtitle = data.subtitle;
+        if (data.badge !== undefined) state.badge = data.badge;
+        if (data.slideDuration) state.slideDuration = data.slideDuration;
+        if (data.layouts) state.layouts = data.layouts;
+        if (data.elementAnimations) state.elementAnimations = data.elementAnimations;
+        if (data.animationsEnabled !== undefined) state.animationsEnabled = data.animationsEnabled;
+        if (data.progressBar) state.progressBar = data.progressBar;
+        if (data.slideTransition) state.slideTransition = data.slideTransition;
+        state.currentSlideIndex = 0;
+        state.slideEntrancePending = true;
+        state.selectedDragElement = null;
+        ensureSelectedDragElement(false);
+        renderCanvas();
+        renderEditorControls();
+        updatePlayerUi();
+    }
+
+    function setAudioState(newAudioState) {
+        if (!newAudioState) return;
+        Object.assign(audioState, newAudioState);
+        saveAudioState();
     }
 
     // ---- 7.5 ANIMATION CONTROLLER METHODS ----
@@ -5028,13 +5090,16 @@ window.ReelsEngine = (function() {
         if (state.slides && state.slides.length > 0) {
             state.slides.forEach(s => {
                 if (s.type === 'player_card' && s.cardUrl && !s.cardUrl.includes('placeholder')) {
-                    if (!urls.includes(s.cardUrl)) urls.push(s.cardUrl);
+                    const pUrl = toProxyUrl(s.cardUrl);
+                    if (!urls.includes(pUrl)) urls.push(pUrl);
                 } else if (s.type === 'versus_card') {
-                    if (s.playerA?.cardUrl && !s.playerA.cardUrl.includes('placeholder') && !urls.includes(s.playerA.cardUrl)) {
-                        urls.push(s.playerA.cardUrl);
+                    if (s.playerA?.cardUrl && !s.playerA.cardUrl.includes('placeholder')) {
+                        const pUrlA = toProxyUrl(s.playerA.cardUrl);
+                        if (!urls.includes(pUrlA)) urls.push(pUrlA);
                     }
-                    if (s.playerB?.cardUrl && !s.playerB.cardUrl.includes('placeholder') && !urls.includes(s.playerB.cardUrl)) {
-                        urls.push(s.playerB.cardUrl);
+                    if (s.playerB?.cardUrl && !s.playerB.cardUrl.includes('placeholder')) {
+                        const pUrlB = toProxyUrl(s.playerB.cardUrl);
+                        if (!urls.includes(pUrlB)) urls.push(pUrlB);
                     }
                 }
             });
@@ -5052,7 +5117,8 @@ window.ReelsEngine = (function() {
         ];
 
         fallbackStars.forEach(c => {
-            if (!urls.includes(c)) urls.push(c);
+            const pUrl = toProxyUrl(c);
+            if (!urls.includes(pUrl)) urls.push(pUrl);
         });
 
         return urls;
@@ -5082,7 +5148,7 @@ window.ReelsEngine = (function() {
             // 3D Infinite Diagonal Cards Stream
             const cardItems = activeCards.map(url => `
                 <div class="shrink-0 w-36 h-auto drop-shadow-[0_15px_25px_rgba(0,0,0,0.45)] pointer-events-none transition-transform">
-                    <img src="${url}" alt="Card" class="w-full h-auto object-contain">
+                    <img src="${toProxyUrl(url)}" alt="Card" class="w-full h-auto object-contain" crossorigin="anonymous">
                 </div>
             `).join('');
 
@@ -5115,7 +5181,7 @@ window.ReelsEngine = (function() {
                 return `
                     <div class="absolute w-36 h-auto drop-shadow-2xl pointer-events-none" 
                          style="left: calc(50% + ${cfg.x}px - 72px); top: calc(50% + ${cfg.y}px - 100px); z-index: ${cfg.z}; transform: rotate(${cfg.deg}deg) scale(${cfg.s}); animation: reelHookFanFloat 3.8s ease-in-out infinite ${cfg.delay}s; will-change: transform;">
-                        <img src="${cUrl}" class="w-full h-auto object-contain">
+                        <img src="${toProxyUrl(cUrl)}" class="w-full h-auto object-contain" crossorigin="anonymous">
                     </div>
                 `;
             }).join('');
@@ -5138,7 +5204,7 @@ window.ReelsEngine = (function() {
                     ${glowHtml}
                     <div class="relative flex flex-col items-center justify-center" style="top: 4%; animation: reelHookMysteryPulse 2.8s ease-in-out infinite; filter: blur(${blurVal}) opacity(${opacityVal}); z-index: 10;">
                         <div class="relative w-44 h-64 flex items-center justify-center">
-                            <img src="${leadCard}" alt="Mystery Card" class="max-h-full max-w-full object-contain filter contrast-125 brightness-95 drop-shadow-2xl">
+                            <img src="${toProxyUrl(leadCard)}" alt="Mystery Card" class="max-h-full max-w-full object-contain filter contrast-125 brightness-95 drop-shadow-2xl" crossorigin="anonymous">
                             <div class="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-amber-950/45 to-transparent rounded-2xl flex items-center justify-center">
                                 <span class="text-6xl drop-shadow-[0_0_25px_rgba(251,191,36,0.95)]" style="animation: reelHookMysteryQuestion 2s ease-in-out infinite;">❓</span>
                             </div>
@@ -5155,7 +5221,7 @@ window.ReelsEngine = (function() {
             // Dual Drifting Rows in Opposite Directions
             const cardItems = activeCards.map(url => `
                 <div class="shrink-0 w-32 h-auto drop-shadow-lg pointer-events-none">
-                    <img src="${url}" alt="Card" class="w-full h-auto object-contain">
+                    <img src="${toProxyUrl(url)}" alt="Card" class="w-full h-auto object-contain" crossorigin="anonymous">
                 </div>
             `).join('');
 
@@ -5282,7 +5348,7 @@ window.ReelsEngine = (function() {
                 ${!currentSlide.hideTitle ? `
                     <div data-drag-id="introTitle" class="z-20 select-none relative ${dragCursor} ${selectRing('introTitle')}" style="${posStyle(layout.introTitle)}">
                         <div class="reel-anim-layer" style="${getElemAnimStyle('introTitle')}">
-                            <div class="w-max max-w-none text-center px-2" dir="rtl">
+                            <div class="w-[325px] max-w-[325px] mx-auto text-center px-2" dir="rtl">
                                 <h1 class="${getTitleFontClass(currentSlide.title || state.title)} font-black text-slate-950 leading-snug drop-shadow-sm pointer-events-none space-y-0.5">
                                     ${formatTitleLines(currentSlide.title || state.title, 'أفضل 5 مهاجمين للبدايات')}
                                 </h1>
@@ -5296,7 +5362,7 @@ window.ReelsEngine = (function() {
                 ${!currentSlide.hideSubtitle ? `
                     <div data-drag-id="introSubtitle" class="z-20 select-none relative ${dragCursor} ${selectRing('introSubtitle')}" style="${posStyle(layout.introSubtitle)}">
                         <div class="reel-anim-layer" style="${getElemAnimStyle('introSubtitle')}">
-                            <div class="w-max max-w-none text-center px-3" dir="rtl">
+                            <div class="w-[390px] max-w-[390px] text-center px-3" dir="rtl">
                                 <p class="text-sm md:text-base font-bold text-slate-600 leading-relaxed pointer-events-none space-y-0.5">
                                     ${formatTitleLines(currentSlide.subtitle || state.subtitle, 'الوصف والتحفيز')}
                                 </p>
@@ -5339,7 +5405,7 @@ window.ReelsEngine = (function() {
                 ${!currentSlide.hideTitle ? `
                     <div data-drag-id="title" class="z-20 select-none relative ${dragCursor} ${selectRing('title')}" style="${posStyle(layout.title)}">
                         <div class="reel-anim-layer" style="${getElemAnimStyle('title')}">
-                            <div class="w-max max-w-none text-center px-2" dir="rtl">
+                            <div class="w-[325px] max-w-[325px] mx-auto text-center px-2" dir="rtl">
                                 <div class="text-base md:text-lg font-black text-slate-950 leading-tight drop-shadow-xs pointer-events-none space-y-0.5">
                                     ${formatTitleLines(state.title, 'عنوان الريل')}
                                 </div>
@@ -5355,7 +5421,7 @@ window.ReelsEngine = (function() {
                         <div class="reel-anim-layer flex flex-col items-center" style="${getElemAnimStyle('card')}">
                             <div class="relative flex flex-col items-center justify-center">
                                 <div class="absolute -inset-6 bg-emerald-500/15 blur-3xl rounded-full pointer-events-none"></div>
-                                <img src="${currentSlide.cardUrl}" alt="${currentSlide.playerName}" 
+                                <img src="${toProxyUrl(currentSlide.cardUrl)}" alt="${currentSlide.playerName}" crossorigin="anonymous" onerror="this.onerror=null; this.src='assets/placeholder_card.png';" 
                                      class="w-64 md:w-72 h-auto max-h-[400px] object-contain drop-shadow-[0_20px_35px_rgba(0,0,0,0.4)] pointer-events-none">
                             </div>
 
@@ -5380,8 +5446,8 @@ window.ReelsEngine = (function() {
                 ${!currentSlide.hidePlayerName ? `
                     <div data-drag-id="playerName" class="z-20 select-none relative ${dragCursor} ${selectRing('playerName')}" style="${posStyle(layout.playerName)}">
                         <div class="reel-anim-layer" style="${getElemAnimStyle('playerName')}">
-                            <div class="w-[340px] text-center px-4" dir="rtl">
-                                <div class="text-2xl md:text-3xl font-black text-slate-950 drop-shadow-sm pointer-events-none">
+                            <div class="w-[330px] max-w-[330px] mx-auto text-center px-2 break-words" dir="rtl">
+                                <div class="text-xl md:text-2xl font-black text-slate-950 drop-shadow-sm pointer-events-none leading-tight">
                                     ${currentSlide.playerArName || currentSlide.playerName}
                                 </div>
                                 <div class="text-xs font-black text-[#00A84D] mt-0.5 pointer-events-none">
@@ -5421,7 +5487,7 @@ window.ReelsEngine = (function() {
                         <div class="reel-anim-layer" style="${getElemAnimStyle('cardA')}">
                             <div class="w-[190px] flex flex-col items-center" dir="rtl">
                                 <div class="relative h-[230px] flex items-center justify-center">
-                                    <img src="${pA.cardUrl}" alt="${pA.name}" class="max-h-[230px] w-auto object-contain drop-shadow-2xl pointer-events-none">
+                                    <img src="${toProxyUrl(pA.cardUrl)}" alt="${pA.name}" crossorigin="anonymous" onerror="this.onerror=null; this.src='assets/placeholder_card.png';" class="max-h-[230px] w-auto object-contain drop-shadow-2xl pointer-events-none">
                                 </div>
                                 <div class="mt-2 text-center pointer-events-none">
                                     <div class="text-sm font-black text-slate-950">${pA.arName || pA.name}</div>
@@ -5457,7 +5523,7 @@ window.ReelsEngine = (function() {
                         <div class="reel-anim-layer" style="${getElemAnimStyle('cardB')}">
                             <div class="w-[190px] flex flex-col items-center" dir="rtl">
                                 <div class="relative h-[230px] flex items-center justify-center">
-                                    <img src="${pB.cardUrl}" alt="${pB.name}" class="max-h-[230px] w-auto object-contain drop-shadow-2xl pointer-events-none">
+                                    <img src="${toProxyUrl(pB.cardUrl)}" alt="${pB.name}" crossorigin="anonymous" onerror="this.onerror=null; this.src='assets/placeholder_card.png';" class="max-h-[230px] w-auto object-contain drop-shadow-2xl pointer-events-none">
                                 </div>
                                 <div class="mt-2 text-center pointer-events-none">
                                     <div class="text-sm font-black text-slate-950">${pB.arName || pB.name}</div>
@@ -5606,9 +5672,7 @@ window.ReelsEngine = (function() {
 
         initCanvasDragHandlers();
 
-        if (window.twemoji && typeof window.twemoji.parse === 'function') {
-            window.twemoji.parse(canvas, { folder: 'svg', ext: '.svg', base: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/' });
-        }
+        // Native system emojis render with 100% crispness and require zero remote network requests
     }
 
     // ---- 8.5 REELS ENTRANCE ANIMATION TABLE CONTROLS ----
@@ -6462,7 +6526,7 @@ window.ReelsEngine = (function() {
                 <div class="pt-2 border-t border-slate-200 space-y-2">
                     <button type="button" onclick="ReelsEngine.exportReelVideo()" id="btnExportVideo" 
                             class="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:brightness-105 text-white font-black text-xs transition flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/25 cursor-pointer">
-                        <span>🎬 تصدير فيديو الريل بدقة 60FPS (MP4 / WebM)</span>
+                        <span>🎬 تحميل فيديو الريل الأصلي (MP4 بدقة 1080x1920 مع الأنيميشن والصوت)</span>
                     </button>
                     <button type="button" onclick="ReelsEngine.sendReelVideoTelegram()" id="btnSendReelVideoTelegram"
                             class="w-full py-3 px-4 rounded-2xl bg-gradient-to-r from-sky-500 via-sky-600 to-blue-600 hover:brightness-105 text-white font-black text-xs transition flex items-center justify-center gap-2 shadow-lg shadow-sky-500/25 cursor-pointer active:scale-[0.99]">
@@ -6727,7 +6791,7 @@ window.ReelsEngine = (function() {
                         </div>
                         <div class="flex items-center gap-2">
                             <div class="w-12 h-14 bg-white rounded-xl border border-slate-200 flex items-center justify-center p-1 shadow-2xs shrink-0 overflow-hidden">
-                                <img src="${slide.cardUrl || 'assets/placeholder_card.png'}" alt="Card" class="max-h-full max-w-full object-contain">
+                                <img src="${slide.cardUrl ? toProxyUrl(slide.cardUrl) : 'assets/placeholder_card.png'}" alt="Card" class="max-h-full max-w-full object-contain" crossorigin="anonymous">
                             </div>
                             <input type="text" value="${(slide.cardUrl || '').replace(/"/g, '&quot;')}" 
                                    onchange="ReelsEngine.updateCurrentSlideField('cardUrl', this.value)"
@@ -6897,7 +6961,8 @@ window.ReelsEngine = (function() {
                 </div>
 
                 <div class="flex items-center gap-1.5 flex-wrap">
-                    <button type="button" onclick="ReelsEngine.exportReelVideo()" class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:brightness-105 text-white font-black text-xs transition flex items-center gap-1 shadow-md shadow-emerald-600/20 active:scale-95" title="تحميل الفيديو بصيغة MP4 / WebM">
+                    <span class="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 font-mono text-[10px] border border-emerald-500/30" title="محرك التصدير الفائق 1080x1920 مفعّل">v55.0 ⚡</span>
+                    <button type="button" id="btnExportVideoFloating" onclick="ReelsEngine.exportReelVideo()" class="btn-export-reel-action px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:brightness-105 text-white font-black text-xs transition flex items-center gap-1 shadow-md shadow-emerald-600/20 active:scale-95" title="تحميل الفيديو بدقة 1080x1920 Full HD مع الأنيميشن والصوت">
                         <span>🎬 تحميل فيديو</span>
                     </button>
                     <button type="button" onclick="ReelsEngine.sendReelVideoTelegram()" class="btn-telegram-action px-3 py-1.5 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 hover:brightness-105 text-white font-black text-xs transition flex items-center gap-1 shadow-md shadow-sky-500/20 active:scale-95" title="إرسال فيديو الريلز مباشرة إلى تيليجرام">
@@ -6916,22 +6981,50 @@ window.ReelsEngine = (function() {
     async function captureSlideImage(domNode) {
         if (!domNode) return '';
 
-        // 1. Temporarily unscale domNode so its native layout is pure 450x800
+        // 1. Temporarily deselect any element & clear selection outlines
+        const prevSelected = state.selectedDragElement;
+        state.selectedDragElement = null;
+
+        // 2. Temporarily unscale stage and domNode so native layout is pure 450x800 without zoom distortion
+        const stage = document.getElementById('canvasScaleStage');
+        const prevStageTransform = stage ? stage.style.transform : '';
+        const prevStageOrigin = stage ? stage.style.transformOrigin : '';
+        if (stage) {
+            stage.style.transform = 'none';
+            stage.style.transformOrigin = '0 0';
+        }
+
         const prevTransform = domNode.style.transform;
         const prevOrigin = domNode.style.transformOrigin;
         domNode.style.transform = 'none';
         domNode.style.transformOrigin = '0 0';
 
-        // 2. Hide any interactive handles / borders from the recording
-        const handles = domNode.querySelectorAll('.layer-toolbar, .layer-resize-handle, .snap-guide');
-        handles.forEach(h => h.style.setProperty('display', 'none', 'important'));
-        const draggables = domNode.querySelectorAll('.draggable-layer');
+        // 3. Remove selection rings temporarily and hide ONLY interactive toolbars/handles
+        const ringedElements = domNode.querySelectorAll('[class*="ring-2"], [class*="ring-offset"]');
+        const prevRingClasses = [];
+        ringedElements.forEach(el => {
+            const rings = Array.from(el.classList).filter(c => c.startsWith('ring-'));
+            if (rings.length > 0) {
+                prevRingClasses.push({ el, rings });
+                rings.forEach(r => el.classList.remove(r));
+            }
+        });
+
+        // Hide actual floating toolbars, resize handles, and guides (NEVER hide the layer itself!)
+        const handles = domNode.querySelectorAll('.layer-toolbar, .layer-resize-handle, .reel-resize-handle, .snap-guide');
+        const prevHandleDisplays = [];
+        handles.forEach(h => {
+            prevHandleDisplays.push({ el: h, display: h.style.display });
+            h.style.setProperty('display', 'none', 'important');
+        });
+
+        const draggables = domNode.querySelectorAll('.draggable-layer, [data-drag-id]');
         draggables.forEach(d => {
             d.style.outline = 'none';
             d.style.boxShadow = 'none';
         });
 
-        // 2.5 Force full opacity and freeze animations during capture so exports are crisp & complete
+        // 4. Force full opacity and freeze animations during capture so exports are crisp & complete
         state.isCapturingExport = true;
         const animLayers = domNode.querySelectorAll('.reel-anim-layer');
         const prevAnimStyles = [];
@@ -6947,17 +7040,60 @@ window.ReelsEngine = (function() {
             el.style.setProperty('transform', 'none', 'important');
         });
 
+        // 5. Pre-decode all images inside slide & ensure proxy + CORS
+        const imgs = Array.from(domNode.querySelectorAll('img'));
+        imgs.forEach(img => {
+            if (img.classList && img.classList.contains('emoji')) {
+                img.style.display = 'none';
+                return;
+            }
+            if (img.src && (img.src.startsWith('http://') || img.src.startsWith('https://'))) {
+                const proxied = toProxyUrl(img.src);
+                if (img.src !== proxied) {
+                    img.src = proxied;
+                }
+            }
+            if (!img.crossOrigin) {
+                img.crossOrigin = 'anonymous';
+            }
+        });
+
+        await Promise.all(imgs.map(img => {
+            if (img.complete && img.naturalHeight !== 0) return Promise.resolve();
+            return new Promise(res => {
+                img.onload = res;
+                img.onerror = res;
+                setTimeout(res, 1500);
+            });
+        }));
+
         let resultUrl = '';
 
         try {
-            // 3. Capture at native 450x800 with pixelRatio 2.4 => EXACTLY 1080x1920 Full HD!
+            // 6. Capture at native 450x800 with pixelRatio 2.4 => EXACTLY 1080x1920 Full HD!
             if (window.htmlToImage && typeof window.htmlToImage.toPng === 'function') {
                 try {
                     resultUrl = await window.htmlToImage.toPng(domNode, {
                         pixelRatio: 2.4,
                         width: 450,
                         height: 800,
+                        skipFonts: true, // Prevents cross-origin CSSStyleSheet security crashes
                         cacheBust: false,
+                        filter: (node) => {
+                            if (node.classList && (
+                                node.classList.contains('reel-resize-handle') ||
+                                node.classList.contains('layer-toolbar') ||
+                                node.classList.contains('snap-guide') ||
+                                node.classList.contains('layer-resize-handle')
+                            )) {
+                                return false;
+                            }
+                            if (node.tagName === 'IMG') {
+                                if (node.classList && node.classList.contains('emoji')) return false;
+                                if (node.complete && node.naturalWidth === 0) return false;
+                            }
+                            return true;
+                        },
                         style: {
                             transform: 'none',
                             transformOrigin: '0 0',
@@ -6967,7 +7103,7 @@ window.ReelsEngine = (function() {
                         }
                     });
                 } catch (e) {
-                    console.warn('[Reels Video] htmlToImage note:', e.message);
+                    console.warn('[Reels Video] htmlToImage note:', e.message || e);
                 }
             }
 
@@ -6979,18 +7115,32 @@ window.ReelsEngine = (function() {
                         height: 800,
                         x: 0,
                         y: 0,
+                        scrollX: 0,
+                        scrollY: 0,
                         useCORS: true,
-                        allowTaint: true,
-                        logging: false
+                        allowTaint: false,
+                        logging: false,
+                        ignoreElements: (el) => {
+                            if (!el) return false;
+                            if (el.classList && (
+                                el.classList.contains('reel-resize-handle') ||
+                                el.classList.contains('layer-toolbar') ||
+                                el.classList.contains('snap-guide') ||
+                                el.classList.contains('layer-resize-handle')
+                            )) return true;
+                            if (el.tagName === 'IMG' && (el.classList.contains('emoji') || (el.complete && el.naturalWidth === 0))) return true;
+                            return false;
+                        }
                     });
                     resultUrl = c.toDataURL('image/png');
                 } catch (e) {
-                    console.warn('[Reels Video] html2canvas fallback note:', e.message);
+                    console.warn('[Reels Video] html2canvas fallback note:', e.message || e);
                 }
             }
         } finally {
-            // 4. Restore original viewport transform, handles and animation states
+            // 7. Restore original viewport transform, handles and animation states
             state.isCapturingExport = false;
+            state.selectedDragElement = prevSelected;
             prevAnimStyles.forEach(item => {
                 item.el.style.animation = item.animation;
                 item.el.style.opacity = item.opacity;
@@ -6998,7 +7148,16 @@ window.ReelsEngine = (function() {
             });
             domNode.style.transform = prevTransform;
             domNode.style.transformOrigin = prevOrigin;
-            handles.forEach(h => h.style.display = '');
+            if (stage) {
+                stage.style.transform = prevStageTransform;
+                stage.style.transformOrigin = prevStageOrigin;
+            }
+            prevHandleDisplays.forEach(item => {
+                item.el.style.display = item.display;
+            });
+            prevRingClasses.forEach(item => {
+                item.rings.forEach(r => item.el.classList.add(r));
+            });
         }
 
         return resultUrl;
@@ -7032,337 +7191,199 @@ window.ReelsEngine = (function() {
         }
     }
 
-    async function recordReelVideoBlob(progressCallback) {
-        pausePlayback();
-        const prevSafe = state.showSafeZone;
-        const prevDrag = state.dragEnabled;
-        const prevIndex = state.currentSlideIndex;
-        state.showSafeZone = false;
-        state.dragEnabled = false;
-        hideMagnetGuides();
+    function showVideoDownloadModal(filename, downloadUrl, desktopFile) {
+        const existing = document.getElementById('videoDownloadSuccessModal');
+        if (existing) existing.remove();
 
+        const modal = document.createElement('div');
+        modal.id = 'videoDownloadSuccessModal';
+        modal.className = 'fixed inset-0 bg-black/80 backdrop-blur-md z-[9999999] flex items-center justify-center p-4 transition-all duration-300';
+        modal.style.direction = 'rtl';
+        modal.innerHTML = `
+            <div class="bg-gradient-to-b from-zinc-900 to-zinc-950 border-2 border-emerald-500/70 rounded-3xl p-6 sm:p-8 max-w-lg w-full text-center space-y-5 shadow-2xl shadow-emerald-950/50">
+                <div class="w-16 h-16 mx-auto rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-4xl shadow-inner">
+                    🎬
+                </div>
+                
+                <div class="space-y-1.5">
+                    <h3 class="text-white text-xl sm:text-2xl font-black">تم تصدير الفيديو بنجاح فائق! 🎉</h3>
+                    <p class="text-zinc-400 text-xs sm:text-sm font-medium">بدقة 1080x1920 Full HD مع كامل الأنيميشن والصوت الأصلي</p>
+                </div>
+
+                <div class="bg-emerald-950/50 border border-emerald-500/40 rounded-2xl p-4 text-right space-y-2">
+                    <div class="flex items-center gap-2 text-emerald-400 text-xs font-black">
+                        <span>⚡</span>
+                        <span>تم حفظ الفيديو تلقائياً على جهازك:</span>
+                    </div>
+                    <ul class="text-zinc-300 text-xs font-semibold space-y-1 pr-4 list-disc">
+                        <li>على <span class="text-white font-bold">سطح المكتب (Desktop)</span> باسم: <br><span class="text-emerald-300 font-mono text-[11px] select-all underline">${desktopFile || 'Reel_FC27_ShopCoin15_Latest.mp4'}</span></li>
+                        <li>في مجلد <span class="text-white font-bold">التنزيلات (Downloads)</span> باسم: <br><span class="text-emerald-300 font-mono text-[11px] select-all underline">${filename}</span></li>
+                    </ul>
+                </div>
+
+                <div class="space-y-2.5 pt-1">
+                    <a href="${downloadUrl}" download="${filename}" class="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 hover:brightness-110 text-white font-black text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/30 transition transform active:scale-98 cursor-pointer">
+                        <span>📥 تحميل مباشر إلى المتصفح الآن</span>
+                    </a>
+                    <button type="button" onclick="document.getElementById('videoDownloadSuccessModal').remove()" class="w-full py-2.5 px-4 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white text-xs font-bold transition">
+                        إغلاق النافذة
+                    </button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+
+    // Unified 100% Native 1080x1920 Studio Reel Recorder
+    async function recordStudioReelViaServer(filename, progressCallback) {
+        const apiUrl = getReelsApiUrl('/api/record-studio-reel');
+
+        const projectState = {
+            activeSection: state.activeSection,
+            theme: state.theme,
+            fontFamily: state.fontFamily,
+            title: state.title,
+            subtitle: state.subtitle,
+            badge: state.badge,
+            slides: state.slides,
+            currentSlideIndex: 0,
+            slideDuration: state.slideDuration,
+            layouts: state.layouts,
+            animationsEnabled: state.animationsEnabled,
+            elementAnimations: state.elementAnimations,
+            progressBar: state.progressBar,
+            slideTransition: state.slideTransition
+        };
+
+        const curAudioState = (typeof getAudioState === 'function') ? getAudioState() : audioState;
+
+        const totalSec = state.slides.reduce((acc, s) => acc + (s.duration || state.slideDuration || 2.5), 0);
+        if (progressCallback) {
+            progressCallback(`🚀 جاري تسجيل كافة أنيميشن السلايدات بدقة 1080x1920 (${totalSec.toFixed(1)} ثانية)...`);
+        }
+
+        let res;
         try {
-            const domNode = document.getElementById('exportCanvas');
-            const totalSlides = state.slides.length;
-
-            try {
-                if (document.fonts && document.fonts.ready) {
-                    await document.fonts.ready;
-                }
-            } catch (e) {}
-
-            // =========================================================================
-            // PHASE 1: PRE-CAPTURE ALL SLIDES (1080x1920) IN MEMORY FIRST
-            // Performing DOM capture BEFORE recording starts eliminates all lag & freezes!
-            // =========================================================================
-            const preloadedSlides = [];
-            for (let i = 0; i < totalSlides; i++) {
-                if (progressCallback) {
-                    progressCallback(i + 1, totalSlides, `معالجة وتجهيز السلايد ${i + 1}/${totalSlides}...`);
-                }
-                state.currentSlideIndex = i;
-                renderCanvas();
-                await new Promise(r => setTimeout(r, 120));
-
-                const imgDataUrl = await captureSlideImage(domNode);
-                if (!imgDataUrl) {
-                    throw new Error(`تعذر تصوير السلايد رقم ${i + 1}`);
-                }
-
-                const slideImg = new Image();
-                slideImg.src = imgDataUrl;
-                await new Promise((res, rej) => {
-                    slideImg.onload = res;
-                    slideImg.onerror = () => rej(new Error(`فشل تحميل صورة السلايد رقم ${i + 1}`));
-                });
-
-                const curSlideObj = state.slides[i];
-                const slideSec = Math.max(0.5, (curSlideObj && typeof curSlideObj.duration === 'number') ? curSlideObj.duration : (state.slideDuration || 2.5));
-                preloadedSlides.push({ img: slideImg, duration: slideSec, slide: curSlideObj });
-            }
-
-            // =========================================================================
-            // PHASE 2: INITIALIZE 1080x1920 CANVAS, REAL AUDIO & MEDIARECORDER
-            // =========================================================================
-            const recordCanvas = document.createElement('canvas');
-            recordCanvas.width = 1080;
-            recordCanvas.height = 1920;
-            const ctx = recordCanvas.getContext('2d');
-            ctx.fillStyle = '#070709';
-            ctx.fillRect(0, 0, 1080, 1920);
-
-            // Draw slide 0 immediately so initial frame is already active
-            if (preloadedSlides.length > 0) {
-                ctx.drawImage(preloadedSlides[0].img, 0, 0, 1080, 1920);
-            }
-
-            const fps = 30;
-            const frameIntervalMs = 1000 / fps; // 33.333ms
-
-            const canvasStream = recordCanvas.captureStream(fps);
-            const combinedTracks = [...canvasStream.getVideoTracks()];
-
-            let recordAudioCtx = null;
-            let recordAudioDest = null;
-            let recordBgmSource = null;
-            let silentAudioObj = null;
-
-            if (audioState.masterEnabled) {
-                try {
-                    const AudioCtx = window.AudioContext || window.webkitAudioContext;
-                    if (AudioCtx) {
-                        recordAudioCtx = new AudioCtx();
-                        recordAudioDest = recordAudioCtx.createMediaStreamDestination();
-
-                        if (audioState.bgmEnabled) {
-                            let bgmBuf = (audioState.bgmType === 'custom' && customAudioBuffer) 
-                                ? customAudioBuffer 
-                                : await renderSynthHypeBuffer(recordAudioCtx.sampleRate);
-
-                            if (bgmBuf) {
-                                recordBgmSource = recordAudioCtx.createBufferSource();
-                                recordBgmSource.buffer = bgmBuf;
-                                recordBgmSource.loop = true;
-                                const bgmGain = recordAudioCtx.createGain();
-                                bgmGain.gain.setValueAtTime(audioState.bgmVolume, recordAudioCtx.currentTime);
-                                recordBgmSource.connect(bgmGain);
-                                bgmGain.connect(recordAudioDest);
-                                recordBgmSource.start(0);
-                            }
-                        }
-
-                        const audioTrack = recordAudioDest.stream.getAudioTracks()[0];
-                        if (audioTrack) {
-                            combinedTracks.push(audioTrack);
-                        }
-                    }
-                } catch (audioErr) {
-                    console.warn('[Reels Video] Record audio init note:', audioErr.message);
-                }
-            }
-
-            if (combinedTracks.length === 1) {
-                silentAudioObj = createSilentAudioTrack();
-                if (silentAudioObj && silentAudioObj.track) {
-                    combinedTracks.push(silentAudioObj.track);
-                }
-            }
-
-            const stream = new MediaStream(combinedTracks);
-
-            // Select best supported MIME type
-            let mimeType = 'video/mp4;codecs=avc1,mp4a.40.2';
-            if (!MediaRecorder.isTypeSupported(mimeType)) {
-                mimeType = 'video/mp4';
-                if (!MediaRecorder.isTypeSupported(mimeType)) {
-                    mimeType = 'video/webm;codecs=vp9,opus';
-                    if (!MediaRecorder.isTypeSupported(mimeType)) {
-                        mimeType = 'video/webm;codecs=vp8,opus';
-                        if (!MediaRecorder.isTypeSupported(mimeType)) {
-                            mimeType = 'video/webm';
-                        }
-                    }
-                }
-            }
-
-            const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 8000000 });
-            const chunks = [];
-            recorder.ondataavailable = e => { 
-                if (e.data && e.data.size > 0) chunks.push(e.data); 
-            };
-
-            const recordingComplete = new Promise((resolve, reject) => {
-                recorder.onstop = () => {
-                    const blob = new Blob(chunks, { type: mimeType });
-                    console.log(`[Reels Video] Recording finished: ${(blob.size / (1024 * 1024)).toFixed(2)} MB (${blob.size} bytes), chunks: ${chunks.length}`);
-                    if (blob.size === 0) {
-                        reject(new Error('فشل تسجيل الفيديو (الحجم 0 بايت). تأكد من اكتمال تحميل عناصر التصميم.'));
-                    } else {
-                        resolve({ blob, mimeType });
-                    }
-                };
-                recorder.onerror = e => reject(new Error('خطأ في مسجل الفيديو: ' + (e.error?.message || 'MediaRecorder error')));
+            res = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json, video/mp4, */*'
+                },
+                body: JSON.stringify({
+                    projectState,
+                    audioState: curAudioState,
+                    filename: filename || `Reel_FC27_ShopCoin15_${Date.now()}.mp4`
+                })
             });
+        } catch (netErr) {
+            console.error('[Record Studio Reel Fetch Error]', netErr);
+            throw new Error(`تعذر الاتصال بمحرك تسجيل الفيديو عالي الدقة (1080x1920). يرجى التأكد من تشغيل السيرفر المحلي عبر تشغيل node server.js أو npm start على المنفذ 3000.`);
+        }
 
-            // Start recording
-            recorder.start(100);
-            await new Promise(r => setTimeout(r, 60));
+        if (!res.ok) {
+            let errMsg = 'فشل تسجيل الفيديو في السيرفر';
+            try {
+                const errJson = await res.json();
+                if (errJson.error) errMsg = errJson.error;
+            } catch(e) {}
+            throw new Error(errMsg);
+        }
 
-            // =========================================================================
-            // PHASE 3: DETERMINISTIC FRAME PUMPING WITH EXACT FRAME COUNTS & AUDIO TRIGGERS
-            // =========================================================================
-            let totalExpectedMs = 0;
-            for (let i = 0; i < preloadedSlides.length; i++) {
-                const item = preloadedSlides[i];
-                const totalFrames = Math.max(15, Math.round(item.duration * fps));
-                totalExpectedMs += (totalFrames / fps) * 1000;
+        if (progressCallback) {
+            progressCallback('⚡ جاري استلام وتجهيز الفيديو عالي الدقة...');
+        }
 
-                if (progressCallback) {
-                    progressCallback(i + 1, totalSlides, `تسجيل السلايد ${i + 1}/${totalSlides} (${item.duration.toFixed(1)} ثانية)...`);
-                }
-
-                // Trigger synchronized real audio for this slide into the recorded video stream!
-                if (recordAudioCtx && recordAudioDest && audioState.masterEnabled) {
-                    triggerSlideAudio(item.slide, recordAudioDest, recordAudioCtx);
-                }
-
-                const transType = (state.slideTransition && state.slideTransition.type) || 'smooth_fade';
-                const transDur = (state.slideTransition && state.slideTransition.duration) || 0.35;
-                const transFrames = (i > 0 && transType !== 'instant') ? Math.min(Math.round(fps * transDur), Math.floor(totalFrames / 2)) : 0;
-
-                for (let f = 0; f < totalFrames; f++) {
-                    const frameStart = performance.now();
-                    const progress = f / totalFrames;
-
-                    ctx.clearRect(0, 0, 1080, 1920);
-
-                    if (f < transFrames && preloadedSlides[i - 1]) {
-                        const t = f / transFrames; // 0.0 -> 1.0
-                        const prevImg = preloadedSlides[i - 1].img;
-                        const curImg = item.img;
-
-                        if (transType === 'smooth_fade') {
-                            ctx.save();
-                            ctx.globalAlpha = Math.max(0, 1 - t);
-                            ctx.drawImage(prevImg, 0, 0, 1080, 1920);
-                            ctx.globalAlpha = Math.min(1, t);
-                            ctx.drawImage(curImg, 0, 0, 1080, 1920);
-                            ctx.restore();
-                        } else if (transType === 'push_slide') {
-                            const ease = 1 - Math.pow(1 - t, 3);
-                            const prevX = -1080 * ease;
-                            const curX = 1080 * (1 - ease);
-                            ctx.save();
-                            ctx.drawImage(prevImg, prevX, 0, 1080, 1920);
-                            ctx.drawImage(curImg, curX, 0, 1080, 1920);
-                            ctx.restore();
-                        } else if (transType === 'flash_cut') {
-                            ctx.drawImage(curImg, 0, 0, 1080, 1920);
-                            const flashAlpha = Math.max(0, 1 - (t * 2.2));
-                            if (flashAlpha > 0) {
-                                ctx.save();
-                                ctx.fillStyle = `rgba(255, 255, 255, ${flashAlpha})`;
-                                ctx.fillRect(0, 0, 1080, 1920);
-                                ctx.restore();
-                            }
-                        } else if (transType === 'zoom_warp') {
-                            const zoomScale = 1.15 - (t * 0.15);
-                            const zw = 1080 * zoomScale;
-                            const zh = 1920 * zoomScale;
-                            const zx = (1080 - zw) / 2;
-                            const zy = (1920 - zh) / 2;
-                            ctx.save();
-                            ctx.globalAlpha = 0.5 + (t * 0.5);
-                            ctx.drawImage(curImg, zx, zy, zw, zh);
-                            ctx.restore();
-                        } else {
-                            const ease = 1 - Math.pow(1 - t, 2.5);
-                            ctx.save();
-                            ctx.globalAlpha = 0.3 + (t * 0.7);
-                            ctx.drawImage(curImg, 60 * (1 - ease), 0, 1080, 1920);
-                            ctx.restore();
-                        }
-                    } else {
-                        // Dynamic subtle cinematic zoom (1.000 -> 1.018)
-                        const scale = 1.0 + (progress * 0.018);
-                        const w = 1080 * scale;
-                        const h = 1920 * scale;
-                        const x = (1080 - w) / 2;
-                        const y = (1920 - h) / 2;
-                        ctx.drawImage(item.img, x, y, w, h);
-                    }
-
-                    // Draw animated Story Progress Bar on recorded video frame
-                    if (state.progressBar && state.progressBar.enabled) {
-                        drawCanvasStoryProgressBar(ctx, 1080, 1920, totalSlides, i, progress, state.progressBar);
-                    }
-
-                    const elapsedThisFrame = performance.now() - frameStart;
-                    const sleepTime = Math.max(1, frameIntervalMs - elapsedThisFrame);
-                    await new Promise(r => setTimeout(r, sleepTime));
-                }
+        const contentType = res.headers.get('content-type') || '';
+        if (contentType.includes('application/json')) {
+            const data = await res.json();
+            if (!data.success) throw new Error(data.error || 'فشل تسجيل الفيديو');
+            return data;
+        } else {
+            const blob = await res.blob();
+            if (!blob || blob.size < 1000) {
+                throw new Error('ملف الفيديو المستلم فارغ أو غير مكتمل');
             }
-
-            // Flush remaining data and stop cleanly
-            try { recorder.requestData(); } catch(e) {}
-            await new Promise(r => setTimeout(r, 120));
-            recorder.stop();
-            if (recordBgmSource) {
-                try { recordBgmSource.stop(); recordBgmSource.disconnect(); } catch(e) {}
-            }
-            if (recordAudioCtx) {
-                try { recordAudioCtx.close(); } catch(e) {}
-            }
-            if (silentAudioObj) silentAudioObj.stop();
-
-            let { blob, mimeType: recordedMime } = await recordingComplete;
-
-            // If recorded in WebM, patch the duration header so TikTok & players know exact duration
-            if (typeof window.ysFixWebmDuration === 'function' && recordedMime.includes('webm')) {
-                try {
-                    console.log(`[Reels Video] Patching WebM duration to ${totalExpectedMs}ms...`);
-                    const fixedBlob = await new Promise((res) => {
-                        window.ysFixWebmDuration(blob, totalExpectedMs, fixed => res(fixed));
-                    });
-                    if (fixedBlob && fixedBlob.size > 0) {
-                        blob = fixedBlob;
-                        console.log('[Reels Video] WebM duration patched successfully!');
-                    }
-                } catch (fixErr) {
-                    console.warn('[Reels Video] fix-webm-duration note:', fixErr.message);
-                }
-            }
-
-            return { blob, mimeType: recordedMime };
-        } finally {
-            state.showSafeZone = prevSafe;
-            state.dragEnabled = prevDrag;
-            state.currentSlideIndex = prevIndex;
-            renderCanvas();
+            return { blob, filename: filename || `Reel_FC27_ShopCoin15_${Date.now()}.mp4` };
         }
     }
 
-    async function exportReelVideo() {
-        const btn = document.getElementById('btnExportVideo');
-        if (btn) {
-            btn.disabled = true;
-            btn.innerHTML = '<span>⏳ جاري معالجة وتجهيز السلايدات...</span>';
+    // Forward legacy calls directly to the native 1080x1920 recorder with 0% fake zoom
+    async function recordReelVideoBlob(progressCallback) {
+        const outName = `Reel_FC27_ShopCoin15_${Date.now()}.mp4`;
+        const res = await recordStudioReelViaServer(outName, (msg) => {
+            if (progressCallback) progressCallback(1, 1, msg);
+        });
+        if (res.blob) return { blob: res.blob, mimeType: 'video/mp4' };
+        if (res.downloadUrl) {
+            const blob = await (await fetch(getReelsApiUrl(res.downloadUrl))).blob();
+            return { blob, mimeType: 'video/mp4' };
         }
+        throw new Error('تعذر استلام ملف الفيديو');
+    }
+
+    function getReelsApiUrl(endpoint) {
+        if (typeof window !== 'undefined') {
+            const loc = window.location;
+            if (loc.protocol === 'file:') {
+                return `http://127.0.0.1:3000${endpoint}`;
+            }
+        }
+        return endpoint;
+    }
+
+    async function exportReelVideo() {
+        const btns = Array.from(document.querySelectorAll('#btnExportVideo, #btnExportVideoFloating, .btn-export-reel-action'));
+        const origTexts = btns.map(b => b.innerHTML);
+        btns.forEach(b => {
+            b.disabled = true;
+            b.innerHTML = '<span>⏳ جاري تشغيل محرك التسجيل الفائق 1080x1920...</span>';
+        });
 
         try {
             if (window.showCopyToast) {
-                window.showCopyToast('بدأ تسجيل فيديو الريل بالسرعة المحددة لكل سلايد.. 🎬⚡');
+                window.showCopyToast('بدأ تسجيل وتصدير ريلز الأنيميشن بجودة 1080x1920 Full HD مع كامل الحركات والصوت.. 🎬⚡');
             }
 
-            const { blob, mimeType } = await recordReelVideoBlob((cur, total, msg) => {
-                if (btn) btn.innerHTML = `<span>⏳ ${msg || `معالجة سلايد ${cur}/${total}...`}</span>`;
+            const defaultFilename = `Reel_FC27_ShopCoin15_${Date.now()}.mp4`;
+            const result = await recordStudioReelViaServer(defaultFilename, (msg) => {
+                btns.forEach(b => {
+                    b.innerHTML = `<span>⏳ ${msg}</span>`;
+                });
             });
 
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            const ext = mimeType.includes('mp4') ? 'mp4' : 'webm';
-            a.download = `Reel_FC27_ShopCoin15_${Date.now()}.${ext}`;
-            document.body.appendChild(a);
-            a.click();
+            const finalName = result.filename || defaultFilename;
+            const downloadUrl = result.downloadUrl ? getReelsApiUrl(result.downloadUrl) : (result.blob ? URL.createObjectURL(result.blob) : '');
+            const desktopFile = result.desktopFile || 'Reel_FC27_ShopCoin15_Latest.mp4';
 
-            // Retain URL for 60 seconds so Chrome download manager has ample time to write to disk
-            setTimeout(() => {
-                if (document.body.contains(a)) document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-            }, 60000);
+            if (downloadUrl) {
+                const a = document.createElement('a');
+                a.href = downloadUrl;
+                a.download = finalName;
+                document.body.appendChild(a);
+                a.click();
+                setTimeout(() => {
+                    if (document.body.contains(a)) document.body.removeChild(a);
+                }, 60000);
+            }
+
+            // Always show the unmissable modal with direct download button and desktop path
+            showVideoDownloadModal(finalName, downloadUrl, desktopFile);
 
             if (window.showCopyToast) {
-                window.showCopyToast('تم تحميل فيديو الريل بنجاح! جاهز للنشر مع موسيقاك 🚀🎉');
+                window.showCopyToast('تم تصدير وحفظ الفيديو بنجاح على سطح المكتب والتنزيلات! 🚀🎉');
             }
         } catch (err) {
             console.error('Video export error:', err);
             alert('تعذر تصدير الفيديو: ' + err.message);
-        } finally {
-            if (btn) {
-                btn.disabled = false;
-                btn.innerHTML = '<span>🎬 تصدير فيديو الريل بدقة 60FPS (MP4 / WebM)</span>';
+            if (window.showCopyToast) {
+                window.showCopyToast('❌ تعذر تصدير الفيديو: ' + err.message);
             }
+        } finally {
+            btns.forEach((b, idx) => {
+                b.disabled = false;
+                b.innerHTML = origTexts[idx] || (b.id === 'btnExportVideo' ? '<span>🎬 تحميل فيديو الريل الأصلي (MP4 - 1080x1920 Full HD)</span>' : '<span>🎬 تحميل فيديو</span>');
+            });
         }
     }
 
@@ -7482,10 +7503,16 @@ window.ReelsEngine = (function() {
         }
 
         try {
-            const { blob } = await recordReelVideoBlob((cur, total, msg) => {
-                if (btn) btn.innerHTML = `<span>⏳ ${msg || `معالجة سلايد ${cur}/${total}...`}</span>`;
-                if (statusBox) statusBox.textContent = `⏳ ${msg || `جاري معالجة السلايد ${cur} من ${total}...`}`;
+            const recResult = await recordStudioReelViaServer('tiktok_reel.mp4', (msg) => {
+                if (btn) btn.innerHTML = `<span>⏳ ${msg}</span>`;
+                if (statusBox) statusBox.textContent = `⏳ ${msg}`;
             });
+
+            let blob = recResult.blob;
+            if (!blob && recResult.downloadUrl) {
+                blob = await (await fetch(getReelsApiUrl(recResult.downloadUrl))).blob();
+            }
+            if (!blob) throw new Error('فشل استلام ملف الفيديو للنشر');
 
             if (btn) btn.innerHTML = '<span>🚀 جاري رفع الفيديو لتيك توك...</span>';
             if (statusBox) statusBox.textContent = '🚀 جاري الاتصال بـ TikTok API ونشر الفيديو مباشرة...';
@@ -7542,7 +7569,7 @@ window.ReelsEngine = (function() {
         } finally {
             if (btn) {
                 btn.disabled = false;
-                btn.innerHTML = `<span>🚀 نشر الريل على تيك توك (@${tiktokStatus.username || 'shop_coin15'})</span>`;
+                btn.innerHTML = origHtml;
             }
         }
     }
@@ -7609,12 +7636,16 @@ window.ReelsEngine = (function() {
         }
 
         try {
-            const { blob, mimeType } = await recordReelVideoBlob((cur, total, msg) => {
-                if (btnSide) btnSide.innerHTML = `<span>⏳ ${msg || `معالجة ${cur}/${total}...`}</span>`;
-                if (window.showCopyToast && (cur === 1 || cur === total)) {
-                    window.showCopyToast(msg || `تسجيل فيديو الريلز: السلايد ${cur} من ${total}... ⏳`);
-                }
+            const defaultFileName = `Reel_FC27_ShopCoin15_${Date.now()}.mp4`;
+            const recResult = await recordStudioReelViaServer(defaultFileName, (msg) => {
+                if (btnSide) btnSide.innerHTML = `<span>⏳ ${msg}</span>`;
             });
+
+            let blob = recResult.blob;
+            if (!blob && recResult.downloadUrl) {
+                blob = await (await fetch(getReelsApiUrl(recResult.downloadUrl))).blob();
+            }
+            if (!blob) throw new Error('فشل استلام ملف الفيديو لتيليجرام');
 
             if (btnSide) {
                 btnSide.innerHTML = '<span>🚀 جاري رفع الفيديو إلى تيليجرام...</span>';
@@ -7624,8 +7655,6 @@ window.ReelsEngine = (function() {
             }
 
             const totalDuration = state.slides.reduce((acc, s) => acc + (s.duration || 2.5), 0);
-            const ext = mimeType.includes('mp4') ? 'mp4' : 'webm';
-            const fileName = `Reel_FC27_ShopCoin15_${Date.now()}.${ext}`;
 
             const caption = `🎬 فيديو ريلز متجر ShopCoin15 جاهز للنشر! 🚀✨
 📌 ${state.title || 'أقوى كروت ومقارنات FC 27'}
@@ -7634,7 +7663,7 @@ window.ReelsEngine = (function() {
 
 👑 @shop_coin15 | متجر كوينز FC 27`;
 
-            await window.TelegramManager.sendVideoInternal(blob, caption, null, fileName);
+            await window.TelegramManager.sendVideoInternal(blob, caption, null, finalFileName);
 
             if (window.showCopyToast) {
                 window.showCopyToast('تم إرسال فيديو الريلز إلى تيليجرام بنجاح! 🚀📱 افتح التيليجرام لمشاهدته وتنزيله');
@@ -7786,7 +7815,10 @@ ${state.subtitle}
         renderCanvas,
         renderEditorControls,
         renderPlayerToolbar,
+        captureSlideImage,
+        showVideoDownloadModal,
         exportReelVideo,
+        recordReelVideoBlob,
         exportAllSlidesBatch,
         sendReelTelegram,
         sendReelVideoTelegram,
@@ -7835,6 +7867,9 @@ ${state.subtitle}
         applyBadgesToAllPlayerCards,
         REELS_PRESET_BADGES,
         getProgressBarState: () => state.progressBar,
-        getState: () => state
+        getState: () => state,
+        loadProject,
+        setAudioState,
+        recordStudioReelViaServer
     };
 })();
