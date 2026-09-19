@@ -981,6 +981,43 @@ window.ReelsEngine = (function() {
         saveProjectState();
     }
 
+    function setPlayerPriceQuick(price) {
+        const slide = state.slides[state.currentSlideIndex];
+        if (!slide) return;
+        slide.playerPrice = price;
+        renderCanvas();
+        renderEditorControls();
+        saveProjectState();
+        if (window.showCopyToast) {
+            window.showCopyToast(`تم تحديد السعر: ${price} كوينز 💰`);
+        }
+    }
+
+    function clearPlayerPrice() {
+        const slide = state.slides[state.currentSlideIndex];
+        if (!slide) return;
+        slide.playerPrice = '';
+        renderCanvas();
+        renderEditorControls();
+        saveProjectState();
+        if (window.showCopyToast) {
+            window.showCopyToast('تم إخفاء سعر اللاعب من الريل');
+        }
+    }
+
+    function setVersusPlayerPrice(playerKey, price) {
+        const slide = state.slides[state.currentSlideIndex];
+        if (!slide || slide.type !== 'versus_card') return;
+        if (!slide[playerKey]) slide[playerKey] = {};
+        slide[playerKey].price = price;
+        renderCanvas();
+        renderEditorControls();
+        saveProjectState();
+        if (window.showCopyToast) {
+            window.showCopyToast(`تم تحديد السعر: ${price} كوينز 💰`);
+        }
+    }
+
     // ---- 6.5 FC 27 PLAYER & CARD FETCHER ENGINE (FUT.GG / FUTBIN / PRESETS / UPLOAD) ----
     const REELS_PRESET_STARS = [
         {
@@ -989,6 +1026,7 @@ window.ReelsEngine = (function() {
             enQuery: 'kylian-mbappe',
             rating: '91',
             position: 'ST',
+            defaultPrice: '2.4M',
             imageUrl: 'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=600/2027/futgg-player-item-card/27-231747.1b49b357729ba7dbf174dc4aa1e8519ce230b98ad399360e364a59f4b3477f07.webp',
             badges: ['⚡ سرعة 97', '🔥 ميتّا 5/5', '💰 2.4M كوينز']
         },
@@ -998,6 +1036,7 @@ window.ReelsEngine = (function() {
             enQuery: 'vinicius-jr',
             rating: '89',
             position: 'LW',
+            defaultPrice: '1.8M',
             imageUrl: 'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=600/2027/futgg-player-item-card/27-238794.6715e80f49fb5360b92261f8bd984f7178a47066cff3bfcd2c1b7dd57db13fbf.webp',
             badges: ['⚡ سرعة 95', '🪄 مهارات 5 نجوم', '🔥 مراوغات 91']
         },
@@ -1007,6 +1046,7 @@ window.ReelsEngine = (function() {
             enQuery: 'jude-bellingham',
             rating: '90',
             position: 'CAM',
+            defaultPrice: '950K',
             imageUrl: 'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=600/2027/futgg-player-item-card/27-252371.49e4acdf2d78496f4951f41725cd17fb8efb118d99a69ba074ab76fc62d70735.webp',
             badges: ['🛡️ متكامل 80+', '🎯 إنهاء قوي', '👑 صانع لعب']
         },
@@ -1016,6 +1056,7 @@ window.ReelsEngine = (function() {
             enQuery: 'erling-haaland',
             rating: '91',
             position: 'ST',
+            defaultPrice: '1.1M',
             imageUrl: 'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=600/2027/futgg-player-item-card/27-239085.5302941a50a927b565c122945958880e418b56c6cf7a76f88179fa24ec510b57.webp',
             badges: ['🚀 تسديد خارق 93', '💪 قوة بدنية', '🤖 ماكينة أهداف']
         },
@@ -1025,6 +1066,7 @@ window.ReelsEngine = (function() {
             enQuery: 'lamine-yamal',
             rating: '87',
             position: 'RW',
+            defaultPrice: '780K',
             imageUrl: 'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=600/2027/futgg-player-item-card/27-67386507.a953ece6dcf87cff76b8213692e7d57e1d31a2268e3f32596dd738c7a1591220.webp',
             badges: ['💎 موهبة استثنائية', '⚡ سرعة ورشاقة', '🔥 تسديد مقوس']
         },
@@ -1034,6 +1076,7 @@ window.ReelsEngine = (function() {
             enQuery: 'mohamed-salah',
             rating: '87',
             position: 'RM',
+            defaultPrice: '550K',
             imageUrl: 'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=600/2027/futgg-player-item-card/27-209331.bdfc8b1e25229756f608e53457f6d58285771dcfddb855e6d723a3023f6aa7c2.webp',
             badges: ['👑 فخر العرب', '🎯 إنهاء حاسم', '⚡ سرعة 89']
         },
@@ -1043,6 +1086,7 @@ window.ReelsEngine = (function() {
             enQuery: 'cole-palmer',
             rating: '85',
             position: 'CAM',
+            defaultPrice: '380K',
             imageUrl: 'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=600/2027/futgg-player-item-card/27-257534.5ab77a65780079d6792225ab1188f2250ca159e3ebe6a26b6375ed6a307622f7.webp',
             badges: ['🥶 كولد بالمر', '🎯 صانع لعب', '🔥 تسديد متقن']
         },
@@ -1052,6 +1096,7 @@ window.ReelsEngine = (function() {
             enQuery: 'bukayo-saka',
             rating: '88',
             position: 'RW',
+            defaultPrice: '420K',
             imageUrl: 'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=600/2027/futgg-player-item-card/27-246669.cab7c7f82f8442d8ba57fc15e5f49728247141eac35add86238cdc54e7916495.webp',
             badges: ['⚡ جناح سريع', '🎯 عرضيات متقنة', '🔥 نجم الدوري']
         },
@@ -1061,6 +1106,7 @@ window.ReelsEngine = (function() {
             enQuery: 'rodri',
             rating: '90',
             position: 'CDM',
+            defaultPrice: '120K',
             imageUrl: 'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=600/2027/futgg-player-item-card/27-231866.15741f3f4953470b2b606a68800c4b6ec0eebe161b9435060ba0073494e92618.webp',
             badges: ['🏆 أفضل لاعب بالعالم', '🛡️ صمام أمان', '🎯 تمريرات 90+']
         },
@@ -1070,6 +1116,7 @@ window.ReelsEngine = (function() {
             enQuery: 'lionel-messi',
             rating: '89',
             position: 'RW',
+            defaultPrice: '180K',
             imageUrl: 'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=600/2027/futgg-player-item-card/27-158023.b7b052e75f1a00658907cbe5312eb4a62b2661631a6e0661b1924ec5e3f2a91c.webp',
             badges: ['🐐 الأسطورة', '🪄 سحر المراوغة', '🎯 صانع أهداف']
         },
@@ -1079,6 +1126,7 @@ window.ReelsEngine = (function() {
             enQuery: 'cristiano-ronaldo',
             rating: '84',
             position: 'ST',
+            defaultPrice: '45K',
             imageUrl: 'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=600/2027/futgg-player-item-card/27-20801.cb3bb88dcfff15fcfcc495bbad7a5d9b90f64d78078740c44e67a7ecf028ecb4.webp',
             badges: ['🐐 الدون SIUU', '🎯 تسديد 88', '💪 ارتقاء خيالي']
         }
@@ -1119,11 +1167,13 @@ window.ReelsEngine = (function() {
             slide[playerKey].cardUrl = star.imageUrl;
             slide[playerKey].rating = star.rating;
             slide[playerKey].statHighlight = `طاقات ${star.rating}`;
+            if (star.defaultPrice) slide[playerKey].price = star.defaultPrice;
         } else {
             slide.playerName = star.name;
             slide.playerArName = star.arName;
             slide.cardUrl = star.imageUrl;
             slide.rating = star.rating;
+            if (star.defaultPrice) slide.playerPrice = star.defaultPrice;
             slide.badges = star.badges ? [...star.badges] : [`⚡ سرعة ${star.rating}`, '🔥 ميتّا', '💰 كوينز مناسبة'];
         }
 
@@ -1405,6 +1455,41 @@ window.ReelsEngine = (function() {
                     <input type="text" placeholder="رابط كرت ${labelText}" value="${(pObj.cardUrl || '').replace(/"/g, '&quot;')}" 
                            onchange="ReelsEngine.updateVersusField('${playerKey}', 'cardUrl', this.value)"
                            class="flex-1 px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-200 text-[10px] font-mono text-slate-700">
+                </div>
+
+                <!-- Player Price in Coins (Optional) -->
+                <div class="p-2 rounded-xl bg-amber-50/70 border border-amber-200/70 space-y-1.5">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-1.5">
+                            <img src="assets/fc-coin.webp" alt="Coin" class="w-3.5 h-3.5 object-contain">
+                            <span class="text-[10px] font-black text-amber-950">سعر ${labelText} بالكوينز (اختياري):</span>
+                        </div>
+                        ${pObj.price ? `
+                            <button type="button" onclick="ReelsEngine.setVersusPlayerPrice('${playerKey}', '')" class="text-[9.5px] font-bold text-rose-600 hover:text-rose-700 bg-rose-50 px-1.5 py-0.5 rounded transition">
+                                مسح ✕
+                            </button>
+                        ` : `
+                            <span class="text-[9px] text-slate-400 font-medium">غير معروض</span>
+                        `}
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <div class="relative flex-1">
+                            <div class="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none">
+                                <img src="assets/fc-coin.webp" alt="Coin" class="w-3.5 h-3.5 object-contain">
+                            </div>
+                            <input type="text" placeholder="مثال: 1.8M أو 450K..." value="${(pObj.price || '').replace(/"/g, '&quot;')}" 
+                                   oninput="ReelsEngine.updateVersusField('${playerKey}', 'price', this.value)"
+                                   class="w-full pr-7 pl-2 py-1 rounded-lg bg-white border border-amber-200 text-xs font-black font-mono text-slate-900 outline-none focus:border-amber-500 shadow-2xs">
+                        </div>
+                        <div class="flex gap-1 shrink-0">
+                            ${['2.4M', '1.2M', '500K'].map(p => `
+                                <button type="button" onclick="ReelsEngine.setVersusPlayerPrice('${playerKey}', '${p}')" 
+                                        class="px-1.5 py-0.5 rounded-md bg-white hover:bg-amber-100 text-amber-900 border border-amber-200 text-[9.5px] font-bold font-mono transition shadow-2xs">
+                                    ${p}
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
                 </div>
             </div>
         `;
@@ -2096,6 +2181,16 @@ window.ReelsEngine = (function() {
                                  class="w-64 md:w-72 h-auto max-h-[400px] object-contain drop-shadow-[0_20px_35px_rgba(0,0,0,0.4)] pointer-events-none">
                         </div>
 
+                        <!-- 3.1 Player Coin Price Pill (Optional - Official FC Coin) -->
+                        ${currentSlide.playerPrice && currentSlide.playerPrice.trim() ? `
+                            <div class="mt-2.5 px-4 py-1.5 rounded-full bg-slate-950/90 border border-amber-400/80 shadow-[0_8px_25px_rgba(245,158,11,0.45)] backdrop-blur-md flex items-center gap-2 pointer-events-none" dir="ltr">
+                                <img src="assets/fc-coin.webp" alt="FC Coins" class="w-5 h-5 object-contain drop-shadow-[0_0_8px_rgba(251,191,36,0.85)]">
+                                <span class="font-black text-sm tracking-wider text-amber-300 drop-shadow-xs font-mono">
+                                    ${currentSlide.playerPrice.trim()}
+                                </span>
+                            </div>
+                        ` : ''}
+
                         <!-- Badges -->
                         ${!currentSlide.hideBadges && currentSlide.badges && currentSlide.badges.length ? `
                             <div class="mt-3 flex items-center justify-center gap-1.5 flex-wrap max-w-xs pointer-events-none" dir="rtl">
@@ -2155,6 +2250,12 @@ window.ReelsEngine = (function() {
                             <div class="mt-2 text-center pointer-events-none">
                                 <div class="text-sm font-black text-slate-950">${pA.arName || pA.name}</div>
                                 <div class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-200 mt-1">${pA.statHighlight || ''}</div>
+                                ${pA.price && pA.price.trim() ? `
+                                    <div class="mt-1.5 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-950/90 border border-amber-400/80 shadow-md backdrop-blur-xs pointer-events-none" dir="ltr">
+                                        <img src="assets/fc-coin.webp" alt="Coin" class="w-3.5 h-3.5 object-contain drop-shadow-[0_0_6px_rgba(251,191,36,0.7)]">
+                                        <span class="font-black text-[11px] text-amber-300 font-mono">${pA.price.trim()}</span>
+                                    </div>
+                                ` : ''}
                             </div>
                         </div>
                         ${renderResizeHandle('cardA')}
@@ -2181,6 +2282,12 @@ window.ReelsEngine = (function() {
                             <div class="mt-2 text-center pointer-events-none">
                                 <div class="text-sm font-black text-slate-950">${pB.arName || pB.name}</div>
                                 <div class="text-[10px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-lg border border-blue-200 mt-1">${pB.statHighlight || ''}</div>
+                                ${pB.price && pB.price.trim() ? `
+                                    <div class="mt-1.5 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-950/90 border border-amber-400/80 shadow-md backdrop-blur-xs pointer-events-none" dir="ltr">
+                                        <img src="assets/fc-coin.webp" alt="Coin" class="w-3.5 h-3.5 object-contain drop-shadow-[0_0_6px_rgba(251,191,36,0.7)]">
+                                        <span class="font-black text-[11px] text-amber-300 font-mono">${pB.price.trim()}</span>
+                                    </div>
+                                ` : ''}
                             </div>
                         </div>
                         ${renderResizeHandle('cardB')}
@@ -2804,6 +2911,44 @@ window.ReelsEngine = (function() {
                                    onchange="ReelsEngine.updateCurrentSlideField('cardUrl', this.value)"
                                    placeholder="رابط صورة الكرت المباشر..."
                                    class="flex-1 px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-900 text-[10.5px] font-mono outline-none focus:border-emerald-500 shadow-2xs">
+                        </div>
+                    </div>
+
+                    <!-- Player Coin Price Section (Optional) -->
+                    <div class="p-2.5 rounded-xl bg-gradient-to-br from-amber-500/10 via-amber-50/70 to-yellow-500/5 border border-amber-300/70 space-y-2">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-1.5">
+                                <img src="assets/fc-coin.webp" alt="Coin" class="w-4 h-4 object-contain">
+                                <label class="text-[11px] font-black text-amber-950">سعر اللاعب بالكوينز (اختياري):</label>
+                            </div>
+                            ${slide.playerPrice && slide.playerPrice.trim() ? `
+                                <button type="button" onclick="ReelsEngine.clearPlayerPrice()" class="text-[9.5px] font-bold px-2 py-0.5 rounded bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 transition">
+                                    مسح السعر ✕
+                                </button>
+                            ` : `
+                                <span class="text-[9px] font-bold text-amber-800 bg-amber-100/80 px-2 py-0.5 rounded-md">
+                                    غير معروض (اتركه فارغاً للإخفاء)
+                                </span>
+                            `}
+                        </div>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                <img src="assets/fc-coin.webp" alt="Coin" class="w-4 h-4 object-contain">
+                            </div>
+                            <input type="text" value="${(slide.playerPrice || '').replace(/"/g, '&quot;')}" 
+                                   oninput="ReelsEngine.updateCurrentSlideField('playerPrice', this.value)"
+                                   placeholder="مثلاً: 2.4M أو 850K أو 45,000 (فارغ = بدون سعر)..."
+                                   class="w-full pr-9 pl-3 py-2 rounded-xl bg-white border border-amber-300/70 text-slate-900 text-xs font-black outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-400 font-mono shadow-2xs">
+                        </div>
+                        <!-- Quick Price Suggestions -->
+                        <div class="flex items-center gap-1 flex-wrap pt-1 border-t border-amber-200/60">
+                            <span class="text-[9.5px] font-black text-amber-900">أرقام سريعة:</span>
+                            ${['2.4M', '1.8M', '1.2M', '850K', '450K', '120K', '45K'].map(p => `
+                                <button type="button" onclick="ReelsEngine.setPlayerPriceQuick('${p}')"
+                                        class="px-2 py-0.5 rounded-md bg-white hover:bg-amber-100 text-amber-950 border border-amber-200 text-[10px] font-black font-mono shadow-2xs transition active:scale-95">
+                                    ${p}
+                                </button>
+                            `).join('')}
                         </div>
                     </div>
 
@@ -3575,6 +3720,9 @@ ${state.subtitle}
         applyDurationToAllPlayerCards,
         updateCurrentSlideField,
         updateVersusField,
+        setPlayerPriceQuick,
+        clearPlayerPrice,
+        setVersusPlayerPrice,
         updateTitle,
         updateTitleFromTextarea,
         updateTitleLine,
