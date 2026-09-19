@@ -66,39 +66,49 @@ let nativeBrowser = null;
 let nativePage = null;
 let renderQueue = Promise.resolve();
 
-async function ensureNativePage(port) {
-    if (nativePage && !nativePage.isClosed()) {
-        return nativePage;
+async function ensureNativeBrowser() {
+    if (nativeBrowser && nativeBrowser.isConnected()) {
+        return nativeBrowser;
     }
     if (!puppeteer) return null;
     const execPath = await getBrowserExecutable();
     if (!execPath) return null;
 
-    if (!nativeBrowser || !nativeBrowser.isConnected()) {
-        const warmupProfile = path.join(__dirname, 'scratch', 'warmup_profile');
-        fs.mkdirSync(warmupProfile, { recursive: true });
-        const launchArgs = [
-            '--no-sandbox',
-            '--disable-setuid-sandbox',
-            '--disable-gpu',
-            '--disable-dev-shm-usage',
-            '--hide-scrollbars',
-            '--disable-web-security',
-            `--user-data-dir=${warmupProfile}`
-        ];
-        nativeBrowser = await puppeteer.launch({
-            executablePath: execPath,
-            headless: 'new',
-            args: launchArgs,
-            protocolTimeout: 180000
-        });
-    }
+    const warmupProfile = path.join(__dirname, 'scratch', 'warmup_profile');
+    fs.mkdirSync(warmupProfile, { recursive: true });
+    const launchArgs = [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-gpu',
+        '--disable-dev-shm-usage',
+        '--hide-scrollbars',
+        '--disable-web-security',
+        '--disable-background-timer-throttling',
+        '--disable-backgrounding-occluded-windows',
+        '--disable-renderer-backgrounding',
+        `--user-data-dir=${warmupProfile}`
+    ];
+    nativeBrowser = await puppeteer.launch({
+        executablePath: execPath,
+        headless: 'new',
+        args: launchArgs,
+        protocolTimeout: 240000
+    });
+    return nativeBrowser;
+}
 
-    nativePage = await nativeBrowser.newPage();
+async function ensureNativePage(port) {
+    if (nativePage && !nativePage.isClosed()) {
+        return nativePage;
+    }
+    const b = await ensureNativeBrowser();
+    if (!b) return null;
+
+    nativePage = await b.newPage();
     // Warm up the page by navigating to the studio
     try {
-        await nativePage.goto(`http://127.0.0.1:${port}`, { waitUntil: 'domcontentloaded', timeout: 15000 });
-        await nativePage.waitForFunction(() => typeof window.selectTemplate === 'function', { timeout: 10000 });
+        await nativePage.goto(`http://127.0.0.1:${port}`, { waitUntil: 'domcontentloaded', timeout: 25000 });
+        await nativePage.waitForFunction(() => typeof window.selectTemplate === 'function', { timeout: 15000 });
         if (nativePage.evaluate) {
             await nativePage.evaluate(() => document.fonts && document.fonts.ready);
         }
@@ -983,7 +993,7 @@ async function processReelJob(jobId, payload, execPath) {
     const job = reelJobs.get(jobId);
     if (!job) return;
 
-    let browser = null;
+    let page = null;
     let runDir = null;
     try {
         job.status = 'preparing';
@@ -995,32 +1005,14 @@ async function processReelJob(jobId, payload, execPath) {
 
         runDir = path.join(__dirname, 'scratch', jobId);
         const framesDir = path.join(runDir, 'frames');
-        const profileDir = path.join(runDir, 'profile');
         fs.mkdirSync(framesDir, { recursive: true });
-        fs.mkdirSync(profileDir, { recursive: true });
 
-        const launchArgs = [
-            '--no-sandbox',
-            '--disable-setuid-sandbox',
-            '--window-size=1080,1920',
-            '--autoplay-policy=no-user-gesture-required',
-            '--disable-gpu',
-            '--disable-dev-shm-usage',
-            '--hide-scrollbars',
-            '--disable-web-security',
-            '--disable-background-timer-throttling',
-            '--disable-backgrounding-occluded-windows',
-            '--disable-renderer-backgrounding',
-            `--user-data-dir=${profileDir}`
-        ];
-        browser = await puppeteer.launch({
-            executablePath: execPath,
-            headless: 'new',
-            args: launchArgs,
-            protocolTimeout: 240000
-        });
+        const b = await ensureNativeBrowser();
+        if (!b) {
+            throw new Error('تعذر تشغيل محرك المتصفح Chromium على السيرفر');
+        }
 
-        const page = await browser.newPage();
+        page = await b.newPage();
         await page.setViewport({ width: 1080, height: 1920, deviceScaleFactor: 1 });
         await page.goto(`http://127.0.0.1:${PORT}/?suite=suite_reels`, { waitUntil: 'domcontentloaded', timeout: 60000 });
         await page.waitForSelector('#canvasScaleStage', { timeout: 30000 });
@@ -1210,9 +1202,9 @@ async function processReelJob(jobId, payload, execPath) {
             });
         }
 
-        // 3. Close Chromium immediately to release container memory
-        await browser.close();
-        browser = null;
+        // 3. Close tab immediately to release memory
+        await page.close();
+        page = null;
 
         job.status = 'encoding';
         job.progress = 70;
@@ -1329,8 +1321,8 @@ async function processReelJob(jobId, payload, execPath) {
         job.status = 'error';
         job.error = err.message || 'حدث خطأ غير متوقع أثناء تسجيل الفيديو';
     } finally {
-        if (browser) {
-            try { await browser.close(); } catch(e) {}
+        if (page && !page.isClosed()) {
+            try { await page.close(); } catch(e) {}
         }
         if (runDir && fs.existsSync(runDir)) {
             try { fs.rmSync(runDir, { recursive: true, force: true }); } catch(e) {}
