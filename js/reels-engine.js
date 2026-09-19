@@ -4275,7 +4275,9 @@ window.ReelsEngine = (function() {
 
     // ---- 7. INTERACTIVE VIDEO PLAYER ----
     function playPlayback(customDest = null, ctxOverride = null, onComplete = null) {
-        if (state.isPlaying) return;
+        if (state.isPlaying) {
+            pausePlayback();
+        }
         state.isPlaying = true;
         updatePlayerUi();
 
@@ -4285,19 +4287,19 @@ window.ReelsEngine = (function() {
         // 2. Trigger audio for current starting slide
         triggerSlideAudio(state.slides[state.currentSlideIndex], customDest, ctxOverride);
 
-        const tickMs = 50;
-        let elapsed = 0;
+        const tickMs = 30;
+        let slideStartTime = Date.now();
 
         const getCurSlideMs = () => {
             const slide = state.slides[state.currentSlideIndex];
-            return ((slide && slide.duration) || state.slideDuration || 2.5) * 1000;
+            return Math.max(500, ((slide && slide.duration) || state.slideDuration || 2.5) * 1000);
         };
 
         if (state.playbackTimer) clearInterval(state.playbackTimer);
 
         state.playbackTimer = setInterval(() => {
-            elapsed += tickMs;
             const curSlideMs = getCurSlideMs();
+            const elapsed = Date.now() - slideStartTime;
             state.timelineProgress = Math.min(100, (elapsed / curSlideMs) * 100);
 
             const bars = document.querySelectorAll('.reels-toolbar-timeline-bar, #toolbarTimelineBar, #reelTimelineBar');
@@ -4315,7 +4317,7 @@ window.ReelsEngine = (function() {
             }
 
             if (elapsed >= curSlideMs) {
-                elapsed = 0;
+                slideStartTime = Date.now();
                 state.timelineProgress = 0;
                 if (state.currentSlideIndex < state.slides.length - 1) {
                     state.currentSlideIndex++;

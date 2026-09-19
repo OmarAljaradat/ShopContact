@@ -1008,6 +1008,9 @@ async function processReelJob(jobId, payload, execPath) {
             '--disable-dev-shm-usage',
             '--hide-scrollbars',
             '--disable-web-security',
+            '--disable-background-timer-throttling',
+            '--disable-backgrounding-occluded-windows',
+            '--disable-renderer-backgrounding',
             `--user-data-dir=${profileDir}`
         ];
         browser = await puppeteer.launch({
@@ -1036,7 +1039,7 @@ async function processReelJob(jobId, payload, execPath) {
             if (window.ReelsEngine) window.ReelsEngine.setSelectedElement('');
         });
 
-        // Inject pure 1080x1920 isolated canvas scaling
+        // Inject pure 1080x1920 isolated canvas scaling via Blink zoom 2.4 (native layout multiplier, 100% full-screen without compositor clipping)
         await page.addStyleTag({
             content: `
                 html, body {
@@ -1066,8 +1069,8 @@ async function processReelJob(jobId, payload, execPath) {
                     left: 0px !important;
                     width: 450px !important;
                     height: 800px !important;
-                    transform: scale(2.4) !important;
-                    transform-origin: 0 0 !important;
+                    zoom: 2.4 !important;
+                    transform: none !important;
                     margin: 0 !important;
                     padding: 0 !important;
                     box-shadow: none !important;
@@ -1296,6 +1299,7 @@ async function processReelJob(jobId, payload, execPath) {
         }
 
         ffmpegArgs.push(
+            '-vf', 'scale=1080:1920:flags=lanczos',
             '-c:v', 'libx264',
             '-crf', '20',
             '-preset', 'ultrafast',
