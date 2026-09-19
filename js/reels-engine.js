@@ -145,13 +145,49 @@ window.ReelsEngine = (function() {
         return 'thmanyah';
     }
 
-    const PROGRESS_BAR_STORAGE_KEY = 'shopcoin15_reels_progressbar_v1';
+    const PROGRESS_BAR_STORAGE_KEY = 'shopcoin15_reels_progressbar_v2';
+    const SLIDE_TRANSITION_STORAGE_KEY = 'shopcoin15_reels_transition_v2';
+
+    const REELS_PROGRESS_STYLES = [
+        {
+            id: 'capsule_neon',
+            name: 'كبسولات نيون عائمة',
+            desc: 'كبسولات زجاجية منفصلة مع توهج نيون مشع وخلفية بلور',
+            icon: '💊'
+        },
+        {
+            id: 'laser_beam',
+            name: 'خط ليزري متصل',
+            desc: 'خط ليزري انسيابي واحد مع رأس متوهج يقود شريط التقدم',
+            icon: '⚡'
+        },
+        {
+            id: 'ig_vip_pills',
+            name: 'نقاط VIP الذكية',
+            desc: 'نقاط دائرية أنيقة تتمدد لكبسولة طويلة أثناء عرض السلايد',
+            icon: '⚪'
+        },
+        {
+            id: 'gradient_stream',
+            name: 'تدرج ملوكي فاخر',
+            desc: 'شريط انسيابي يمزج الذهب والزمرد والنيون مع انعكاس ضوئي',
+            icon: '🌈'
+        },
+        {
+            id: 'minimal_ticks',
+            name: 'مؤشرات دقيقة شفافة',
+            desc: 'خطوط ميكرو فائقة النحافة (2.5px) لإبراز الكرت والتصميم',
+            icon: '📏'
+        }
+    ];
 
     const DEFAULT_PROGRESS_BAR = {
         enabled: true,
-        color: 'white', // 'white' | 'amber' | 'emerald'
-        height: 4,
-        topOffset: 16
+        style: 'capsule_neon', // 'capsule_neon' | 'laser_beam' | 'ig_vip_pills' | 'gradient_stream' | 'minimal_ticks'
+        color: 'amber', // 'amber' | 'emerald' | 'white' | 'purple' | 'cyan'
+        thickness: 'medium', // 'thin' (3px) | 'medium' (5px) | 'thick' (7px)
+        height: 5,
+        topOffset: 14
     };
 
     function loadSavedProgressBar() {
@@ -162,6 +198,67 @@ window.ReelsEngine = (function() {
             }
         } catch (e) {}
         return { ...DEFAULT_PROGRESS_BAR };
+    }
+
+    const REELS_SLIDE_TRANSITIONS = [
+        {
+            id: 'smooth_fade',
+            name: 'تلاشي سينمائي',
+            desc: 'دمج هوليوودي ناعم وانسيابي بين السلايدات',
+            icon: '🎬'
+        },
+        {
+            id: 'push_slide',
+            name: 'سحب وانزلاق',
+            desc: 'حركة انزلاق أفقية سريعة تعطي طابع التصفح السريع',
+            icon: '↔️'
+        },
+        {
+            id: 'zoom_warp',
+            name: 'اختراق وتكبير',
+            desc: 'اندفاع واختراق سريع للداخل يجذب انتباه المشاهد',
+            icon: '🔍'
+        },
+        {
+            id: 'flash_cut',
+            name: 'وميض خاطف',
+            desc: 'وميض ضوئي فلاش أبيض مثل ريلز التيك توك الاحترافية',
+            icon: '⚡'
+        },
+        {
+            id: 'flip_3d',
+            name: 'دوران 3D',
+            desc: 'دوران بطاقة مجسمة في الفضاء ثلاثي الأبعاد',
+            icon: '🔄'
+        },
+        {
+            id: 'whoosh_blur',
+            name: 'موشن بلور خاطف',
+            desc: 'حركة سريعة مع غباش سينمائي (Motion Blur)',
+            icon: '💨'
+        },
+        {
+            id: 'instant',
+            name: 'قطع مباشر',
+            desc: 'تبديل فوري كلاسيكي بدون أي تأثير إضافي',
+            icon: '✂️'
+        }
+    ];
+
+    const DEFAULT_SLIDE_TRANSITION = {
+        type: 'smooth_fade', // 'smooth_fade' | 'push_slide' | 'zoom_warp' | 'flash_cut' | 'flip_3d' | 'whoosh_blur' | 'instant'
+        duration: 0.35, // seconds (0.2s - 0.7s)
+        soundEnabled: true
+    };
+
+    function loadSavedSlideTransition() {
+        try {
+            const saved = localStorage.getItem(SLIDE_TRANSITION_STORAGE_KEY);
+            if (saved) {
+                return { ...DEFAULT_SLIDE_TRANSITION, ...JSON.parse(saved) };
+            }
+        } catch (e) {}
+        return { ...DEFAULT_SLIDE_TRANSITION };
     }
 
     // ---- 1.4 CURATED PRESET STICKERS & BADGES ----
@@ -324,6 +421,41 @@ window.ReelsEngine = (function() {
             @keyframes reelHookMysteryQuestion {
                 0%, 100% { transform: scale(1.0) rotate(0deg); }
                 50% { transform: scale(1.15) rotate(4deg); }
+            }
+            /* Slide Transitions Keyframes */
+            @keyframes reelSlideTrans_smooth_fade {
+                0% { opacity: 0; transform: scale(0.97); }
+                100% { opacity: 1; transform: scale(1.0); }
+            }
+            @keyframes reelSlideTrans_push_slide {
+                0% { opacity: 0; transform: translateX(50px) scale(0.97); }
+                100% { opacity: 1; transform: translateX(0) scale(1.0); }
+            }
+            @keyframes reelSlideTrans_zoom_warp {
+                0% { opacity: 0; transform: scale(1.14); filter: blur(2px); }
+                100% { opacity: 1; transform: scale(1.0); filter: blur(0px); }
+            }
+            @keyframes reelSlideTrans_flash_cut {
+                0% { opacity: 0; filter: brightness(2.8) saturate(1.4); }
+                30% { opacity: 1; filter: brightness(1.9); }
+                100% { opacity: 1; filter: brightness(1.0) saturate(1.0); }
+            }
+            @keyframes reelSlideTrans_flip_3d {
+                0% { opacity: 0; transform: perspective(700px) rotateY(-16deg) scale(0.95); }
+                100% { opacity: 1; transform: perspective(700px) rotateY(0deg) scale(1.0); }
+            }
+            @keyframes reelSlideTrans_whoosh_blur {
+                0% { opacity: 0; transform: translateX(-40px) skewX(-3deg); filter: blur(5px); }
+                100% { opacity: 1; transform: translateX(0) skewX(0); filter: blur(0px); }
+            }
+            @keyframes reelLaserPulse {
+                0%, 100% { transform: translateY(-50%) scale(1); filter: drop-shadow(0 0 6px currentColor); }
+                50% { transform: translateY(-50%) scale(1.25); filter: drop-shadow(0 0 14px currentColor); }
+            }
+            @keyframes reelGradientFlow {
+                0% { background-position: 0% 50%; }
+                50% { background-position: 100% 50%; }
+                100% { background-position: 0% 50%; }
             }
             .reel-anim-layer {
                 width: 100%;
@@ -2049,14 +2181,43 @@ window.ReelsEngine = (function() {
         renderCanvas();
         renderEditorControls();
         if (window.showCopyToast) {
-            window.showCopyToast(state.progressBar.enabled ? 'تم تفعيل شريط تقدم الريل العلوي ⏳' : 'تم إخفاء شريط التقدم ⚪');
+            window.showCopyToast(state.progressBar.enabled ? 'تم تفعيل وإظهار شريط تقدم الريل ⏳👁️' : 'تم إخفاء شريط التقدم بنجاح ⚪');
+        }
+    }
+
+    function setProgressBarStyle(styleId) {
+        if (!state.progressBar) state.progressBar = { ...DEFAULT_PROGRESS_BAR };
+        const valid = REELS_PROGRESS_STYLES.some(s => s.id === styleId);
+        state.progressBar.style = valid ? styleId : 'capsule_neon';
+        try {
+            localStorage.setItem(PROGRESS_BAR_STORAGE_KEY, JSON.stringify(state.progressBar));
+        } catch (e) {}
+        saveProjectState();
+        renderCanvas();
+        renderEditorControls();
+        if (window.showCopyToast) {
+            const found = REELS_PROGRESS_STYLES.find(s => s.id === state.progressBar.style);
+            window.showCopyToast(`تم تطبيق شكل: ${found ? found.name : styleId} ✨`);
         }
     }
 
     function setProgressBarColor(col) {
         if (!state.progressBar) state.progressBar = { ...DEFAULT_PROGRESS_BAR };
-        if (!['white', 'amber', 'emerald'].includes(col)) col = 'white';
+        if (!['amber', 'emerald', 'white', 'purple', 'cyan'].includes(col)) col = 'amber';
         state.progressBar.color = col;
+        try {
+            localStorage.setItem(PROGRESS_BAR_STORAGE_KEY, JSON.stringify(state.progressBar));
+        } catch (e) {}
+        saveProjectState();
+        renderCanvas();
+        renderEditorControls();
+    }
+
+    function setProgressBarThickness(th) {
+        if (!state.progressBar) state.progressBar = { ...DEFAULT_PROGRESS_BAR };
+        if (!['thin', 'medium', 'thick'].includes(th)) th = 'medium';
+        state.progressBar.thickness = th;
+        state.progressBar.height = (th === 'thin') ? 3 : ((th === 'thick') ? 7 : 5);
         try {
             localStorage.setItem(PROGRESS_BAR_STORAGE_KEY, JSON.stringify(state.progressBar));
         } catch (e) {}
@@ -2070,34 +2231,110 @@ window.ReelsEngine = (function() {
         const total = (state.slides && state.slides.length) || 1;
         if (total <= 0) return '';
 
-        const colorKey = state.progressBar.color || 'white';
-        const fillBgClass = (colorKey === 'amber') 
-            ? 'bg-amber-400' 
-            : ((colorKey === 'emerald') ? 'bg-emerald-400' : 'bg-white');
-        const shadowClass = (colorKey === 'amber') 
-            ? 'shadow-[0_0_8px_rgba(251,191,36,0.6)]' 
-            : ((colorKey === 'emerald') ? 'shadow-[0_0_8px_rgba(52,211,153,0.6)]' : 'shadow-[0_0_8px_rgba(255,255,255,0.7)]');
+        const style = state.progressBar.style || 'capsule_neon';
+        const colorKey = state.progressBar.color || 'amber';
+        const th = state.progressBar.thickness || 'medium';
+        const h = (th === 'thin') ? 3 : ((th === 'thick') ? 7 : 5);
 
+        const colorMap = {
+            amber: { bg: 'bg-amber-400', shadow: 'shadow-[0_0_12px_rgba(251,191,36,0.8)]', hex: '#FBBF24', text: 'text-amber-400' },
+            emerald: { bg: 'bg-emerald-400', shadow: 'shadow-[0_0_12px_rgba(52,211,153,0.8)]', hex: '#34D399', text: 'text-emerald-400' },
+            white: { bg: 'bg-white', shadow: 'shadow-[0_0_12px_rgba(255,255,255,0.85)]', hex: '#FFFFFF', text: 'text-white' },
+            purple: { bg: 'bg-purple-400', shadow: 'shadow-[0_0_12px_rgba(192,132,252,0.8)]', hex: '#C084FC', text: 'text-purple-400' },
+            cyan: { bg: 'bg-cyan-400', shadow: 'shadow-[0_0_12px_rgba(56,189,248,0.8)]', hex: '#38BDF8', text: 'text-cyan-400' }
+        };
+        const theme = colorMap[colorKey] || colorMap.amber;
         const curIdx = state.currentSlideIndex || 0;
-        const height = state.progressBar.height || 4;
 
+        // 1. Style: Laser Beam (Single continuous sleek cyber line with glowing head)
+        if (style === 'laser_beam') {
+            const overallPct = Math.min(100, ((curIdx + (state.isPlaying ? ((state.timelineProgress || 0) / 100) : 1)) / total) * 100);
+            return `
+                <div id="storyProgressBarContainer" class="absolute top-3.5 left-3.5 right-3.5 z-35 pointer-events-none" style="direction: ltr;" dir="ltr">
+                    <div class="relative w-full rounded-full overflow-visible bg-black/55 backdrop-blur-md border border-white/25 shadow-md" style="height: ${h}px;">
+                        <div id="storyProgressLaserBar" class="h-full rounded-full transition-[width] duration-75 ease-linear ${theme.bg} ${theme.shadow}" style="width: ${overallPct}%;"></div>
+                        <div id="storyProgressLaserHead" class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white ring-2 ring-white/80 shadow-[0_0_14px_#fff] animate-pulse transition-[left] duration-75 ease-linear" style="left: ${overallPct}%;"></div>
+                        ${Array.from({ length: total - 1 }).map((_, s) => `
+                            <div class="absolute top-0 bottom-0 w-[1.5px] bg-white/40 z-10" style="left: ${((s + 1) / total) * 100}%;"></div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        // 2. Style: Smart Morphing VIP Dots (Instagram VIP active pill)
+        if (style === 'ig_vip_pills') {
+            return `
+                <div id="storyProgressBarContainer" class="absolute top-3.5 left-0 right-0 z-35 flex items-center justify-center gap-1.5 pointer-events-none" style="direction: ltr;" dir="ltr">
+                    ${Array.from({ length: total }).map((_, i) => {
+                        if (i === curIdx) {
+                            const pillFill = state.isPlaying ? `${state.timelineProgress || 0}%` : '100%';
+                            return `
+                                <div class="w-8 sm:w-10 rounded-full overflow-hidden bg-black/55 backdrop-blur-md border border-white/30 shadow-md transition-all duration-200" style="height: ${Math.max(6, h + 1)}px;">
+                                    <div id="storyProgressSeg_${i}" class="h-full rounded-full transition-[width] duration-75 ease-linear ${theme.bg} ${theme.shadow}" style="width: ${pillFill};"></div>
+                                </div>
+                            `;
+                        } else if (i < curIdx) {
+                            return `
+                                <div class="w-2 sm:w-2.5 rounded-full ${theme.bg} ${theme.shadow} transition-all duration-200" style="height: ${Math.max(6, h + 1)}px;"></div>
+                            `;
+                        } else {
+                            return `
+                                <div class="w-2 sm:w-2.5 rounded-full bg-white/35 backdrop-blur-xs border border-white/25 transition-all duration-200" style="height: ${Math.max(6, h + 1)}px;"></div>
+                            `;
+                        }
+                    }).join('')}
+                </div>
+            `;
+        }
+
+        // 3. Style: Fluid Royal Gradient Stream
+        if (style === 'gradient_stream') {
+            return `
+                <div id="storyProgressBarContainer" class="absolute top-3.5 left-3.5 right-3.5 z-35 flex items-center gap-1.5 pointer-events-none" style="direction: ltr;" dir="ltr">
+                    ${Array.from({ length: total }).map((_, i) => {
+                        let fillWidth = '0%';
+                        if (i < curIdx) fillWidth = '100%';
+                        else if (i === curIdx) fillWidth = state.isPlaying ? `${state.timelineProgress || 0}%` : '100%';
+                        return `
+                            <div class="flex-1 rounded-full overflow-hidden bg-black/50 backdrop-blur-md border border-amber-400/30 shadow-md" style="height: ${h}px;">
+                                <div id="storyProgressSeg_${i}" class="h-full rounded-full transition-[width] duration-75 ease-linear shadow-[0_0_12px_rgba(245,158,11,0.7)]" 
+                                     style="width: ${fillWidth}; background: linear-gradient(90deg, #F59E0B 0%, #10B981 50%, #06B6D4 100%);"></div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        }
+
+        // 4. Style: Ultra-Minimal Luxury Ticks
+        if (style === 'minimal_ticks') {
+            return `
+                <div id="storyProgressBarContainer" class="absolute top-3 left-3 right-3 z-35 flex items-center gap-1 pointer-events-none" style="direction: ltr;" dir="ltr">
+                    ${Array.from({ length: total }).map((_, i) => {
+                        let fillWidth = '0%';
+                        if (i < curIdx) fillWidth = '100%';
+                        else if (i === curIdx) fillWidth = state.isPlaying ? `${state.timelineProgress || 0}%` : '100%';
+                        return `
+                            <div class="flex-1 rounded-xs overflow-hidden bg-white/20" style="height: ${Math.max(2.5, h - 2)}px;">
+                                <div id="storyProgressSeg_${i}" class="h-full rounded-xs transition-[width] duration-75 ease-linear ${theme.bg}" style="width: ${fillWidth};"></div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        }
+
+        // 5. Default Style: Floating Neon Glass Capsules (capsule_neon)
         return `
-            <div id="storyProgressBarContainer" 
-                 class="absolute top-3.5 left-3.5 right-3.5 z-35 flex items-center gap-1.5 pointer-events-none" 
-                 style="direction: ltr;" dir="ltr">
+            <div id="storyProgressBarContainer" class="absolute top-3.5 left-3.5 right-3.5 z-35 flex items-center gap-1.5 pointer-events-none" style="direction: ltr;" dir="ltr">
                 ${Array.from({ length: total }).map((_, i) => {
                     let fillWidth = '0%';
-                    if (i < curIdx) {
-                        fillWidth = '100%';
-                    } else if (i === curIdx) {
-                        fillWidth = state.isPlaying ? `${state.timelineProgress || 0}%` : '100%';
-                    }
+                    if (i < curIdx) fillWidth = '100%';
+                    else if (i === curIdx) fillWidth = state.isPlaying ? `${state.timelineProgress || 0}%` : '100%';
                     return `
-                        <div class="flex-1 rounded-full overflow-hidden bg-black/35 backdrop-blur-xs border border-white/20" 
-                             style="height: ${height}px;">
-                            <div id="storyProgressSeg_${i}" 
-                                 class="h-full rounded-full transition-[width] duration-75 ease-linear ${fillBgClass} ${shadowClass}" 
-                                 style="width: ${fillWidth};"></div>
+                        <div class="flex-1 rounded-full overflow-hidden bg-black/45 backdrop-blur-md border border-white/25 shadow-md" style="height: ${h}px;">
+                            <div id="storyProgressSeg_${i}" class="h-full rounded-full transition-[width] duration-75 ease-linear ${theme.bg} ${theme.shadow}" style="width: ${fillWidth};"></div>
                         </div>
                     `;
                 }).join('')}
@@ -2109,63 +2346,222 @@ window.ReelsEngine = (function() {
     function drawCanvasStoryProgressBar(ctx, canvasWidth, canvasHeight, totalSlides, currentSlideIdx, slideProgress, cfg = {}) {
         if (!cfg || !cfg.enabled || totalSlides <= 0) return;
 
+        const style = cfg.style || 'capsule_neon';
+        const colorKey = cfg.color || 'amber';
+        const thickness = cfg.thickness || 'medium';
+
+        const colorMap = {
+            amber: { fill: '#FBBF24', glow: 'rgba(251, 191, 36, 0.8)' },
+            emerald: { fill: '#34D399', glow: 'rgba(52, 211, 153, 0.8)' },
+            white: { fill: '#FFFFFF', glow: 'rgba(255, 255, 255, 0.85)' },
+            purple: { fill: '#C084FC', glow: 'rgba(192, 132, 252, 0.8)' },
+            cyan: { fill: '#38BDF8', glow: 'rgba(56, 189, 248, 0.8)' }
+        };
+        const activeTheme = colorMap[colorKey] || colorMap.amber;
+
         const margin = 36;
-        const top = 38;
-        const height = 9;
-        const gap = 8;
-        const radius = 4;
+        const top = 36;
+        const h = (thickness === 'thin') ? 6 : ((thickness === 'thick') ? 14 : 10);
+        const radius = Math.floor(h / 2);
         const availableWidth = canvasWidth - (margin * 2);
+
+        if (style === 'laser_beam') {
+            const trackW = availableWidth;
+            ctx.save();
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.50)';
+            ctx.beginPath();
+            if (ctx.roundRect) ctx.roundRect(margin, top, trackW, h, radius);
+            else ctx.rect(margin, top, trackW, h);
+            ctx.fill();
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+
+            for (let s = 1; s < totalSlides; s++) {
+                const tickX = margin + (s / totalSlides) * trackW;
+                ctx.beginPath();
+                ctx.moveTo(tickX, top);
+                ctx.lineTo(tickX, top + h);
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+            }
+
+            const overallFrac = Math.max(0, Math.min(1, (currentSlideIdx + slideProgress) / totalSlides));
+            const fillW = Math.max(radius * 2, trackW * overallFrac);
+
+            ctx.fillStyle = activeTheme.fill;
+            ctx.shadowColor = activeTheme.glow;
+            ctx.shadowBlur = 10;
+            ctx.beginPath();
+            if (ctx.roundRect) ctx.roundRect(margin, top, Math.min(trackW, fillW), h, radius);
+            else ctx.rect(margin, top, Math.min(trackW, fillW), h);
+            ctx.fill();
+
+            const sparkX = margin + Math.min(trackW, fillW);
+            ctx.fillStyle = '#FFFFFF';
+            ctx.shadowColor = '#FFFFFF';
+            ctx.shadowBlur = 16;
+            ctx.beginPath();
+            ctx.arc(sparkX, top + h / 2, h * 0.75, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+            return;
+        }
+
+        if (style === 'ig_vip_pills') {
+            const dotSize = Math.max(10, h);
+            const activePillW = 54;
+            const gap = 12;
+            const totalW = (totalSlides - 1) * (dotSize + gap) + activePillW;
+            const startX = (canvasWidth - totalW) / 2;
+
+            ctx.save();
+            let curX = startX;
+            for (let s = 0; s < totalSlides; s++) {
+                if (s === currentSlideIdx) {
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.50)';
+                    ctx.beginPath();
+                    if (ctx.roundRect) ctx.roundRect(curX, top, activePillW, dotSize, dotSize / 2);
+                    else ctx.rect(curX, top, activePillW, dotSize);
+                    ctx.fill();
+
+                    const fillW = Math.max(dotSize, activePillW * Math.max(0, Math.min(1, slideProgress)));
+                    ctx.fillStyle = activeTheme.fill;
+                    ctx.shadowColor = activeTheme.glow;
+                    ctx.shadowBlur = 10;
+                    ctx.beginPath();
+                    if (ctx.roundRect) ctx.roundRect(curX, top, fillW, dotSize, dotSize / 2);
+                    else ctx.rect(curX, top, fillW, dotSize);
+                    ctx.fill();
+                    curX += activePillW + gap;
+                } else if (s < currentSlideIdx) {
+                    ctx.fillStyle = activeTheme.fill;
+                    ctx.shadowColor = activeTheme.glow;
+                    ctx.shadowBlur = 6;
+                    ctx.beginPath();
+                    ctx.arc(curX + dotSize / 2, top + dotSize / 2, dotSize / 2, 0, Math.PI * 2);
+                    ctx.fill();
+                    curX += dotSize + gap;
+                } else {
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.30)';
+                    ctx.beginPath();
+                    ctx.arc(curX + dotSize / 2, top + dotSize / 2, dotSize / 2, 0, Math.PI * 2);
+                    ctx.fill();
+                    curX += dotSize + gap;
+                }
+            }
+            ctx.restore();
+            return;
+        }
+
+        const gap = (style === 'minimal_ticks') ? 5 : 9;
+        const segH = (style === 'minimal_ticks') ? Math.max(4, h - 3) : h;
+        const segRadius = (style === 'minimal_ticks') ? 2 : radius;
         const totalGaps = (totalSlides - 1) * gap;
         const segWidth = (availableWidth - totalGaps) / totalSlides;
 
-        const colorKey = cfg.color || 'white';
-        const fillColor = (colorKey === 'amber') ? '#FBBF24' : ((colorKey === 'emerald') ? '#34D399' : '#FFFFFF');
+        let gradFill = null;
+        if (style === 'gradient_stream') {
+            gradFill = ctx.createLinearGradient(margin, 0, canvasWidth - margin, 0);
+            gradFill.addColorStop(0, '#F59E0B');
+            gradFill.addColorStop(0.4, '#10B981');
+            gradFill.addColorStop(0.7, '#06B6D4');
+            gradFill.addColorStop(1.0, '#8B5CF6');
+        }
 
         for (let s = 0; s < totalSlides; s++) {
             const segX = margin + s * (segWidth + gap);
             const segY = top;
 
-            // 1. Draw segment background track (semi-transparent dark pill)
             ctx.save();
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.40)';
+            ctx.fillStyle = (style === 'minimal_ticks') ? 'rgba(255, 255, 255, 0.20)' : 'rgba(0, 0, 0, 0.45)';
             ctx.beginPath();
-            if (ctx.roundRect) {
-                ctx.roundRect(segX, segY, segWidth, height, radius);
-            } else {
-                ctx.rect(segX, segY, segWidth, height);
-            }
+            if (ctx.roundRect) ctx.roundRect(segX, segY, segWidth, segH, segRadius);
+            else ctx.rect(segX, segY, segWidth, segH);
             ctx.fill();
 
-            // Track border
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
-            ctx.lineWidth = 1;
-            ctx.stroke();
-            ctx.restore();
+            if (style !== 'minimal_ticks') {
+                ctx.strokeStyle = (style === 'gradient_stream') ? 'rgba(245, 158, 11, 0.35)' : 'rgba(255, 255, 255, 0.25)';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+            }
 
-            // 2. Determine fill fraction
             let fillFraction = 0;
-            if (s < currentSlideIdx) {
-                fillFraction = 1.0;
-            } else if (s === currentSlideIdx) {
-                fillFraction = Math.max(0, Math.min(1, slideProgress));
-            }
+            if (s < currentSlideIdx) fillFraction = 1.0;
+            else if (s === currentSlideIdx) fillFraction = Math.max(0, Math.min(1, slideProgress));
 
-            // 3. Draw active fill
             if (fillFraction > 0) {
-                const filledW = Math.max(radius * 2, segWidth * fillFraction);
-                ctx.save();
-                ctx.fillStyle = fillColor;
-                ctx.shadowColor = fillColor;
-                ctx.shadowBlur = 6;
-                ctx.beginPath();
-                if (ctx.roundRect) {
-                    ctx.roundRect(segX, segY, Math.min(segWidth, filledW), height, radius);
-                } else {
-                    ctx.rect(segX, segY, Math.min(segWidth, filledW), height);
+                const filledW = Math.max(segRadius * 2, segWidth * fillFraction);
+                ctx.fillStyle = gradFill || activeTheme.fill;
+                if (style !== 'minimal_ticks') {
+                    ctx.shadowColor = (style === 'gradient_stream') ? 'rgba(245, 158, 11, 0.8)' : activeTheme.glow;
+                    ctx.shadowBlur = 8;
                 }
+                ctx.beginPath();
+                if (ctx.roundRect) ctx.roundRect(segX, segY, Math.min(segWidth, filledW), segH, segRadius);
+                else ctx.rect(segX, segY, Math.min(segWidth, filledW), segH);
                 ctx.fill();
-                ctx.restore();
             }
+            ctx.restore();
+        }
+    }
+
+    // ---- 6.5 SLIDE TRANSITION CONTROLLER METHODS ----
+    function setSlideTransitionType(type) {
+        if (!state.slideTransition) state.slideTransition = { ...DEFAULT_SLIDE_TRANSITION };
+        const valid = REELS_SLIDE_TRANSITIONS.some(t => t.id === type);
+        state.slideTransition.type = valid ? type : 'smooth_fade';
+        try {
+            localStorage.setItem(SLIDE_TRANSITION_STORAGE_KEY, JSON.stringify(state.slideTransition));
+        } catch (e) {}
+        saveProjectState();
+        renderCanvas();
+        renderEditorControls();
+        testSlideTransition();
+    }
+
+    function setSlideTransitionDuration(dur) {
+        if (!state.slideTransition) state.slideTransition = { ...DEFAULT_SLIDE_TRANSITION };
+        state.slideTransition.duration = Math.max(0.2, Math.min(0.8, parseFloat(dur) || 0.35));
+        try {
+            localStorage.setItem(SLIDE_TRANSITION_STORAGE_KEY, JSON.stringify(state.slideTransition));
+        } catch (e) {}
+        saveProjectState();
+        renderEditorControls();
+    }
+
+    function toggleSlideTransitionSound() {
+        if (!state.slideTransition) state.slideTransition = { ...DEFAULT_SLIDE_TRANSITION };
+        state.slideTransition.soundEnabled = !state.slideTransition.soundEnabled;
+        try {
+            localStorage.setItem(SLIDE_TRANSITION_STORAGE_KEY, JSON.stringify(state.slideTransition));
+        } catch (e) {}
+        saveProjectState();
+        renderEditorControls();
+        if (window.showCopyToast) {
+            window.showCopyToast(state.slideTransition.soundEnabled ? 'تم تفعيل صوت الانتقال السينمائي 🔊' : 'تم كتم صوت الانتقال 🔇');
+        }
+    }
+
+    function getSlideTransitionStyle() {
+        if (state.isCapturingExport) return '';
+        const trans = state.slideTransition;
+        if (!trans || trans.type === 'instant' || trans.type === 'none') return '';
+        const dur = trans.duration || 0.35;
+        return `animation: reelSlideTrans_${trans.type} ${dur}s cubic-bezier(0.16, 1, 0.3, 1) both; will-change: transform, opacity;`;
+    }
+
+    function testSlideTransition(optType) {
+        if (optType) setSlideTransitionType(optType);
+        const wrapper = document.getElementById('reelSlideTransitionWrapper');
+        if (wrapper) {
+            wrapper.style.animation = 'none';
+            void wrapper.offsetWidth;
+            wrapper.style.cssText = getSlideTransitionStyle();
+        }
+        if (state.slideTransition && state.slideTransition.soundEnabled) {
+            playWhooshSound(null, 0.7);
         }
     }
 
@@ -2529,6 +2925,7 @@ window.ReelsEngine = (function() {
         animationsEnabled: loadSavedAnimEnabled(),
         elementAnimations: loadSavedAnimations(),
         progressBar: loadSavedProgressBar(),
+        slideTransition: loadSavedSlideTransition(),
         isCapturingExport: false
     };
 
@@ -3813,6 +4210,15 @@ window.ReelsEngine = (function() {
             const curStorySeg = document.getElementById('storyProgressSeg_' + state.currentSlideIndex);
             if (curStorySeg) curStorySeg.style.width = `${state.timelineProgress}%`;
 
+            const laserBar = document.getElementById('storyProgressLaserBar');
+            const laserHead = document.getElementById('storyProgressLaserHead');
+            if (laserBar || laserHead) {
+                const total = (state.slides && state.slides.length) || 1;
+                const overallPct = Math.min(100, ((state.currentSlideIndex + ((state.timelineProgress || 0) / 100)) / total) * 100);
+                if (laserBar) laserBar.style.width = `${overallPct}%`;
+                if (laserHead) laserHead.style.left = `${overallPct}%`;
+            }
+
             if (elapsed >= curSlideMs) {
                 elapsed = 0;
                 state.timelineProgress = 0;
@@ -3828,6 +4234,9 @@ window.ReelsEngine = (function() {
 
                 // Trigger audio for next slide
                 triggerSlideAudio(state.slides[state.currentSlideIndex]);
+                if (state.slideTransition && state.slideTransition.soundEnabled) {
+                    playWhooshSound(null, 0.7);
+                }
             }
         }, tickMs);
     }
@@ -3841,6 +4250,16 @@ window.ReelsEngine = (function() {
         state.timelineProgress = 0;
         const bars = document.querySelectorAll('.reels-toolbar-timeline-bar, #toolbarTimelineBar, #reelTimelineBar');
         bars.forEach(b => { if (b) b.style.width = '0%'; });
+        const curStorySeg = document.getElementById('storyProgressSeg_' + state.currentSlideIndex);
+        if (curStorySeg) curStorySeg.style.width = '0%';
+        const laserBar = document.getElementById('storyProgressLaserBar');
+        const laserHead = document.getElementById('storyProgressLaserHead');
+        if (laserBar || laserHead) {
+            const total = (state.slides && state.slides.length) || 1;
+            const overallPct = Math.min(100, (state.currentSlideIndex / total) * 100);
+            if (laserBar) laserBar.style.width = `${overallPct}%`;
+            if (laserHead) laserHead.style.left = `${overallPct}%`;
+        }
         updatePlayerUi();
 
         // Stop background music
@@ -3859,7 +4278,9 @@ window.ReelsEngine = (function() {
         renderCanvas();
         renderEditorControls();
         updatePlayerUi();
-        playWhooshSound(null, 0.7);
+        if (state.slideTransition && state.slideTransition.soundEnabled) {
+            playWhooshSound(null, 0.7);
+        }
     }
 
     function prevSlide() {
@@ -3869,7 +4290,9 @@ window.ReelsEngine = (function() {
         renderCanvas();
         renderEditorControls();
         updatePlayerUi();
-        playWhooshSound(null, 0.7);
+        if (state.slideTransition && state.slideTransition.soundEnabled) {
+            playWhooshSound(null, 0.7);
+        }
     }
 
     function goToSlide(idx) {
@@ -3880,6 +4303,9 @@ window.ReelsEngine = (function() {
             renderCanvas();
             renderEditorControls();
             updatePlayerUi();
+            if (state.slideTransition && state.slideTransition.soundEnabled) {
+                playWhooshSound(null, 0.7);
+            }
         }
     }
 
@@ -4210,6 +4636,7 @@ window.ReelsEngine = (function() {
                 animationsEnabled: state.animationsEnabled,
                 elementAnimations: state.elementAnimations,
                 progressBar: state.progressBar,
+                slideTransition: state.slideTransition,
                 savedAt: Date.now()
             };
             localStorage.setItem(PROJECT_STORAGE_KEY_PREFIX + sec, JSON.stringify(payload));
@@ -4249,6 +4676,9 @@ window.ReelsEngine = (function() {
                     }
                     if (data.progressBar) {
                         state.progressBar = { ...DEFAULT_PROGRESS_BAR, ...data.progressBar };
+                    }
+                    if (data.slideTransition) {
+                        state.slideTransition = { ...DEFAULT_SLIDE_TRANSITION, ...data.slideTransition };
                     }
                     ensureSelectedDragElement();
                     return true;
@@ -5082,11 +5512,15 @@ window.ReelsEngine = (function() {
         canvas.innerHTML = `
             <div class="absolute inset-0 overflow-hidden bg-cover bg-center" style="background-image: url('${bgUrl}'); direction: ltr;">
                 ${storyProgressBarHtml}
-                ${fcLogoHtml}
-                ${scLogoHtml}
-                ${introHookHtml}
-                ${bodyHtml}
-                ${safeZoneHtml}
+                <div id="reelSlideTransitionWrapper" class="absolute inset-0 pointer-events-none" style="${getSlideTransitionStyle()}">
+                    <div class="absolute inset-0 pointer-events-auto">
+                        ${fcLogoHtml}
+                        ${scLogoHtml}
+                        ${introHookHtml}
+                        ${bodyHtml}
+                        ${safeZoneHtml}
+                    </div>
+                </div>
             </div>
         `;
 
@@ -5692,46 +6126,181 @@ window.ReelsEngine = (function() {
                 <!-- 5.5 AUDIO & SFX STUDIO -->
                 ${renderAudioStudioHtml()}
 
-                <!-- 5.8 STORY PROGRESS BAR (TOP SEGMENTED BAR) -->
-                <div class="p-3.5 rounded-2xl bg-gradient-to-br from-slate-900 via-zinc-900 to-slate-950 border border-zinc-800 text-white shadow-md space-y-2.5">
-                    <div class="flex items-center justify-between">
+                <!-- 5.8 STORY PROGRESS BAR 2.0 (MULTI-STYLE & ONE-CLICK TOGGLE) -->
+                <div class="p-3.5 rounded-2xl bg-gradient-to-br from-slate-900 via-zinc-900 to-slate-950 border border-zinc-800 text-white shadow-md space-y-3">
+                    <div class="flex items-center justify-between flex-wrap gap-2">
                         <div class="flex items-center gap-2">
-                            <span class="text-lg">⏳</span>
+                            <span class="text-xl">⏳</span>
                             <div>
                                 <h4 class="text-xs font-black text-white flex items-center gap-1.5">
-                                    <span>شريط تقدم الريل العلوي (Story Bar)</span>
-                                    <span class="text-[9.5px] px-2 py-0.5 rounded-full font-bold ${state.progressBar.enabled ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-zinc-800 text-zinc-500 border border-zinc-700'}">
-                                        ${state.progressBar.enabled ? 'مفعل ✓' : 'معطل ✕'}
+                                    <span>شريط تقدم الريل العلوي (Story Progress Bar)</span>
+                                    <span class="text-[9.5px] px-2 py-0.5 rounded-full font-black ${state.progressBar.enabled ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-xs' : 'bg-zinc-800 text-zinc-500 border border-zinc-700'}">
+                                        ${state.progressBar.enabled ? 'مفعل وظاهر 👁️' : 'مخفي ⚪'}
                                     </span>
                                 </h4>
-                                <p class="text-[10px] text-zinc-400">شريط مقسم يمتلئ مع كل سلايد في العرض والتصدير (60FPS)</p>
+                                <p class="text-[10px] text-zinc-400">اختر شكل وتصميم شريط تقدم القصة أو قم بإخفائه وتفعيله بنقرة واحدة</p>
                             </div>
                         </div>
                         <button type="button" onclick="ReelsEngine.toggleProgressBar()" 
-                                class="px-3 py-1.5 rounded-xl ${state.progressBar.enabled ? 'bg-emerald-600 text-white' : 'bg-zinc-800 text-zinc-400 border border-zinc-700'} text-xs font-black transition active:scale-95 cursor-pointer">
-                            ${state.progressBar.enabled ? 'مفعل 🟢' : 'معطل ⚪'}
+                                class="px-3.5 py-1.5 rounded-xl ${state.progressBar.enabled ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-600/30' : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-700'} text-xs font-black transition active:scale-95 cursor-pointer flex items-center gap-1.5 shadow-sm">
+                            <span>${state.progressBar.enabled ? '👁️ إظهار شريط التقدم (مفعل)' : '⚪ إخفاء شريط التقدم (معطل)'}</span>
                         </button>
                     </div>
 
                     ${state.progressBar.enabled ? `
-                        <div class="flex items-center justify-between gap-2 pt-1.5 border-t border-zinc-800">
-                            <span class="text-[10.5px] text-zinc-400 font-bold">لون شريط التقدم:</span>
+                        <!-- Style Selector Grid -->
+                        <div class="space-y-1.5 pt-2 border-t border-zinc-800/80">
+                            <span class="text-[10.5px] text-zinc-400 font-bold block">اختر شكل وتصميم الشريط:</span>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                                ${REELS_PROGRESS_STYLES.map(st => {
+                                    const isActive = (state.progressBar.style || 'capsule_neon') === st.id;
+                                    return `
+                                        <div onclick="ReelsEngine.setProgressBarStyle('${st.id}')"
+                                             class="p-2.5 rounded-xl transition border cursor-pointer select-none active:scale-[0.98] ${isActive ? 'bg-amber-500/15 border-amber-400 text-white ring-1 ring-amber-400/50 shadow-sm' : 'bg-zinc-900/90 border-zinc-800 text-zinc-300 hover:border-zinc-700 hover:bg-zinc-850'}">
+                                            <div class="flex items-center justify-between mb-1">
+                                                <div class="flex items-center gap-1.5">
+                                                    <span class="text-sm">${st.icon}</span>
+                                                    <span class="text-[11px] font-black">${st.name}</span>
+                                                </div>
+                                                ${isActive ? '<span class="text-[9px] bg-amber-400 text-slate-950 px-1.5 py-0.2 rounded font-black">مفعل ✓</span>' : ''}
+                                            </div>
+                                            <p class="text-[9px] text-zinc-400 leading-snug">${st.desc}</p>
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
+
+                        <!-- Color & Thickness Options -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-zinc-800/80">
+                            <!-- Colors -->
+                            <div class="space-y-1.5">
+                                <span class="text-[10px] text-zinc-400 font-bold block">لون شريط التقدم:</span>
+                                <div class="flex flex-wrap gap-1.5">
+                                    <button type="button" onclick="ReelsEngine.setProgressBarColor('amber')" 
+                                            class="px-2 py-1 rounded-lg text-[10px] font-bold border transition ${state.progressBar.color === 'amber' ? 'bg-amber-400 text-slate-950 border-amber-400 font-black ring-2 ring-amber-400/40 shadow-xs' : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border-zinc-700'}">
+                                        🟡 ذهبي كوينز
+                                    </button>
+                                    <button type="button" onclick="ReelsEngine.setProgressBarColor('emerald')" 
+                                            class="px-2 py-1 rounded-lg text-[10px] font-bold border transition ${state.progressBar.color === 'emerald' ? 'bg-emerald-500 text-white border-emerald-500 font-black ring-2 ring-emerald-500/40 shadow-xs' : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border-zinc-700'}">
+                                        🟢 زمردي ميتا
+                                    </button>
+                                    <button type="button" onclick="ReelsEngine.setProgressBarColor('white')" 
+                                            class="px-2 py-1 rounded-lg text-[10px] font-bold border transition ${state.progressBar.color === 'white' ? 'bg-white text-slate-950 border-white font-black ring-2 ring-white/40 shadow-xs' : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border-zinc-700'}">
+                                        ⚪ أبيض ستوري
+                                    </button>
+                                    <button type="button" onclick="ReelsEngine.setProgressBarColor('purple')" 
+                                            class="px-2 py-1 rounded-lg text-[10px] font-bold border transition ${state.progressBar.color === 'purple' ? 'bg-purple-500 text-white border-purple-500 font-black ring-2 ring-purple-500/40 shadow-xs' : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border-zinc-700'}">
+                                        🟣 نيون سايبر
+                                    </button>
+                                    <button type="button" onclick="ReelsEngine.setProgressBarColor('cyan')" 
+                                            class="px-2 py-1 rounded-lg text-[10px] font-bold border transition ${state.progressBar.color === 'cyan' ? 'bg-cyan-400 text-slate-950 border-cyan-400 font-black ring-2 ring-cyan-400/40 shadow-xs' : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border-zinc-700'}">
+                                        💎 سماوي ماسي
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Thickness -->
+                            <div class="space-y-1.5">
+                                <span class="text-[10px] text-zinc-400 font-bold block">سُمك وحجم الشريط:</span>
+                                <div class="flex items-center gap-1.5">
+                                    <button type="button" onclick="ReelsEngine.setProgressBarThickness('thin')" 
+                                            class="flex-1 py-1 rounded-lg text-[10px] font-bold border transition ${(state.progressBar.thickness || 'medium') === 'thin' ? 'bg-white text-slate-950 border-white font-black' : 'bg-zinc-800 text-zinc-400 border-zinc-700 hover:text-white'}">
+                                        رقيق (3px)
+                                    </button>
+                                    <button type="button" onclick="ReelsEngine.setProgressBarThickness('medium')" 
+                                            class="flex-1 py-1 rounded-lg text-[10px] font-bold border transition ${(state.progressBar.thickness || 'medium') === 'medium' ? 'bg-white text-slate-950 border-white font-black' : 'bg-zinc-800 text-zinc-400 border-zinc-700 hover:text-white'}">
+                                        متوازن (5px)
+                                    </button>
+                                    <button type="button" onclick="ReelsEngine.setProgressBarThickness('thick')" 
+                                            class="flex-1 py-1 rounded-lg text-[10px] font-bold border transition ${(state.progressBar.thickness || 'medium') === 'thick' ? 'bg-white text-slate-950 border-white font-black' : 'bg-zinc-800 text-zinc-400 border-zinc-700 hover:text-white'}">
+                                        بارز (7px)
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    ` : `
+                        <div class="p-3 rounded-xl bg-zinc-900/60 border border-zinc-800 text-center text-[10.5px] text-zinc-400">
+                            💡 شريط التقدم مخفي حالياً من الكانفاس وتصدير الفيديو. اضغط على الزر الأخضر أعلاه لإظهاره واختيار شكله المناسب.
+                        </div>
+                    `}
+                </div>
+
+                <!-- 5.9 SLIDE TRANSITIONS STUDIO -->
+                <div class="p-3.5 rounded-2xl bg-gradient-to-br from-slate-900 via-zinc-900 to-slate-950 border border-zinc-800 text-white shadow-md space-y-3">
+                    <div class="flex items-center justify-between flex-wrap gap-2">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xl">🎬</span>
+                            <div>
+                                <h4 class="text-xs font-black text-white flex items-center gap-1.5">
+                                    <span>الانتقالات السينمائية بين السلايدات (Slide Transitions)</span>
+                                    <span class="text-[9.5px] px-2 py-0.5 rounded-full font-black ${state.slideTransition.type !== 'instant' ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40 shadow-xs' : 'bg-zinc-800 text-zinc-500 border border-zinc-700'}">
+                                        ${state.slideTransition.type !== 'instant' ? 'مفعلة 🎬' : 'قطع مباشر ✂️'}
+                                    </span>
+                                </h4>
+                                <p class="text-[10px] text-zinc-400">حركات تنقل سينمائية احترافية تعمل في المعاينة ومسجلة في الفيديو بدقة 60FPS</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <button type="button" onclick="ReelsEngine.testSlideTransition()" 
+                                    class="px-2.5 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-black transition active:scale-95 flex items-center gap-1 shadow-sm cursor-pointer" title="تجربة ومعاينة الانتقال المختار الآن">
+                                <span>👁️ تجربة الانتقال</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Transitions Selector Grid -->
+                    <div class="space-y-1.5 pt-2 border-t border-zinc-800/80">
+                        <span class="text-[10.5px] text-zinc-400 font-bold block">اختر نمط الانتقال السينمائي:</span>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+                            ${REELS_SLIDE_TRANSITIONS.map(tr => {
+                                const isActive = (state.slideTransition.type || 'smooth_fade') === tr.id;
+                                return `
+                                    <div onclick="ReelsEngine.setSlideTransitionType('${tr.id}')"
+                                         class="p-2 rounded-xl transition border cursor-pointer select-none active:scale-[0.98] ${isActive ? 'bg-purple-500/20 border-purple-400 text-white ring-1 ring-purple-400/50 shadow-sm' : 'bg-zinc-900/90 border-zinc-800 text-zinc-300 hover:border-zinc-700 hover:bg-zinc-850'}">
+                                        <div class="flex items-center justify-between mb-0.5">
+                                            <span class="text-sm">${tr.icon}</span>
+                                            ${isActive ? '<span class="text-[8.5px] bg-purple-400 text-slate-950 px-1 py-0.2 rounded font-black">مفعل ✓</span>' : ''}
+                                        </div>
+                                        <div class="text-[10.5px] font-black text-white truncate">${tr.name}</div>
+                                        <p class="text-[8.5px] text-zinc-400 leading-tight mt-0.5 line-clamp-2">${tr.desc}</p>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+
+                    <!-- Transition Speed & Whoosh Sound Options -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-zinc-800/80">
+                        <!-- Speed -->
+                        <div class="space-y-1.5">
+                            <span class="text-[10px] text-zinc-400 font-bold block">سرعة زمن الانتقال:</span>
                             <div class="flex items-center gap-1.5">
-                                <button type="button" onclick="ReelsEngine.setProgressBarColor('white')" 
-                                        class="px-2.5 py-1 rounded-lg text-[10px] font-bold border transition ${state.progressBar.color === 'white' ? 'bg-white text-slate-950 border-white font-black ring-2 ring-white/30 shadow-xs' : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border-zinc-700'}">
-                                    ⚪ أبيض ستوري
+                                <button type="button" onclick="ReelsEngine.setSlideTransitionDuration(0.25)" 
+                                        class="flex-1 py-1 rounded-lg text-[10px] font-bold border transition ${state.slideTransition.duration <= 0.28 ? 'bg-white text-slate-950 border-white font-black' : 'bg-zinc-800 text-zinc-400 border-zinc-700 hover:text-white'}">
+                                    ⚡ خاطف (0.25s)
                                 </button>
-                                <button type="button" onclick="ReelsEngine.setProgressBarColor('amber')" 
-                                        class="px-2.5 py-1 rounded-lg text-[10px] font-bold border transition ${state.progressBar.color === 'amber' ? 'bg-amber-400 text-slate-950 border-amber-400 font-black ring-2 ring-amber-400/30 shadow-xs' : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border-zinc-700'}">
-                                    🟡 ذهبي كوينز
+                                <button type="button" onclick="ReelsEngine.setSlideTransitionDuration(0.38)" 
+                                        class="flex-1 py-1 rounded-lg text-[10px] font-bold border transition ${state.slideTransition.duration > 0.28 && state.slideTransition.duration <= 0.45 ? 'bg-white text-slate-950 border-white font-black' : 'bg-zinc-800 text-zinc-400 border-zinc-700 hover:text-white'}">
+                                    🎬 سينمائي (0.38s)
                                 </button>
-                                <button type="button" onclick="ReelsEngine.setProgressBarColor('emerald')" 
-                                        class="px-2.5 py-1 rounded-lg text-[10px] font-bold border transition ${state.progressBar.color === 'emerald' ? 'bg-emerald-500 text-white border-emerald-500 font-black ring-2 ring-emerald-500/30 shadow-xs' : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border-zinc-700'}">
-                                    🟢 زمردي ميتا
+                                <button type="button" onclick="ReelsEngine.setSlideTransitionDuration(0.55)" 
+                                        class="flex-1 py-1 rounded-lg text-[10px] font-bold border transition ${state.slideTransition.duration > 0.45 ? 'bg-white text-slate-950 border-white font-black' : 'bg-zinc-800 text-zinc-400 border-zinc-700 hover:text-white'}">
+                                    🕊️ هادئ (0.55s)
                                 </button>
                             </div>
                         </div>
-                    ` : ''}
+
+                        <!-- Sound Toggle -->
+                        <div class="space-y-1.5">
+                            <span class="text-[10px] text-zinc-400 font-bold block">صوت الانتقال السينمائي (Whoosh SFX):</span>
+                            <button type="button" onclick="ReelsEngine.toggleSlideTransitionSound()" 
+                                    class="w-full py-1.5 px-3 rounded-lg text-[10.5px] font-black border transition active:scale-95 flex items-center justify-between ${state.slideTransition.soundEnabled ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40' : 'bg-zinc-800 text-zinc-400 border-zinc-700'}">
+                                <span>${state.slideTransition.soundEnabled ? '🔊 صوت السحب السريع مفعل ✓' : '🔇 صوت الانتقال مكتوم ✕'}</span>
+                                <span class="text-[9px] px-1.5 py-0.2 rounded bg-black/40 font-mono">${state.slideTransition.soundEnabled ? 'ON' : 'OFF'}</span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- 6. SAFE ZONE -->
@@ -6523,21 +7092,73 @@ window.ReelsEngine = (function() {
                     triggerSlideAudio(item.slide, recordAudioDest, recordAudioCtx);
                 }
 
+                const transType = (state.slideTransition && state.slideTransition.type) || 'smooth_fade';
+                const transDur = (state.slideTransition && state.slideTransition.duration) || 0.35;
+                const transFrames = (i > 0 && transType !== 'instant') ? Math.min(Math.round(fps * transDur), Math.floor(totalFrames / 2)) : 0;
+
                 for (let f = 0; f < totalFrames; f++) {
                     const frameStart = performance.now();
                     const progress = f / totalFrames;
 
-                    // Dynamic subtle cinematic zoom (1.000 -> 1.018)
-                    const scale = 1.0 + (progress * 0.018);
-                    const w = 1080 * scale;
-                    const h = 1920 * scale;
-                    const x = (1080 - w) / 2;
-                    const y = (1920 - h) / 2;
-
                     ctx.clearRect(0, 0, 1080, 1920);
-                    ctx.drawImage(item.img, x, y, w, h);
 
-                    // Draw animated segmented Story Progress Bar on recorded video frame
+                    if (f < transFrames && preloadedSlides[i - 1]) {
+                        const t = f / transFrames; // 0.0 -> 1.0
+                        const prevImg = preloadedSlides[i - 1].img;
+                        const curImg = item.img;
+
+                        if (transType === 'smooth_fade') {
+                            ctx.save();
+                            ctx.globalAlpha = Math.max(0, 1 - t);
+                            ctx.drawImage(prevImg, 0, 0, 1080, 1920);
+                            ctx.globalAlpha = Math.min(1, t);
+                            ctx.drawImage(curImg, 0, 0, 1080, 1920);
+                            ctx.restore();
+                        } else if (transType === 'push_slide') {
+                            const ease = 1 - Math.pow(1 - t, 3);
+                            const prevX = -1080 * ease;
+                            const curX = 1080 * (1 - ease);
+                            ctx.save();
+                            ctx.drawImage(prevImg, prevX, 0, 1080, 1920);
+                            ctx.drawImage(curImg, curX, 0, 1080, 1920);
+                            ctx.restore();
+                        } else if (transType === 'flash_cut') {
+                            ctx.drawImage(curImg, 0, 0, 1080, 1920);
+                            const flashAlpha = Math.max(0, 1 - (t * 2.2));
+                            if (flashAlpha > 0) {
+                                ctx.save();
+                                ctx.fillStyle = `rgba(255, 255, 255, ${flashAlpha})`;
+                                ctx.fillRect(0, 0, 1080, 1920);
+                                ctx.restore();
+                            }
+                        } else if (transType === 'zoom_warp') {
+                            const zoomScale = 1.15 - (t * 0.15);
+                            const zw = 1080 * zoomScale;
+                            const zh = 1920 * zoomScale;
+                            const zx = (1080 - zw) / 2;
+                            const zy = (1920 - zh) / 2;
+                            ctx.save();
+                            ctx.globalAlpha = 0.5 + (t * 0.5);
+                            ctx.drawImage(curImg, zx, zy, zw, zh);
+                            ctx.restore();
+                        } else {
+                            const ease = 1 - Math.pow(1 - t, 2.5);
+                            ctx.save();
+                            ctx.globalAlpha = 0.3 + (t * 0.7);
+                            ctx.drawImage(curImg, 60 * (1 - ease), 0, 1080, 1920);
+                            ctx.restore();
+                        }
+                    } else {
+                        // Dynamic subtle cinematic zoom (1.000 -> 1.018)
+                        const scale = 1.0 + (progress * 0.018);
+                        const w = 1080 * scale;
+                        const h = 1920 * scale;
+                        const x = (1080 - w) / 2;
+                        const y = (1920 - h) / 2;
+                        ctx.drawImage(item.img, x, y, w, h);
+                    }
+
+                    // Draw animated Story Progress Bar on recorded video frame
                     if (state.progressBar && state.progressBar.enabled) {
                         drawCanvasStoryProgressBar(ctx, 1080, 1920, totalSlides, i, progress, state.progressBar);
                     }
@@ -6998,7 +7619,16 @@ ${state.subtitle}
         applySlideSfxToAllSlides,
         getSlideSfxConfig,
         toggleProgressBar,
+        setProgressBarStyle,
         setProgressBarColor,
+        setProgressBarThickness,
+        REELS_PROGRESS_STYLES,
+        setSlideTransitionType,
+        setSlideTransitionDuration,
+        toggleSlideTransitionSound,
+        testSlideTransition,
+        REELS_SLIDE_TRANSITIONS,
+        getSlideTransitionState: () => state.slideTransition,
         toggleBadgeOnCurrentSlide,
         addCustomBadgeToCurrentSlide,
         removeBadgeFromCurrentSlide,
