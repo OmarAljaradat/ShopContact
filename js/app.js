@@ -840,6 +840,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const suiteParam = urlParams.get('suite');
         if (suiteParam && ['suite_stories', 'suite_posts', 'suite_carousel', 'suite_reels'].includes(suiteParam)) {
             window.currentStudioSuite = suiteParam;
+        } else {
+            try {
+                const savedSuite = localStorage.getItem('shopcoin15_active_suite');
+                if (savedSuite && ['suite_stories', 'suite_posts', 'suite_carousel', 'suite_reels'].includes(savedSuite)) {
+                    window.currentStudioSuite = savedSuite;
+                }
+            } catch (e) {}
         }
         const tmplParam = urlParams.get('template');
         if (tmplParam && TEMPLATES[tmplParam]) {
@@ -1023,6 +1030,9 @@ function initTemplateSelector() {
 
 window.switchStudioSuite = function(suiteKey) {
     window.currentStudioSuite = suiteKey;
+    try {
+        localStorage.setItem('shopcoin15_active_suite', suiteKey);
+    } catch(e) {}
 
     // 1. Update Suite Navigation Buttons UI
     const suiteMap = {

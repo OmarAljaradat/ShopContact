@@ -271,6 +271,7 @@ window.ReelsEngine = (function() {
         try {
             localStorage.setItem(FONT_STORAGE_KEY, fontKey);
         } catch (e) {}
+        saveProjectState();
         renderCanvas();
         renderEditorControls();
         const names = {
@@ -292,10 +293,15 @@ window.ReelsEngine = (function() {
 
     function switchSection(sectionKey) {
         pausePlayback();
-        initSection(sectionKey);
+        saveProjectState();
+        const restored = loadSavedProjectForSection(sectionKey);
+        if (!restored) {
+            initSection(sectionKey);
+        }
         renderEditorControls();
         renderCanvas();
         if (typeof renderPlayerToolbar === 'function') renderPlayerToolbar();
+        saveProjectState();
     }
 
     function applyIdea(ideaObj, showToast = true) {
@@ -389,6 +395,7 @@ window.ReelsEngine = (function() {
         if (showToast && window.showCopyToast) {
             window.showCopyToast(`تم اختيار: ${ideaObj.title}! يمكنك الآن تعديل اللاعبين كما تحب ✍️`);
         }
+        saveProjectState();
     }
 
     // ---- 4. DRAG & RESIZE ENGINE (100% INDEPENDENT OF SIZE) ----
@@ -605,6 +612,7 @@ window.ReelsEngine = (function() {
             activeResize = null;
             renderCanvas();
             renderEditorControls();
+            saveProjectState();
             return;
         }
 
@@ -616,6 +624,7 @@ window.ReelsEngine = (function() {
             hideMagnetGuides();
             renderCanvas();
             renderEditorControls();
+            saveProjectState();
         }
     }
 
@@ -779,6 +788,7 @@ window.ReelsEngine = (function() {
     function saveLayoutPositions() {
         try {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(state.layouts));
+            saveProjectState();
             if (window.showCopyToast) {
                 window.showCopyToast('تم حفظ وتثبيت مواقع وأحجام العناصر بنجاح لكل الريلزات القادمة! 💾🔒');
             }
@@ -792,6 +802,7 @@ window.ReelsEngine = (function() {
         try {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(state.layouts));
         } catch (e) {}
+        saveProjectState();
         renderCanvas();
         renderEditorControls();
         if (window.showCopyToast) {
@@ -828,6 +839,7 @@ window.ReelsEngine = (function() {
         renderCanvas();
         if (typeof renderPlayerToolbar === 'function') renderPlayerToolbar();
         if (window.showCopyToast) window.showCopyToast('تمت إضافة بطاقة لاعب جديدة! يمكنك تعديلها الآن ➕');
+        saveProjectState();
     }
 
     function addSlide(type = 'player_card') {
@@ -875,6 +887,7 @@ window.ReelsEngine = (function() {
         renderCanvas();
         if (typeof renderPlayerToolbar === 'function') renderPlayerToolbar();
         if (window.showCopyToast) window.showCopyToast('تمت إضافة السلايد بنجاح! ➕');
+        saveProjectState();
     }
 
     function deleteCurrentSlide() {
@@ -895,6 +908,7 @@ window.ReelsEngine = (function() {
         renderEditorControls();
         if (typeof renderPlayerToolbar === 'function') renderPlayerToolbar();
         if (window.showCopyToast) window.showCopyToast(`تم حذف ${typeName} بنجاح 🗑️`);
+        saveProjectState();
     }
 
     function toggleElementVisibility(field) {
@@ -906,6 +920,7 @@ window.ReelsEngine = (function() {
         if (window.showCopyToast) {
             window.showCopyToast(slide[field] ? 'تم إخفاء/حذف العنصر من التصميم 🗑️' : 'تم استعادة العنصر إلى التصميم 👁️');
         }
+        saveProjectState();
     }
 
     function setCurrentSlideDuration(val) {
@@ -916,6 +931,7 @@ window.ReelsEngine = (function() {
         renderEditorControls();
         const badge = document.getElementById('currentSlideDurationBadge');
         if (badge) badge.textContent = `${slide.duration.toFixed(1)} ثانية`;
+        saveProjectState();
     }
 
     function adjustCurrentSlideDuration(delta) {
@@ -927,6 +943,7 @@ window.ReelsEngine = (function() {
         slide.duration = newDur;
         renderCanvas();
         renderEditorControls();
+        saveProjectState();
     }
 
     function applyDurationToAllPlayerCards() {
@@ -944,6 +961,7 @@ window.ReelsEngine = (function() {
             window.showCopyToast(`تم تطبيق سرعة (${dur} ثانية) على كافة كروت اللاعبين (${count} كروت) ⏱️⚡`);
         }
         renderEditorControls();
+        saveProjectState();
     }
 
     function updateCurrentSlideField(field, val) {
@@ -951,6 +969,7 @@ window.ReelsEngine = (function() {
         if (!slide) return;
         slide[field] = val;
         renderCanvas();
+        saveProjectState();
     }
 
     function updateVersusField(playerKey, field, val) {
@@ -959,6 +978,7 @@ window.ReelsEngine = (function() {
         if (!slide[playerKey]) slide[playerKey] = {};
         slide[playerKey][field] = val;
         renderCanvas();
+        saveProjectState();
     }
 
     // ---- 7. INTERACTIVE VIDEO PLAYER ----
@@ -1044,6 +1064,385 @@ window.ReelsEngine = (function() {
             renderCanvas();
             renderEditorControls();
             updatePlayerUi();
+        }
+    }
+
+    // ---- 7.5 TITLE LINE & TYPOGRAPHY FORMATTING HELPERS ----
+    function escapeHtml(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    function formatTitleLines(rawText, defaultText = '') {
+        const text = (rawText !== undefined && rawText !== null && String(rawText).trim() !== '') ? String(rawText) : defaultText;
+        if (!text) return '';
+        const lines = text.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
+        if (lines.length === 0) return '';
+        return lines.map(line => `<span class="block whitespace-nowrap leading-tight">${escapeHtml(line)}</span>`).join('');
+    }
+
+    function getTitleFontClass(rawText, defaultText = '') {
+        const text = (rawText !== undefined && rawText !== null && String(rawText).trim() !== '') ? String(rawText) : defaultText;
+        if (!text) return 'text-3xl md:text-4xl';
+        const lines = text.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
+        const lineCount = lines.length || 1;
+        const maxLen = lines.length ? Math.max(...lines.map(l => l.length)) : 0;
+
+        if (maxLen > 40 || lineCount >= 4) return 'text-lg md:text-xl leading-snug';
+        if (maxLen > 28 || lineCount === 3) return 'text-2xl md:text-3xl leading-tight';
+        if (maxLen > 18 || lineCount === 2) return 'text-3xl md:text-4xl leading-tight';
+        if (maxLen > 10) return 'text-4xl md:text-5xl leading-tight';
+        return 'text-4xl md:text-5xl leading-tight';
+    }
+
+    function countTitleLines(rawText) {
+        if (!rawText) return 1;
+        const lines = String(rawText).split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
+        return lines.length || 1;
+    }
+
+    function splitIntoLines(text, lineCount) {
+        const single = String(text || '').replace(/\r?\n/g, ' ').replace(/\s+/g, ' ').trim();
+        if (!single) return '';
+        if (lineCount <= 1) return single;
+
+        const words = single.split(' ');
+        if (words.length <= lineCount) return words.join('\n');
+
+        if (lineCount === 2) {
+            let bestIdx = 1;
+            let minDiff = Infinity;
+            for (let i = 1; i < words.length; i++) {
+                const line1 = words.slice(0, i).join(' ');
+                const line2 = words.slice(i).join(' ');
+                const diff = Math.abs(line1.length - line2.length);
+                if (diff < minDiff) {
+                    minDiff = diff;
+                    bestIdx = i;
+                }
+            }
+            return words.slice(0, bestIdx).join(' ') + '\n' + words.slice(bestIdx).join(' ');
+        }
+
+        if (lineCount === 3) {
+            let bestI = 1, bestJ = 2;
+            let minVariance = Infinity;
+            for (let i = 1; i < words.length - 1; i++) {
+                for (let j = i + 1; j < words.length; j++) {
+                    const l1 = words.slice(0, i).join(' ').length;
+                    const l2 = words.slice(i, j).join(' ').length;
+                    const l3 = words.slice(j).join(' ').length;
+                    const avg = (l1 + l2 + l3) / 3;
+                    const variance = Math.pow(l1 - avg, 2) + Math.pow(l2 - avg, 2) + Math.pow(l3 - avg, 2);
+                    if (variance < minVariance) {
+                        minVariance = variance;
+                        bestI = i;
+                        bestJ = j;
+                    }
+                }
+            }
+            return words.slice(0, bestI).join(' ') + '\n' + 
+                   words.slice(bestI, bestJ).join(' ') + '\n' + 
+                   words.slice(bestJ).join(' ');
+        }
+
+        return single;
+    }
+
+    function getTitleLinesArray(rawText) {
+        if (rawText === undefined || rawText === null) return [''];
+        const str = String(rawText);
+        if (!str) return [''];
+        const parts = str.split(/\r?\n/);
+        return parts.length > 0 ? parts : [''];
+    }
+
+    function syncTitleAcrossSlides(newTitle) {
+        const current = state.slides[state.currentSlideIndex];
+        if (current && current.type === 'outro') {
+            current.title = newTitle;
+            return;
+        }
+        state.title = newTitle;
+        if (current && (current.type === 'intro' || current.type === 'versus_card')) {
+            current.title = newTitle;
+        }
+        const introSlide = state.slides.find(s => s.type === 'intro');
+        if (introSlide) {
+            introSlide.title = newTitle;
+        }
+    }
+
+    function renderLinesListInputsHtml(lines) {
+        return lines.map((lineText, idx) => `
+            <div class="flex items-center gap-1.5" data-line-index="${idx}">
+                <span class="text-[10.5px] font-black text-slate-700 w-16 shrink-0 bg-white px-2 py-1.5 rounded-xl border border-slate-200 text-center shadow-2xs">
+                    السطر ${idx + 1}
+                </span>
+                <input type="text" value="${escapeHtml(lineText)}" 
+                       oninput="ReelsEngine.updateTitleLine(${idx}, this.value)"
+                       onkeydown="if(event.key==='Enter'){event.preventDefault(); ReelsEngine.addTitleLine();}"
+                       placeholder="${idx === 0 ? 'اكتب كلمات السطر الأول...' : (idx === 1 ? 'اكتب كلمات السطر الثاني...' : 'اكتب كلمات السطر ' + (idx + 1) + '...')}"
+                       class="flex-1 px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-900 text-xs font-black outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 shadow-2xs">
+                ${lines.length > 1 ? `
+                    <button type="button" onclick="ReelsEngine.removeTitleLine(${idx})" 
+                            class="w-7 h-7 rounded-xl bg-white hover:bg-rose-50 text-rose-500 hover:text-rose-700 border border-slate-200 flex items-center justify-center text-xs font-black transition active:scale-95 shadow-2xs shrink-0" title="حذف هذا السطر">
+                        ✕
+                    </button>
+                ` : ''}
+            </div>
+        `).join('');
+    }
+
+    function refreshLineInputsDom(titleText) {
+        const container = document.getElementById('reelsTitleLinesContainer');
+        if (!container) return;
+        const lines = getTitleLinesArray(titleText);
+        container.innerHTML = renderLinesListInputsHtml(lines);
+    }
+
+    function updateTitleFromTextarea(val) {
+        syncTitleAcrossSlides(val);
+        refreshLineInputsDom(val);
+        renderCanvas();
+        saveProjectState();
+    }
+
+    function updateTitleLine(index, value) {
+        const current = state.slides[state.currentSlideIndex];
+        const baseTitle = (current && current.title !== undefined) ? current.title : (state.title || '');
+        let lines = getTitleLinesArray(baseTitle);
+        while (lines.length <= index) lines.push('');
+        lines[index] = value;
+
+        const newTitle = lines.join('\n');
+        syncTitleAcrossSlides(newTitle);
+
+        const ta = document.getElementById('reelsTitleMainTextarea');
+        if (ta && ta.value !== newTitle) {
+            ta.value = newTitle;
+        }
+
+        renderCanvas();
+        saveProjectState();
+    }
+
+    function addTitleLine() {
+        const current = state.slides[state.currentSlideIndex];
+        const baseTitle = (current && current.title !== undefined) ? current.title : (state.title || '');
+        let lines = getTitleLinesArray(baseTitle);
+        if (lines.length >= 4) {
+            if (window.showCopyToast) window.showCopyToast('الحد الأقصى هو 4 أسطر للحفاظ على تصميم الريل متناسقاً');
+            return;
+        }
+        lines.push('');
+        const newTitle = lines.join('\n');
+        syncTitleAcrossSlides(newTitle);
+
+        const ta = document.getElementById('reelsTitleMainTextarea');
+        if (ta) ta.value = newTitle;
+
+        refreshLineInputsDom(newTitle);
+        renderCanvas();
+        saveProjectState();
+
+        setTimeout(() => {
+            const inputs = document.querySelectorAll('#reelsTitleLinesContainer input');
+            if (inputs && inputs[inputs.length - 1]) {
+                inputs[inputs.length - 1].focus();
+            }
+        }, 60);
+    }
+
+    function removeTitleLine(index) {
+        const current = state.slides[state.currentSlideIndex];
+        const baseTitle = (current && current.title !== undefined) ? current.title : (state.title || '');
+        let lines = getTitleLinesArray(baseTitle);
+        if (lines.length <= 1) {
+            lines = [''];
+        } else {
+            lines.splice(index, 1);
+        }
+        const newTitle = lines.join('\n');
+        syncTitleAcrossSlides(newTitle);
+
+        const ta = document.getElementById('reelsTitleMainTextarea');
+        if (ta) ta.value = newTitle;
+
+        refreshLineInputsDom(newTitle);
+        renderCanvas();
+        saveProjectState();
+    }
+
+    function formatTitleLinesCount(targetLines) {
+        const current = state.slides[state.currentSlideIndex];
+        const baseTitle = (current && current.title) || state.title || '';
+        const newTitle = splitIntoLines(baseTitle, targetLines);
+        syncTitleAcrossSlides(newTitle);
+
+        const ta = document.getElementById('reelsTitleMainTextarea');
+        if (ta) ta.value = newTitle;
+
+        refreshLineInputsDom(newTitle);
+        renderCanvas();
+        saveProjectState();
+    }
+
+    function renderTitleLinesBuilderHtml(titleText, labelText = 'عنوان الريل (توزيع الكلمات بالأسطر):', hideField = 'hideTitle', isHidden = false) {
+        const lines = getTitleLinesArray(titleText);
+        const rowsCount = Math.max(2, Math.min(lines.length + 1, 4));
+        return `
+            <div class="p-3 rounded-2xl bg-slate-50 border border-slate-200 space-y-2.5">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <label class="text-[11.5px] font-black text-slate-900">${labelText}</label>
+                        <span id="reelAutoSaveBadge" class="text-[9px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">💾 محفوظ</span>
+                    </div>
+                    ${hideField ? `
+                        <button type="button" onclick="ReelsEngine.toggleElementVisibility('${hideField}')" class="text-[10px] font-bold px-2 py-0.5 rounded ${isHidden ? 'bg-slate-200 text-slate-600' : 'bg-rose-50 text-rose-600 border border-rose-200'}">
+                            ${isHidden ? '👁️ إظهار' : '🗑️ إخفاء'}
+                        </button>
+                    ` : ''}
+                </div>
+
+                <!-- 1. Textarea: Enter key directly creates line -->
+                <div class="space-y-1.5">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[10px] font-bold text-slate-500">اكتب واضغط Enter لكل سطر، أو استخدم أزرار التقسيم:</span>
+                        <div class="flex items-center gap-1">
+                            <button type="button" onclick="ReelsEngine.formatTitleLinesCount(1)" 
+                                    class="px-2 py-0.5 rounded-md bg-white hover:bg-slate-100 text-slate-700 text-[9.5px] font-black border border-slate-200 shadow-2xs active:scale-95 transition" title="دمج كل الكلمات في سطر واحد">
+                                سطر ⎯
+                            </button>
+                            <button type="button" onclick="ReelsEngine.formatTitleLinesCount(2)" 
+                                    class="px-2 py-0.5 rounded-md bg-white hover:bg-slate-100 text-slate-700 text-[9.5px] font-black border border-slate-200 shadow-2xs active:scale-95 transition" title="توزيع تلقائي لسطرين">
+                                سطرين ⚏
+                            </button>
+                            <button type="button" onclick="ReelsEngine.formatTitleLinesCount(3)" 
+                                    class="px-2 py-0.5 rounded-md bg-white hover:bg-slate-100 text-slate-700 text-[9.5px] font-black border border-slate-200 shadow-2xs active:scale-95 transition" title="توزيع تلقائي لـ 3 أسطر">
+                                3 أسطر ☰
+                            </button>
+                        </div>
+                    </div>
+                    <textarea id="reelsTitleMainTextarea" rows="${rowsCount}" 
+                              oninput="ReelsEngine.updateTitleFromTextarea(this.value)"
+                              placeholder="اكتب العنوان هنا واضغط Enter للانتقال لسطر جديد فوراً..."
+                              class="w-full p-2.5 rounded-xl bg-white border border-slate-200 text-slate-900 text-xs font-black resize-none leading-relaxed outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 shadow-2xs">${escapeHtml(titleText)}</textarea>
+                </div>
+
+                <!-- 2. Granular line-by-line inputs -->
+                <div class="pt-2 border-t border-slate-200/70 space-y-1.5">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[10px] font-bold text-slate-500">أو حدد كلمات كل سطر بدقة:</span>
+                        <button type="button" onclick="ReelsEngine.addTitleLine()" 
+                                class="text-[10px] font-black text-emerald-600 hover:text-emerald-700 flex items-center gap-0.5 transition active:scale-95">
+                            <span>➕ إضافة سطر</span>
+                        </button>
+                    </div>
+                    <div class="space-y-1.5" id="reelsTitleLinesContainer">
+                        ${renderLinesListInputsHtml(lines)}
+                    </div>
+                </div>
+
+                <p class="text-[9.5px] text-slate-500 font-medium leading-relaxed bg-white/80 p-2 rounded-xl border border-slate-200/60">
+                    💡 <b>تحكم مباشر بالكلمات:</b> كل سطر تكتبه في الصندوق أعلاه يظهر كسطر مستقل 100% في الريل تماماً كما كتبته!
+                </p>
+            </div>
+        `;
+    }
+
+    // ---- 7.6 PERSISTENT PROJECT AUTO-SAVE ENGINE ----
+    const PROJECT_STORAGE_KEY_PREFIX = 'shopcoin15_reel_project_v3_';
+    let autoSaveTimeout = null;
+
+    function showSavedToastIndicator() {
+        const badge = document.getElementById('reelAutoSaveBadge');
+        if (badge) {
+            badge.textContent = '💾 تم الحفظ تلقائياً ✓';
+            badge.classList.remove('opacity-60');
+            badge.classList.add('opacity-100', 'bg-emerald-100', 'text-emerald-800');
+            clearTimeout(autoSaveTimeout);
+            autoSaveTimeout = setTimeout(() => {
+                if (badge) {
+                    badge.textContent = '💾 محفوظ';
+                    badge.classList.add('opacity-60');
+                    badge.classList.remove('bg-emerald-100');
+                }
+            }, 1800);
+        }
+    }
+
+    function saveProjectState() {
+        try {
+            const sec = state.activeSection || 'countdown';
+            const payload = {
+                activeSection: sec,
+                theme: state.theme,
+                fontFamily: state.fontFamily,
+                title: state.title,
+                subtitle: state.subtitle,
+                badge: state.badge,
+                slides: state.slides,
+                currentSlideIndex: state.currentSlideIndex,
+                slideDuration: state.slideDuration,
+                layouts: state.layouts,
+                savedAt: Date.now()
+            };
+            localStorage.setItem(PROJECT_STORAGE_KEY_PREFIX + sec, JSON.stringify(payload));
+            localStorage.setItem(PROJECT_STORAGE_KEY_PREFIX + 'last_active', sec);
+            showSavedToastIndicator();
+        } catch (e) {
+            console.warn('[Reels] Auto-save error:', e);
+        }
+    }
+
+    function loadSavedProjectForSection(sec) {
+        try {
+            const raw = localStorage.getItem(PROJECT_STORAGE_KEY_PREFIX + sec);
+            if (raw) {
+                const data = JSON.parse(raw);
+                if (data && Array.isArray(data.slides) && data.slides.length > 0) {
+                    state.activeSection = sec;
+                    state.theme = data.theme || 'ea_marble_clean';
+                    state.fontFamily = data.fontFamily || loadSavedFontFamily();
+                    state.title = data.title || state.title;
+                    state.subtitle = data.subtitle || state.subtitle;
+                    state.badge = data.badge || state.badge;
+                    state.slides = data.slides;
+                    state.currentSlideIndex = Math.max(0, Math.min(data.currentSlideIndex || 0, data.slides.length - 1));
+                    state.slideDuration = data.slideDuration || 2.5;
+                    if (data.layouts) {
+                        state.layouts = {
+                            countdown: { ...DEFAULT_LAYOUTS.countdown, ...(data.layouts.countdown || {}) },
+                            versus: { ...DEFAULT_LAYOUTS.versus, ...(data.layouts.versus || {}) }
+                        };
+                    }
+                    ensureSelectedDragElement();
+                    return true;
+                }
+            }
+        } catch (e) {
+            console.warn('[Reels] Load section error:', e);
+        }
+        return false;
+    }
+
+    function resetSectionToDefault(showPrompt = true) {
+        if (showPrompt && !confirm('هل أنت متأكد من استعادة القالب الافتراضي والبدء بريل جديد؟ سيتم مسح التعديلات الحالية لهذا النمط.')) {
+            return;
+        }
+        initSection(state.activeSection);
+        saveProjectState();
+        renderCanvas();
+        renderEditorControls();
+        if (typeof renderPlayerToolbar === 'function') renderPlayerToolbar();
+        if (window.showCopyToast) {
+            window.showCopyToast('تمت استعادة القالب الافتراضي بنجاح! 🔄');
         }
     }
 
@@ -1201,9 +1600,9 @@ window.ReelsEngine = (function() {
                 <!-- 2. Intro Title -->
                 ${!currentSlide.hideTitle ? `
                     <div data-drag-id="introTitle" class="z-20 select-none relative ${dragCursor} ${selectRing('introTitle')}" style="${posStyle(layout.introTitle)}">
-                        <div class="w-[360px] text-center px-4" dir="rtl">
-                            <h1 class="text-4xl md:text-5xl font-black text-slate-950 leading-snug drop-shadow-sm pointer-events-none">
-                                ${currentSlide.title || state.title}
+                        <div class="w-max max-w-none text-center px-2" dir="rtl">
+                            <h1 class="${getTitleFontClass(currentSlide.title || state.title)} font-black text-slate-950 leading-snug drop-shadow-sm pointer-events-none space-y-0.5">
+                                ${formatTitleLines(currentSlide.title || state.title, 'أفضل 5 مهاجمين للبدايات')}
                             </h1>
                         </div>
                         ${renderResizeHandle('introTitle')}
@@ -1213,9 +1612,9 @@ window.ReelsEngine = (function() {
                 <!-- 3. Intro Subtitle -->
                 ${!currentSlide.hideSubtitle ? `
                     <div data-drag-id="introSubtitle" class="z-20 select-none relative ${dragCursor} ${selectRing('introSubtitle')}" style="${posStyle(layout.introSubtitle)}">
-                        <div class="w-[360px] text-center px-4" dir="rtl">
-                            <p class="text-sm md:text-base font-bold text-slate-600 leading-relaxed pointer-events-none">
-                                ${currentSlide.subtitle || state.subtitle}
+                        <div class="w-max max-w-none text-center px-3" dir="rtl">
+                            <p class="text-sm md:text-base font-bold text-slate-600 leading-relaxed pointer-events-none space-y-0.5">
+                                ${formatTitleLines(currentSlide.subtitle || state.subtitle, 'الوصف والتحفيز')}
                             </p>
                         </div>
                         ${renderResizeHandle('introSubtitle')}
@@ -1247,12 +1646,12 @@ window.ReelsEngine = (function() {
                     </div>
                 ` : ''}
 
-                <!-- 2. Title Block (Fixed 340px width container to prevent text reflow on move) -->
+                <!-- 2. Title Block (Flexible width container with exact line breaks) -->
                 ${!currentSlide.hideTitle ? `
                     <div data-drag-id="title" class="z-20 select-none relative ${dragCursor} ${selectRing('title')}" style="${posStyle(layout.title)}">
-                        <div class="w-[340px] text-center px-4" dir="rtl">
-                            <div class="text-base md:text-lg font-black text-slate-950 leading-tight drop-shadow-xs pointer-events-none">
-                                ${state.title}
+                        <div class="w-max max-w-none text-center px-2" dir="rtl">
+                            <div class="text-base md:text-lg font-black text-slate-950 leading-tight drop-shadow-xs pointer-events-none space-y-0.5">
+                                ${formatTitleLines(state.title, 'عنوان الريل')}
                             </div>
                         </div>
                         ${renderResizeHandle('title')}
@@ -1305,12 +1704,12 @@ window.ReelsEngine = (function() {
                 <!-- 1. Title Header -->
                 ${!currentSlide.hideTitle ? `
                     <div data-drag-id="title" class="z-20 select-none relative ${dragCursor} ${selectRing('title')}" style="${posStyle(layout.title)}">
-                        <div class="w-[340px] text-center px-4" dir="rtl">
+                        <div class="w-max max-w-none text-center px-2" dir="rtl">
                             <span class="inline-block px-3 py-1 rounded-full bg-slate-900 text-white text-[10px] font-black mb-1 shadow-xs pointer-events-none">
                                 ${state.badge || '⚔️ صراع العمالقة'}
                             </span>
-                            <h2 class="text-xl md:text-2xl font-black text-slate-950 leading-snug drop-shadow-xs pointer-events-none">
-                                ${currentSlide.title || state.title}
+                            <h2 class="${getTitleFontClass(currentSlide.title || state.title)} font-black text-slate-950 leading-snug drop-shadow-xs pointer-events-none space-y-0.5">
+                                ${formatTitleLines(currentSlide.title || state.title, 'عنوان المقارنة')}
                             </h2>
                         </div>
                         ${renderResizeHandle('title')}
@@ -1384,9 +1783,9 @@ window.ReelsEngine = (function() {
                 <!-- 2. Outro Title -->
                 ${!currentSlide.hideTitle ? `
                     <div data-drag-id="outroTitle" class="z-20 select-none relative ${dragCursor} ${selectRing('outroTitle')}" style="${posStyle(layout.outroTitle)}">
-                        <div class="w-[340px] text-center px-4" dir="rtl">
-                            <h2 class="text-3xl md:text-4xl font-black text-slate-950 leading-snug pointer-events-none">
-                                ${currentSlide.title || 'متجر ShopCoin15'}
+                        <div class="w-max max-w-none text-center px-2" dir="rtl">
+                            <h2 class="${getTitleFontClass(currentSlide.title || 'متجر ShopCoin15')} font-black text-slate-950 leading-snug pointer-events-none space-y-0.5">
+                                ${formatTitleLines(currentSlide.title || 'متجر ShopCoin15', 'متجر ShopCoin15')}
                             </h2>
                         </div>
                         ${renderResizeHandle('outroTitle')}
@@ -1894,16 +2293,7 @@ window.ReelsEngine = (function() {
                                class="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
                     </div>
 
-                    <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5">
-                        <div class="flex items-center justify-between">
-                            <label class="text-[11px] font-black text-slate-800">عنوان الريل المانشيت (Hook Title):</label>
-                            <button type="button" onclick="ReelsEngine.toggleElementVisibility('hideTitle')" class="text-[10px] font-bold px-2 py-0.5 rounded ${slide.hideTitle ? 'bg-slate-200 text-slate-600' : 'bg-rose-50 text-rose-600 border border-rose-200'}">
-                                ${slide.hideTitle ? '👁️ إظهار' : '🗑️ إخفاء/حذف'}
-                            </button>
-                        </div>
-                        <textarea rows="2" oninput="ReelsEngine.updateCurrentSlideField('title', this.value); ReelsEngine.updateTitle(this.value);"
-                                  class="w-full p-2.5 rounded-xl bg-white border border-slate-200 text-slate-900 text-xs font-black resize-none leading-relaxed outline-none focus:border-emerald-500">${slide.title || ''}</textarea>
-                    </div>
+                    ${renderTitleLinesBuilderHtml(slide.title || state.title || '', '📢 مانشيت البداية (توزيع الكلمات بالأسطر):', 'hideTitle', slide.hideTitle)}
 
                     <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5">
                         <div class="flex items-center justify-between">
@@ -1913,8 +2303,8 @@ window.ReelsEngine = (function() {
                             </button>
                         </div>
                         <input type="text" value="${(slide.subtitle || '').replace(/"/g, '&quot;')}" 
-                               oninput="ReelsEngine.updateCurrentSlideField('subtitle', this.value)"
-                               class="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-900 text-xs font-medium outline-none focus:border-emerald-500">
+                                oninput="ReelsEngine.updateCurrentSlideField('subtitle', this.value)"
+                                class="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-900 text-xs font-medium outline-none focus:border-emerald-500">
                     </div>
 
                     <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5">
@@ -1925,8 +2315,8 @@ window.ReelsEngine = (function() {
                             </button>
                         </div>
                         <input type="text" value="${(slide.ctaText || 'شاهد الترتيب بالكامل').replace(/"/g, '&quot;')}" 
-                               oninput="ReelsEngine.updateCurrentSlideField('ctaText', this.value)"
-                               class="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+                                oninput="ReelsEngine.updateCurrentSlideField('ctaText', this.value)"
+                                class="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
                     </div>
 
                     ${deleteSlideButtonHtml}
@@ -1936,6 +2326,8 @@ window.ReelsEngine = (function() {
             return `
                 <div class="space-y-2.5">
                     ${durationControlHtml}
+
+                    ${renderTitleLinesBuilderHtml(state.title || '', 'عنوان الريل المشترك (أعلى الكروت):', 'hideTitle', slide.hideTitle)}
 
                     <div class="grid grid-cols-2 gap-2">
                         <div class="p-2 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
@@ -1996,17 +2388,7 @@ window.ReelsEngine = (function() {
                 <div class="space-y-3">
                     ${durationControlHtml}
 
-                    <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
-                        <div class="flex items-center justify-between">
-                            <label class="text-[11px] font-black text-slate-900">عنوان المقارنة:</label>
-                            <button type="button" onclick="ReelsEngine.toggleElementVisibility('hideTitle')" class="text-[10px] font-bold px-2 py-0.5 rounded ${slide.hideTitle ? 'bg-slate-200 text-slate-600' : 'bg-rose-50 text-rose-600'}">
-                                ${slide.hideTitle ? '👁️ إظهار' : '🗑️ إخفاء'}
-                            </button>
-                        </div>
-                        <input type="text" value="${(slide.title || state.title || '').replace(/"/g, '&quot;')}" 
-                               oninput="ReelsEngine.updateCurrentSlideField('title', this.value); ReelsEngine.updateTitle(this.value);"
-                               class="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs font-black">
-                    </div>
+                    ${renderTitleLinesBuilderHtml(slide.title || state.title || '', '⚔️ عنوان المقارنة (توزيع الكلمات بالأسطر):', 'hideTitle', slide.hideTitle)}
 
                     <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
                         <div class="flex items-center justify-between">
@@ -2068,17 +2450,7 @@ window.ReelsEngine = (function() {
                 <div class="space-y-2.5">
                     ${durationControlHtml}
 
-                    <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5">
-                        <div class="flex items-center justify-between">
-                            <label class="text-[11px] font-black text-slate-800">عنوان الختام:</label>
-                            <button type="button" onclick="ReelsEngine.toggleElementVisibility('hideTitle')" class="text-[10px] font-bold px-2 py-0.5 rounded ${slide.hideTitle ? 'bg-slate-200 text-slate-600' : 'bg-rose-50 text-rose-600'}">
-                                ${slide.hideTitle ? '👁️ إظهار' : '🗑️ إخفاء'}
-                            </button>
-                        </div>
-                        <input type="text" value="${(slide.title || 'متجر ShopCoin15').replace(/"/g, '&quot;')}" 
-                               oninput="ReelsEngine.updateCurrentSlideField('title', this.value)"
-                               class="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs font-black">
-                    </div>
+                    ${renderTitleLinesBuilderHtml(slide.title || 'متجر ShopCoin15', '👑 عنوان الختام (توزيع الكلمات بالأسطر):', 'hideTitle', slide.hideTitle)}
 
                     <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5">
                         <div class="flex items-center justify-between">
@@ -2111,8 +2483,7 @@ window.ReelsEngine = (function() {
     }
 
     function updateTitle(val) {
-        state.title = val;
-        renderCanvas();
+        updateTitleFromTextarea(val);
     }
 
     function updateBadges(val) {
@@ -2120,6 +2491,7 @@ window.ReelsEngine = (function() {
         if (!slide) return;
         slide.badges = val.split(',').map(s => s.trim()).filter(Boolean);
         renderCanvas();
+        saveProjectState();
     }
 
     function loadIdeaById(ideaId) {
@@ -2728,8 +3100,19 @@ ${state.subtitle}
         renderCanvas();
     }
 
-    // Initial setup & OAuth param check
-    initSection('countdown');
+    // Initial setup & Persistent project state restoration
+    let bootSection = 'countdown';
+    try {
+        const savedActive = localStorage.getItem(PROJECT_STORAGE_KEY_PREFIX + 'last_active');
+        if (savedActive && ['countdown', 'versus'].includes(savedActive)) {
+            bootSection = savedActive;
+        }
+    } catch (e) {}
+
+    const restored = loadSavedProjectForSection(bootSection);
+    if (!restored) {
+        initSection(bootSection);
+    }
 
     try {
         const urlParams = new URLSearchParams(window.location.search);
@@ -2790,6 +3173,14 @@ ${state.subtitle}
         updateCurrentSlideField,
         updateVersusField,
         updateTitle,
+        updateTitleFromTextarea,
+        updateTitleLine,
+        addTitleLine,
+        removeTitleLine,
+        formatTitleLinesCount,
+        resetSectionToDefault,
+        saveProjectState,
+        loadSavedProjectForSection,
         updateBadges,
         renderCanvas,
         renderEditorControls,
