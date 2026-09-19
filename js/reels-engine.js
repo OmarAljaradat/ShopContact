@@ -255,6 +255,26 @@ window.ReelsEngine = (function() {
                 65% { transform: scale(0.96); }
                 100% { opacity: 1; transform: scale(1.0); }
             }
+            @keyframes reelHookCardsStream {
+                0% { transform: translate3d(0, 0, 0); }
+                100% { transform: translate3d(-50%, 0, 0); }
+            }
+            @keyframes reelHookCardsStreamReverse {
+                0% { transform: translate3d(-50%, 0, 0); }
+                100% { transform: translate3d(0, 0, 0); }
+            }
+            @keyframes reelHookFanFloat {
+                0%, 100% { transform: translateY(0); }
+                50% { transform: translateY(-10px); }
+            }
+            @keyframes reelHookMysteryPulse {
+                0%, 100% { transform: scale(1.0); filter: drop-shadow(0 0 16px rgba(245,158,11,0.5)) drop-shadow(0 0 35px rgba(217,119,6,0.3)); }
+                50% { transform: scale(1.05); filter: drop-shadow(0 0 32px rgba(245,158,11,0.95)) drop-shadow(0 0 60px rgba(217,119,6,0.6)); }
+            }
+            @keyframes reelHookMysteryQuestion {
+                0%, 100% { transform: scale(1.0) rotate(0deg); }
+                50% { transform: scale(1.15) rotate(4deg); }
+            }
             .reel-anim-layer {
                 width: 100%;
                 height: 100%;
@@ -451,7 +471,11 @@ window.ReelsEngine = (function() {
                 hideBadge: false,
                 hideTitle: false,
                 hideSubtitle: false,
-                hideCta: false
+                hideCta: false,
+                introHookStyle: 'cards_stream',
+                introHookBlur: '3px',
+                introHookOpacity: 0.48,
+                introHookGlow: true
             });
 
             ranks.forEach((rankNum) => {
@@ -490,7 +514,11 @@ window.ReelsEngine = (function() {
                     hideBadge: false,
                     hideTitle: false,
                     hideSubtitle: false,
-                    hideCta: false
+                    hideCta: false,
+                    introHookStyle: 'cards_stream',
+                    introHookBlur: '3px',
+                    introHookOpacity: 0.48,
+                    introHookGlow: true
                 },
                 {
                     type: 'versus_card',
@@ -985,7 +1013,11 @@ window.ReelsEngine = (function() {
                 hideBadge: false,
                 hideTitle: false,
                 hideSubtitle: false,
-                hideCta: false
+                hideCta: false,
+                introHookStyle: 'cards_stream',
+                introHookBlur: '3px',
+                introHookOpacity: 0.48,
+                introHookGlow: true
             });
             state.currentSlideIndex = 0;
         } else if (type === 'outro') {
@@ -2324,6 +2356,165 @@ window.ReelsEngine = (function() {
         }
     }
 
+    // ---- 7.8 INTRO SLIDE 3D VISUAL HOOK GENERATOR ----
+    function getIntroHookCardUrls() {
+        const urls = [];
+        if (state.slides && state.slides.length > 0) {
+            state.slides.forEach(s => {
+                if (s.type === 'player_card' && s.cardUrl && !s.cardUrl.includes('placeholder')) {
+                    if (!urls.includes(s.cardUrl)) urls.push(s.cardUrl);
+                } else if (s.type === 'versus_card') {
+                    if (s.playerA?.cardUrl && !s.playerA.cardUrl.includes('placeholder') && !urls.includes(s.playerA.cardUrl)) {
+                        urls.push(s.playerA.cardUrl);
+                    }
+                    if (s.playerB?.cardUrl && !s.playerB.cardUrl.includes('placeholder') && !urls.includes(s.playerB.cardUrl)) {
+                        urls.push(s.playerB.cardUrl);
+                    }
+                }
+            });
+        }
+
+        const fallbackStars = [
+            'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=600/2027/futgg-player-item-card/27-231747.1b49b357729ba7dbf174dc4aa1e8519ce230b98ad399360e364a59f4b3477f07.webp', // Mbappé 91
+            'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=600/2027/futgg-player-item-card/27-252371.49e4acdf2d78496f4951f41725cd17fb8efb118d99a69ba074ab76fc62d70735.webp', // Bellingham 90
+            'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=600/2027/futgg-player-item-card/27-239085.5302941a50a927b565c122945958880e418b56c6cf7a76f88179fa24ec510b57.webp', // Haaland 91
+            'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=600/2027/futgg-player-item-card/27-238794.6715e80f49fb5360b92261f8bd984f7178a47066cff3bfcd2c1b7dd57db13fbf.webp', // Vinícius 90
+            'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=600/2027/futgg-player-item-card/27-271772.31fe0290520a1ebf2c253d8650e82ec4581177651a7e2898ad91316b25121b64.webp', // Yamal 81
+            'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=600/2027/futgg-player-item-card/27-209331.0504c35b430dfc7dd87cbb9ddc67b931e8a9390234a9ef1c9441113b28b49520.webp', // Salah 89
+            'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=600/2027/futgg-player-item-card/27-246669.cab7c7f82f8442d8ba57fc15e5f49728247141eac35add86238cdc54e7916495.webp', // Valverde 88
+            'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=600/2027/futgg-player-item-card/27-253072.b01bd10077579d6ac45096ea658f3725f2951793cc9543ab9775cd0e7b909ede.webp'  // Musiala 87
+        ];
+
+        fallbackStars.forEach(c => {
+            if (!urls.includes(c)) urls.push(c);
+        });
+
+        return urls;
+    }
+
+    function renderIntroVisualHookHtml(slide) {
+        if (!slide || slide.type !== 'intro') return '';
+
+        const style = slide.introHookStyle || 'cards_stream';
+        if (style === 'none') return '';
+
+        const blurVal = slide.introHookBlur || '3px';
+        const opacityVal = (slide.introHookOpacity !== undefined) ? slide.introHookOpacity : 0.48;
+        const hasGlow = slide.introHookGlow !== false;
+
+        const cardUrls = getIntroHookCardUrls();
+        const activeCards = cardUrls.slice(0, 6);
+
+        // Center Spotlight Gradient
+        const glowHtml = hasGlow ? `
+            <div class="absolute top-[44%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[380px] h-[380px] rounded-full pointer-events-none" 
+                 style="background: radial-gradient(circle, rgba(251, 191, 36, 0.42) 0%, rgba(245, 158, 11, 0.16) 45%, transparent 70%); filter: blur(35px); z-index: 5;">
+            </div>
+        ` : '';
+
+        if (style === 'cards_stream') {
+            // 3D Infinite Diagonal Cards Stream
+            const cardItems = activeCards.map(url => `
+                <div class="shrink-0 w-36 h-auto drop-shadow-[0_15px_25px_rgba(0,0,0,0.45)] pointer-events-none transition-transform">
+                    <img src="${url}" alt="Card" class="w-full h-auto object-contain">
+                </div>
+            `).join('');
+
+            return `
+                <div class="absolute inset-0 pointer-events-none overflow-hidden z-10 flex items-center justify-center" style="direction: ltr;">
+                    ${glowHtml}
+                    <div class="w-full overflow-hidden absolute top-[36%]" style="perspective: 1000px; transform: rotate(-5deg); z-index: 10;">
+                        <div class="flex items-center gap-6 w-max" 
+                             style="transform: rotateY(-14deg) rotateX(8deg); transform-style: preserve-3d; animation: reelHookCardsStream 22s linear infinite; filter: blur(${blurVal}) opacity(${opacityVal}); will-change: transform;">
+                            ${cardItems}
+                            ${cardItems}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        if (style === 'cards_fan') {
+            // 3D 5-Card Arc Fan
+            const fanConfigs = [
+                { deg: -22, x: -130, y: 22, s: 0.80, z: 1, delay: 0 },
+                { deg: -11, x: -65, y: 8, s: 0.92, z: 2, delay: 0.2 },
+                { deg: 0, x: 0, y: -6, s: 1.06, z: 5, delay: 0.4 },
+                { deg: 11, x: 65, y: 8, s: 0.92, z: 2, delay: 0.6 },
+                { deg: 22, x: 130, y: 22, s: 0.80, z: 1, delay: 0.8 }
+            ];
+
+            const fanCardsHtml = fanConfigs.map((cfg, i) => {
+                const cUrl = cardUrls[i % cardUrls.length];
+                return `
+                    <div class="absolute w-36 h-auto drop-shadow-2xl pointer-events-none" 
+                         style="left: calc(50% + ${cfg.x}px - 72px); top: calc(50% + ${cfg.y}px - 100px); z-index: ${cfg.z}; transform: rotate(${cfg.deg}deg) scale(${cfg.s}); animation: reelHookFanFloat 3.8s ease-in-out infinite ${cfg.delay}s; will-change: transform;">
+                        <img src="${cUrl}" class="w-full h-auto object-contain">
+                    </div>
+                `;
+            }).join('');
+
+            return `
+                <div class="absolute inset-0 pointer-events-none overflow-hidden z-10 flex items-center justify-center" style="direction: ltr;">
+                    ${glowHtml}
+                    <div class="relative w-[380px] h-[300px] flex items-center justify-center" style="top: 4%; filter: blur(${blurVal}) opacity(${opacityVal}); z-index: 10;">
+                        ${fanCardsHtml}
+                    </div>
+                </div>
+            `;
+        }
+
+        if (style === 'mystery_card') {
+            // Mystery Glowing Card with Question Mark
+            const leadCard = cardUrls[0] || 'assets/placeholder_card.png';
+            return `
+                <div class="absolute inset-0 pointer-events-none overflow-hidden z-10 flex flex-col items-center justify-center" style="direction: ltr;">
+                    ${glowHtml}
+                    <div class="relative flex flex-col items-center justify-center" style="top: 4%; animation: reelHookMysteryPulse 2.8s ease-in-out infinite; filter: blur(${blurVal}) opacity(${opacityVal}); z-index: 10;">
+                        <div class="relative w-44 h-64 flex items-center justify-center">
+                            <img src="${leadCard}" alt="Mystery Card" class="max-h-full max-w-full object-contain filter contrast-125 brightness-95 drop-shadow-2xl">
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-amber-950/45 to-transparent rounded-2xl flex items-center justify-center">
+                                <span class="text-6xl drop-shadow-[0_0_25px_rgba(251,191,36,0.95)]" style="animation: reelHookMysteryQuestion 2s ease-in-out infinite;">❓</span>
+                            </div>
+                        </div>
+                        <div class="mt-2 px-3.5 py-1 rounded-full bg-black/75 border border-amber-400/60 text-amber-300 text-[11px] font-black tracking-wide shadow-xl">
+                            🔒 كرت المركز الأول السري
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        if (style === 'dual_stream') {
+            // Dual Drifting Rows in Opposite Directions
+            const cardItems = activeCards.map(url => `
+                <div class="shrink-0 w-32 h-auto drop-shadow-lg pointer-events-none">
+                    <img src="${url}" alt="Card" class="w-full h-auto object-contain">
+                </div>
+            `).join('');
+
+            return `
+                <div class="absolute inset-0 pointer-events-none overflow-hidden z-10 flex flex-col justify-center gap-6" style="direction: ltr; transform: rotate(-5deg); filter: blur(${blurVal}) opacity(${opacityVal});">
+                    ${glowHtml}
+                    <div class="w-full overflow-hidden" style="top: 30%; z-index: 10;">
+                        <div class="flex items-center gap-5 w-max" style="animation: reelHookCardsStreamReverse 26s linear infinite; will-change: transform;">
+                            ${cardItems}
+                            ${cardItems}
+                        </div>
+                    </div>
+                    <div class="w-full overflow-hidden" style="top: 55%; z-index: 10;">
+                        <div class="flex items-center gap-5 w-max" style="animation: reelHookCardsStream 22s linear infinite; will-change: transform;">
+                            ${cardItems}
+                            ${cardItems}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        return '';
+    }
+
     // ---- 8. CANVAS RENDERING (PURE STABLE EUCLIDEAN LTR COORDINATES) ----
     function renderCanvas() {
         const canvas = document.getElementById('exportCanvas');
@@ -2734,10 +2925,13 @@ window.ReelsEngine = (function() {
             </div>
         ` : '';
 
+        const introHookHtml = (currentSlide.type === 'intro') ? renderIntroVisualHookHtml(currentSlide) : '';
+
         canvas.innerHTML = `
             <div class="absolute inset-0 overflow-hidden bg-cover bg-center" style="background-image: url('${bgUrl}'); direction: ltr;">
                 ${fcLogoHtml}
                 ${scLogoHtml}
+                ${introHookHtml}
                 ${bodyHtml}
                 ${safeZoneHtml}
             </div>
@@ -3268,6 +3462,83 @@ window.ReelsEngine = (function() {
             return `
                 <div class="space-y-2.5">
                     ${durationControlHtml}
+
+                    <!-- 3D BACKGROUND VISUAL HOOK PANEL -->
+                    <div class="p-3 rounded-2xl bg-gradient-to-br from-amber-500/10 via-yellow-500/5 to-amber-500/10 border border-amber-300/80 shadow-xs space-y-2.5">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-1.5">
+                                <span class="text-base">🎴</span>
+                                <div>
+                                    <h4 class="text-[11.5px] font-black text-amber-950">هوك خلفية البداية (Visual Hook):</h4>
+                                    <p class="text-[9.5px] text-amber-800/80 font-bold">كروت ثلاثية الأبعاد متحركة ومغبشة تشد المتابع فوراً</p>
+                                </div>
+                            </div>
+                            <span class="text-[9.5px] font-black px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300">
+                                خيارات متعددة ✨
+                            </span>
+                        </div>
+
+                        <!-- Hook Style Selector -->
+                        <div class="space-y-1">
+                            <label class="text-[10.5px] font-black text-slate-800">نمط الحركة والكروت بالخلفية:</label>
+                            <select onchange="ReelsEngine.updateCurrentSlideField('introHookStyle', this.value); ReelsEngine.renderCanvas(); ReelsEngine.renderEditorControls();" 
+                                    class="w-full px-2.5 py-2 rounded-xl bg-white border border-amber-300 text-xs font-bold text-slate-900 outline-none focus:border-amber-500 shadow-2xs cursor-pointer">
+                                <option value="cards_stream" ${(slide.introHookStyle === 'cards_stream' || !slide.introHookStyle) ? 'selected' : ''}>🎴 قطار الكروت 3D المتتالي (الموصى به - كروت تمشي ورا بعض)</option>
+                                <option value="cards_fan" ${slide.introHookStyle === 'cards_fan' ? 'selected' : ''}>🃏 مروحة الكروت 3D المقوسة (تموج عائم وتوهج)</option>
+                                <option value="mystery_card" ${slide.introHookStyle === 'mystery_card' ? 'selected' : ''}>❓ كرت الصدمة الغامض (فضول عالي لمعرفة صاحب #1)</option>
+                                <option value="dual_stream" ${slide.introHookStyle === 'dual_stream' ? 'selected' : ''}>⚡ صفين كروت متقاطعة (اتجاهين متعاكسين)</option>
+                                <option value="none" ${slide.introHookStyle === 'none' ? 'selected' : ''}>⏹️ خلفية رخام عادية (بدون كروت بالخلفية)</option>
+                            </select>
+                        </div>
+
+                        ${slide.introHookStyle !== 'none' ? `
+                            <!-- Blur and Opacity Options -->
+                            <div class="grid grid-cols-2 gap-2 pt-1 border-t border-amber-200/60">
+                                <!-- Blur -->
+                                <div class="space-y-1">
+                                    <div class="flex items-center justify-between">
+                                        <label class="text-[10px] font-black text-slate-700">درجة التغبيش (Blur):</label>
+                                        <span class="text-[9px] font-bold text-amber-900 font-mono">${slide.introHookBlur || '3px'}</span>
+                                    </div>
+                                    <select onchange="ReelsEngine.updateCurrentSlideField('introHookBlur', this.value); ReelsEngine.renderCanvas();"
+                                            class="w-full px-2 py-1.5 rounded-lg bg-white border border-slate-200 text-[10.5px] font-bold text-slate-800 outline-none">
+                                        <option value="1.5px" ${slide.introHookBlur === '1.5px' ? 'selected' : ''}>خفيف جداً (1.5px)</option>
+                                        <option value="3px" ${(slide.introHookBlur === '3px' || !slide.introHookBlur) ? 'selected' : ''}>متوازن (3px)</option>
+                                        <option value="5px" ${slide.introHookBlur === '5px' ? 'selected' : ''}>ضبابي ناعم (5px)</option>
+                                        <option value="8px" ${slide.introHookBlur === '8px' ? 'selected' : ''}>ضبابي قوي (8px)</option>
+                                        <option value="0px" ${slide.introHookBlur === '0px' ? 'selected' : ''}>حاد بدون تغبيش (0px)</option>
+                                    </select>
+                                </div>
+
+                                <!-- Opacity -->
+                                <div class="space-y-1">
+                                    <div class="flex items-center justify-between">
+                                        <label class="text-[10px] font-black text-slate-700">شفافية الكروت:</label>
+                                        <span class="text-[9px] font-bold text-amber-900 font-mono">${Math.round((slide.introHookOpacity !== undefined ? slide.introHookOpacity : 0.48) * 100)}%</span>
+                                    </div>
+                                    <select onchange="ReelsEngine.updateCurrentSlideField('introHookOpacity', parseFloat(this.value)); ReelsEngine.renderCanvas();"
+                                            class="w-full px-2 py-1.5 rounded-lg bg-white border border-slate-200 text-[10.5px] font-bold text-slate-800 outline-none">
+                                        <option value="0.30" ${slide.introHookOpacity === 0.30 ? 'selected' : ''}>خافتة هادئة (30%)</option>
+                                        <option value="0.48" ${(slide.introHookOpacity === 0.48 || slide.introHookOpacity === undefined) ? 'selected' : ''}>متوازنة سينمائية (48%)</option>
+                                        <option value="0.68" ${slide.introHookOpacity === 0.68 ? 'selected' : ''}>واضحة وظاهرة (68%)</option>
+                                        <option value="0.88" ${slide.introHookOpacity === 0.88 ? 'selected' : ''}>بارزة جداً (88%)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Gold Spotlight Toggle -->
+                            <div class="flex items-center justify-between pt-1 border-t border-amber-200/60">
+                                <span class="text-[10px] font-black text-slate-700 flex items-center gap-1">
+                                    <span>✨</span>
+                                    <span>توهج ضوئي ذهبي في المنتصف (Spotlight):</span>
+                                </span>
+                                <button type="button" onclick="ReelsEngine.updateCurrentSlideField('introHookGlow', ${slide.introHookGlow === false ? 'true' : 'false'}); ReelsEngine.renderCanvas(); ReelsEngine.renderEditorControls();"
+                                        class="px-2.5 py-0.5 rounded-md text-[10px] font-black transition border ${slide.introHookGlow !== false ? 'bg-amber-100 text-amber-900 border-amber-300' : 'bg-slate-200 text-slate-600 border-slate-300'}">
+                                    ${slide.introHookGlow !== false ? 'مفعل ✓' : 'معطل ✕'}
+                                </button>
+                            </div>
+                        ` : ''}
+                    </div>
 
                     <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5">
                         <div class="flex items-center justify-between">
