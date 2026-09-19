@@ -2154,18 +2154,19 @@ window.ReelsEngine = (function() {
         const cfg = getSlideSfxConfig(slide);
         cfg[key] = !cfg[key];
 
-        // Play quick preview if turned on
-        if (cfg[key]) {
-            testSfx(
-                key === 'cardSlam' ? 'card_slam' :
-                key === 'coin' ? 'coin' :
-                key === 'whoosh' ? 'whoosh' :
-                key === 'boom' ? 'boom' :
-                key === 'whistle' ? 'whistle' :
-                key === 'crowd' ? 'crowd' :
-                key === 'electric' ? 'electric' :
-                key === 'rankBell' ? 'rank_bell' : 'coin'
-            );
+        const soundKeyMap = {
+            cardSlam: 'card_slam',
+            coin: 'coin',
+            whoosh: 'whoosh',
+            boom: 'boom',
+            whistle: 'whistle',
+            crowd: 'crowd',
+            electric: 'electric',
+            rankBell: 'rank_bell'
+        };
+
+        if (soundKeyMap[key]) {
+            testSfx(soundKeyMap[key]);
         }
 
         renderEditorControls();
@@ -2213,34 +2214,43 @@ window.ReelsEngine = (function() {
         const cfg = getSlideSfxConfig(slide);
 
         const sfxList = [
-            { key: 'whoosh', label: 'سحب هوائي', sub: 'Whoosh', icon: '💨', time: '0.0s' },
-            { key: 'cardSlam', label: 'صدمة الكرت', sub: 'Card Slam', icon: '🃏', time: '0.35s' },
-            { key: 'coin', label: 'رنين الكوينز', sub: 'Cha-Ching', icon: '🪙', time: '0.85s' },
-            { key: 'whistle', label: 'صفارة حكم', sub: 'Whistle', icon: '📢', time: '0.15s' },
-            { key: 'crowd', label: 'هتاف الجماهير', sub: 'Crowd Cheer', icon: '🏟️', time: '0.35s' },
-            { key: 'boom', label: 'ضربة درامية', sub: 'Bass Boom', icon: '💥', time: '0.0s' },
-            { key: 'electric', label: 'شرارة طاقة', sub: 'Energy Zap', icon: '⚡', time: '0.35s' },
-            { key: 'rankBell', label: 'جرس الرانك', sub: 'Rank Bell', icon: '🔔', time: '0.20s' }
+            { key: 'cardSlam', sfxType: 'card_slam', label: 'صدمة الكرت', sub: 'Card Slam', icon: '🃏', time: '0.35s' },
+            { key: 'coin', sfxType: 'coin', label: 'كاش ورنين كوينز', sub: 'Cha-Ching!', icon: '🪙', time: '0.85s' },
+            { key: 'whoosh', sfxType: 'whoosh', label: 'سحب هوائي', sub: 'Whoosh', icon: '💨', time: '0.0s' },
+            { key: 'boom', sfxType: 'boom', label: 'ضربة درامية', sub: 'Bass Boom', icon: '💥', time: '0.0s' },
+            { key: 'whistle', sfxType: 'whistle', label: 'صفارة حكم', sub: 'Whistle', icon: '📢', time: '0.15s' },
+            { key: 'crowd', sfxType: 'crowd', label: 'هتاف الجماهير', sub: 'Crowd Cheer', icon: '🏟️', time: '0.35s' },
+            { key: 'electric', sfxType: 'electric', label: 'شرارة طاقة', sub: 'Energy Zap', icon: '⚡', time: '0.35s' },
+            { key: 'rankBell', sfxType: 'rank_bell', label: 'جرس الرانك', sub: 'Rank Bell', icon: '🔔', time: '0.20s' }
         ];
 
         const activeCount = Object.keys(cfg).filter(k => cfg[k]).length;
+        const curSlideIdx = state.currentSlideIndex + 1;
+        const totalSlides = (state.slides && state.slides.length) || 1;
 
         return `
-            <div class="p-3 rounded-2xl bg-gradient-to-br from-slate-900 via-zinc-900 to-slate-950 border border-amber-500/40 text-white shadow-md space-y-2.5">
-                <!-- Header & Counter -->
+            <!-- Unified Audio & SFX Controller -->
+            <div class="p-3 rounded-2xl bg-black/40 border border-amber-500/40 space-y-2.5">
                 <div class="flex items-center justify-between pb-1.5 border-b border-zinc-800">
-                    <div class="flex items-center gap-1.5">
+                    <div class="flex items-center gap-1.5 flex-wrap">
                         <span class="text-sm">🔔</span>
-                        <span class="text-[11px] font-black text-white">المؤثرات الصوتية لهذا السلايد:</span>
-                        <span class="text-[9px] px-2 py-0.5 rounded-full font-mono font-black ${activeCount > 0 ? 'bg-amber-400/20 text-amber-300 border border-amber-400/30' : 'bg-zinc-800 text-zinc-500 border border-zinc-700'}">
+                        <span class="text-[11px] font-black text-amber-300">مؤثرات السلايد الحالي:</span>
+                        <div class="inline-flex items-center bg-zinc-800/90 rounded-lg p-0.5 border border-zinc-700/80">
+                            <button type="button" onclick="ReelsEngine.prevSlide()" class="px-1.5 py-0.5 text-[9px] hover:text-amber-300 text-zinc-400 font-bold transition cursor-pointer" title="السلايد السابق">◀</button>
+                            <span class="text-[9.5px] px-1.5 py-0.5 font-mono font-black text-amber-300">
+                                سلايد ${curSlideIdx}/${totalSlides}
+                            </span>
+                            <button type="button" onclick="ReelsEngine.nextSlide()" class="px-1.5 py-0.5 text-[9px] hover:text-amber-300 text-zinc-400 font-bold transition cursor-pointer" title="السلايد التالي">▶</button>
+                        </div>
+                        <span class="text-[9px] px-1.5 py-0.5 rounded-full font-mono font-bold ${activeCount > 0 ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-zinc-800 text-zinc-400'}">
                             ${activeCount > 0 ? `${activeCount} مفعلة ✓` : 'مكتوم 🔇'}
                         </span>
                     </div>
-                    <!-- Quick Actions -->
+
                     <div class="flex items-center gap-1">
                         <button type="button" onclick="ReelsEngine.muteSlideSfx()" 
                                 class="px-2 py-0.5 rounded-lg bg-zinc-800 hover:bg-rose-950/70 border border-zinc-700 hover:border-rose-700 text-zinc-400 hover:text-rose-200 text-[9.5px] font-bold transition active:scale-95 cursor-pointer" title="إيقاف كافة أصوات هذا السلايد">
-                            🔇 كتم السلايد
+                            🔇 كتم
                         </button>
                         <button type="button" onclick="ReelsEngine.enableAllSlideSfx()" 
                                 class="px-2 py-0.5 rounded-lg bg-zinc-800 hover:bg-emerald-950/70 border border-zinc-700 hover:border-emerald-700 text-zinc-300 hover:text-emerald-200 text-[9.5px] font-bold transition active:scale-95 cursor-pointer" title="تشغيل كافة الأصوات في هذا السلايد">
@@ -2249,16 +2259,22 @@ window.ReelsEngine = (function() {
                     </div>
                 </div>
 
-                <!-- SFX Grid: 8 interactive chips -->
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+                <!-- 8 Interactive SFX Chips: Audition via ▶ or click chip to toggle + audition -->
+                <div class="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
                     ${sfxList.map(item => {
                         const isEnabled = !!cfg[item.key];
                         return `
                             <div class="p-2 rounded-xl transition border flex flex-col justify-between gap-1.5 cursor-pointer select-none active:scale-[0.98] ${isEnabled ? 'bg-amber-500/15 border-amber-400/80 shadow-xs' : 'bg-zinc-900/80 border-zinc-800 opacity-65 hover:opacity-100'}"
-                                 onclick="ReelsEngine.toggleSlideSfx('${item.key}')" title="اضغط للتفعيل أو التعطيل والاستماع">
+                                 onclick="ReelsEngine.toggleSlideSfx('${item.key}')" title="اضغط للتفعيل أو التعطيل">
                                 <div class="flex items-center justify-between">
-                                    <span class="text-sm">${item.icon}</span>
-                                    <span class="text-[8.5px] px-1.5 py-0.2 rounded font-mono font-black ${isEnabled ? 'bg-emerald-500/30 text-emerald-300 border border-emerald-500/40' : 'bg-zinc-800 text-zinc-500 border border-zinc-700'}">
+                                    <div class="flex items-center gap-1">
+                                        <span class="text-sm">${item.icon}</span>
+                                        <button type="button" onclick="event.stopPropagation(); ReelsEngine.testSfx('${item.sfxType}')" 
+                                                class="w-5 h-5 rounded flex items-center justify-center bg-zinc-800 hover:bg-amber-400 hover:text-slate-950 text-zinc-300 text-[8px] transition active:scale-90 cursor-pointer" title="سماع الصوت فقط ▶">
+                                            ▶
+                                        </button>
+                                    </div>
+                                    <span class="text-[8.5px] px-1.5 py-0.5 rounded font-mono font-black ${isEnabled ? 'bg-emerald-500/30 text-emerald-300 border border-emerald-500/40' : 'bg-zinc-800 text-zinc-500 border border-zinc-700'}">
                                         ${isEnabled ? 'مفعل ✓' : 'معطل ✕'}
                                     </span>
                                 </div>
@@ -2274,9 +2290,9 @@ window.ReelsEngine = (function() {
                     }).join('')}
                 </div>
 
-                <!-- Apply to All Slides Footer -->
-                <div class="pt-1.5 border-t border-zinc-800/80 flex items-center justify-between">
-                    <span class="text-[9.5px] text-zinc-400">انقر على أي مؤثر لتفعيله أو تعطيله فوراً</span>
+                <!-- Footer: Audition Tip & Apply to All -->
+                <div class="pt-1.5 border-t border-zinc-800/80 flex items-center justify-between flex-wrap gap-1">
+                    <span class="text-[9.5px] text-zinc-400">💡 انقر على ▶ لتجربة الصوت، أو على البطاقة للتفعيل والتعطيل</span>
                     <button type="button" onclick="ReelsEngine.applySlideSfxToAllSlides()" 
                             class="py-1 px-2.5 rounded-lg bg-zinc-800 hover:bg-amber-500/20 text-zinc-300 hover:text-amber-300 border border-zinc-700 hover:border-amber-500/40 font-black text-[10px] transition flex items-center gap-1 active:scale-95 cursor-pointer">
                         <span>📋 تطبيق على جميع السلايدات</span>
@@ -5963,6 +5979,7 @@ window.ReelsEngine = (function() {
 
         const activeTrack = REELS_MUSIC_LIBRARY.find(t => t.id === audioState.selectedTrackId) || REELS_MUSIC_LIBRARY[0];
         const isAuditioningActive = isBgmPlaying && (auditionTrackId === activeTrack.id || !auditionTrackId);
+        const currentSlide = (state.slides && state.slides[state.currentSlideIndex]) || null;
 
         return `
             <div class="p-3.5 rounded-2xl bg-gradient-to-br from-slate-900 via-zinc-900 to-slate-950 border border-amber-500/30 text-white shadow-xl space-y-3">
@@ -6032,73 +6049,12 @@ window.ReelsEngine = (function() {
                         </div>
                     </div>
 
-                    <!-- SFX Distinction Preview Test Buttons (8 distinct sounds) -->
-                    <div class="p-2.5 rounded-xl bg-black/40 border border-zinc-800/80 space-y-2">
-                        <div class="flex items-center justify-between">
-                            <span class="text-[10.5px] font-black text-amber-300 flex items-center gap-1">
-                                <span>⚡</span>
-                                <span>تجربة المؤثرات الصوتية (SFX Preview):</span>
-                            </span>
-                            <span class="text-[9px] text-zinc-400 font-bold">صوت اللاعب مفصول تماماً عن الكوينز</span>
+                    <!-- Unified SFX Studio: Preview + Per-Slide Toggles (Merged into 1) -->
+                    ${isSfxOn ? renderSlideSfxControlsHtml(currentSlide) : `
+                        <div class="p-3 rounded-xl bg-zinc-900/60 border border-zinc-800 text-center text-[10.5px] text-zinc-400">
+                            🔇 مؤثرات SFX معطلة من المفتاح الرئيسي بالأعلى. اضغط "مفعلة ✓" بالأعلى لتشغيلها.
                         </div>
-                        <div class="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
-                            <!-- Distinct Player Card Slam -->
-                            <button type="button" onclick="ReelsEngine.testSfx('card_slam')" 
-                                    class="px-2 py-2 rounded-xl bg-gradient-to-r from-purple-950/80 to-zinc-900 hover:from-purple-900 border border-purple-500/50 text-[10px] font-black text-purple-200 transition flex flex-col items-center justify-center gap-0.5 active:scale-95 shadow-xs cursor-pointer text-center">
-                                <span>🃏 صدمة الكرت</span>
-                                <span class="text-[8px] text-purple-300 font-mono font-normal">Card Slam</span>
-                            </button>
-
-                            <!-- Distinct Coin Cash Register Cha-Ching -->
-                            <button type="button" onclick="ReelsEngine.testSfx('coin')" 
-                                    class="px-2 py-2 rounded-xl bg-gradient-to-r from-amber-950/80 to-zinc-900 hover:from-amber-900 border border-amber-500/60 text-[10px] font-black text-amber-300 transition flex flex-col items-center justify-center gap-0.5 active:scale-95 shadow-xs cursor-pointer text-center">
-                                <span>🪙 كاش ورنين كوينز</span>
-                                <span class="text-[8px] text-amber-200 font-mono font-normal">Cha-Ching!</span>
-                            </button>
-
-                            <!-- Whoosh -->
-                            <button type="button" onclick="ReelsEngine.testSfx('whoosh')" 
-                                    class="px-2 py-2 rounded-xl bg-zinc-800 hover:bg-sky-500/20 border border-zinc-700 hover:border-sky-500/50 text-[10px] font-bold text-sky-300 transition flex flex-col items-center justify-center gap-0.5 active:scale-95 shadow-xs cursor-pointer text-center">
-                                <span>💨 سحب هوائي</span>
-                                <span class="text-[8px] text-zinc-400 font-mono font-normal">Whoosh</span>
-                            </button>
-
-                            <!-- Bass Boom -->
-                            <button type="button" onclick="ReelsEngine.testSfx('boom')" 
-                                    class="px-2 py-2 rounded-xl bg-zinc-800 hover:bg-rose-500/20 border border-zinc-700 hover:border-rose-500/50 text-[10px] font-bold text-rose-300 transition flex flex-col items-center justify-center gap-0.5 active:scale-95 shadow-xs cursor-pointer text-center">
-                                <span>💥 ضربة درامية</span>
-                                <span class="text-[8px] text-zinc-400 font-mono font-normal">Bass Boom</span>
-                            </button>
-
-                            <!-- Referee Whistle -->
-                            <button type="button" onclick="ReelsEngine.testSfx('whistle')" 
-                                    class="px-2 py-2 rounded-xl bg-zinc-800 hover:bg-emerald-500/20 border border-zinc-700 hover:border-emerald-500/50 text-[10px] font-bold text-emerald-300 transition flex flex-col items-center justify-center gap-0.5 active:scale-95 shadow-xs cursor-pointer text-center">
-                                <span>📢 صفارة حكم</span>
-                                <span class="text-[8px] text-zinc-400 font-mono font-normal">Whistle</span>
-                            </button>
-
-                            <!-- Stadium Crowd Roar -->
-                            <button type="button" onclick="ReelsEngine.testSfx('crowd')" 
-                                    class="px-2 py-2 rounded-xl bg-zinc-800 hover:bg-yellow-500/20 border border-zinc-700 hover:border-yellow-500/50 text-[10px] font-bold text-yellow-300 transition flex flex-col items-center justify-center gap-0.5 active:scale-95 shadow-xs cursor-pointer text-center">
-                                <span>🏟️ هتاف الجماهير</span>
-                                <span class="text-[8px] text-zinc-400 font-mono font-normal">Crowd Cheer</span>
-                            </button>
-
-                            <!-- Electric Zap -->
-                            <button type="button" onclick="ReelsEngine.testSfx('electric')" 
-                                    class="px-2 py-2 rounded-xl bg-zinc-800 hover:bg-cyan-500/20 border border-zinc-700 hover:border-cyan-500/50 text-[10px] font-bold text-cyan-300 transition flex flex-col items-center justify-center gap-0.5 active:scale-95 shadow-xs cursor-pointer text-center">
-                                <span>⚡ شرارة طاقة</span>
-                                <span class="text-[8px] text-zinc-400 font-mono font-normal">Energy Zap</span>
-                            </button>
-
-                            <!-- Rank Bell -->
-                            <button type="button" onclick="ReelsEngine.testSfx('rank_bell')" 
-                                    class="px-2 py-2 rounded-xl bg-zinc-800 hover:bg-pink-500/20 border border-zinc-700 hover:border-pink-500/50 text-[10px] font-bold text-pink-300 transition flex flex-col items-center justify-center gap-0.5 active:scale-95 shadow-xs cursor-pointer text-center">
-                                <span>🔔 جرس الرانك</span>
-                                <span class="text-[8px] text-zinc-400 font-mono font-normal">Rank Bell</span>
-                            </button>
-                        </div>
-                    </div>
+                    `}
 
                     <!-- 33 Tracks Music Library Selector -->
                     <div class="p-2.5 rounded-xl bg-zinc-800/60 border border-zinc-700/60 space-y-2">
@@ -6713,7 +6669,6 @@ window.ReelsEngine = (function() {
 
         const curDuration = Math.round((slide.duration || 2.5) * 10) / 10;
         const isPlayerCard = slide.type === 'player_card';
-        const slideSfxControlHtml = renderSlideSfxControlsHtml(slide);
 
         // 1. Duration / Speed Control Bar for EVERY slide
         const durationControlHtml = `
@@ -6782,7 +6737,6 @@ window.ReelsEngine = (function() {
             return `
                 <div class="space-y-2.5">
                     ${durationControlHtml}
-                    ${slideSfxControlHtml}
 
                     <!-- 3D BACKGROUND VISUAL HOOK PANEL -->
                     <div class="p-3 rounded-2xl bg-gradient-to-br from-amber-500/10 via-yellow-500/5 to-amber-500/10 border border-amber-300/80 shadow-xs space-y-2.5">
@@ -6906,7 +6860,6 @@ window.ReelsEngine = (function() {
             return `
                 <div class="space-y-2.5">
                     ${durationControlHtml}
-                    ${slideSfxControlHtml}
 
                     ${renderTitleLinesBuilderHtml(state.title || '', 'عنوان الريل المشترك (أعلى الكروت):', 'hideTitle', slide.hideTitle)}
 
@@ -7006,7 +6959,6 @@ window.ReelsEngine = (function() {
             return `
                 <div class="space-y-3">
                     ${durationControlHtml}
-                    ${slideSfxControlHtml}
 
                     ${renderTitleLinesBuilderHtml(slide.title || state.title || '', '⚔️ عنوان المقارنة (توزيع الكلمات بالأسطر):', 'hideTitle', slide.hideTitle)}
 
@@ -7035,7 +6987,6 @@ window.ReelsEngine = (function() {
             return `
                 <div class="space-y-2.5">
                     ${durationControlHtml}
-                    ${slideSfxControlHtml}
 
                     ${renderTitleLinesBuilderHtml(slide.title || 'متجر ShopCoin15', '👑 عنوان الختام (توزيع الكلمات بالأسطر):', 'hideTitle', slide.hideTitle)}
 
