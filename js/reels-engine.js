@@ -1772,47 +1772,218 @@ window.ReelsEngine = (function() {
     }
 
     // =========================================================================
-    // ---- 5. SYNCHRONIZED SEQUENTIAL SLIDE AUDIO TRIGGER ----
     // =========================================================================
-    // Distinct timing separation:
-    // 0.0s: Slide entrance transition whoosh
-    // 0.35s: Player Card physical slam (cardboard + sub punch)
-    // 0.85s: Coin Price cash register cha-ching (bells + coin cascade)
+    // ---- 5. PER-SLIDE SFX CONFIG & SYNCHRONIZED AUDIO TRIGGER ----
+    // =========================================================================
+    function getSlideSfxConfig(slide = null) {
+        if (!slide) slide = state.slides[state.currentSlideIndex];
+        if (!slide) return {};
+        if (!slide.sfxConfig || typeof slide.sfxConfig !== 'object') {
+            slide.sfxConfig = {};
+            if (slide.type === 'intro') {
+                slide.sfxConfig.whoosh = true;
+                slide.sfxConfig.boom = (slide.introHookStyle === 'mystery_card');
+                slide.sfxConfig.whistle = (slide.introHookStyle !== 'mystery_card');
+                slide.sfxConfig.cardSlam = false;
+                slide.sfxConfig.coin = false;
+                slide.sfxConfig.crowd = false;
+                slide.sfxConfig.electric = false;
+                slide.sfxConfig.rankBell = false;
+            } else if (slide.type === 'player_card') {
+                slide.sfxConfig.whoosh = true;
+                slide.sfxConfig.cardSlam = true;
+                slide.sfxConfig.coin = !!(slide.playerPrice && slide.playerPrice.trim());
+                slide.sfxConfig.whistle = false;
+                slide.sfxConfig.crowd = false;
+                slide.sfxConfig.boom = false;
+                slide.sfxConfig.electric = false;
+                slide.sfxConfig.rankBell = false;
+            } else if (slide.type === 'versus_card') {
+                slide.sfxConfig.whoosh = true;
+                slide.sfxConfig.cardSlam = true;
+                slide.sfxConfig.coin = !!(slide.playerA?.price || slide.playerB?.price);
+                slide.sfxConfig.whistle = false;
+                slide.sfxConfig.crowd = false;
+                slide.sfxConfig.boom = false;
+                slide.sfxConfig.electric = false;
+                slide.sfxConfig.rankBell = false;
+            } else if (slide.type === 'outro') {
+                slide.sfxConfig.whoosh = false;
+                slide.sfxConfig.coin = true;
+                slide.sfxConfig.crowd = true;
+                slide.sfxConfig.cardSlam = false;
+                slide.sfxConfig.whistle = false;
+                slide.sfxConfig.boom = false;
+                slide.sfxConfig.electric = false;
+                slide.sfxConfig.rankBell = false;
+            } else {
+                slide.sfxConfig.whoosh = true;
+                slide.sfxConfig.cardSlam = false;
+                slide.sfxConfig.coin = false;
+                slide.sfxConfig.whistle = false;
+                slide.sfxConfig.crowd = false;
+                slide.sfxConfig.boom = false;
+                slide.sfxConfig.electric = false;
+                slide.sfxConfig.rankBell = false;
+            }
+        }
+        return slide.sfxConfig;
+    }
+
+    function toggleSlideSfx(key) {
+        const slide = state.slides[state.currentSlideIndex];
+        if (!slide) return;
+        const cfg = getSlideSfxConfig(slide);
+        cfg[key] = !cfg[key];
+
+        // Play quick preview if turned on
+        if (cfg[key]) {
+            testSfx(
+                key === 'cardSlam' ? 'card_slam' :
+                key === 'coin' ? 'coin' :
+                key === 'whoosh' ? 'whoosh' :
+                key === 'boom' ? 'boom' :
+                key === 'whistle' ? 'whistle' :
+                key === 'crowd' ? 'crowd' :
+                key === 'electric' ? 'electric' :
+                key === 'rankBell' ? 'rank_bell' : 'coin'
+            );
+        }
+
+        renderEditorControls();
+        saveProjectState();
+    }
+
+    function muteSlideSfx() {
+        const slide = state.slides[state.currentSlideIndex];
+        if (!slide) return;
+        const cfg = getSlideSfxConfig(slide);
+        Object.keys(cfg).forEach(k => cfg[k] = false);
+        renderEditorControls();
+        saveProjectState();
+        if (window.showCopyToast) window.showCopyToast('تم كتم كافة أصوات هذا السلايد 🔇');
+    }
+
+    function enableAllSlideSfx() {
+        const slide = state.slides[state.currentSlideIndex];
+        if (!slide) return;
+        const cfg = getSlideSfxConfig(slide);
+        Object.keys(cfg).forEach(k => cfg[k] = true);
+        renderEditorControls();
+        saveProjectState();
+        if (window.showCopyToast) window.showCopyToast('تم تفعيل كافة المؤثرات لهذا السلايد ⚡');
+    }
+
+    function applySlideSfxToAllSlides() {
+        const currentSlide = state.slides[state.currentSlideIndex];
+        if (!currentSlide) return;
+        const currentCfg = { ...getSlideSfxConfig(currentSlide) };
+
+        state.slides.forEach(s => {
+            s.sfxConfig = { ...currentCfg };
+        });
+
+        renderEditorControls();
+        saveProjectState();
+        if (window.showCopyToast) {
+            window.showCopyToast('تم تطبيق توزيعة المؤثرات الصوتية على كافة سلايدات الريل! 📋👑');
+        }
+    }
+
+    function renderSlideSfxControlsHtml(slide) {
+        if (!slide) return '';
+        const cfg = getSlideSfxConfig(slide);
+
+        const sfxList = [
+            { key: 'whoosh', label: 'سحب هوائي', sub: 'Whoosh', icon: '💨', time: '0.0s' },
+            { key: 'cardSlam', label: 'صدمة الكرت', sub: 'Card Slam', icon: '🃏', time: '0.35s' },
+            { key: 'coin', label: 'رنين الكوينز', sub: 'Cha-Ching', icon: '🪙', time: '0.85s' },
+            { key: 'whistle', label: 'صفارة حكم', sub: 'Whistle', icon: '📢', time: '0.15s' },
+            { key: 'crowd', label: 'هتاف الجماهير', sub: 'Crowd Cheer', icon: '🏟️', time: '0.35s' },
+            { key: 'boom', label: 'ضربة درامية', sub: 'Bass Boom', icon: '💥', time: '0.0s' },
+            { key: 'electric', label: 'شرارة طاقة', sub: 'Energy Zap', icon: '⚡', time: '0.35s' },
+            { key: 'rankBell', label: 'جرس الرانك', sub: 'Rank Bell', icon: '🔔', time: '0.20s' }
+        ];
+
+        const activeCount = Object.keys(cfg).filter(k => cfg[k]).length;
+
+        return `
+            <div class="p-3 rounded-2xl bg-gradient-to-br from-slate-900 via-zinc-900 to-slate-950 border border-amber-500/40 text-white shadow-md space-y-2.5">
+                <!-- Header & Counter -->
+                <div class="flex items-center justify-between pb-1.5 border-b border-zinc-800">
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-sm">🔔</span>
+                        <span class="text-[11px] font-black text-white">المؤثرات الصوتية لهذا السلايد:</span>
+                        <span class="text-[9px] px-2 py-0.5 rounded-full font-mono font-black ${activeCount > 0 ? 'bg-amber-400/20 text-amber-300 border border-amber-400/30' : 'bg-zinc-800 text-zinc-500 border border-zinc-700'}">
+                            ${activeCount > 0 ? `${activeCount} مفعلة ✓` : 'مكتوم 🔇'}
+                        </span>
+                    </div>
+                    <!-- Quick Actions -->
+                    <div class="flex items-center gap-1">
+                        <button type="button" onclick="ReelsEngine.muteSlideSfx()" 
+                                class="px-2 py-0.5 rounded-lg bg-zinc-800 hover:bg-rose-950/70 border border-zinc-700 hover:border-rose-700 text-zinc-400 hover:text-rose-200 text-[9.5px] font-bold transition active:scale-95 cursor-pointer" title="إيقاف كافة أصوات هذا السلايد">
+                            🔇 كتم السلايد
+                        </button>
+                        <button type="button" onclick="ReelsEngine.enableAllSlideSfx()" 
+                                class="px-2 py-0.5 rounded-lg bg-zinc-800 hover:bg-emerald-950/70 border border-zinc-700 hover:border-emerald-700 text-zinc-300 hover:text-emerald-200 text-[9.5px] font-bold transition active:scale-95 cursor-pointer" title="تشغيل كافة الأصوات في هذا السلايد">
+                            ⚡ تفعيل الكل
+                        </button>
+                    </div>
+                </div>
+
+                <!-- SFX Grid: 8 interactive chips -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+                    ${sfxList.map(item => {
+                        const isEnabled = !!cfg[item.key];
+                        return `
+                            <div class="p-2 rounded-xl transition border flex flex-col justify-between gap-1.5 cursor-pointer select-none active:scale-[0.98] ${isEnabled ? 'bg-amber-500/15 border-amber-400/80 shadow-xs' : 'bg-zinc-900/80 border-zinc-800 opacity-65 hover:opacity-100'}"
+                                 onclick="ReelsEngine.toggleSlideSfx('${item.key}')" title="اضغط للتفعيل أو التعطيل والاستماع">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm">${item.icon}</span>
+                                    <span class="text-[8.5px] px-1.5 py-0.2 rounded font-mono font-black ${isEnabled ? 'bg-emerald-500/30 text-emerald-300 border border-emerald-500/40' : 'bg-zinc-800 text-zinc-500 border border-zinc-700'}">
+                                        ${isEnabled ? 'مفعل ✓' : 'معطل ✕'}
+                                    </span>
+                                </div>
+                                <div>
+                                    <div class="text-[10.5px] font-black text-white truncate leading-tight">${item.label}</div>
+                                    <div class="text-[8.5px] text-zinc-400 font-mono flex items-center justify-between mt-0.5">
+                                        <span>${item.sub}</span>
+                                        <span class="${isEnabled ? 'text-amber-300 font-bold' : 'text-zinc-500'}">${item.time}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+
+                <!-- Apply to All Slides Footer -->
+                <div class="pt-1.5 border-t border-zinc-800/80 flex items-center justify-between">
+                    <span class="text-[9.5px] text-zinc-400">انقر على أي مؤثر لتفعيله أو تعطيله فوراً</span>
+                    <button type="button" onclick="ReelsEngine.applySlideSfxToAllSlides()" 
+                            class="py-1 px-2.5 rounded-lg bg-zinc-800 hover:bg-amber-500/20 text-zinc-300 hover:text-amber-300 border border-zinc-700 hover:border-amber-500/40 font-black text-[10px] transition flex items-center gap-1 active:scale-95 cursor-pointer">
+                        <span>📋 تطبيق على جميع السلايدات</span>
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+
+    // Granular Per-Slide Trigger: strictly respects slide.sfxConfig
     function triggerSlideAudio(slide, customDest = null, ctxOverride = null) {
         if (!audioState.masterEnabled || !audioState.sfxEnabled || !slide) return;
         const ctx = ctxOverride || getAudioContext();
         if (!ctx) return;
 
-        if (slide.type === 'intro') {
-            if (slide.introHookStyle === 'mystery_card') {
-                playBoomSound(customDest, 1.0, ctx, 0);
-            } else {
-                playWhooshSound(customDest, 0.85, ctx, 0);
-                playWhistleSound(customDest, 0.75, ctx, 0.15);
-            }
-        } else if (slide.type === 'player_card') {
-            // Step 1: Slide entrance whoosh at 0.0s
-            playWhooshSound(customDest, 0.75, ctx, 0);
+        const cfg = getSlideSfxConfig(slide);
 
-            // Step 2: Player Card physical slam at 0.35s
-            playCardSlamSound(customDest, 1.0, ctx, 0.35);
-
-            // Step 3: FC Coin Price Cash Register Cha-Ching at 0.85s (distinctly after card slam!)
-            if (slide.playerPrice && slide.playerPrice.trim()) {
-                playCoinCashRegisterSound(customDest, 1.15, ctx, 0.85);
-            }
-        } else if (slide.type === 'versus_card') {
-            playWhooshSound(customDest, 0.8, ctx, 0);
-            playCardSlamSound(customDest, 0.95, ctx, 0.30);
-            if (slide.playerA?.price || slide.playerB?.price) {
-                playCoinCashRegisterSound(customDest, 1.05, ctx, 0.85);
-            }
-        } else if (slide.type === 'outro') {
-            playCoinCashRegisterSound(customDest, 1.2, ctx, 0);
-            playCrowdCheerSound(customDest, 0.85, ctx, 0.25);
-        } else {
-            playWhooshSound(customDest, 0.8, ctx, 0);
-        }
+        if (cfg.whoosh) playWhooshSound(customDest, 0.75, ctx, 0);
+        if (cfg.boom) playBoomSound(customDest, 1.0, ctx, 0);
+        if (cfg.whistle) playWhistleSound(customDest, 0.75, ctx, 0.15);
+        if (cfg.rankBell) playRankBellSound(customDest, 0.9, ctx, 0.20);
+        if (cfg.cardSlam) playCardSlamSound(customDest, 1.0, ctx, 0.35);
+        if (cfg.electric) playElectricZapSound(customDest, 0.9, ctx, 0.35);
+        if (cfg.crowd) playCrowdCheerSound(customDest, 0.85, ctx, 0.35);
+        if (cfg.coin) playCoinCashRegisterSound(customDest, 1.15, ctx, 0.85);
     }
 
     // ---- 2. CURATED VIRAL IDEAS (Hooks ONLY - User picks players) ----
@@ -5147,6 +5318,7 @@ window.ReelsEngine = (function() {
 
         const curDuration = Math.round((slide.duration || 2.5) * 10) / 10;
         const isPlayerCard = slide.type === 'player_card';
+        const slideSfxControlHtml = renderSlideSfxControlsHtml(slide);
 
         // 1. Duration / Speed Control Bar for EVERY slide
         const durationControlHtml = `
@@ -5215,6 +5387,7 @@ window.ReelsEngine = (function() {
             return `
                 <div class="space-y-2.5">
                     ${durationControlHtml}
+                    ${slideSfxControlHtml}
 
                     <!-- 3D BACKGROUND VISUAL HOOK PANEL -->
                     <div class="p-3 rounded-2xl bg-gradient-to-br from-amber-500/10 via-yellow-500/5 to-amber-500/10 border border-amber-300/80 shadow-xs space-y-2.5">
@@ -5338,6 +5511,7 @@ window.ReelsEngine = (function() {
             return `
                 <div class="space-y-2.5">
                     ${durationControlHtml}
+                    ${slideSfxControlHtml}
 
                     ${renderTitleLinesBuilderHtml(state.title || '', 'عنوان الريل المشترك (أعلى الكروت):', 'hideTitle', slide.hideTitle)}
 
@@ -5447,6 +5621,7 @@ window.ReelsEngine = (function() {
             return `
                 <div class="space-y-3">
                     ${durationControlHtml}
+                    ${slideSfxControlHtml}
 
                     ${renderTitleLinesBuilderHtml(slide.title || state.title || '', '⚔️ عنوان المقارنة (توزيع الكلمات بالأسطر):', 'hideTitle', slide.hideTitle)}
 
@@ -5473,6 +5648,7 @@ window.ReelsEngine = (function() {
             return `
                 <div class="space-y-2.5">
                     ${durationControlHtml}
+                    ${slideSfxControlHtml}
 
                     ${renderTitleLinesBuilderHtml(slide.title || 'متجر ShopCoin15', '👑 عنوان الختام (توزيع الكلمات بالأسطر):', 'hideTitle', slide.hideTitle)}
 
@@ -6320,6 +6496,11 @@ ${state.subtitle}
         handleBgmUpload,
         removeCustomBgm,
         REELS_MUSIC_LIBRARY,
-        getAudioState: () => audioState
+        getAudioState: () => audioState,
+        toggleSlideSfx,
+        muteSlideSfx,
+        enableAllSlideSfx,
+        applySlideSfxToAllSlides,
+        getSlideSfxConfig
     };
 })();
