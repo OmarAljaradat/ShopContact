@@ -47,10 +47,10 @@
         }
     </script>
 </head>
-<body class="bg-[#F8FAFC] text-slate-900 selection:bg-emerald-500 selection:text-white overflow-x-hidden">
+<body class="bg-[#F8FAFC] text-slate-900 selection:bg-emerald-500 selection:text-white overflow-x-hidden lg:overflow-hidden lg:h-screen flex flex-col">
 
     <!-- Top Navigation Header (Light Luxury Floating Bar) -->
-    <header class="border-b border-slate-200/80 bg-white/90 backdrop-blur-xl sticky top-0 z-50 shadow-xs">
+    <header class="border-b border-slate-200/80 bg-white/90 backdrop-blur-xl sticky top-0 z-50 shadow-xs shrink-0">
         <div class="max-w-7xl mx-auto px-4 lg:px-8 h-20 flex items-center justify-between gap-2">
             <!-- Brand & Tagline -->
             <div class="flex items-center gap-2.5 sm:gap-3.5 shrink-0">
@@ -133,11 +133,11 @@
         </div>
     </header>
 
-    <!-- Main Content (Full Studio Width) -->
-    <main class="max-w-[1780px] w-full mx-auto px-3 sm:px-6 lg:px-8 py-3 space-y-3">
+    <!-- Main Content (Full Studio Width - Independent Scroll Architecture) -->
+    <main class="max-w-[1780px] w-full mx-auto px-3 sm:px-6 lg:px-8 py-2 flex-1 flex flex-col overflow-hidden min-h-0">
         
         <!-- Mobile View Mode Toggle (Full-width segmented bar on mobile) -->
-        <div class="lg:hidden w-full flex items-center bg-slate-200/90 p-1 rounded-2xl shadow-xs" id="mobileViewToggle">
+        <div class="lg:hidden w-full flex items-center bg-slate-200/90 p-1 rounded-2xl shadow-xs shrink-0 mb-2" id="mobileViewToggle">
             <button type="button" onclick="setMobileViewMode('preview')" id="mobileBtnPreview" class="flex-1 py-2 rounded-xl text-xs font-black transition bg-white text-slate-900 shadow-xs text-center flex items-center justify-center gap-1.5">
                 <span>🎨 شاشة المعاينة والتصدير</span>
             </button>
@@ -146,10 +146,10 @@
             </button>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch flex-1 min-h-0 overflow-hidden">
             
             <!-- Left Column: Controls & Editing Form (col-span-5 in RTL = Right Side Dashboard) -->
-            <div id="leftControlColumn" class="hidden lg:block lg:col-span-5 space-y-5">
+            <div id="leftControlColumn" class="hidden lg:block lg:col-span-5 space-y-4 h-full overflow-y-auto pl-2 pr-1 pb-16">
 
                 <!-- 1. Workspace Suite Switcher (3 Studios) -->
                 <div class="double-bezel">
@@ -349,10 +349,10 @@
 
             </div>
 
-            <!-- Right Column: Live High-Fidelity Preview (col-span-7) -->
-            <div id="rightPreviewColumn" class="lg:col-span-7 flex flex-col items-center sticky top-20 z-20 space-y-3">
+            <!-- Right Column: Live High-Fidelity Preview (col-span-7 - Permanently Pinned Stage) -->
+            <div id="rightPreviewColumn" class="lg:col-span-7 flex flex-col justify-between h-full overflow-hidden min-h-0 space-y-1.5">
                 
-                <div class="w-full flex items-center justify-between mb-1.5 px-2">
+                <div class="w-full flex items-center justify-between mb-0.5 px-2 shrink-0">
                     <div class="flex items-center gap-2">
                         <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></span>
                         <span class="text-xs font-black text-slate-800">المعاينة المباشرة (4K Ultra):</span>
@@ -377,8 +377,8 @@
                     </div>
                 </div>
 
-                <!-- Preview Frame Container (Auto-fitted, never cropped) -->
-                <div id="previewContainer" class="w-full p-2 sm:p-4 rounded-3xl border border-slate-200 shadow-sm flex items-center justify-center relative overflow-hidden">
+                <!-- Preview Frame Container (Auto-fitted, never cropped, flex-1) -->
+                <div id="previewContainer" class="w-full flex-1 rounded-3xl border border-slate-200 shadow-sm flex items-center justify-center relative overflow-hidden min-h-0">
                     <!-- Scaled stage wrapper that fits full canvas on screen -->
                     <div id="canvasScaleStage" class="relative">
                         <!-- The Element Captured by html2canvas -->
@@ -399,9 +399,9 @@
                 </div>
 
                 <!-- Carousel Filmstrip Container (Shown when in Carousel suite) -->
-                <div id="carouselFilmstripContainer" class="w-full mt-3 hidden"></div>
+                <div id="carouselFilmstripContainer" class="w-full mt-2 hidden shrink-0"></div>
 
-                <div class="mt-2 text-center">
+                <div class="mt-1 text-center shrink-0">
                     <p class="text-[11px] text-slate-500 font-medium">
                         💡 اسحب أي عنصر مباشرة على الكانفاس لتحريكه أو اضغط عليه لتكبيره وتصغيره.
                     </p>
