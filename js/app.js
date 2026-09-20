@@ -3151,8 +3151,8 @@ function renderControls() {
 
 
 
-    // Box & Button Customization Card (Only for templates with info box and CTA button like trio/market_drop, excluded for promo_pack, market_tracker, champs_squad, evo_boost, social_proof)
-    if (currentTemplate !== 'promo_pack' && currentTemplate !== 'store_promo' && currentTemplate !== 'sbc' && currentTemplate !== 'showcase' && currentTemplate !== 'market_tracker' && currentTemplate !== 'champs_squad' && currentTemplate !== 'evo_boost' && currentTemplate !== 'social_proof') {
+    // Box & Button Customization Card (Only for templates with info box and CTA button like trio/market_drop, excluded for promo_pack, market_tracker, champs_squad, evo_boost, social_proof, flash_sale)
+    if (currentTemplate !== 'promo_pack' && currentTemplate !== 'store_promo' && currentTemplate !== 'sbc' && currentTemplate !== 'showcase' && currentTemplate !== 'market_tracker' && currentTemplate !== 'champs_squad' && currentTemplate !== 'evo_boost' && currentTemplate !== 'social_proof' && currentTemplate !== 'flash_sale') {
         html += `
             <div class="mt-4 p-4 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-3.5">
                 <div class="flex items-center justify-between pb-2 border-b border-slate-100">
@@ -3240,8 +3240,8 @@ function renderControls() {
         `;
     }
 
-    // Background Framing & Position Controls (تحريك وتكبير الخلفية - Excluded for promo_pack, market_tracker, champs_squad, evo_boost, social_proof)
-    if (currentTemplate !== 'promo_pack' && currentTemplate !== 'market_tracker' && currentTemplate !== 'champs_squad' && currentTemplate !== 'evo_boost' && currentTemplate !== 'social_proof') {
+    // Background Framing & Position Controls (تحريك وتكبير الخلفية - Excluded for promo_pack, market_tracker, champs_squad, evo_boost, social_proof, flash_sale)
+    if (currentTemplate !== 'promo_pack' && currentTemplate !== 'market_tracker' && currentTemplate !== 'champs_squad' && currentTemplate !== 'evo_boost' && currentTemplate !== 'social_proof' && currentTemplate !== 'flash_sale') {
         html += `
             <div class="mt-4 p-4 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-3.5">
                 <div class="flex items-center justify-between pb-2 border-b border-slate-100">
@@ -7709,7 +7709,11 @@ const FLASH_SALE_PRESETS = [
 ];
 
 function renderFlashSaleTemplate() {
-    const isLightBg = (window.MARKET_BG_THEMES[appState.bgTheme || 'store']?.isLight) ?? true;
+    // Lock background to royal white marble store background with bright lighting
+    appState.bgTheme = 'store';
+    appState.bgLighting = 'bright';
+    const isLightBg = true;
+
     const t1 = appState.tier1 || TEMPLATES.flash_sale.defaultState.tier1;
     const t2 = appState.tier2 || TEMPLATES.flash_sale.defaultState.tier2;
     const t3 = appState.tier3 || TEMPLATES.flash_sale.defaultState.tier3;
@@ -7728,7 +7732,7 @@ function renderFlashSaleTemplate() {
                 <!-- Sale Title & Expiry Ribbon -->
                 <div class="w-full max-w-[480px] py-1.5 px-3 rounded-2xl bg-gradient-to-r from-red-600 via-amber-500 to-red-600 text-slate-950 font-black text-xs flex items-center justify-between shadow-xl">
                     <span class="flex items-center gap-1"><span>⚡</span><span>${appState.saleTitle || 'عروض كوينز الويكند الحارقة'}</span></span>
-                    <span class="bg-slate-950 text-amber-300 px-2 py-0.5 rounded-lg text-[10px] font-bold">${appState.saleExpiry || '⏳ ساري حتى منتصف الليل'}</span>
+                    <span class="bg-slate-950 text-amber-300 px-2.5 py-0.5 rounded-lg text-[10px] font-bold">${appState.saleExpiry || '⏳ ساري حتى منتصف الليل'}</span>
                 </div>
 
                 <!-- Tier 1 (500k) -->
@@ -7736,13 +7740,13 @@ function renderFlashSaleTemplate() {
                     <div class="flex items-center gap-2.5">
                         <img src="assets/fc-coin.webp" class="w-8 h-8 object-contain" alt="c">
                         <div class="text-right">
-                            <span class="text-sm font-black text-white block">${t1.amount || '500,000 كوينز'}</span>
+                            <span class="text-sm font-black text-white block"><bdi>${t1.amount || '500,000 كوينز'}</bdi></span>
                             <span class="text-[10.5px] text-emerald-400 font-bold">${t1.badge || '⚡ باقة البداية'}</span>
                         </div>
                     </div>
                     <div class="flex items-center gap-2" dir="ltr">
-                        <span class="text-xs text-slate-400 line-through font-mono font-bold">${t1.oldPrice || '15$'}</span>
-                        <span class="text-2xl font-black font-mono text-emerald-400">${t1.price || '11$'}</span>
+                        ${t1.oldPrice ? `<span class="text-xs text-slate-400 line-through font-mono font-bold"><bdi>${t1.oldPrice}</bdi></span>` : ''}
+                        <span class="text-2xl font-black font-mono text-emerald-400"><bdi>${t1.price || '11$'}</bdi></span>
                     </div>
                 </div>
 
@@ -7754,13 +7758,13 @@ function renderFlashSaleTemplate() {
                     <div class="flex items-center gap-2.5 pt-1">
                         <img src="assets/fc-coin.webp" class="w-9 h-9 object-contain drop-shadow" alt="c">
                         <div class="text-right">
-                            <span class="text-base font-black text-white block">${t2.amount || '1,000,000 كوينز'}</span>
-                            <span class="text-[11px] text-amber-300 font-bold">شامل تغطية الضريبة 100% 🛡️</span>
+                            <span class="text-base font-black text-white block"><bdi>${t2.amount || '1,000,000 كوينز'}</bdi></span>
+                            <span class="text-[11px] text-amber-300 font-bold">${t2.subBadge || 'ضمان شامل وأمان 100% للنادي 🛡️'}</span>
                         </div>
                     </div>
                     <div class="flex items-center gap-2 pt-1" dir="ltr">
-                        <span class="text-sm text-slate-400 line-through font-mono font-bold">${t2.oldPrice || '28$'}</span>
-                        <span class="text-2xl font-black font-mono text-amber-300">${t2.price || '21$'}</span>
+                        ${t2.oldPrice ? `<span class="text-sm text-slate-400 line-through font-mono font-bold"><bdi>${t2.oldPrice}</bdi></span>` : ''}
+                        <span class="text-2xl font-black font-mono text-amber-300"><bdi>${t2.price || '21$'}</bdi></span>
                     </div>
                 </div>
 
@@ -7769,19 +7773,19 @@ function renderFlashSaleTemplate() {
                     <div class="flex items-center gap-2.5">
                         <img src="assets/fc-coin.webp" class="w-8 h-8 object-contain" alt="c">
                         <div class="text-right">
-                            <span class="text-sm font-black text-white block">${t3.amount || '2,000,000 كوينز'}</span>
+                            <span class="text-sm font-black text-white block"><bdi>${t3.amount || '2,000,000 كوينز'}</bdi></span>
                             <span class="text-[10.5px] text-teal-400 font-bold">${t3.badge || '👑 باقة الحيتان VIP'}</span>
                         </div>
                     </div>
                     <div class="flex items-center gap-2" dir="ltr">
-                        <span class="text-xs text-slate-400 line-through font-mono font-bold">${t3.oldPrice || '52$'}</span>
-                        <span class="text-2xl font-black font-mono text-teal-300">${t3.price || '39$'}</span>
+                        ${t3.oldPrice ? `<span class="text-xs text-slate-400 line-through font-mono font-bold"><bdi>${t3.oldPrice}</bdi></span>` : ''}
+                        <span class="text-2xl font-black font-mono text-teal-300"><bdi>${t3.price || '39$'}</bdi></span>
                     </div>
                 </div>
 
-                <!-- Tax Free Guarantee -->
-                <div class="text-center text-[10px] font-black text-emerald-400 pt-0.5">
-                    🛡️ جميع الأسعار تشمل ضريبة الـ 5% بالكامل • تسليم فوري لجميع المنصات
+                <!-- Guarantee Ribbon -->
+                <div class="text-center text-[10.5px] font-black text-emerald-600 bg-emerald-50/90 border border-emerald-200 py-1.5 px-3 rounded-xl shadow-2xs">
+                    ${appState.guaranteeText || '🛡️ جميع الباقات تشمل ضمان وأمان كامل للنادي 100% بدون باند • تسليم فوري'}
                 </div>
             </div>
             ${renderLayerToolbar('layer_sale_body')}
@@ -7794,60 +7798,231 @@ function renderFlashSaleTemplate() {
 }
 
 function renderFlashSaleControls() {
+    const t1 = appState.tier1 || TEMPLATES.flash_sale.defaultState.tier1;
+    const t2 = appState.tier2 || TEMPLATES.flash_sale.defaultState.tier2;
+    const t3 = appState.tier3 || TEMPLATES.flash_sale.defaultState.tier3;
+
     return `
         <div class="space-y-4">
-            <!-- 1. Background Selection -->
-            ${renderStoryBackgroundControls()}
-
-            <!-- 2. 1-Click Presets -->
-            <div class="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs space-y-2">
-                <span class="text-xs font-black text-slate-800 block">⚡ قوالب عروض جاهزة:</span>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-                    ${FLASH_SALE_PRESETS.map(p => `
-                        <button type="button" onclick="applyFlashSalePreset('${p.id}')" class="p-2 rounded-xl text-right border transition bg-slate-50 border-slate-200 hover:border-emerald-400 text-slate-800 text-xs font-bold">
-                            ${p.name}
-                        </button>
-                    `).join('')}
+            <!-- 1. Sale Ribbon & Timer -->
+            <div class="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-3">
+                <span class="text-xs font-black text-slate-800 flex items-center gap-1.5">
+                    <span>⏳</span>
+                    <span>شريط عنوان العرض والوقت المتبقي:</span>
+                </span>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-700 mb-1">عنوان العرض السريع:</label>
+                        <input type="text" value="${appState.saleTitle || ''}" 
+                               oninput="appState.saleTitle = this.value; renderCanvas();" 
+                               placeholder="عروض كوينز الويكند الحارقة ⚡"
+                               class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500 focus:bg-white">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-700 mb-1">المؤقت / وقت انتهاء العرض:</label>
+                        <input type="text" value="${appState.saleExpiry || ''}" 
+                               oninput="appState.saleExpiry = this.value; renderCanvas();" 
+                               placeholder="⏳ ساري حتى منتصف الليل"
+                               class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500 focus:bg-white">
+                    </div>
                 </div>
             </div>
 
-            <!-- 3. Tiers Setup -->
-            <div class="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs space-y-3">
-                <span class="text-xs font-black text-slate-800 block">💰 أسعار وتفاصيل الباقات الثلاث:</span>
-                
+            <!-- 2. Tiers Setup & Currency -->
+            <div class="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-3">
+                <div class="flex items-center justify-between pb-1.5 border-b border-slate-100">
+                    <span class="text-xs font-black text-slate-800 flex items-center gap-1.5">
+                        <span>💰</span>
+                        <span>أسعار وتفاصيل الباقات الثلاث:</span>
+                    </span>
+                    <!-- Currency Switcher -->
+                    <div class="flex items-center gap-1">
+                        <span class="text-[10px] font-bold text-slate-500">العملة:</span>
+                        <button type="button" onclick="switchFlashSaleCurrency('$')" class="px-1.5 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-800 text-[10px] font-bold font-mono">$</button>
+                        <button type="button" onclick="switchFlashSaleCurrency(' ر.س')" class="px-1.5 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-800 text-[10px] font-bold">ر.س</button>
+                        <button type="button" onclick="switchFlashSaleCurrency(' د.إ')" class="px-1.5 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-800 text-[10px] font-bold">د.إ</button>
+                        <button type="button" onclick="switchFlashSaleCurrency(' د.ك')" class="px-1.5 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-800 text-[10px] font-bold">د.ك</button>
+                    </div>
+                </div>
+
                 <!-- Tier 1 -->
-                <div class="p-2 bg-slate-50 rounded-xl space-y-1 border border-slate-200">
-                    <span class="text-[11px] font-bold text-slate-700 block">الباقة 1 (500k):</span>
-                    <div class="grid grid-cols-3 gap-1">
-                        <input type="text" value="${appState.tier1?.amount || '500,000 كوينز'}" oninput="if(!appState.tier1) appState.tier1={}; appState.tier1.amount=this.value; renderCanvas();" class="px-2 py-1 rounded bg-white border text-xs">
-                        <input type="text" value="${appState.tier1?.oldPrice || '15$'}" oninput="if(!appState.tier1) appState.tier1={}; appState.tier1.oldPrice=this.value; renderCanvas();" class="px-2 py-1 rounded bg-white border text-xs">
-                        <input type="text" value="${appState.tier1?.price || '11$'}" oninput="if(!appState.tier1) appState.tier1={}; appState.tier1.price=this.value; renderCanvas();" class="px-2 py-1 rounded bg-white border text-xs font-bold text-emerald-600">
+                <div class="p-2.5 bg-slate-50 rounded-xl space-y-2 border border-slate-200">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[11px] font-black text-slate-800">1️⃣ الباقة الأولى (البداية):</span>
+                        <input type="text" value="${t1.badge || ''}" placeholder="شارة الباقة"
+                               oninput="updateFlashSaleTier('tier1', 'badge', this.value)" 
+                               class="px-2 py-0.5 rounded-md bg-white border border-slate-200 text-[10.5px] font-bold text-emerald-700 w-36 text-center">
+                    </div>
+                    <div class="grid grid-cols-3 gap-2">
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-500 mb-0.5">كمية الكوينز:</label>
+                            <input type="text" value="${t1.amount || ''}" 
+                                   oninput="updateFlashSaleTier('tier1', 'amount', this.value)" 
+                                   class="w-full px-2 py-1 rounded-lg bg-white border border-slate-200 text-xs font-bold text-slate-900">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-500 mb-0.5">السعر قبل (مشطوب):</label>
+                            <input type="text" value="${t1.oldPrice || ''}" 
+                                   oninput="updateFlashSaleTier('tier1', 'oldPrice', this.value)" 
+                                   class="w-full px-2 py-1 rounded-lg bg-white border border-slate-200 text-xs font-mono text-slate-400">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-emerald-700 mb-0.5">السعر بعد الخصم:</label>
+                            <input type="text" value="${t1.price || ''}" 
+                                   oninput="updateFlashSaleTier('tier1', 'price', this.value)" 
+                                   class="w-full px-2 py-1 rounded-lg bg-white border border-emerald-300 text-xs font-mono font-bold text-emerald-600">
+                        </div>
                     </div>
                 </div>
 
-                <!-- Tier 2 -->
-                <div class="p-2 bg-amber-50/50 rounded-xl space-y-1 border border-amber-200">
-                    <span class="text-[11px] font-black text-amber-900 block">الباقة 2 (الأكثر طلباً 1M):</span>
-                    <div class="grid grid-cols-3 gap-1">
-                        <input type="text" value="${appState.tier2?.amount || '1,000,000 كوينز'}" oninput="if(!appState.tier2) appState.tier2={}; appState.tier2.amount=this.value; renderCanvas();" class="px-2 py-1 rounded bg-white border border-amber-300 text-xs">
-                        <input type="text" value="${appState.tier2?.oldPrice || '28$'}" oninput="if(!appState.tier2) appState.tier2={}; appState.tier2.oldPrice=this.value; renderCanvas();" class="px-2 py-1 rounded bg-white border border-amber-300 text-xs">
-                        <input type="text" value="${appState.tier2?.price || '21$'}" oninput="if(!appState.tier2) appState.tier2={}; appState.tier2.price=this.value; renderCanvas();" class="px-2 py-1 rounded bg-white border border-amber-300 text-xs font-bold text-amber-700">
+                <!-- Tier 2 (Featured Bestseller) -->
+                <div class="p-2.5 bg-amber-50/60 rounded-xl space-y-2 border-2 border-amber-300 shadow-2xs">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[11px] font-black text-amber-950 flex items-center gap-1">
+                            <span>⭐</span>
+                            <span>2️⃣ الباقة الثانية (الأكثر طلباً - المميزة):</span>
+                        </span>
+                        <input type="text" value="${t2.badge || ''}" placeholder="شارة الباقة"
+                               oninput="updateFlashSaleTier('tier2', 'badge', this.value)" 
+                               class="px-2 py-0.5 rounded-md bg-white border border-amber-300 text-[10.5px] font-black text-amber-800 w-44 text-center">
+                    </div>
+                    <div class="grid grid-cols-3 gap-2">
+                        <div>
+                            <label class="block text-[10px] font-bold text-amber-900 mb-0.5">كمية الكوينز:</label>
+                            <input type="text" value="${t2.amount || ''}" 
+                                   oninput="updateFlashSaleTier('tier2', 'amount', this.value)" 
+                                   class="w-full px-2 py-1 rounded-lg bg-white border border-amber-200 text-xs font-bold text-slate-900">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-amber-900 mb-0.5">السعر قبل (مشطوب):</label>
+                            <input type="text" value="${t2.oldPrice || ''}" 
+                                   oninput="updateFlashSaleTier('tier2', 'oldPrice', this.value)" 
+                                   class="w-full px-2 py-1 rounded-lg bg-white border border-amber-200 text-xs font-mono text-slate-400">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-amber-800 mb-0.5">السعر بعد الخصم:</label>
+                            <input type="text" value="${t2.price || ''}" 
+                                   oninput="updateFlashSaleTier('tier2', 'price', this.value)" 
+                                   class="w-full px-2 py-1 rounded-lg bg-white border border-amber-400 text-xs font-mono font-black text-amber-700">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-amber-900 mb-0.5">شارة الضمان الصغيرة تحت كمية الكوينز:</label>
+                        <input type="text" value="${t2.subBadge || ''}" 
+                               oninput="updateFlashSaleTier('tier2', 'subBadge', this.value)" 
+                               placeholder="ضمان شامل وأمان 100% للنادي 🛡️"
+                               class="w-full px-2.5 py-1 rounded-lg bg-white border border-amber-200 text-xs font-bold text-slate-800">
                     </div>
                 </div>
 
-                <!-- Tier 3 -->
-                <div class="p-2 bg-slate-50 rounded-xl space-y-1 border border-slate-200">
-                    <span class="text-[11px] font-bold text-slate-700 block">الباقة 3 (الحيتان VIP 2M):</span>
-                    <div class="grid grid-cols-3 gap-1">
-                        <input type="text" value="${appState.tier3?.amount || '2,000,000 كوينز'}" oninput="if(!appState.tier3) appState.tier3={}; appState.tier3.amount=this.value; renderCanvas();" class="px-2 py-1 rounded bg-white border text-xs">
-                        <input type="text" value="${appState.tier3?.oldPrice || '52$'}" oninput="if(!appState.tier3) appState.tier3={}; appState.tier3.oldPrice=this.value; renderCanvas();" class="px-2 py-1 rounded bg-white border text-xs">
-                        <input type="text" value="${appState.tier3?.price || '39$'}" oninput="if(!appState.tier3) appState.tier3={}; appState.tier3.price=this.value; renderCanvas();" class="px-2 py-1 rounded bg-white border text-xs font-bold text-teal-600">
+                <!-- Tier 3 (VIP) -->
+                <div class="p-2.5 bg-slate-50 rounded-xl space-y-2 border border-slate-200">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[11px] font-black text-slate-800">3️⃣ الباقة الثالثة (الحيتان VIP):</span>
+                        <input type="text" value="${t3.badge || ''}" placeholder="شارة الباقة"
+                               oninput="updateFlashSaleTier('tier3', 'badge', this.value)" 
+                               class="px-2 py-0.5 rounded-md bg-white border border-slate-200 text-[10.5px] font-bold text-teal-700 w-36 text-center">
+                    </div>
+                    <div class="grid grid-cols-3 gap-2">
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-500 mb-0.5">كمية الكوينز:</label>
+                            <input type="text" value="${t3.amount || ''}" 
+                                   oninput="updateFlashSaleTier('tier3', 'amount', this.value)" 
+                                   class="w-full px-2 py-1 rounded-lg bg-white border border-slate-200 text-xs font-bold text-slate-900">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-500 mb-0.5">السعر قبل (مشطوب):</label>
+                            <input type="text" value="${t3.oldPrice || ''}" 
+                                   oninput="updateFlashSaleTier('tier3', 'oldPrice', this.value)" 
+                                   class="w-full px-2 py-1 rounded-lg bg-white border border-slate-200 text-xs font-mono text-slate-400">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-teal-700 mb-0.5">السعر بعد الخصم:</label>
+                            <input type="text" value="${t3.price || ''}" 
+                                   oninput="updateFlashSaleTier('tier3', 'price', this.value)" 
+                                   class="w-full px-2 py-1 rounded-lg bg-white border border-teal-300 text-xs font-mono font-bold text-teal-600">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Guarantee Text -->
+                <div class="pt-1">
+                    <label class="block text-[11px] font-bold text-slate-700 mb-1">شريط الضمان السفلي تحت الباقات:</label>
+                    <input type="text" value="${appState.guaranteeText || ''}" 
+                           oninput="appState.guaranteeText = this.value; renderCanvas();" 
+                           placeholder="🛡️ جميع الباقات تشمل ضمان وأمان كامل للنادي 100% بدون باند • تسليم فوري"
+                           class="w-full px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500 focus:bg-white">
+                </div>
+            </div>
+
+            <!-- 3. Story Texts & CTA -->
+            <div class="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-3">
+                <span class="text-xs font-black text-slate-800 block">✍️ نصوص وعروض الستوري:</span>
+
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-700 mb-1">شارة التنبيه العلوية:</label>
+                    <input type="text" value="${appState.badgeText || ''}" 
+                           oninput="appState.badgeText = this.value; renderCanvas();" 
+                           class="w-full px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500 focus:bg-white">
+                </div>
+
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-700 mb-1">العنوان الرئيسي للستوري:</label>
+                    <input type="text" value="${appState.headline || ''}" 
+                           oninput="appState.headline = this.value; renderCanvas();" 
+                           class="w-full px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-black outline-none focus:border-emerald-500 focus:bg-white">
+                </div>
+
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-700 mb-1">الوصف التحفيزي:</label>
+                    <input type="text" value="${appState.subheadline || ''}" 
+                           oninput="appState.subheadline = this.value; renderCanvas();" 
+                           class="w-full px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-medium outline-none focus:border-emerald-500 focus:bg-white">
+                </div>
+
+                <div class="pt-2 border-t border-slate-100 space-y-2">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-700 mb-1">عنوان بانر المتجر (CTA):</label>
+                        <input type="text" value="${appState.ctaHeadline || ''}" 
+                               oninput="appState.ctaHeadline = this.value; renderCanvas();" 
+                               class="w-full px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500 focus:bg-white">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-700 mb-1">نص زر الطلب عبر الخاص:</label>
+                        <input type="text" value="${appState.ctaSub || ''}" 
+                               oninput="appState.ctaSub = this.value; renderCanvas();" 
+                               class="w-full px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500 focus:bg-white">
                     </div>
                 </div>
             </div>
         </div>
     `;
 }
+
+window.updateFlashSaleTier = function(tierKey, field, value) {
+    if (!appState[tierKey]) {
+        appState[tierKey] = JSON.parse(JSON.stringify(TEMPLATES.flash_sale.defaultState[tierKey] || {}));
+    }
+    appState[tierKey][field] = value;
+    renderCanvas();
+};
+
+window.switchFlashSaleCurrency = function(symbol) {
+    ['tier1', 'tier2', 'tier3'].forEach(k => {
+        if (!appState[k]) appState[k] = JSON.parse(JSON.stringify(TEMPLATES.flash_sale.defaultState[k] || {}));
+        if (appState[k].price) {
+            const num = appState[k].price.replace(/[^0-9.]/g, '');
+            appState[k].price = symbol === '$' ? '$' + num : num + symbol;
+        }
+        if (appState[k].oldPrice) {
+            const num = appState[k].oldPrice.replace(/[^0-9.]/g, '');
+            appState[k].oldPrice = symbol === '$' ? '$' + num : num + symbol;
+        }
+    });
+    renderControls();
+    renderCanvas();
+    if (window.showCopyToast) window.showCopyToast(`تم تحويل العملة إلى ${symbol} 💰`);
+};
 
 window.applyFlashSalePreset = function(presetId) {
     const p = FLASH_SALE_PRESETS.find(x => x.id === presetId);
