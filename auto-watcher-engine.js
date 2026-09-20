@@ -440,7 +440,7 @@ class AutoWatcherEngine {
             // Optimize layer spacing for aesthetic balance
             appState.layers = appState.layers || {};
             if (appState.layers.layer_sbc_banners) {
-                appState.layers.layer_sbc_banners.y = 40;
+                appState.layers.layer_sbc_banners.y = 105;
                 appState.layers.layer_sbc_banners.scale = 1.0;
             }
             if (appState.layers.layer_sbc_asset) {

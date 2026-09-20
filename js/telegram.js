@@ -227,7 +227,7 @@ const TelegramManager = {
         let dataUrl = null;
         try {
             const clone = source.cloneNode(true);
-            clone.querySelectorAll('.layer-toolbar, .layer-resize-handle, .snap-guide').forEach(el => el.remove());
+            clone.querySelectorAll('.layer-toolbar, .layer-resize-handle, .snap-guide, .safe-zone-guide').forEach(el => el.remove());
 
             const activeFont = (window.currentStudioSuite === 'suite_reels' && window.ReelsEngine && window.ReelsEngine.getState)
                 ? (window.ReelsEngine.getState().fontFamily || 'thmanyah')

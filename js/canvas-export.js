@@ -66,7 +66,7 @@ const CanvasExporter = {
         sandbox.innerHTML = fontStyleRule + source.innerHTML;
 
         // 3. Clean up interactive elements (handles, toolbars, outlines, guides)
-        sandbox.querySelectorAll('.layer-toolbar, .layer-resize-handle, .snap-guide').forEach(el => el.remove());
+        sandbox.querySelectorAll('.layer-toolbar, .layer-resize-handle, .snap-guide, .safe-zone-guide').forEach(el => el.remove());
         sandbox.querySelectorAll('.draggable-layer').forEach(el => {
             el.classList.remove('is-dragging', 'is-selected');
             el.style.outline = 'none';
@@ -200,7 +200,7 @@ const CanvasExporter = {
         try {
             // Clean up any temporary UI handles from clone if needed
             const clone = source.cloneNode(true);
-            clone.querySelectorAll('.layer-toolbar, .layer-resize-handle, .snap-guide').forEach(el => el.remove());
+            clone.querySelectorAll('.layer-toolbar, .layer-resize-handle, .snap-guide, .safe-zone-guide').forEach(el => el.remove());
 
             const activeFont = (window.currentStudioSuite === 'suite_reels' && window.ReelsEngine && window.ReelsEngine.getState)
                 ? (window.ReelsEngine.getState().fontFamily || 'thmanyah')
