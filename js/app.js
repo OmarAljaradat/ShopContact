@@ -1298,9 +1298,8 @@ function updateRatioSelectorForTemplate() {
         if (titleEl) {
             titleEl.textContent = 'أبعاد التصميم (مخصص ستوري إنستغرام فقط):';
         }
-        const targetRatio = (currentTemplate === 'flash_sale' && typeof appState !== 'undefined' && appState.flashSaleStyle === 'square_official') ? 'square' : 'story';
-        if (currentRatio !== targetRatio) {
-            setRatio(targetRatio);
+        if (currentRatio !== 'story') {
+            setRatio('story');
         }
     } else {
         if (btnPortrait) btnPortrait.style.display = '';
@@ -1359,9 +1358,7 @@ function initRatioSelector() {
 }
 
 function setRatio(ratio) {
-    if (currentTemplate === 'flash_sale' && typeof appState !== 'undefined' && appState.flashSaleStyle === 'square_official') {
-        ratio = 'square';
-    } else if (window.currentStudioSuite === 'suite_stories' || STORY_TEMPLATE_KEYS.includes(currentTemplate)) {
+    if (window.currentStudioSuite === 'suite_stories' || STORY_TEMPLATE_KEYS.includes(currentTemplate)) {
         ratio = 'story';
     } else if (window.currentStudioSuite === 'suite_carousel') {
         ratio = 'portrait';
@@ -7712,184 +7709,163 @@ const FLASH_SALE_PRESETS = [
 ];
 
 function renderFlashSaleTemplate() {
-    const isSquare = (appState.flashSaleStyle === 'square_official');
+    const t1 = appState.tier1 || TEMPLATES.flash_sale.defaultState.tier1;
+    const t2 = appState.tier2 || TEMPLATES.flash_sale.defaultState.tier2;
+    const t3 = appState.tier3 || TEMPLATES.flash_sale.defaultState.tier3;
+    const t4 = appState.tier4 || (TEMPLATES.flash_sale.defaultState.tier4 || {
+        amount: '3,000,000 كوينز',
+        oldPrice: '78$',
+        price: '58$',
+        badge: 'الأسطورية 💎'
+    });
 
-    if (isSquare) {
-        const t1 = appState.tier1 || TEMPLATES.flash_sale.defaultState.tier1;
-        const t2 = appState.tier2 || TEMPLATES.flash_sale.defaultState.tier2;
-        const t3 = appState.tier3 || TEMPLATES.flash_sale.defaultState.tier3;
-        const t4 = appState.tier4 || (TEMPLATES.flash_sale.defaultState.tier4 || {
-            amount: '3,000,000 كوينز',
-            oldPrice: '78$',
-            price: '58$',
-            badge: 'الأسطورية 💎'
-        });
+    return `
+        <div class="relative w-full h-full overflow-hidden select-none flex flex-col justify-between"
+             style="background-image: url('assets/shopcoin_story_official_bg.jpg'); background-size: cover; background-position: center; padding: 22px 18px 18px 18px;">
+            
+            <!-- 1. Top Header -->
+            <div class="text-center w-full flex flex-col items-center gap-1.5" style="z-index: 10;">
+                <div class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-black"
+                     style="background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(0, 255, 163, 0.45); color: #00ffa3; box-shadow: 0 4px 12px rgba(0,0,0,0.12);">
+                    <span>⚡</span>
+                    <span>${appState.badgeText || 'عروض كوينز حصرية لفترة محدودة • أسعار اليوم الأقوى'}</span>
+                </div>
+                <div class="text-[20px] font-black text-slate-900 leading-tight" style="letter-spacing: -0.5px; text-shadow: 0 1px 3px rgba(255,255,255,0.9);">
+                    ${appState.headline || 'باقات الكوينز الأقوى لجميع المنصات! 💰🔥'}
+                </div>
+                <div class="text-[11px] font-bold text-slate-800 px-2.5 py-0.5 rounded-lg" style="background: rgba(255,255,255,0.75); backdrop-filter: blur(4px);">
+                    ${appState.subheadline || 'تسليم فوري بدقيقة واحدة • ضمان وأمان كامل للنادي 100% بدون باند 🛡️'}
+                </div>
+            </div>
 
-        return `
-            <div class="relative w-full h-full overflow-hidden select-none" style="background-image: url('assets/shopcoin_rates_square_bg.png'); background-size: 100% 100%; background-position: center; background-repeat: no-repeat;">
-                
+            <!-- 2. 4 Tiers Stack -->
+            <div class="w-full flex flex-col gap-3.5 my-1" style="z-index: 10;">
                 <!-- Tier 1 -->
-                <div class="absolute flex items-center justify-center font-black text-slate-900 text-center pointer-events-none whitespace-nowrap overflow-hidden" 
-                     style="top: 23%; left: 70.8%; width: 11%; height: 4.4%; font-size: clamp(7px, 1.3cqw, 11px); line-height: 1; z-index: 15;">
-                    <span>${t1.badge || 'باقة التوفير ⚡'}</span>
-                </div>
-                <div class="absolute flex items-center justify-between pointer-events-none" 
-                     style="top: 27.34%; left: 47.85%; width: 43.75%; height: 5.66%; padding: 0 3.2%; z-index: 10;">
-                    <div class="flex items-center gap-1.5 text-white font-black whitespace-nowrap" style="font-size: clamp(9px, 2.25cqw, 17px);">
-                        <img src="assets/fc-coin.webp" class="object-contain" style="width: clamp(12px, 2.7cqw, 22px); height: clamp(12px, 2.7cqw, 22px);" alt="c">
-                        <bdi>${t1.amount || '500,000 كوينز'}</bdi>
+                <div class="relative w-full">
+                    <div class="absolute -top-2.5 right-7 px-2.5 py-0.5 rounded-full text-[10px] font-black z-10 shadow-xs"
+                         style="background: #e6f4ef; border: 1.5px solid #00ffa3; color: #064e3b;">
+                        ${t1.badge || 'باقة التوفير ⚡'}
                     </div>
-                    <div class="flex items-center gap-1.5 font-mono whitespace-nowrap" dir="ltr">
-                        ${t1.oldPrice ? `<span class="line-through text-slate-400 font-bold" style="font-size: clamp(7.5px, 1.7cqw, 13px);"><bdi>${t1.oldPrice}</bdi></span>` : ''}
-                        <span class="font-black text-[#00ffa3] drop-shadow-[0_0_10px_rgba(0,255,163,0.4)]" style="font-size: clamp(11px, 2.9cqw, 23px);"><bdi>${t1.price || '11$'}</bdi></span>
+                    <div class="w-full h-[52px] rounded-full flex items-center justify-between px-5 shadow-lg"
+                         style="background: #181c24; border: 1.5px solid #283344;">
+                        <div class="flex items-center gap-2 text-white font-black text-[15px]">
+                            <img src="assets/fc-coin.webp" class="w-6 h-6 object-contain" alt="c">
+                            <bdi>${t1.amount || '500,000 كوينز'}</bdi>
+                        </div>
+                        <div class="flex items-center gap-2 font-mono" dir="ltr">
+                            ${t1.oldPrice ? `<span class="text-xs font-bold text-slate-400 line-through"><bdi>${t1.oldPrice}</bdi></span>` : ''}
+                            <span class="text-xl font-black text-[#00ffa3] drop-shadow-[0_0_10px_rgba(0,255,163,0.4)]"><bdi>${t1.price || '11$'}</bdi></span>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Tier 2 (Featured) -->
-                <div class="absolute flex items-center justify-center font-black text-slate-900 text-center pointer-events-none whitespace-nowrap overflow-hidden" 
-                     style="top: 36.82%; left: 70.8%; width: 11%; height: 4.4%; font-size: clamp(7px, 1.3cqw, 11px); line-height: 1; z-index: 15;">
-                    <span>${t2.badge || 'الأكثر طلباً 🔥'}</span>
-                </div>
-                <div class="absolute flex items-center justify-between pointer-events-none" 
-                     style="top: 41.11%; left: 47.85%; width: 43.75%; height: 5.66%; padding: 0 3.2%; z-index: 10;">
-                    <div class="flex items-center gap-1.5 text-white font-black whitespace-nowrap" style="font-size: clamp(9px, 2.25cqw, 17px);">
-                        <img src="assets/fc-coin.webp" class="object-contain" style="width: clamp(12px, 2.7cqw, 22px); height: clamp(12px, 2.7cqw, 22px);" alt="c">
-                        <bdi>${t2.amount || '1,000,000 كوينز'}</bdi>
+                <!-- Tier 2 (Featured Bestseller) -->
+                <div class="relative w-full">
+                    <div class="absolute -top-2.5 right-7 px-3 py-0.5 rounded-full text-[10px] font-black z-10 shadow-sm"
+                         style="background: linear-gradient(135deg, #fef08a 0%, #facc15 100%); border: 1.5px solid #eab308; color: #713f12;">
+                        ${t2.badge || 'الأكثر طلباً • BEST SELLER ⭐'}
                     </div>
-                    <div class="flex items-center gap-1.5 font-mono whitespace-nowrap" dir="ltr">
-                        ${t2.oldPrice ? `<span class="line-through text-slate-400 font-bold" style="font-size: clamp(7.5px, 1.7cqw, 13px);"><bdi>${t2.oldPrice}</bdi></span>` : ''}
-                        <span class="font-black text-[#facc15] drop-shadow-[0_0_10px_rgba(250,204,21,0.5)]" style="font-size: clamp(11px, 2.9cqw, 23px);"><bdi>${t2.price || '21$'}</bdi></span>
+                    <div class="w-full h-[54px] rounded-full flex items-center justify-between px-5 scale-[1.02] shadow-[0_0_24px_rgba(250,204,21,0.35)]"
+                         style="background: linear-gradient(135deg, #1f2737 0%, #151a24 100%); border: 2px solid #facc15;">
+                        <div class="flex items-center gap-2 text-white font-black text-[15px]">
+                            <img src="assets/fc-coin.webp" class="w-6 h-6 object-contain drop-shadow" alt="c">
+                            <bdi>${t2.amount || '1,000,000 كوينز'}</bdi>
+                        </div>
+                        <div class="flex items-center gap-2 font-mono" dir="ltr">
+                            ${t2.oldPrice ? `<span class="text-xs font-bold text-slate-400 line-through"><bdi>${t2.oldPrice}</bdi></span>` : ''}
+                            <span class="text-xl font-black text-[#facc15] drop-shadow-[0_0_12px_rgba(250,204,21,0.5)]"><bdi>${t2.price || '21$'}</bdi></span>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Tier 3 -->
-                <div class="absolute flex items-center justify-center font-black text-slate-900 text-center pointer-events-none whitespace-nowrap overflow-hidden" 
-                     style="top: 50.39%; left: 70.8%; width: 11%; height: 4.4%; font-size: clamp(7px, 1.3cqw, 11px); line-height: 1; z-index: 15;">
-                    <span>${t3.badge || 'باقة VIP 👑'}</span>
-                </div>
-                <div class="absolute flex items-center justify-between pointer-events-none" 
-                     style="top: 54.69%; left: 47.85%; width: 43.75%; height: 5.66%; padding: 0 3.2%; z-index: 10;">
-                    <div class="flex items-center gap-1.5 text-white font-black whitespace-nowrap" style="font-size: clamp(9px, 2.25cqw, 17px);">
-                        <img src="assets/fc-coin.webp" class="object-contain" style="width: clamp(12px, 2.7cqw, 22px); height: clamp(12px, 2.7cqw, 22px);" alt="c">
-                        <bdi>${t3.amount || '2,000,000 كوينز'}</bdi>
+                <div class="relative w-full">
+                    <div class="absolute -top-2.5 right-7 px-2.5 py-0.5 rounded-full text-[10px] font-black z-10 shadow-xs"
+                         style="background: #e6f4ef; border: 1.5px solid #00ffa3; color: #064e3b;">
+                        ${t3.badge || 'باقة VIP 👑'}
                     </div>
-                    <div class="flex items-center gap-1.5 font-mono whitespace-nowrap" dir="ltr">
-                        ${t3.oldPrice ? `<span class="line-through text-slate-400 font-bold" style="font-size: clamp(7.5px, 1.7cqw, 13px);"><bdi>${t3.oldPrice}</bdi></span>` : ''}
-                        <span class="font-black text-[#00ffa3] drop-shadow-[0_0_10px_rgba(0,255,163,0.4)]" style="font-size: clamp(11px, 2.9cqw, 23px);"><bdi>${t3.price || '39$'}</bdi></span>
+                    <div class="w-full h-[52px] rounded-full flex items-center justify-between px-5 shadow-lg"
+                         style="background: #181c24; border: 1.5px solid #283344;">
+                        <div class="flex items-center gap-2 text-white font-black text-[15px]">
+                            <img src="assets/fc-coin.webp" class="w-6 h-6 object-contain" alt="c">
+                            <bdi>${t3.amount || '2,000,000 كوينز'}</bdi>
+                        </div>
+                        <div class="flex items-center gap-2 font-mono" dir="ltr">
+                            ${t3.oldPrice ? `<span class="text-xs font-bold text-slate-400 line-through"><bdi>${t3.oldPrice}</bdi></span>` : ''}
+                            <span class="text-xl font-black text-[#00ffa3] drop-shadow-[0_0_10px_rgba(0,255,163,0.4)]"><bdi>${t3.price || '39$'}</bdi></span>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Tier 4 -->
-                <div class="absolute flex items-center justify-center font-black text-slate-900 text-center pointer-events-none whitespace-nowrap overflow-hidden" 
-                     style="top: 64.16%; left: 70.8%; width: 11%; height: 4.4%; font-size: clamp(7px, 1.3cqw, 11px); line-height: 1; z-index: 15;">
-                    <span>${t4.badge || 'الأسطورية 💎'}</span>
-                </div>
-                <div class="absolute flex items-center justify-between pointer-events-none" 
-                     style="top: 68.55%; left: 47.85%; width: 43.75%; height: 5.66%; padding: 0 3.2%; z-index: 10;">
-                    <div class="flex items-center gap-1.5 text-white font-black whitespace-nowrap" style="font-size: clamp(9px, 2.25cqw, 17px);">
-                        <img src="assets/fc-coin.webp" class="object-contain" style="width: clamp(12px, 2.7cqw, 22px); height: clamp(12px, 2.7cqw, 22px);" alt="c">
-                        <bdi>${t4.amount || '3,000,000 كوينز'}</bdi>
+                <div class="relative w-full">
+                    <div class="absolute -top-2.5 right-7 px-2.5 py-0.5 rounded-full text-[10px] font-black z-10 shadow-xs"
+                         style="background: #e6f4ef; border: 1.5px solid #00ffa3; color: #064e3b;">
+                        ${t4.badge || 'الأسطورية 💎'}
                     </div>
-                    <div class="flex items-center gap-1.5 font-mono whitespace-nowrap" dir="ltr">
-                        ${t4.oldPrice ? `<span class="line-through text-slate-400 font-bold" style="font-size: clamp(7.5px, 1.7cqw, 13px);"><bdi>${t4.oldPrice}</bdi></span>` : ''}
-                        <span class="font-black text-[#00ffa3] drop-shadow-[0_0_10px_rgba(0,255,163,0.4)]" style="font-size: clamp(11px, 2.9cqw, 23px);"><bdi>${t4.price || '58$'}</bdi></span>
-                    </div>
-                </div>
-
-            </div>
-        `;
-    }
-
-    // Lock background to royal white marble store background with bright lighting for story mode
-    appState.bgTheme = 'store';
-    appState.bgLighting = 'bright';
-    const isLightBg = true;
-
-    const t1 = appState.tier1 || TEMPLATES.flash_sale.defaultState.tier1;
-    const t2 = appState.tier2 || TEMPLATES.flash_sale.defaultState.tier2;
-    const t3 = appState.tier3 || TEMPLATES.flash_sale.defaultState.tier3;
-
-    return `
-        ${getStoryBackgroundHtml(appState.bgTheme, appState.bgLighting)}
-
-        <!-- Layer 1: Header -->
-        ${renderStoryHeader('layer_sale_header', appState.badgeText || TEMPLATES.flash_sale.defaultState.badgeText, appState.headline || TEMPLATES.flash_sale.defaultState.headline, appState.subheadline || TEMPLATES.flash_sale.defaultState.subheadline, isLightBg)}
-
-        <!-- Layer 2: Tiered Pricing Stack Body -->
-        ${isLayerVisible('layer_sale_body') ? `
-        <div id="layer_sale_body" class="draggable-layer w-full text-center flex flex-col items-center" style="${getLayerStyle('layer_sale_body', 165)}; width: 510px; z-index: 25;">
-            <div class="layer-scale-wrapper w-full flex flex-col items-center gap-2.5" style="transform: scale(${getLayerScale('layer_sale_body')});">
-                
-                <!-- Sale Title & Expiry Ribbon -->
-                <div class="w-full max-w-[480px] py-1.5 px-3 rounded-2xl bg-gradient-to-r from-red-600 via-amber-500 to-red-600 text-slate-950 font-black text-xs flex items-center justify-between shadow-xl">
-                    <span class="flex items-center gap-1"><span>⚡</span><span>${appState.saleTitle || 'عروض كوينز الويكند الحارقة'}</span></span>
-                    <span class="bg-slate-950 text-amber-300 px-2.5 py-0.5 rounded-lg text-[10px] font-bold">${appState.saleExpiry || '⏳ ساري حتى منتصف الليل'}</span>
-                </div>
-
-                <!-- Tier 1 (500k) -->
-                <div class="w-full max-w-[480px] rounded-2xl p-3 flex items-center justify-between px-4 shadow-xl" style="background: #0c1322; border: 1.5px solid #23314d;">
-                    <div class="flex items-center gap-2.5">
-                        <img src="assets/fc-coin.webp" class="w-8 h-8 object-contain" alt="c">
-                        <div class="text-right">
-                            <span class="text-sm font-black text-white block"><bdi>${t1.amount || '500,000 كوينز'}</bdi></span>
-                            <span class="text-[10.5px] text-emerald-400 font-bold">${t1.badge || '⚡ باقة البداية'}</span>
+                    <div class="w-full h-[52px] rounded-full flex items-center justify-between px-5 shadow-lg"
+                         style="background: #181c24; border: 1.5px solid #283344;">
+                        <div class="flex items-center gap-2 text-white font-black text-[15px]">
+                            <img src="assets/fc-coin.webp" class="w-6 h-6 object-contain" alt="c">
+                            <bdi>${t4.amount || '3,000,000 كوينز'}</bdi>
+                        </div>
+                        <div class="flex items-center gap-2 font-mono" dir="ltr">
+                            ${t4.oldPrice ? `<span class="text-xs font-bold text-slate-400 line-through"><bdi>${t4.oldPrice}</bdi></span>` : ''}
+                            <span class="text-xl font-black text-[#00ffa3] drop-shadow-[0_0_10px_rgba(0,255,163,0.4)]"><bdi>${t4.price || '58$'}</bdi></span>
                         </div>
                     </div>
-                    <div class="flex items-center gap-2" dir="ltr">
-                        ${t1.oldPrice ? `<span class="text-xs text-slate-400 line-through font-mono font-bold"><bdi>${t1.oldPrice}</bdi></span>` : ''}
-                        <span class="text-2xl font-black font-mono text-emerald-400"><bdi>${t1.price || '11$'}</bdi></span>
-                    </div>
-                </div>
-
-                <!-- Tier 2 (1M - Featured Bestseller with glowing gold aura) -->
-                <div class="w-full max-w-[480px] rounded-2xl p-3.5 flex items-center justify-between px-4 relative scale-[1.03] shadow-[0_0_30px_rgba(245,158,11,0.45)]" style="background: linear-gradient(135deg, #182338 0%, #0d1627 100%); border: 2.5px solid #f59e0b;">
-                    <div class="absolute -top-3 right-6 px-3.5 py-0.5 rounded-full bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 text-[10px] font-black shadow-lg">
-                        🔥 ${t2.badge || 'الأكثر طلباً • BEST SELLER ⭐'}
-                    </div>
-                    <div class="flex items-center gap-2.5 pt-1">
-                        <img src="assets/fc-coin.webp" class="w-9 h-9 object-contain drop-shadow" alt="c">
-                        <div class="text-right">
-                            <span class="text-base font-black text-white block"><bdi>${t2.amount || '1,000,000 كوينز'}</bdi></span>
-                            <span class="text-[11px] text-amber-300 font-bold">${t2.subBadge || 'ضمان شامل وأمان 100% للنادي 🛡️'}</span>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-2 pt-1" dir="ltr">
-                        ${t2.oldPrice ? `<span class="text-sm text-slate-400 line-through font-mono font-bold"><bdi>${t2.oldPrice}</bdi></span>` : ''}
-                        <span class="text-2xl font-black font-mono text-amber-300"><bdi>${t2.price || '21$'}</bdi></span>
-                    </div>
-                </div>
-
-                <!-- Tier 3 (2M VIP) -->
-                <div class="w-full max-w-[480px] rounded-2xl p-3 flex items-center justify-between px-4 shadow-xl" style="background: #0c1322; border: 1.5px solid #23314d;">
-                    <div class="flex items-center gap-2.5">
-                        <img src="assets/fc-coin.webp" class="w-8 h-8 object-contain" alt="c">
-                        <div class="text-right">
-                            <span class="text-sm font-black text-white block"><bdi>${t3.amount || '2,000,000 كوينز'}</bdi></span>
-                            <span class="text-[10.5px] text-teal-400 font-bold">${t3.badge || '👑 باقة الحيتان VIP'}</span>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-2" dir="ltr">
-                        ${t3.oldPrice ? `<span class="text-xs text-slate-400 line-through font-mono font-bold"><bdi>${t3.oldPrice}</bdi></span>` : ''}
-                        <span class="text-2xl font-black font-mono text-teal-300"><bdi>${t3.price || '39$'}</bdi></span>
-                    </div>
-                </div>
-
-                <!-- Guarantee Ribbon -->
-                <div class="text-center text-[10.5px] font-black text-emerald-600 bg-emerald-50/90 border border-emerald-200 py-1.5 px-3 rounded-xl shadow-2xs">
-                    ${appState.guaranteeText || '🛡️ جميع الباقات تشمل ضمان وأمان كامل للنادي 100% بدون باند • تسليم فوري'}
                 </div>
             </div>
-            ${renderLayerToolbar('layer_sale_body')}
+
+            <!-- 3. Features Card (مميزات الشوب) -->
+            <div class="w-full p-2.5 rounded-2xl flex flex-col gap-1.5 shadow-sm" 
+                 style="background: rgba(255, 255, 255, 0.88); backdrop-filter: blur(8px); border: 1.5px solid rgba(0, 255, 163, 0.35); z-index: 10;">
+                <div class="self-start inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-black"
+                     style="background: #181c24; color: #00ffa3;">
+                    <span>⚡</span>
+                    <span>${appState.featureTitle || 'مميزات الشوب'}</span>
+                </div>
+                <div class="flex flex-col gap-1 pr-1 text-[11px] font-extrabold text-slate-900">
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-emerald-600 text-sm font-black">●</span>
+                        <span>${appState.feature1 || 'نشحن الويب اب المقفل (Web App Locked) 🔓'}</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-emerald-600 text-sm font-black">●</span>
+                        <span>${appState.feature2 || 'سرعة فائقة في التسليم بدون أي انتظار ⚡'}</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-emerald-600 text-sm font-black">●</span>
+                        <span>${appState.feature3 || 'شحن آمن 100% وضمان شامل لحسابك وناديك 🛡️'}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. Payment Methods Row (طرق الدفع) -->
+            <div class="w-full px-3 py-1.5 rounded-xl flex items-center justify-between shadow-xs"
+                 style="background: rgba(255, 255, 255, 0.88); backdrop-filter: blur(8px); border: 1.5px solid rgba(0, 255, 163, 0.35); z-index: 10;">
+                <div class="px-2 py-0.5 rounded-full text-[10px] font-black" style="background: #181c24; color: #00ffa3;">
+                    <span>💳 طرق الدفع</span>
+                </div>
+                <div class="flex items-center gap-2 text-[10.5px] font-black font-sans">
+                    <span class="px-1.5 py-0.5 rounded bg-black text-[#ff5f00]">Mastercard</span>
+                    <span class="px-1.5 py-0.5 rounded bg-[#1a1f71] text-white italic">VISA</span>
+                    <span class="px-1.5 py-0.5 rounded bg-[#003087] text-[#0079c1]">PayPal</span>
+                    <span class="px-1.5 py-0.5 rounded bg-[#00754a] text-white font-serif">مدى</span>
+                </div>
+            </div>
+
+            <!-- 5. CTA Button -->
+            <div class="w-full py-2.5 px-3 rounded-2xl text-center flex flex-col items-center gap-0.5 cursor-pointer shadow-lg"
+                 style="background: linear-gradient(135deg, #00ffa3 0%, #00d27a 100%); color: #052e16; z-index: 10;">
+                <span class="text-xs font-black">${appState.ctaHeadline || 'للطلب تواصل معنا على الخاص: @shop_coin15 📩'}</span>
+                <span class="text-[9.5px] font-extrabold text-emerald-950">${appState.ctaSub || '⚡ تسليم فوري • 🛡️ ضمان كامل للنادي • 🔒 أمان 100% بدون باند'}</span>
+            </div>
         </div>
-        ` : ''}
-
-        <!-- Layer 3: CTA -->
-        ${renderStoryCta('layer_sale_cta', appState.ctaHeadline || TEMPLATES.flash_sale.defaultState.ctaHeadline, appState.ctaSub || TEMPLATES.flash_sale.defaultState.ctaSub)}
     `;
 }
 
 function renderFlashSaleControls() {
-    const isSquare = (appState.flashSaleStyle === 'square_official');
     const t1 = appState.tier1 || TEMPLATES.flash_sale.defaultState.tier1;
     const t2 = appState.tier2 || TEMPLATES.flash_sale.defaultState.tier2;
     const t3 = appState.tier3 || TEMPLATES.flash_sale.defaultState.tier3;
@@ -7902,27 +7878,7 @@ function renderFlashSaleControls() {
 
     return `
         <div class="space-y-4">
-            <!-- 0. Style Selector: Post 1:1 vs Story 9:16 -->
-            <div class="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-2.5">
-                <span class="text-xs font-black text-slate-800 flex items-center gap-1.5">
-                    <span>📐</span>
-                    <span>شكل ومقاس عرض الباقات:</span>
-                </span>
-                <div class="grid grid-cols-2 gap-2">
-                    <button type="button" onclick="setFlashSaleStyle('square_official')" 
-                            class="p-2.5 rounded-xl border text-center transition ${isSquare ? 'bg-emerald-50 border-2 border-emerald-500 shadow-xs' : 'bg-slate-50 border-slate-200 hover:bg-slate-100'}">
-                        <div class="text-xs font-black ${isSquare ? 'text-emerald-950' : 'text-slate-800'}">🖼️ بوست رسمي (1:1)</div>
-                        <div class="text-[10px] font-bold ${isSquare ? 'text-emerald-700' : 'text-slate-500'}">4 باقات + هوية المتجر</div>
-                    </button>
-                    <button type="button" onclick="setFlashSaleStyle('story_v1')" 
-                            class="p-2.5 rounded-xl border text-center transition ${!isSquare ? 'bg-emerald-50 border-2 border-emerald-500 shadow-xs' : 'bg-slate-50 border-slate-200 hover:bg-slate-100'}">
-                        <div class="text-xs font-black ${!isSquare ? 'text-emerald-950' : 'text-slate-800'}">📱 ستوري عمودي (9:16)</div>
-                        <div class="text-[10px] font-bold ${!isSquare ? 'text-emerald-700' : 'text-slate-500'}">3 باقات + عداد وCTA</div>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Currency Quick Switcher (Common to both) -->
+            <!-- 1. Currency Quick Switcher -->
             <div class="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-xs flex items-center justify-between">
                 <span class="text-xs font-black text-slate-800 flex items-center gap-1.5">
                     <span>💱</span>
@@ -7936,8 +7892,7 @@ function renderFlashSaleControls() {
                 </div>
             </div>
 
-            ${isSquare ? `
-            <!-- SQUARE MODE CONTROLS: 4 Tiers -->
+            <!-- 2. 4 Tiers Setup -->
             <div class="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-3">
                 <span class="text-xs font-black text-slate-800 flex items-center gap-1.5 pb-1 border-b border-slate-100">
                     <span>💰</span>
@@ -8067,149 +8022,40 @@ function renderFlashSaleControls() {
                     </div>
                 </div>
             </div>
-            ` : `
-            <!-- STORY MODE CONTROLS: 1. Sale Ribbon & Timer -->
+
+            <!-- 3. Features Controls (كارت مميزات الشوب) -->
             <div class="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-3">
-                <span class="text-xs font-black text-slate-800 flex items-center gap-1.5">
-                    <span>⏳</span>
-                    <span>شريط عنوان العرض والوقت المتبقي:</span>
+                <span class="text-xs font-black text-slate-800 flex items-center gap-1.5 pb-1 border-b border-slate-100">
+                    <span>⚡</span>
+                    <span>كارت مميزات الشوب:</span>
                 </span>
-                <div class="grid grid-cols-2 gap-2">
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-700 mb-1">عنوان العرض السريع:</label>
-                        <input type="text" value="${appState.saleTitle || ''}" 
-                               oninput="appState.saleTitle = this.value; renderCanvas();" 
-                               placeholder="عروض كوينز الويكند الحارقة ⚡"
-                               class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500 focus:bg-white">
-                    </div>
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-700 mb-1">المؤقت / وقت انتهاء العرض:</label>
-                        <input type="text" value="${appState.saleExpiry || ''}" 
-                               oninput="appState.saleExpiry = this.value; renderCanvas();" 
-                               placeholder="⏳ ساري حتى منتصف الليل"
-                               class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500 focus:bg-white">
-                    </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-500 mb-0.5">عنوان الكارت:</label>
+                    <input type="text" value="${appState.featureTitle || 'مميزات الشوب'}" 
+                           oninput="appState.featureTitle = this.value; renderCanvas();" 
+                           class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-xs font-bold text-slate-900">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-500 mb-0.5">الميزة الأولى:</label>
+                    <input type="text" value="${appState.feature1 || ''}" 
+                           oninput="appState.feature1 = this.value; renderCanvas();" 
+                           class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-xs font-bold text-slate-900">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-500 mb-0.5">الميزة الثانية:</label>
+                    <input type="text" value="${appState.feature2 || ''}" 
+                           oninput="appState.feature2 = this.value; renderCanvas();" 
+                           class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-xs font-bold text-slate-900">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-500 mb-0.5">الميزة الثالثة:</label>
+                    <input type="text" value="${appState.feature3 || ''}" 
+                           oninput="appState.feature3 = this.value; renderCanvas();" 
+                           class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-xs font-bold text-slate-900">
                 </div>
             </div>
 
-            <!-- STORY MODE CONTROLS: 2. Tiers Setup -->
-            <div class="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-3">
-                <span class="text-xs font-black text-slate-800 flex items-center gap-1.5 pb-1.5 border-b border-slate-100">
-                    <span>💰</span>
-                    <span>أسعار وتفاصيل الباقات الثلاث:</span>
-                </span>
-
-                <!-- Tier 1 -->
-                <div class="p-2.5 bg-slate-50 rounded-xl space-y-2 border border-slate-200">
-                    <div class="flex items-center justify-between">
-                        <span class="text-[11px] font-black text-slate-800">1️⃣ الباقة الأولى (البداية):</span>
-                        <input type="text" value="${t1.badge || ''}" placeholder="شارة الباقة"
-                               oninput="updateFlashSaleTier('tier1', 'badge', this.value)" 
-                               class="px-2 py-0.5 rounded-md bg-white border border-slate-200 text-[10.5px] font-bold text-emerald-700 w-36 text-center">
-                    </div>
-                    <div class="grid grid-cols-3 gap-2">
-                        <div>
-                            <label class="block text-[10px] font-bold text-slate-500 mb-0.5">كمية الكوينز:</label>
-                            <input type="text" value="${t1.amount || ''}" 
-                                   oninput="updateFlashSaleTier('tier1', 'amount', this.value)" 
-                                   class="w-full px-2 py-1 rounded-lg bg-white border border-slate-200 text-xs font-bold text-slate-900">
-                        </div>
-                        <div>
-                            <label class="block text-[10px] font-bold text-slate-500 mb-0.5">السعر قبل (مشطوب):</label>
-                            <input type="text" value="${t1.oldPrice || ''}" 
-                                   oninput="updateFlashSaleTier('tier1', 'oldPrice', this.value)" 
-                                   class="w-full px-2 py-1 rounded-lg bg-white border border-slate-200 text-xs font-mono text-slate-400">
-                        </div>
-                        <div>
-                            <label class="block text-[10px] font-bold text-emerald-700 mb-0.5">السعر بعد الخصم:</label>
-                            <input type="text" value="${t1.price || ''}" 
-                                   oninput="updateFlashSaleTier('tier1', 'price', this.value)" 
-                                   class="w-full px-2 py-1 rounded-lg bg-white border border-emerald-300 text-xs font-mono font-bold text-emerald-600">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Tier 2 (Featured Bestseller) -->
-                <div class="p-2.5 bg-amber-50/60 rounded-xl space-y-2 border-2 border-amber-300 shadow-2xs">
-                    <div class="flex items-center justify-between">
-                        <span class="text-[11px] font-black text-amber-950 flex items-center gap-1">
-                            <span>⭐</span>
-                            <span>2️⃣ الباقة الثانية (الأكثر طلباً - المميزة):</span>
-                        </span>
-                        <input type="text" value="${t2.badge || ''}" placeholder="شارة الباقة"
-                               oninput="updateFlashSaleTier('tier2', 'badge', this.value)" 
-                               class="px-2 py-0.5 rounded-md bg-white border border-amber-300 text-[10.5px] font-black text-amber-800 w-44 text-center">
-                    </div>
-                    <div class="grid grid-cols-3 gap-2">
-                        <div>
-                            <label class="block text-[10px] font-bold text-amber-900 mb-0.5">كمية الكوينز:</label>
-                            <input type="text" value="${t2.amount || ''}" 
-                                   oninput="updateFlashSaleTier('tier2', 'amount', this.value)" 
-                                   class="w-full px-2 py-1 rounded-lg bg-white border border-amber-200 text-xs font-bold text-slate-900">
-                        </div>
-                        <div>
-                            <label class="block text-[10px] font-bold text-amber-900 mb-0.5">السعر قبل (مشطوب):</label>
-                            <input type="text" value="${t2.oldPrice || ''}" 
-                                   oninput="updateFlashSaleTier('tier2', 'oldPrice', this.value)" 
-                                   class="w-full px-2 py-1 rounded-lg bg-white border border-amber-200 text-xs font-mono text-slate-400">
-                        </div>
-                        <div>
-                            <label class="block text-[10px] font-bold text-amber-800 mb-0.5">السعر بعد الخصم:</label>
-                            <input type="text" value="${t2.price || ''}" 
-                                   oninput="updateFlashSaleTier('tier2', 'price', this.value)" 
-                                   class="w-full px-2 py-1 rounded-lg bg-white border border-amber-400 text-xs font-mono font-black text-amber-700">
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-bold text-amber-900 mb-0.5">شارة الضمان الصغيرة تحت كمية الكوينز:</label>
-                        <input type="text" value="${t2.subBadge || ''}" 
-                               oninput="updateFlashSaleTier('tier2', 'subBadge', this.value)" 
-                               placeholder="ضمان شامل وأمان 100% للنادي 🛡️"
-                               class="w-full px-2.5 py-1.5 rounded-lg bg-white border border-amber-200 text-xs font-bold text-slate-800">
-                    </div>
-                </div>
-
-                <!-- Tier 3 (VIP) -->
-                <div class="p-2.5 bg-slate-50 rounded-xl space-y-2 border border-slate-200">
-                    <div class="flex items-center justify-between">
-                        <span class="text-[11px] font-black text-slate-800">3️⃣ الباقة الثالثة (الحيتان VIP):</span>
-                        <input type="text" value="${t3.badge || ''}" placeholder="شارة الباقة"
-                               oninput="updateFlashSaleTier('tier3', 'badge', this.value)" 
-                               class="px-2 py-0.5 rounded-md bg-white border border-slate-200 text-[10.5px] font-bold text-teal-700 w-36 text-center">
-                    </div>
-                    <div class="grid grid-cols-3 gap-2">
-                        <div>
-                            <label class="block text-[10px] font-bold text-slate-500 mb-0.5">كمية الكوينز:</label>
-                            <input type="text" value="${t3.amount || ''}" 
-                                   oninput="updateFlashSaleTier('tier3', 'amount', this.value)" 
-                                   class="w-full px-2 py-1 rounded-lg bg-white border border-slate-200 text-xs font-bold text-slate-900">
-                        </div>
-                        <div>
-                            <label class="block text-[10px] font-bold text-slate-500 mb-0.5">السعر قبل (مشطوب):</label>
-                            <input type="text" value="${t3.oldPrice || ''}" 
-                                   oninput="updateFlashSaleTier('tier3', 'oldPrice', this.value)" 
-                                   class="w-full px-2 py-1 rounded-lg bg-white border border-slate-200 text-xs font-mono text-slate-400">
-                        </div>
-                        <div>
-                            <label class="block text-[10px] font-bold text-teal-700 mb-0.5">السعر بعد الخصم:</label>
-                            <input type="text" value="${t3.price || ''}" 
-                                   oninput="updateFlashSaleTier('tier3', 'price', this.value)" 
-                                   class="w-full px-2 py-1 rounded-lg bg-white border border-teal-300 text-xs font-mono font-bold text-teal-600">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Guarantee Text -->
-                <div class="pt-1">
-                    <label class="block text-[11px] font-bold text-slate-700 mb-1">شريط الضمان السفلي تحت الباقات:</label>
-                    <input type="text" value="${appState.guaranteeText || ''}" 
-                           oninput="appState.guaranteeText = this.value; renderCanvas();" 
-                           placeholder="🛡️ جميع الباقات تشمل ضمان وأمان كامل للنادي 100% بدون باند • تسليم فوري"
-                           class="w-full px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500 focus:bg-white">
-                </div>
-            </div>
-
-            <!-- STORY MODE CONTROLS: 3. Story Texts & CTA -->
+            <!-- 4. Story Texts & CTA Controls -->
             <div class="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-3">
                 <span class="text-xs font-black text-slate-800 block">✍️ نصوص وعروض الستوري:</span>
 
@@ -8228,7 +8074,7 @@ function renderFlashSaleControls() {
                 </div>
 
                 <div>
-                    <label class="block text-[11px] font-bold text-slate-700 mb-1">الوصف التحفيزي:</label>
+                    <label class="block text-[11px] font-bold text-slate-700 mb-1">الوصف والضمان:</label>
                     <input type="text" value="${appState.subheadline || ''}" 
                            oninput="appState.subheadline = this.value; renderCanvas();" 
                            class="w-full px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-medium outline-none focus:border-emerald-500 focus:bg-white">
@@ -8236,44 +8082,22 @@ function renderFlashSaleControls() {
 
                 <div class="pt-2 border-t border-slate-100 space-y-2">
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-700 mb-1">عنوان بانر المتجر (CTA):</label>
+                        <label class="block text-[11px] font-bold text-slate-700 mb-1">عنوان زر الطلب المباشر (CTA):</label>
                         <input type="text" value="${appState.ctaHeadline || ''}" 
                                oninput="appState.ctaHeadline = this.value; renderCanvas();" 
                                class="w-full px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500 focus:bg-white">
                     </div>
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-700 mb-1">نص زر الطلب عبر الخاص:</label>
+                        <label class="block text-[11px] font-bold text-slate-700 mb-1">نص ضمان الأمان تحت الزر:</label>
                         <input type="text" value="${appState.ctaSub || ''}" 
                                oninput="appState.ctaSub = this.value; renderCanvas();" 
                                class="w-full px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500 focus:bg-white">
                     </div>
                 </div>
             </div>
-            `}
         </div>
     `;
 }
-
-window.setFlashSaleStyle = function(style) {
-    if (!appState) return;
-    appState.flashSaleStyle = style;
-    const canvas = document.getElementById('exportCanvas');
-    if (canvas) {
-        canvas.className = '';
-        if (style === 'square_official') {
-            canvas.classList.add('canvas-square');
-            currentRatio = 'square';
-        } else {
-            canvas.classList.add('canvas-story');
-            currentRatio = 'story';
-        }
-    }
-    renderControls();
-    renderCanvas();
-    if (window.updateCanvasViewportScale) {
-        setTimeout(window.updateCanvasViewportScale, 60);
-    }
-};
 
 window.updateFlashSaleTier = function(tierKey, field, value) {
     if (!appState[tierKey]) {
