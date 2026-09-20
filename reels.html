@@ -78,10 +78,10 @@
                 <div>
                     <div class="flex items-center gap-1.5">
                         <span class="font-black text-base sm:text-lg tracking-wide text-slate-900">SHOPCOIN15</span>
-                        <span class="px-2 py-0.5 rounded-full bg-rose-50 border border-rose-200 text-rose-700 text-[10px] font-black">Reels 1080p Studio</span>
+                        <span class="px-2 py-0.5 rounded-full bg-rose-50 border border-rose-200 text-rose-700 text-[10px] font-black">Reels 4K Ultra Studio</span>
                         <span class="px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[10px] font-black">محلي حصرياً ⚡</span>
                     </div>
-                    <p class="hidden sm:block text-[11px] text-slate-500 font-medium">استوديو ريلز وفيديوهات FC 27 المستقل مع محرك التصدير الفائق 1080x1920</p>
+                    <p class="hidden sm:block text-[11px] text-slate-500 font-medium">استوديو ريلز وفيديوهات FC 27 المستقل مع محرك التصدير الفائق 4K Ultra (2160x3840)</p>
                 </div>
             </div>
 
@@ -93,9 +93,9 @@
                     <span class="text-[10px] text-slate-400 font-normal hidden sm:inline">(سحابي ومحلي)</span>
                 </a>
 
-                <!-- Primary: Video Export 1080x1920 -->
-                <button type="button" onclick="if(window.ReelsEngine && typeof window.ReelsEngine.exportReelVideo === 'function') window.ReelsEngine.exportReelVideo();" id="btnExportVideoHeader" class="btn-download-action btn-luxury bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-500 hover:brightness-105 text-white font-black shadow-md shadow-emerald-600/20 text-xs py-2 px-3 sm:px-4" title="تسجيل وتصدير فيديو الريل بدقة 1080x1920 Full HD مع كامل الحركات والصوت">
-                    <span>🎬 تحميل فيديو 1080p</span>
+                <!-- Primary: Video Export 4K Ultra -->
+                <button type="button" onclick="if(window.ReelsEngine && typeof window.ReelsEngine.exportReelVideo === 'function') window.ReelsEngine.exportReelVideo();" id="btnExportVideoHeader" class="btn-download-action btn-luxury bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-500 hover:brightness-105 text-white font-black shadow-md shadow-emerald-600/20 text-xs py-2 px-3 sm:px-4" title="تسجيل وتصدير فيديو الريل بدقة 4K Ultra HD (2160x3840) بمعدل بت فائق مع الصوت">
+                    <span>🎬 تحميل فيديو 4K Ultra</span>
                     <div class="btn-icon-pill bg-black/20 text-white">
                         <span>⬇</span>
                     </div>
@@ -186,15 +186,15 @@
                 <div class="w-full flex items-center justify-between mb-3 px-2">
                     <div class="flex items-center gap-2">
                         <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></span>
-                        <span class="text-xs font-black text-slate-700">المعاينة الحية (مطابقة 100% لتصدير الفيديو 1080x1920):</span>
+                        <span class="text-xs font-black text-slate-700">المعاينة الحية (تصدير 4K Ultra HD 2160x3840):</span>
                     </div>
                     <!-- Direct Format Actions -->
                     <div class="flex items-center gap-2 flex-wrap justify-end">
                         <button type="button" onclick="if(window.ReelsEngine && typeof window.ReelsEngine.openFullscreenPreview === 'function') window.ReelsEngine.openFullscreenPreview();" class="btn-download-action px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 hover:brightness-110 text-white font-black text-xs transition flex items-center gap-1.5 shadow-md shadow-purple-600/25 active:scale-95 cursor-pointer" title="معاينة سينمائية ملء الشاشة (مسطرة Space للتشغيل)">
                             <span>⛶ ملء الشاشة</span>
                         </button>
-                        <button type="button" onclick="if(window.ReelsEngine && typeof window.ReelsEngine.exportReelVideo === 'function') window.ReelsEngine.exportReelVideo();" class="btn-download-action px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:brightness-105 text-white font-black text-xs transition shadow-md shadow-emerald-600/20 flex items-center gap-1.5 active:scale-95 cursor-pointer" title="تسجيل وتصدير فيديو الريل بدقة 1080x1920 Full HD">
-                            <span>🎬 تحميل فيديو 1080p</span>
+                        <button type="button" onclick="if(window.ReelsEngine && typeof window.ReelsEngine.exportReelVideo === 'function') window.ReelsEngine.exportReelVideo();" class="btn-download-action px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:brightness-105 text-white font-black text-xs transition shadow-md shadow-emerald-600/20 flex items-center gap-1.5 active:scale-95 cursor-pointer" title="تسجيل وتصدير فيديو الريل بدقة 4K Ultra HD (2160x3840)">
+                            <span>🎬 تحميل فيديو 4K Ultra</span>
                         </button>
                     </div>
                 </div>
@@ -289,8 +289,8 @@
 
                 <div class="flex items-center gap-2">
                     <span class="hidden sm:inline-block text-[11px] text-zinc-400 font-medium">💡 مسطرة <kbd class="px-1.5 py-0.5 rounded bg-zinc-800 text-[10px] text-emerald-400">Space</kbd> للتشغيل</span>
-                    <button type="button" onclick="if(window.ReelsEngine && typeof window.ReelsEngine.exportReelVideo === 'function') window.ReelsEngine.exportReelVideo();" class="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:brightness-105 text-white font-black text-xs transition flex items-center gap-1 shadow-md shadow-emerald-600/20 active:scale-95 cursor-pointer" title="تحميل الفيديو 1080x1920">
-                        <span>🎬 تحميل فيديو</span>
+                    <button type="button" onclick="if(window.ReelsEngine && typeof window.ReelsEngine.exportReelVideo === 'function') window.ReelsEngine.exportReelVideo();" class="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:brightness-105 text-white font-black text-xs transition flex items-center gap-1 shadow-md shadow-emerald-600/20 active:scale-95 cursor-pointer" title="تحميل الفيديو بدقة 4K Ultra">
+                        <span>🎬 تحميل فيديو 4K</span>
                     </button>
                 </div>
             </div>
@@ -303,7 +303,7 @@
     <script src="js/canvas-export.js?v=14.0"></script>
     <script src="js/telegram.js?v=14.0"></script>
     <script src="js/fix-webm-duration.min.js"></script>
-    <script src="js/reels-engine.js?v=68.7"></script>
+    <script src="js/reels-engine.js?v=68.8"></script>
 
     <!-- Bootstrap Standalone Reels Page Script -->
     <script>

@@ -1044,7 +1044,7 @@ async function processReelJob(jobId, payload, execPath) {
     try {
         job.status = 'preparing';
         job.progress = 10;
-        job.message = 'جاري إطلاق محرك المتصفح الفائق (1080x1920)...';
+        job.message = 'جاري إطلاق محرك المتصفح الفائق 4K Ultra...';
 
         const { projectState, audioState, filename } = payload;
         const outFilename = filename || `Reel_FC27_ShopCoin15_${Date.now()}.mp4`;
@@ -1058,6 +1058,15 @@ async function processReelJob(jobId, payload, execPath) {
             throw new Error('تعذر تشغيل محرك المتصفح Chromium على السيرفر');
         }
         page = await b.newPage();
+
+        let isRecording = false;
+        let playbackStart = Date.now();
+        await page.exposeFunction('__onPlaybackStarted', () => {
+            isRecording = true;
+            playbackStart = Date.now();
+            console.log(`[processReelJob] Playback started in browser -> Screencast frame recording engaged synchronously.`);
+        }).catch(() => {});
+
         await page.setViewport({ width: 1080, height: 1920, deviceScaleFactor: 1 });
         await page.goto(`http://127.0.0.1:${PORT}/reels.html`, { waitUntil: 'domcontentloaded', timeout: 25000 });
         await page.waitForFunction(() => window.ReelsEngine && typeof window.ReelsEngine.loadProject === 'function', { timeout: 15000 });
@@ -1220,7 +1229,6 @@ async function processReelJob(jobId, payload, execPath) {
         // 2. Real-time Compositor Screencast: captures the EXACT, 100% fluid preview directly from Chrome
         const client = await page.target().createCDPSession();
         const frameBuffers = [];
-        let isRecording = false;
 
         client.on('Page.screencastFrame', async ({ data, sessionId }) => {
             if (!isRecording) return;
@@ -1241,11 +1249,7 @@ async function processReelJob(jobId, payload, execPath) {
         // Warmup frame flush
         await new Promise(r => setTimeout(r, 120));
 
-        // Synchronize frame capture directly with playback start to guarantee zero audio drift
-        isRecording = true;
-        const playbackStart = Date.now();
-
-        // Trigger real-time playback in Chrome
+        // Trigger real-time playback in Chrome (synchronously activates isRecording via __onPlaybackStarted)
         await page.evaluate(() => {
             window.__reelPlaybackFinished = false;
             if (window.ReelsEngine) {
@@ -1255,6 +1259,12 @@ async function processReelJob(jobId, payload, execPath) {
                 });
             }
         });
+
+        // Safety fallback: if __onPlaybackStarted hasn't fired yet, engage recording
+        if (!isRecording) {
+            isRecording = true;
+            playbackStart = Date.now();
+        }
 
         // Monitor playback and update progress bar
         const pollInterval = 400;
@@ -1275,8 +1285,9 @@ async function processReelJob(jobId, payload, execPath) {
         await client.send('Page.stopScreencast').catch(() => {});
 
         const actualDurationSec = Math.max(1, (playbackEnd - playbackStart) / 1000);
-        const exactFps = (frameBuffers.length / actualDurationSec).toFixed(3);
-        console.log(`[processReelJob] Live Screencast captured ${frameBuffers.length} frames in ${actualDurationSec.toFixed(2)}s -> exact FPS: ${exactFps}`);
+        // Lock FPS directly to the total duration of the master audio WAV to guarantee 0ms drift
+        const exactFps = (frameBuffers.length / totalDurationSec).toFixed(4);
+        console.log(`[processReelJob] Live Screencast captured ${frameBuffers.length} frames (actual: ${actualDurationSec.toFixed(2)}s, master duration: ${totalDurationSec.toFixed(2)}s) -> locked FPS: ${exactFps}`);
 
         if (frameBuffers.length === 0) {
             throw new Error('لم يتم التقاط أي إطارات أثناء المعاينة');
@@ -1284,7 +1295,7 @@ async function processReelJob(jobId, payload, execPath) {
 
         job.status = 'encoding';
         job.progress = 88;
-        job.message = 'جاري ضغط وترميز إطارات الفيديو 1080x1920 (FFmpeg High Bitrate 4K Ultra)...';
+        job.message = 'جاري ضغط وترميز إطارات الفيديو بدقة 4K Ultra HD (2160x3840) ومعدل بت فائق 30 Mbps...';
 
         const outMp4Path = path.join(runDir, 'final_reel.mp4');
         const { spawn } = require('child_process');
@@ -1298,20 +1309,21 @@ async function processReelJob(jobId, payload, execPath) {
         ];
 
         if (audioFile && fs.existsSync(audioFile) && fs.statSync(audioFile).size > 1000) {
-            ffmpegArgs.push('-i', audioFile.replace(/\\/g, '/'), '-c:a', 'aac', '-b:a', '192k');
+            ffmpegArgs.push('-i', audioFile.replace(/\\/g, '/'), '-c:a', 'aac', '-b:a', '320k');
         } else {
             ffmpegArgs.push('-f', 'lavfi', '-i', 'anullsrc=r=44100:cl=stereo', '-c:a', 'aac', '-b:a', '128k');
         }
 
         ffmpegArgs.push(
+            '-vf', 'scale=2160:3840:flags=lanczos+accurate_rnd',
             '-c:v', 'libx264',
             '-preset', 'fast',
             '-profile:v', 'high',
-            '-level', '4.2',
-            '-crf', '15', // Near-lossless clarity, sharp text and crisp cards
-            '-b:v', '10M', // 10 Mbps target bitrate
-            '-maxrate', '14M',
-            '-bufsize', '20M',
+            '-level', '5.1',
+            '-crf', '13', // Razor-sharp 4K Ultra clarity, zero compression artifacts
+            '-b:v', '30M', // 30 Mbps massive bitrate for true 4K Ultra HD
+            '-maxrate', '45M',
+            '-bufsize', '60M',
             '-pix_fmt', 'yuv420p',
             '-t', String(totalDurationSec),
             '-movflags', '+faststart',

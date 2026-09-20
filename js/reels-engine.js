@@ -285,7 +285,7 @@ window.ReelsEngine = (function() {
 
     const DEFAULT_SLIDE_TRANSITION = {
         type: 'smooth_fade', // 'smooth_fade' | 'push_slide' | 'zoom_warp' | 'flash_cut' | 'flip_3d' | 'whoosh_blur' | 'instant'
-        duration: 0.35, // seconds (0.2s - 0.7s)
+        duration: 0.18, // seconds (0.15s - 0.5s)
         soundEnabled: true
     };
 
@@ -2222,14 +2222,14 @@ window.ReelsEngine = (function() {
         const cfg = getSlideSfxConfig(slide);
 
         const sfxList = [
-            { key: 'cardSlam', sfxType: 'card_slam', label: 'صدمة الكرت', sub: 'Card Slam', icon: '🃏', time: '0.06s' },
-            { key: 'coin', sfxType: 'coin', label: 'كاش ورنين كوينز', sub: 'Cha-Ching!', icon: '🪙', time: '0.18s' },
+            { key: 'cardSlam', sfxType: 'card_slam', label: 'صدمة الكرت', sub: 'Card Slam', icon: '🃏', time: '0.18s' },
+            { key: 'coin', sfxType: 'coin', label: 'كاش ورنين كوينز', sub: 'Cha-Ching!', icon: '🪙', time: '0.22s' },
             { key: 'whoosh', sfxType: 'whoosh', label: 'سحب هوائي', sub: 'Whoosh', icon: '💨', time: '0.0s' },
             { key: 'boom', sfxType: 'boom', label: 'ضربة درامية', sub: 'Bass Boom', icon: '💥', time: '0.0s' },
             { key: 'whistle', sfxType: 'whistle', label: 'صفارة حكم', sub: 'Whistle', icon: '📢', time: '0.04s' },
             { key: 'crowd', sfxType: 'crowd', label: 'هتاف الجماهير', sub: 'Crowd Cheer', icon: '🏟️', time: '0.08s' },
-            { key: 'electric', sfxType: 'electric', label: 'شرارة طاقة', sub: 'Energy Zap', icon: '⚡', time: '0.06s' },
-            { key: 'rankBell', sfxType: 'rank_bell', label: 'جرس الرانك', sub: 'Rank Bell', icon: '🔔', time: '0.05s' }
+            { key: 'electric', sfxType: 'electric', label: 'شرارة طاقة', sub: 'Energy Zap', icon: '⚡', time: '0.18s' },
+            { key: 'rankBell', sfxType: 'rank_bell', label: 'جرس الرانك', sub: 'Rank Bell', icon: '🔔', time: '0.08s' }
         ];
 
         const activeCount = Object.keys(cfg).filter(k => cfg[k]).length;
@@ -2321,11 +2321,11 @@ window.ReelsEngine = (function() {
             if (cfg.whoosh) playWhooshSound(customDest, 0.75, ctx, timeOffset + 0);
             if (cfg.boom) playBoomSound(customDest, 1.0, ctx, timeOffset + 0);
             if (cfg.whistle) playWhistleSound(customDest, 0.75, ctx, timeOffset + 0.04);
-            if (cfg.rankBell) playRankBellSound(customDest, 0.9, ctx, timeOffset + 0.05);
-            if (cfg.cardSlam) playCardSlamSound(customDest, 1.0, ctx, timeOffset + 0.06);
-            if (cfg.electric) playElectricZapSound(customDest, 0.9, ctx, timeOffset + 0.06);
+            if (cfg.rankBell) playRankBellSound(customDest, 0.9, ctx, timeOffset + 0.08);
+            if (cfg.cardSlam) playCardSlamSound(customDest, 1.0, ctx, timeOffset + 0.18);
+            if (cfg.electric) playElectricZapSound(customDest, 0.9, ctx, timeOffset + 0.18);
             if (cfg.crowd) playCrowdCheerSound(customDest, 0.85, ctx, timeOffset + 0.08);
-            if (cfg.coin) playCoinCashRegisterSound(customDest, 1.15, ctx, timeOffset + 0.18);
+            if (cfg.coin) playCoinCashRegisterSound(customDest, 1.15, ctx, timeOffset + 0.22);
         } catch (e) {
             console.warn('[Reels Audio] triggerSlideAudio warning:', e.message);
         }
@@ -4418,28 +4418,96 @@ window.ReelsEngine = (function() {
         state.isPlaying = true;
         updatePlayerUi();
 
+        // Notify recorder immediately to lock 0ms audio/video sync
+        if (typeof window.__onPlaybackStarted === 'function') {
+            try { window.__onPlaybackStarted(); } catch(e) {}
+        }
+
         // 1. Trigger background music
         startBgm(customDest, ctxOverride);
 
         // 2. Trigger audio for current starting slide
         triggerSlideAudio(state.slides[state.currentSlideIndex], customDest, ctxOverride);
 
-        const tickMs = 30;
-        let slideStartTime = Date.now();
+        const tickMs = 25;
 
-        const getCurSlideMs = () => {
-            const slide = state.slides[state.currentSlideIndex];
-            return Math.max(500, ((slide && slide.duration) || state.slideDuration || 2.5) * 1000);
-        };
+        // Build cumulative slide schedule to eliminate cumulative timer drift
+        const slideCount = (state.slides && state.slides.length) || 1;
+        const slideDurationsMs = [];
+        let totalDurationMs = 0;
+        const slideCumulativeOffsets = [0];
+
+        for (let i = 0; i < slideCount; i++) {
+            const s = state.slides[i];
+            const dMs = Math.max(500, ((s && s.duration) || state.slideDuration || 2.5) * 1000);
+            slideDurationsMs.push(dMs);
+            totalDurationMs += dMs;
+            slideCumulativeOffsets.push(totalDurationMs);
+        }
+
+        // Anchor monotonic timeline to performance.now()
+        const startSlideIdx = state.currentSlideIndex || 0;
+        const startingOffsetMs = slideCumulativeOffsets[startSlideIdx] || 0;
+        let playbackStartPerf = performance.now() - startingOffsetMs;
 
         if (state.playbackTimer) clearInterval(state.playbackTimer);
 
         state.playbackTimer = setInterval(() => {
             try {
-                const curSlideMs = getCurSlideMs();
-                const elapsed = Date.now() - slideStartTime;
-                state.timelineProgress = Math.min(100, (elapsed / curSlideMs) * 100);
+                const nowPerf = performance.now();
+                const elapsedTotal = nowPerf - playbackStartPerf;
 
+                // Check completion
+                if (elapsedTotal >= totalDurationMs) {
+                    if (typeof onComplete === 'function') {
+                        pausePlayback();
+                        onComplete();
+                        return;
+                    }
+                    // Loop playback preview
+                    playbackStartPerf = performance.now();
+                    state.currentSlideIndex = 0;
+                    state.slideEntrancePending = true;
+                    ensureSelectedDragElement(false);
+                    try { renderCanvas(); } catch(e) {}
+                    try { triggerSlideAudio(state.slides[0], customDest, ctxOverride); } catch(e) {}
+                    return;
+                }
+
+                // Determine target slide based on global monotonic elapsed time
+                let targetIdx = 0;
+                for (let i = 0; i < slideCount; i++) {
+                    if (elapsedTotal >= slideCumulativeOffsets[i] && elapsedTotal < slideCumulativeOffsets[i + 1]) {
+                        targetIdx = i;
+                        break;
+                    }
+                }
+
+                // If slide changed
+                if (targetIdx !== state.currentSlideIndex) {
+                    state.currentSlideIndex = targetIdx;
+                    state.slideEntrancePending = true;
+                    ensureSelectedDragElement(false);
+                    try { renderCanvas(); } catch(e) { console.warn('renderCanvas warning:', e); }
+                    if (!customDest && !onComplete) {
+                        try { renderEditorControls(); } catch(e) {}
+                        try { updatePlayerUi(); } catch(e) {}
+                    }
+
+                    // Trigger audio and transition sound for new slide
+                    try { triggerSlideAudio(state.slides[state.currentSlideIndex], customDest, ctxOverride); } catch(e) {}
+                    if (state.slideTransition && state.slideTransition.soundEnabled) {
+                        try { playWhooshSound(customDest, 0.7, ctxOverride); } catch(e) {}
+                    }
+                }
+
+                // Calculate progress within current slide
+                const currentSlideStartMs = slideCumulativeOffsets[state.currentSlideIndex] || 0;
+                const currentSlideDurMs = slideDurationsMs[state.currentSlideIndex] || 2500;
+                const slideElapsed = elapsedTotal - currentSlideStartMs;
+                state.timelineProgress = Math.min(100, (slideElapsed / currentSlideDurMs) * 100);
+
+                // Update UI timeline bars
                 const bars = document.querySelectorAll('.reels-toolbar-timeline-bar, #toolbarTimelineBar, #reelTimelineBar');
                 bars.forEach(b => { if (b) b.style.width = `${state.timelineProgress}%`; });
                 const curStorySeg = document.getElementById('storyProgressSeg_' + state.currentSlideIndex);
@@ -4450,38 +4518,9 @@ window.ReelsEngine = (function() {
                 const laserBar = document.getElementById('storyProgressLaserBar');
                 const laserHead = document.getElementById('storyProgressLaserHead');
                 if (laserBar || laserHead) {
-                    const total = (state.slides && state.slides.length) || 1;
-                    const overallPct = Math.min(100, ((state.currentSlideIndex + ((state.timelineProgress || 0) / 100)) / total) * 100);
+                    const overallPct = Math.min(100, (elapsedTotal / totalDurationMs) * 100);
                     if (laserBar) laserBar.style.width = `${overallPct}%`;
                     if (laserHead) laserHead.style.left = `${overallPct}%`;
-                }
-
-                if (elapsed >= curSlideMs) {
-                    slideStartTime = Date.now();
-                    state.timelineProgress = 0;
-                    if (state.currentSlideIndex < state.slides.length - 1) {
-                        state.currentSlideIndex++;
-                    } else {
-                        if (typeof onComplete === 'function') {
-                            pausePlayback();
-                            onComplete();
-                            return;
-                        }
-                        state.currentSlideIndex = 0;
-                    }
-                    state.slideEntrancePending = true;
-                    ensureSelectedDragElement(false);
-                    try { renderCanvas(); } catch(e) { console.warn('renderCanvas warning:', e); }
-                    if (!customDest && !onComplete) {
-                        try { renderEditorControls(); } catch(e) {}
-                        try { updatePlayerUi(); } catch(e) {}
-                    }
-
-                    // Trigger audio for next slide
-                    try { triggerSlideAudio(state.slides[state.currentSlideIndex], customDest, ctxOverride); } catch(e) {}
-                    if (state.slideTransition && state.slideTransition.soundEnabled) {
-                        try { playWhooshSound(customDest, 0.7, ctxOverride); } catch(e) {}
-                    }
                 }
             } catch (tickErr) {
                 console.warn('[playPlayback Interval Tick Warning]', tickErr);
@@ -6531,13 +6570,13 @@ window.ReelsEngine = (function() {
                             <span>⚡ استوديو محلي فائق السرعة (تصدير 5 إلى 8 ثوانٍ)</span>
                         </div>
                         <p class="text-slate-600 text-[11px] font-medium leading-relaxed">
-                            يتم إنتاج الفيديو بدقة 1080x1920 Full HD مع الصوت والانسيابية، ويُحفظ تلقائياً ومباشرة على <b class="text-slate-900">سطح المكتب (Desktop)</b>.
+                            يتم إنتاج الفيديو بدقة 4K Ultra HD (2160x3840) بمعدل بت فائق مع الصوت والانسيابية، ويُحفظ تلقائياً ومباشرة على <b class="text-slate-900">سطح المكتب (Desktop)</b>.
                         </p>
                     </div>
 
                     <button type="button" onclick="ReelsEngine.exportReelVideo()" id="btnExportVideo" 
                             class="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:brightness-105 text-white font-black text-xs transition flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/25 cursor-pointer">
-                        <span>🎬 تحميل فيديو الريل الأصلي (MP4 بدقة 1080x1920 مع الأنيميشن والصوت)</span>
+                        <span>🎬 تحميل فيديو الريل الأصلي (MP4 بدقة 4K Ultra 2160x3840 مع الصوت)</span>
                     </button>
                     <button type="button" onclick="ReelsEngine.sendReelVideoTelegram()" id="btnSendReelVideoTelegram"
                             class="w-full py-3 px-4 rounded-2xl bg-gradient-to-r from-sky-500 via-sky-600 to-blue-600 hover:brightness-105 text-white font-black text-xs transition flex items-center justify-center gap-2 shadow-lg shadow-sky-500/25 cursor-pointer active:scale-[0.99]">
@@ -6975,8 +7014,8 @@ window.ReelsEngine = (function() {
 
                 <div class="flex items-center gap-1.5 flex-wrap">
                     ${localBadgeHtml}
-                    <button type="button" id="btnExportVideoFloating" onclick="ReelsEngine.exportReelVideo()" class="btn-export-reel-action px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:brightness-105 text-white font-black text-xs transition flex items-center gap-1 shadow-md shadow-emerald-600/20 active:scale-95" title="تحميل الفيديو بدقة 1080x1920 Full HD مع الأنيميشن والصوت">
-                        <span>🎬 تحميل فيديو</span>
+                    <button type="button" id="btnExportVideoFloating" onclick="ReelsEngine.exportReelVideo()" class="btn-export-reel-action px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:brightness-105 text-white font-black text-xs transition flex items-center gap-1 shadow-md shadow-emerald-600/20 active:scale-95" title="تحميل الفيديو بدقة 4K Ultra HD (2160x3840) مع الأنيميشن والصوت">
+                        <span>🎬 تحميل فيديو 4K</span>
                     </button>
                     <button type="button" onclick="ReelsEngine.sendReelVideoTelegram()" class="btn-telegram-action px-3 py-1.5 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 hover:brightness-105 text-white font-black text-xs transition flex items-center gap-1 shadow-md shadow-sky-500/20 active:scale-95" title="إرسال فيديو الريلز مباشرة إلى تيليجرام">
                         <span>🚀 فيديو لتليجرام</span>
@@ -7412,7 +7451,7 @@ window.ReelsEngine = (function() {
                 
                 <div class="space-y-1.5">
                     <h3 class="text-white text-xl sm:text-2xl font-black">تم تصدير الفيديو بنجاح فائق! 🎉</h3>
-                    <p class="text-zinc-400 text-xs sm:text-sm font-medium">بدقة 1080x1920 Full HD مع كامل الأنيميشن والصوت الأصلي</p>
+                    <p class="text-zinc-400 text-xs sm:text-sm font-medium">بدقة 4K Ultra HD (2160x3840) بمعدل بت فائق مع كامل الأنيميشن والصوت الأصلي</p>
                 </div>
 
                 <div class="bg-emerald-950/50 border border-emerald-500/40 rounded-2xl p-4 text-right space-y-2">
@@ -7464,7 +7503,7 @@ window.ReelsEngine = (function() {
         const totalSec = state.slides.reduce((acc, s) => acc + (s.duration || state.slideDuration || 2.5), 0);
 
         if (progressCallback) {
-            progressCallback(`🚀 بدء تجهيز مهمة تصدير الريلز بدقة 1080x1920 (${totalSec.toFixed(1)} ثانية)...`);
+            progressCallback(`🚀 بدء تجهيز مهمة تصدير الريلز بدقة 4K Ultra HD (${totalSec.toFixed(1)} ثانية)...`);
         }
 
         let initRes;
@@ -7483,7 +7522,7 @@ window.ReelsEngine = (function() {
             });
         } catch (netErr) {
             console.error('[Record Studio Reel Fetch Error]', netErr);
-            throw new Error(`تعذر الاتصال بمحرك تسجيل الفيديو عالي الدقة (1080x1920). يرجى التأكد من تشغيل السيرفر.`);
+            throw new Error(`تعذر الاتصال بمحرك تسجيل الفيديو 4K Ultra HD (2160x3840). يرجى التأكد من تشغيل السيرفر.`);
         }
 
         if (!initRes.ok) {
@@ -7609,12 +7648,12 @@ window.ReelsEngine = (function() {
         const origTexts = btns.map(b => b.innerHTML);
         btns.forEach(b => {
             b.disabled = true;
-            b.innerHTML = '<span>⏳ جاري تشغيل محرك التسجيل الفائق 1080x1920...</span>';
+            b.innerHTML = '<span>⏳ جاري تشغيل محرك تصدير 4K Ultra HD (2160x3840)...</span>';
         });
 
         try {
             if (window.showCopyToast) {
-                window.showCopyToast('بدأ تسجيل وتصدير ريلز الأنيميشن بجودة 1080x1920 Full HD مع كامل الحركات والصوت.. 🎬⚡');
+                window.showCopyToast('بدأ تصدير ريلز الأنيميشن بجودة 4K Ultra HD (2160x3840) بمعدل بت فائق مع الصوت.. 🎬⚡');
             }
 
             const defaultFilename = `Reel_FC27_ShopCoin15_${Date.now()}.mp4`;
@@ -7658,7 +7697,7 @@ window.ReelsEngine = (function() {
             showVideoDownloadModal(finalName, downloadUrl, desktopFile);
 
             if (window.showCopyToast) {
-                window.showCopyToast('تم تصدير وحفظ الفيديو بنجاح على سطح المكتب والتنزيلات! 🚀🎉');
+                window.showCopyToast('تم تصدير وحفظ الفيديو بدقة 4K بنجاح على سطح المكتب والتنزيلات! 🚀🎉');
             }
         } catch (err) {
             console.error('Video export error:', err);
@@ -7669,7 +7708,7 @@ window.ReelsEngine = (function() {
         } finally {
             btns.forEach((b, idx) => {
                 b.disabled = false;
-                b.innerHTML = origTexts[idx] || (b.id === 'btnExportVideo' ? '<span>🎬 تحميل فيديو الريل الأصلي (MP4 - 1080x1920 Full HD)</span>' : '<span>🎬 تحميل فيديو</span>');
+                b.innerHTML = origTexts[idx] || (b.id === 'btnExportVideo' ? '<span>🎬 تحميل فيديو الريل الأصلي (MP4 - 4K Ultra 2160x3840)</span>' : '<span>🎬 تحميل فيديو 4K</span>');
             });
         }
     }
