@@ -3151,6 +3151,139 @@ function renderControls() {
 
 
 
+    // Box & Button Customization Card (Only for templates with info box and CTA button like trio/market_drop, excluded for promo_pack)
+    if (currentTemplate !== 'promo_pack' && currentTemplate !== 'store_promo' && currentTemplate !== 'sbc' && currentTemplate !== 'showcase' && currentTemplate !== 'market_tracker') {
+        html += `
+            <div class="mt-4 p-4 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-3.5">
+                <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                    <span class="text-xs font-black text-slate-900 flex items-center gap-1.5">
+                        <span>🔲</span>
+                        <span>تخصيص أحجام وشكل البوكسات والأزرار</span>
+                    </span>
+                    <button type="button" onclick="resetBoxStyles()" class="text-[10px] text-slate-400 hover:text-slate-700 font-bold px-2 py-0.5 rounded-lg hover:bg-slate-100 transition">إعادة ضبط ↺</button>
+                </div>
+
+                <!-- Box Width Slider -->
+                <div>
+                    <div class="flex justify-between text-[11px] font-bold text-slate-600 mb-1">
+                        <span>📏 عرض الصندوق الخلفي:</span>
+                        <span id="label_boxWidth" class="text-emerald-600 font-mono font-black">${appState.boxWidth || 380}px</span>
+                    </div>
+                    <input type="range" id="slider_boxWidth" min="260" max="440" step="5" value="${appState.boxWidth || 380}" class="w-full accent-emerald-500 cursor-pointer" oninput="setBoxWidth(this.value)">
+                </div>
+
+                <!-- Box Padding Slider -->
+                <div>
+                    <div class="flex justify-between text-[11px] font-bold text-slate-600 mb-1">
+                        <span>↕️ ارتفاع وحشوة الصندوق:</span>
+                        <span id="label_boxPadding" class="text-emerald-600 font-mono font-black">${appState.boxPadding || 12}px</span>
+                    </div>
+                    <input type="range" id="slider_boxPadding" min="6" max="24" step="2" value="${appState.boxPadding || 12}" class="w-full accent-emerald-500 cursor-pointer" oninput="setBoxPadding(this.value)">
+                </div>
+
+                <!-- Box Radius Slider -->
+                <div>
+                    <div class="flex justify-between text-[11px] font-bold text-slate-600 mb-1">
+                        <span>🔘 استدارة الحواف (Border Radius):</span>
+                        <span id="label_boxRadius" class="text-emerald-600 font-mono font-black">${appState.boxRadius || 16}px</span>
+                    </div>
+                    <input type="range" id="slider_boxRadius" min="4" max="32" step="2" value="${appState.boxRadius || 16}" class="w-full accent-emerald-500 cursor-pointer" oninput="setBoxRadius(this.value)">
+                </div>
+
+                <!-- Box Style Buttons -->
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1.5">🎨 ثيم ولون الصندوق:</label>
+                    <div class="grid grid-cols-4 gap-1.5 text-center">
+                        <button type="button" onclick="setBoxStyle('dark')" class="px-2 py-1.5 rounded-xl border text-[10px] font-bold transition ${(appState.boxStyle || 'dark') === 'dark' ? 'bg-slate-900 text-white border-slate-900 shadow-sm' : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'}">🖤 أسود فخم</button>
+                        <button type="button" onclick="setBoxStyle('light')" class="px-2 py-1.5 rounded-xl border text-[10px] font-bold transition ${appState.boxStyle === 'light' ? 'bg-emerald-500 text-white border-emerald-500 shadow-sm' : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'}">🏛️ زجاجي فاتح</button>
+                        <button type="button" onclick="setBoxStyle('neon')" class="px-2 py-1.5 rounded-xl border text-[10px] font-bold transition ${appState.boxStyle === 'neon' ? 'bg-slate-900 text-emerald-400 border-emerald-400 shadow-sm' : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'}">⚡ نيون المتجر</button>
+                        <button type="button" onclick="setBoxStyle('none')" class="px-2 py-1.5 rounded-xl border text-[10px] font-bold transition ${appState.boxStyle === 'none' ? 'bg-slate-900 text-white border-slate-900 shadow-sm' : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'}">🚫 بدون بوكس</button>
+                    </div>
+                </div>
+
+                <!-- Divider: CTA Button Controls -->
+                <div class="pt-3 border-t border-slate-100 space-y-3">
+                    <span class="text-xs font-black text-slate-900 flex items-center gap-1.5">
+                        <span>🔘</span>
+                        <span>تخصيص زر الطلب (CTA Button)</span>
+                    </span>
+                    
+                    <!-- CTA Scale Slider -->
+                    <div>
+                        <div class="flex justify-between text-[11px] font-bold text-slate-600 mb-1">
+                            <span>🔍 حجم وزوم الزر:</span>
+                            <span id="label_ctaScale" class="text-emerald-600 font-mono font-black">${Math.round((appState.ctaScale || 1.0) * 100)}%</span>
+                        </div>
+                        <input type="range" id="slider_ctaScale" min="0.75" max="1.3" step="0.05" value="${appState.ctaScale || 1.0}" class="w-full accent-emerald-500 cursor-pointer" oninput="setCtaScale(this.value)">
+                    </div>
+
+                    <!-- CTA Padding X Slider -->
+                    <div>
+                        <div class="flex justify-between text-[11px] font-bold text-slate-600 mb-1">
+                            <span>↔️ عرض حشوة الزر:</span>
+                            <span id="label_ctaPaddingX" class="text-emerald-600 font-mono font-black">${appState.ctaPaddingX || 24}px</span>
+                        </div>
+                        <input type="range" id="slider_ctaPaddingX" min="14" max="44" step="2" value="${appState.ctaPaddingX || 24}" class="w-full accent-emerald-500 cursor-pointer" oninput="setCtaPaddingX(this.value)">
+                    </div>
+
+                    <!-- CTA Theme Buttons -->
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1.5">🎨 لون زر الطلب:</label>
+                        <div class="grid grid-cols-3 gap-1.5 text-center">
+                            <button type="button" onclick="setCtaTheme('cyan')" class="px-2 py-1.5 rounded-xl border text-[10px] font-bold transition ${(appState.ctaTheme || 'cyan') === 'cyan' ? 'bg-gradient-to-r from-emerald-400 to-cyan-400 text-slate-950 border-emerald-500 font-black shadow-xs' : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'}">💎 تيركواز ونيون</button>
+                            <button type="button" onclick="setCtaTheme('gold')" class="px-2 py-1.5 rounded-xl border text-[10px] font-bold transition ${appState.ctaTheme === 'gold' ? 'bg-gradient-to-r from-amber-300 to-emerald-400 text-slate-950 border-amber-400 font-black shadow-xs' : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'}">👑 ذهبي وملكي</button>
+                            <button type="button" onclick="setCtaTheme('neon_dark')" class="px-2 py-1.5 rounded-xl border text-[10px] font-bold transition ${appState.ctaTheme === 'neon_dark' ? 'bg-slate-950 text-emerald-400 border-emerald-400 font-black shadow-xs' : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'}">⚡ أسود نيون</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    // Background Framing & Position Controls (تحريك وتكبير الخلفية - Excluded for promo_pack)
+    if (currentTemplate !== 'promo_pack') {
+        html += `
+            <div class="mt-4 p-4 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-3.5">
+                <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                    <span class="text-xs font-black text-slate-900 flex items-center gap-1.5">
+                        <span>🖼️</span>
+                        <span>تحريك وتكبير الخلفية (Background Framing)</span>
+                    </span>
+                    <button type="button" onclick="resetBgPosition()" class="text-[10px] text-emerald-600 hover:text-emerald-700 font-black px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition flex items-center gap-1 shadow-2xs">
+                        <span>توسيط ↺</span>
+                    </button>
+                </div>
+
+                <!-- Background Y Position Slider -->
+                <div>
+                    <div class="flex justify-between text-[11px] font-bold text-slate-600 mb-1">
+                        <span>↕️ تحريك الخلفية عمودياً (أعلى / أسفل):</span>
+                        <span id="label_bgPosY" class="text-emerald-600 font-mono font-black">${appState.bgPosY || 0}px</span>
+                    </div>
+                    <input type="range" id="slider_bgPosY" min="-250" max="250" step="5" value="${appState.bgPosY || 0}" class="w-full accent-emerald-500 cursor-pointer" oninput="setBgPosY(this.value)">
+                </div>
+
+                <!-- Background X Position Slider -->
+                <div>
+                    <div class="flex justify-between text-[11px] font-bold text-slate-600 mb-1">
+                        <span>↔️ تحريك الخلفية أفقياً (يمين / يسار):</span>
+                        <span id="label_bgPosX" class="text-emerald-600 font-mono font-black">${appState.bgPosX || 0}px</span>
+                    </div>
+                    <input type="range" id="slider_bgPosX" min="-200" max="200" step="5" value="${appState.bgPosX || 0}" class="w-full accent-emerald-500 cursor-pointer" oninput="setBgPosX(this.value)">
+                </div>
+
+                <!-- Background Zoom/Scale Slider -->
+                <div>
+                    <div class="flex justify-between text-[11px] font-bold text-slate-600 mb-1">
+                        <span>🔍 زوم وتكبير الخلفية (Scale):</span>
+                        <span id="label_bgScale" class="text-emerald-600 font-mono font-black">${Math.round((appState.bgScale || 1.0) * 100)}%</span>
+                    </div>
+                    <input type="range" id="slider_bgScale" min="0.75" max="1.8" step="0.05" value="${appState.bgScale || 1.0}" class="w-full accent-emerald-500 cursor-pointer" oninput="setBgScale(this.value)">
+                </div>
+            </div>
+        `;
+    }
+
     html += `</div>`;
     container.innerHTML = html;
 
