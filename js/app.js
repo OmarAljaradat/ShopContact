@@ -2517,8 +2517,8 @@ function renderControls() {
                 </div>
             </div>
         `;
-    } else {
-        // Single Card Scraper for Market Drop & SBC
+    } else if (currentTemplate === 'market_drop' || currentTemplate === 'potm') {
+        // Single Card Scraper for Market Drop & POTM
         html += `
             <div class="mb-5 p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200 shadow-xs">
                 <div class="flex items-center justify-between mb-2">
@@ -2561,8 +2561,8 @@ function renderControls() {
         `;
     }
 
-    // Background Theme Selector
-    if (currentTemplate !== 'showcase') {
+    // Background Theme Selector (suite_posts only)
+    if (window.currentStudioSuite === 'suite_posts' && currentTemplate !== 'showcase') {
         html += `
             <div class="mb-4">
                 <label class="block text-xs text-slate-600 font-bold mb-1.5">خلفية التصميم:</label>
@@ -5825,45 +5825,46 @@ function renderStoryCta(layerKey, ctaHeadline, ctaSub) {
 // 1. PROMO PACK OPENING TEMPLATE & CONTROLS
 // ==========================================
 
-const PROMO_PACK_PRESETS = [
+const PROMO_POPULAR_STARS = [
     {
-        id: 'pack_85x10',
-        name: 'باكدج 85+ x10 (مبابي وبيلينغهام)',
-        packTitle: 'باكدج نجوم النخبة 85+ x10',
-        packSub: 'فرصة خروج أيقونة أو لاعب حدث خارق 100%',
-        packPrice: '650,000 كوينز',
-        timeRemaining: '⏳ متبقي: 14 ساعة فقط',
-        star1_name: 'مبابي (91)',
-        star1_url: '/api/image-proxy?url=https%3A%2F%2Fgame-assets.fut.gg%2Fcdn-cgi%2Fimage%2Fquality%3D85%2Cformat%3Dauto%2Cwidth%3D600%2F2027%2Ffutgg-player-item-card%2F27-231747.1b49b357729ba7dbf174dc4aa1e8519ce230b98ad399360e364a59f4b3477f07.webp',
-        star2_name: 'بيلينغهام (90)',
-        star2_url: '/api/image-proxy?url=https%3A%2F%2Fgame-assets.fut.gg%2Fcdn-cgi%2Fimage%2Fquality%3D85%2Cformat%3Dauto%2Cwidth%3D600%2F2027%2Ffutgg-player-item-card%2F27-252371.49e4acdf2d78496f4951f41725cd17fb8efb118d99a69ba074ab76fc62d70735.webp',
-        headline: 'باكدج الـ 85+ x10 الخارق نزل بالمتجر! لا تفوت فرصة الأيقون 🎁🔥'
+        label: '🔥 مبابي (91)',
+        name: 'مبابي (91)',
+        imageUrl: '/api/image-proxy?url=https%3A%2F%2Fgame-assets.fut.gg%2Fcdn-cgi%2Fimage%2Fquality%3D85%2Cformat%3Dauto%2Cwidth%3D600%2F2027%2Ffutgg-player-item-card%2F27-231747.1b49b357729ba7dbf174dc4aa1e8519ce230b98ad399360e364a59f4b3477f07.webp'
     },
     {
-        id: 'pack_icon',
-        name: 'باكدج الأيقونة الخارقة (رونالدينيو وزيدان)',
-        packTitle: 'باكدج أساطير اللعبة الأيقونية (Icon Pack)',
-        packSub: 'ضمان خروج أسطورة أو أيقونة تقييم 88+',
-        packPrice: '890,000 كوينز',
-        timeRemaining: '⏳ متبقي: 9 ساعات فقط',
-        star1_name: 'رونالدينيو (93)',
-        star1_url: 'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=600/2027/futgg-player-item-card/27-28130.webp',
-        star2_name: 'زيدان (94)',
-        star2_url: 'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=600/2027/futgg-player-item-card/27-142.webp',
-        headline: 'باكدج الأيقون نزل رسمياً! جهّز كوينزك وجرّب حظك بالأسطورة 👑⚡'
+        label: '👑 بيلينغهام (90)',
+        name: 'بيلينغهام (90)',
+        imageUrl: '/api/image-proxy?url=https%3A%2F%2Fgame-assets.fut.gg%2Fcdn-cgi%2Fimage%2Fquality%3D85%2Cformat%3Dauto%2Cwidth%3D600%2F2027%2Ffutgg-player-item-card%2F27-252371.49e4acdf2d78496f4951f41725cd17fb8efb118d99a69ba074ab76fc62d70735.webp'
     },
     {
-        id: 'pack_meta',
-        name: 'باكدج نجوم الميتا (باركولا وديمبيلي)',
-        packTitle: 'باكدج نجوم السرعة والميتا (Meta Blitz)',
-        packSub: 'فرصة خروج أسرع أجنحة ولاعبي المهارات 5 نجوم',
-        packPrice: '380,000 كوينز',
-        timeRemaining: '⏳ متبقي: 22 ساعة',
-        star1_name: 'باركولا (85)',
-        star1_url: '/api/image-proxy?url=https%3A%2F%2Fgame-assets.fut.gg%2Fcdn-cgi%2Fimage%2Fquality%3D85%2Cformat%3Dauto%2Cwidth%3D600%2F2027%2Ffutgg-player-item-card%2F27-50596300.9b5dfc98a731bb7f8958c0eec6247d0bc94a42cb7d86de10a1c5482685f6b716.webp',
-        star2_name: 'ديمبيلي (86)',
-        star2_url: '/api/image-proxy?url=https%3A%2F%2Fgame-assets.fut.gg%2Fcdn-cgi%2Fimage%2Fquality%3D85%2Cformat%3Dauto%2Cwidth%3D600%2F2027%2Ffutgg-player-item-card%2F27-231443.9d2df34d7d5634b9b794266c24e87ea7079be125a6059c3cdc40db7443a0fe4d.webp',
-        headline: 'باكدج أجنحة الميتا الحارق نزل بالمتجر! قفل جناحك الخارق ⚡🔥'
+        label: '⚡ فينيسيوس (90)',
+        name: 'فينيسيوس (90)',
+        imageUrl: '/api/image-proxy?url=https%3A%2F%2Fgame-assets.fut.gg%2Fcdn-cgi%2Fimage%2Fquality%3D85%2Cformat%3Dauto%2Cwidth%3D600%2F2027%2Ffutgg-player-item-card%2F27-238794.6715e80f49fb5360b92261f8bd984f7178a47066cff3bfcd2c1b7dd57db13fbf.webp'
+    },
+    {
+        label: '🤖 هالاند (91)',
+        name: 'هالاند (91)',
+        imageUrl: '/api/image-proxy?url=https%3A%2F%2Fgame-assets.fut.gg%2Fcdn-cgi%2Fimage%2Fquality%3D85%2Cformat%3Dauto%2Cwidth%3D600%2F2027%2Ffutgg-player-item-card%2F27-239085.5302941a50a927b565c122945958880e418b56c6cf7a76f88179fa24ec510b57.webp'
+    },
+    {
+        label: '🤙 رونالدينيو (93)',
+        name: 'رونالدينيو (93)',
+        imageUrl: 'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=600/2027/futgg-player-item-card/27-28130.webp'
+    },
+    {
+        label: '🪄 زيدان (94)',
+        name: 'زيدان (94)',
+        imageUrl: 'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=600/2027/futgg-player-item-card/27-142.webp'
+    },
+    {
+        label: '🚀 ديمبيلي (86)',
+        name: 'ديمبيلي (86)',
+        imageUrl: '/api/image-proxy?url=https%3A%2F%2Fgame-assets.fut.gg%2Fcdn-cgi%2Fimage%2Fquality%3D85%2Cformat%3Dauto%2Cwidth%3D600%2F2027%2Ffutgg-player-item-card%2F27-231443.9d2df34d7d5634b9b794266c24e87ea7079be125a6059c3cdc40db7443a0fe4d.webp'
+    },
+    {
+        label: '💨 باركولا (85)',
+        name: 'باركولا (85)',
+        imageUrl: '/api/image-proxy?url=https%3A%2F%2Fgame-assets.fut.gg%2Fcdn-cgi%2Fimage%2Fquality%3D85%2Cformat%3Dauto%2Cwidth%3D600%2F2027%2Ffutgg-player-item-card%2F27-50596300.9b5dfc98a731bb7f8958c0eec6247d0bc94a42cb7d86de10a1c5482685f6b716.webp'
     }
 ];
 
@@ -5895,16 +5896,16 @@ function renderPromoPackTemplate() {
                     <!-- Radiance Aura -->
                     <div class="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[380px] h-[280px] bg-[radial-gradient(ellipse_at_center,rgba(245,158,11,0.32)_0%,rgba(16,185,129,0.12)_45%,transparent_70%)] blur-2xl -z-10"></div>
 
-                    <!-- Left Walkout Card (Star 1) -->
-                    <div class="absolute flex flex-col items-center" style="left: 35px; top: 12px; width: 175px; z-index: 10; transform: rotate(-11deg) scale(0.92); filter: drop-shadow(0 16px 28px rgba(0,0,0,0.85));">
+                    <!-- Right Walkout Card (Star 1 - Right) -->
+                    <div class="absolute flex flex-col items-center" style="right: 35px; top: 12px; width: 175px; z-index: 12; transform: rotate(11deg) scale(0.92); filter: drop-shadow(0 16px 28px rgba(0,0,0,0.85));">
                         <img src="${s1Url}" class="w-full object-contain pointer-events-none" alt="">
                         <div class="mt-[-10px] px-2.5 py-0.5 rounded-full bg-slate-950/95 border border-amber-400 text-amber-300 text-[10px] font-black shadow">
                             ⭐ ${appState.star1_name || 'نجم ووك أوت 1'}
                         </div>
                     </div>
 
-                    <!-- Right Walkout Card (Star 2) -->
-                    <div class="absolute flex flex-col items-center" style="right: 35px; top: 12px; width: 175px; z-index: 12; transform: rotate(11deg) scale(0.92); filter: drop-shadow(0 16px 28px rgba(0,0,0,0.85));">
+                    <!-- Left Walkout Card (Star 2 - Left) -->
+                    <div class="absolute flex flex-col items-center" style="left: 35px; top: 12px; width: 175px; z-index: 10; transform: rotate(-11deg) scale(0.92); filter: drop-shadow(0 16px 28px rgba(0,0,0,0.85));">
                         <img src="${s2Url}" class="w-full object-contain pointer-events-none" alt="">
                         <div class="mt-[-10px] px-2.5 py-0.5 rounded-full bg-slate-950/95 border border-amber-400 text-amber-300 text-[10px] font-black shadow">
                             ⭐ ${appState.star2_name || 'نجم ووك أوت 2'}
@@ -5947,73 +5948,183 @@ function renderPromoPackTemplate() {
 }
 
 function renderPromoPackControls() {
+    const defaultS1 = TEMPLATES.promo_pack.defaultState.star1_url;
+    const defaultS2 = TEMPLATES.promo_pack.defaultState.star2_url;
+    const currentS1 = appState.star1_url || defaultS1;
+    const currentS2 = appState.star2_url || defaultS2;
+    const currentPackImg = appState.packImageUrl || 'assets/fc27_jumbo_gold_pack.png';
+
     return `
         <div class="space-y-4">
-            <!-- 1. Background Selection -->
-            ${renderStoryBackgroundControls()}
+            <!-- 1. Pack Details & Image -->
+            <div class="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs space-y-3">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-black text-slate-800 flex items-center gap-1.5">
+                        <span>🎁</span>
+                        <span>تفاصيل باكدج المتجر والصورة:</span>
+                    </span>
+                    <span class="text-[10px] font-bold text-amber-600 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
+                        باك المتجر الرسمي
+                    </span>
+                </div>
 
-            <!-- 2. 1-Click Presets -->
-            <div class="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs space-y-2">
-                <span class="text-xs font-black text-slate-800 block">⚡ اختر نوع باكدج جاهز بنقرة واحدة:</span>
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-1.5">
-                    ${PROMO_PACK_PRESETS.map(p => `
-                        <button type="button" onclick="applyPromoPackPreset('${p.id}')" class="p-2 rounded-xl text-right border transition bg-slate-50 border-slate-200 hover:border-emerald-400 text-slate-800 text-xs font-bold">
-                            ${p.name}
+                <!-- Pack Name -->
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-700 mb-1">اسم الباكدج بالمتجر:</label>
+                    <input type="text" value="${appState.packTitle || ''}" placeholder="اكتب اسم الباكدج (مثال: باكدج 85+ x10، باكدج الأيقونة...)" oninput="appState.packTitle = this.value; renderCanvas();" class="w-full px-3 py-2 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500 focus:bg-white transition">
+                </div>
+
+                <!-- Pack Image Customizer -->
+                <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                    <label class="block text-[11px] font-bold text-slate-700">صورة الباكدج:</label>
+                    <div class="flex items-center gap-2">
+                        <div class="w-12 h-12 shrink-0 rounded-lg bg-white border border-slate-200 p-1 flex items-center justify-center shadow-xs">
+                            <img src="${currentPackImg}" class="max-w-full max-h-full object-contain" alt="Pack Preview">
+                        </div>
+                        <div class="flex-1 flex flex-col gap-1.5">
+                            <input type="text" value="${appState.packImageUrl || ''}" placeholder="رابط صورة الباكدج أو ارفع سكرين شوت من المتجر" oninput="appState.packImageUrl = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-900 text-[11px] font-mono outline-none focus:border-emerald-500">
+                            <div class="flex items-center gap-1.5">
+                                <label class="flex-1 px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 text-emerald-800 text-[10.5px] font-bold cursor-pointer transition flex items-center justify-center gap-1 shadow-2xs">
+                                    <span>📁 رفع صورة الباك من جهازك</span>
+                                    <input type="file" accept="image/*" class="hidden" onchange="handlePromoPackFileUpload('pack', this)">
+                                </label>
+                                <button type="button" onclick="appState.packImageUrl = 'assets/fc27_jumbo_gold_pack.png'; renderControls(); renderCanvas();" class="px-2 py-1 rounded-lg bg-white hover:bg-slate-100 border border-slate-200 text-slate-600 text-[10px] font-bold transition shadow-2xs">
+                                    🔄 الافتراضي
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Price & Timer -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-700 mb-1">سعر الباكدج بالكوينز:</label>
+                        <input type="text" value="${appState.packPrice || ''}" placeholder="مثال: 650,000 كوينز" oninput="appState.packPrice = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500 focus:bg-white transition">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-700 mb-1">العداد الزمني المتبقي:</label>
+                        <input type="text" value="${appState.timeRemaining || ''}" placeholder="مثال: ⏳ متبقي: 14 ساعة فقط" oninput="appState.timeRemaining = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500 focus:bg-white transition">
+                    </div>
+                </div>
+
+                <!-- Sub Description -->
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-700 mb-1">الوصف الفرعي للباكدج:</label>
+                    <input type="text" value="${appState.packSub || ''}" placeholder="مثال: فرصة خروج أيقونة أو لاعب حدث خارق 100%" oninput="appState.packSub = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500 focus:bg-white transition">
+                </div>
+            </div>
+
+            <!-- 2. Walkout Star Cards (Direct FUTBIN / FUT.GG Fetch) -->
+            <div class="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs space-y-3.5">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-black text-slate-800 flex items-center gap-1.5">
+                        <span>⭐</span>
+                        <span>بطاقات الووك أوت الخارجة من الباكدج (FUTBIN / FUT.GG):</span>
+                    </span>
+                    <span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                        سحب فوري ⚡
+                    </span>
+                </div>
+
+                <!-- Star 1 (Right) -->
+                <div class="p-3 rounded-xl bg-slate-50/80 border border-slate-200 space-y-2.5">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-1.5">
+                            <span class="w-5 h-5 rounded-full bg-amber-500 text-slate-950 font-black text-[10px] flex items-center justify-center">1</span>
+                            <span class="text-xs font-black text-slate-800">النجم الأول (على اليمين):</span>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <img src="${currentS1}" class="w-6 h-8 object-contain rounded border border-slate-200 bg-white" alt="">
+                            <span class="text-[10.5px] font-black text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full" id="promo_star_badge_1">
+                                ${appState.star1_name || 'مبابي (91)'}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Search & Fetch Input -->
+                    <div class="flex gap-1.5">
+                        <input type="text" id="input_promo_star_1" placeholder="ضع رابط اللاعب من FUTBIN أو FUT.GG أو اسمه (مثال: مبابي أو 231747)" class="flex-1 px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-900 text-[11px] outline-none focus:border-emerald-600 transition shadow-2xs">
+                        <button id="btn_fetch_promo_star_1" type="button" onclick="fetchPromoPackStar(1)" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[11px] transition shrink-0 flex items-center gap-1 shadow-xs cursor-pointer">
+                            <span>⚡ سحب</span>
                         </button>
-                    `).join('')}
-                </div>
-            </div>
+                        <label class="px-2.5 py-1.5 rounded-lg bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-[11px] font-bold cursor-pointer transition shrink-0 flex items-center gap-1 shadow-2xs" title="رفع صورة كرت">
+                            <span>📁 رفع</span>
+                            <input type="file" accept="image/*" class="hidden" onchange="handlePromoPackFileUpload('star1', this)">
+                        </label>
+                    </div>
 
-            <!-- 3. Pack Details & Urgency Timer -->
-            <div class="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs space-y-3">
-                <span class="text-xs font-black text-slate-800 block">🎁 تفاصيل الباكدج والعداد الزمني:</span>
-                
-                <div class="grid grid-cols-2 gap-2">
+                    <!-- Quick Popular Stars Chips -->
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-600 mb-1">اسم الباكدج:</label>
-                        <input type="text" value="${appState.packTitle || ''}" oninput="appState.packTitle = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+                        <div class="text-[10px] text-slate-500 font-bold mb-1 flex items-center gap-1">
+                            <span>🌟 اختيار سريع لنجم النخبة:</span>
+                        </div>
+                        <div class="flex flex-wrap gap-1">
+                            ${PROMO_POPULAR_STARS.map(s => `
+                                <button type="button" onclick="setPromoPackStar(1, '${s.imageUrl}', '${s.name}')" class="px-2 py-0.5 rounded-md bg-white hover:bg-emerald-600 hover:text-white border border-slate-200 text-[10px] font-bold text-slate-700 transition shadow-2xs cursor-pointer">
+                                    ${s.label}
+                                </button>
+                            `).join('')}
+                        </div>
                     </div>
+
+                    <!-- Name override input -->
+                    <div class="pt-1.5 border-t border-slate-200/70 flex items-center gap-2">
+                        <label class="text-[10px] font-bold text-slate-600 shrink-0">اسم النجم المعروض:</label>
+                        <input type="text" value="${appState.star1_name || ''}" placeholder="اسم النجم" oninput="appState.star1_name = this.value; renderCanvas();" class="flex-1 px-2 py-1 rounded-md bg-white border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+                    </div>
+                </div>
+
+                <!-- Star 2 (Left) -->
+                <div class="p-3 rounded-xl bg-slate-50/80 border border-slate-200 space-y-2.5">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-1.5">
+                            <span class="w-5 h-5 rounded-full bg-amber-500 text-slate-950 font-black text-[10px] flex items-center justify-center">2</span>
+                            <span class="text-xs font-black text-slate-800">النجم الثاني (على اليسار):</span>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <img src="${currentS2}" class="w-6 h-8 object-contain rounded border border-slate-200 bg-white" alt="">
+                            <span class="text-[10.5px] font-black text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full" id="promo_star_badge_2">
+                                ${appState.star2_name || 'بيلينغهام (90)'}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Search & Fetch Input -->
+                    <div class="flex gap-1.5">
+                        <input type="text" id="input_promo_star_2" placeholder="ضع رابط اللاعب من FUTBIN أو FUT.GG أو اسمه (مثال: بيلينغهام أو 252371)" class="flex-1 px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-900 text-[11px] outline-none focus:border-emerald-600 transition shadow-2xs">
+                        <button id="btn_fetch_promo_star_2" type="button" onclick="fetchPromoPackStar(2)" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[11px] transition shrink-0 flex items-center gap-1 shadow-xs cursor-pointer">
+                            <span>⚡ سحب</span>
+                        </button>
+                        <label class="px-2.5 py-1.5 rounded-lg bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-[11px] font-bold cursor-pointer transition shrink-0 flex items-center gap-1 shadow-2xs" title="رفع صورة كرت">
+                            <span>📁 رفع</span>
+                            <input type="file" accept="image/*" class="hidden" onchange="handlePromoPackFileUpload('star2', this)">
+                        </label>
+                    </div>
+
+                    <!-- Quick Popular Stars Chips -->
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-600 mb-1">سعر الباكدج بالكوينز:</label>
-                        <input type="text" value="${appState.packPrice || ''}" oninput="appState.packPrice = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+                        <div class="text-[10px] text-slate-500 font-bold mb-1 flex items-center gap-1">
+                            <span>🌟 اختيار سريع لنجم النخبة:</span>
+                        </div>
+                        <div class="flex flex-wrap gap-1">
+                            ${PROMO_POPULAR_STARS.map(s => `
+                                <button type="button" onclick="setPromoPackStar(2, '${s.imageUrl}', '${s.name}')" class="px-2 py-0.5 rounded-md bg-white hover:bg-emerald-600 hover:text-white border border-slate-200 text-[10px] font-bold text-slate-700 transition shadow-2xs cursor-pointer">
+                                    ${s.label}
+                                </button>
+                            `).join('')}
+                        </div>
                     </div>
-                </div>
 
-                <div>
-                    <label class="block text-[11px] font-bold text-slate-600 mb-1">الوصف الفرعي للباكدج:</label>
-                    <input type="text" value="${appState.packSub || ''}" oninput="appState.packSub = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
-                </div>
-
-                <div>
-                    <label class="block text-[11px] font-bold text-slate-600 mb-1">العداد الزمني المتبقي:</label>
-                    <input type="text" value="${appState.timeRemaining || ''}" oninput="appState.timeRemaining = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
-                </div>
-            </div>
-
-            <!-- 4. Walkout Star Cards -->
-            <div class="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs space-y-3">
-                <span class="text-xs font-black text-slate-800 block">⭐ بطاقات الووك أوت الخارجة من الباكدج:</span>
-                
-                <!-- Star 1 -->
-                <div class="space-y-1.5 pb-2 border-b border-slate-100">
-                    <label class="block text-[11px] font-bold text-slate-700">النجم الأول (اليمين):</label>
-                    <div class="grid grid-cols-2 gap-2">
-                        <input type="text" value="${appState.star1_name || ''}" placeholder="اسم النجم" oninput="appState.star1_name = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
-                        <input type="text" value="${appState.star1_url || ''}" placeholder="رابط الكرت من FUT.GG" oninput="appState.star1_url = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-mono outline-none focus:border-emerald-500">
-                    </div>
-                </div>
-
-                <!-- Star 2 -->
-                <div class="space-y-1.5">
-                    <label class="block text-[11px] font-bold text-slate-700">النجم الثاني (اليسار):</label>
-                    <div class="grid grid-cols-2 gap-2">
-                        <input type="text" value="${appState.star2_name || ''}" placeholder="اسم النجم" oninput="appState.star2_name = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
-                        <input type="text" value="${appState.star2_url || ''}" placeholder="رابط الكرت من FUT.GG" oninput="appState.star2_url = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-mono outline-none focus:border-emerald-500">
+                    <!-- Name override input -->
+                    <div class="pt-1.5 border-t border-slate-200/70 flex items-center gap-2">
+                        <label class="text-[10px] font-bold text-slate-600 shrink-0">اسم النجم المعروض:</label>
+                        <input type="text" value="${appState.star2_name || ''}" placeholder="اسم النجم" oninput="appState.star2_name = this.value; renderCanvas();" class="flex-1 px-2 py-1 rounded-md bg-white border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
                     </div>
                 </div>
             </div>
 
-            <!-- 5. Headline & CTA Texts -->
+            <!-- 3. Headline & CTA Texts -->
             <div class="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs space-y-3">
                 <span class="text-xs font-black text-slate-800 block">📝 نصوص الإعلان والشحن:</span>
                 <div>
@@ -6028,20 +6139,88 @@ function renderPromoPackControls() {
                     <label class="block text-[11px] font-bold text-slate-600 mb-1">الوصف التحفيزي:</label>
                     <input type="text" value="${appState.subheadline || ''}" oninput="appState.subheadline = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
                 </div>
+                <div class="pt-2 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1">نص النداء للطلب (CTA):</label>
+                        <input type="text" value="${appState.ctaHeadline || ''}" oninput="appState.ctaHeadline = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1">وصف الطلب / الحساب:</label>
+                        <input type="text" value="${appState.ctaSub || ''}" oninput="appState.ctaSub = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+                    </div>
+                </div>
             </div>
         </div>
     `;
 }
 
-window.applyPromoPackPreset = function(presetId) {
-    const p = PROMO_PACK_PRESETS.find(x => x.id === presetId);
-    if (!p) return;
-    Object.keys(p).forEach(k => {
-        if (k !== 'id' && k !== 'name') appState[k] = p[k];
-    });
+window.fetchPromoPackStar = async function(starIndex) {
+    const input = document.getElementById(`input_promo_star_${starIndex}`);
+    if (!input || !input.value.trim()) {
+        alert('يرجى وضع رابط اللاعب من FUTBIN أو FUT.GG أو اسمه أو رقم ID اللاعب');
+        return;
+    }
+    const val = input.value.trim();
+    const btn = document.getElementById(`btn_fetch_promo_star_${starIndex}`);
+    const originalText = btn ? btn.innerHTML : '';
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<span>جاري...</span> <span class="animate-spin">⏳</span>';
+    }
+
+    try {
+        const res = await fetch(`/api/fetch-futgg?url=${encodeURIComponent(val)}`);
+        if (!res.ok) {
+            throw new Error(`استجابة غير صالحة من السيرفر (${res.status})`);
+        }
+        const data = await res.json();
+        if (data.success && data.cardImage) {
+            const displayName = `${data.playerName}${data.rating ? ' (' + data.rating + ')' : ''}`;
+            window.setPromoPackStar(starIndex, data.cardImage, displayName);
+            input.value = '';
+            if (window.showCopyToast) window.showCopyToast(`تم جلب كرت ${displayName} بنجاح! ⚡`);
+        } else {
+            alert(data.error || 'تعذر سحب كرت اللاعب. تأكد من صحة الرابط أو اسم اللاعب');
+        }
+    } catch (err) {
+        alert('حدث خطأ أثناء سحب الكرت: ' + err.message + '\nيمكنك أيضاً رفع صورة الكرت مباشرة 📁');
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
+    }
+};
+
+window.setPromoPackStar = function(starIndex, imageUrl, name) {
+    if (starIndex === 1) {
+        appState.star1_url = imageUrl;
+        appState.star1_name = name;
+    } else if (starIndex === 2) {
+        appState.star2_url = imageUrl;
+        appState.star2_name = name;
+    }
     renderControls();
     renderCanvas();
-    if (window.showCopyToast) window.showCopyToast(`تم تطبيق ${p.name} 🎁✨`);
+};
+
+window.handlePromoPackFileUpload = function(type, fileInput) {
+    if (!fileInput || !fileInput.files || !fileInput.files[0]) return;
+    const file = fileInput.files[0];
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        if (type === 'pack') {
+            appState.packImageUrl = e.target.result;
+            renderControls();
+            renderCanvas();
+            if (window.showCopyToast) window.showCopyToast('تم تحديث صورة الباكدج بنجاح! 🎁');
+        } else if (type === 'star1') {
+            window.setPromoPackStar(1, e.target.result, 'كرت مخصص 1 📁');
+        } else if (type === 'star2') {
+            window.setPromoPackStar(2, e.target.result, 'كرت مخصص 2 📁');
+        }
+    };
+    reader.readAsDataURL(file);
 };
 
 // ==========================================
