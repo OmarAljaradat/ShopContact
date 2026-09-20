@@ -167,7 +167,7 @@ function getDefaultLayers() {
     } else if (currentTemplate === 'player_review') {
         return {
             layer_review_header: { visible: true, x: null, y: 30, scale: 0.95, label: 'ترويسة مراجعة الكرت' },
-            layer_review_body: { visible: true, x: null, y: 165, scale: 0.95, label: 'بطاقة تقييم الـ 50 مباراة والإيجابيات' },
+            layer_review_body: { visible: true, x: null, y: 165, scale: 0.95, label: 'بطاقة مراجعة الكرت والإيجابيات' },
             layer_review_cta: { visible: true, x: null, y: 690, scale: 0.95, label: 'بانر شحن كوينز الكرت (CTA)' }
         };
     } else if (currentTemplate === 'custom_story') {
@@ -9824,149 +9824,354 @@ window.applyBudgetBeastPreset = function(presetId) {
 
 
 // ============================================================================
-// 13. PLAYER CARD VERDICT & REVIEW TEMPLATE (🔍 مراجعة الكرت بعد 50 مباراة)
+// 13. PLAYER CARD VERDICT & REVIEW TEMPLATE (⭐ مراجعة وتقييم اللاعبين)
 // ============================================================================
 
 const PLAYER_REVIEW_PRESETS = [
     {
         id: 'review_mbappe',
-        name: 'مراجعة كيليان مبابي 91 ST (تقييم 9.8/10)',
-        playerName: 'كيليان مبابي (91 ST)',
-        playerPrice: '1,850,000 كوينز',
-        gamesPlayed: '50 مباراة فوت تشامبيونز',
-        goalsStats: '68 هدف ⚽ • 24 أسيست 👟',
-        pro1: '🟢 سرعة انفجارية مستحيل اللحاق به',
-        pro2: '🟢 إنهاء قاتل بالقدمين من أي زاوية',
-        con1: '🔴 سعره مرتفع ويحتاج ميزانية مخصصة',
+        name: '🔥 مبابي (91 ST)',
+        playerName: 'كيليان مبابي • 91 ST',
+        playerPrice: '2,450,000 كوينز',
+        playerCardUrl: 'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=600/2027/futgg-player-item-card/27-231747.1b49b357729ba7dbf174dc4aa1e8519ce230b98ad399360e364a59f4b3477f07.webp',
+        skillMoves: '5★ مهارات • 4★ قدم ضعيفة',
+        keyStats: '⚡ 97 سرعة • 🎯 90 تسديد • 🪄 92 مراوغة',
+        pro1: 'سرعة انفجارية خارقة تكسر أقوى خطوط الدفاع ⚡',
+        pro2: 'إنهاء قاتل بكلتا القدمين من أصعب الزوايا 🎯',
+        con1: 'سعره مرتفع ويحتاج ميزانية كوينز مخصصة ⚠️',
         finalScore: '9.8 / 10',
-        headline: 'مراجعة مبابي بعد 50 مباراة فوت: هل يستاهل كوينزه؟ 🤔🔥'
+        verdictTitle: 'الحكم: كرت ميتا حاسم يضمن لك الفوز بالويكند ويستاهل كل كوينز! 👑',
+        headline: 'مراجعة كرت كيليان مبابي: هل يستحق الشراء بالكوينز؟ 🤔🔥'
+    },
+    {
+        id: 'review_vini',
+        name: '⚡ فينيسيوس (90 LW)',
+        playerName: 'فينيسيوس جونيور • 90 LW',
+        playerPrice: '980,000 كوينز',
+        playerCardUrl: 'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=600/2027/futgg-player-item-card/27-238794.6715e80f49fb5360b92261f8bd984f7178a47066cff3bfcd2c1b7dd57db13fbf.webp',
+        skillMoves: '5★ مهارات • 4★ قدم ضعيفة',
+        keyStats: '⚡ 95 سرعة • 🪄 91 مراوغة • 🎯 84 تسديد',
+        pro1: 'سلاسة استثنائية بالمراوغة في المساحات الضيقة 🪄',
+        pro2: 'انطلاقات سريعة لا يمكن إيقافها على الجناح ⚡',
+        con1: 'القوة البدنية والالتحامات متوسطة نسبياً ⚠️',
+        finalScore: '9.5 / 10',
+        verdictTitle: 'الحكم: أفضل جناح مهاري باللعبة وسعره ممتاز مقارنة بأدائه! 👑',
+        headline: 'مراجعة فينيسيوس جونيور 90: الجناح المهاري الأخطر باللعبة! ⚡🔥'
+    },
+    {
+        id: 'review_bellingham',
+        name: '👑 بيلينغهام (90 CAM)',
+        playerName: 'جود بيلينغهام • 90 CAM',
+        playerPrice: '750,000 كوينز',
+        playerCardUrl: 'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=600/2027/futgg-player-item-card/27-252371.49e4acdf2d78496f4951f41725cd17fb8efb118d99a69ba074ab76fc62d70735.webp',
+        skillMoves: '4★ مهارات • 4★ قدم ضعيفة',
+        keyStats: '🥊 88 بدنية • 🎯 87 تسديد • 🧠 88 تمرير',
+        pro1: 'قوة بدنية وهيمنة شاملة في منتصف الملعب (Box-to-Box) 🥊',
+        pro2: 'مساندة هجومية ذكية وإنهاء متقن أمام المرمى 🎯',
+        con1: 'يحتاج كرت تناغم كيميائي لزيادة سرعة الانطلاق ⚠️',
+        finalScore: '9.4 / 10',
+        verdictTitle: 'الحكم: أفضل لاعب وسط متكامل يربط فريقك ويمنحك التوازن! 👑',
+        headline: 'مراجعة بيلينغهام 90: محرك الوسط الشامل في الفوت! 👑⚡'
     },
     {
         id: 'review_vvd',
-        name: 'مراجعة فيرجيل فان دايك 89 CB (تقييم 9.6/10)',
-        playerName: 'فيرجيل فان دايك (89 CB)',
+        name: '🛡️ فان دايك (89 CB)',
+        playerName: 'فيرجيل فان دايك • 89 CB',
         playerPrice: '320,000 كوينز',
-        gamesPlayed: '50 مباراة في الديفيجن رايفلز',
-        goalsStats: 'افتكاك 94% 🛡️ • 0 أخطاء فادحة',
-        pro1: '🟢 جدار دفاعي يقطع كل الكرات العرضية',
-        pro2: '🟢 قوة بدنية خارقة تفتك الكرة بدون أخطاء',
-        con1: '🔴 يحتاج تسريع كيميائي بالـ Shadow',
+        playerCardUrl: 'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=600/2027/futgg-player-item-card/27-203376.17f57c8f215fff6f4edef3889583cc487fefce9b4e7ce1eeba235d634b7424b8.webp',
+        skillMoves: '2★ مهارات • 3★ قدم ضعيفة',
+        keyStats: '🛡️ 89 دفاع • 🥊 86 بدنية • 📏 193 سم',
+        pro1: 'جدار دفاعي يقطع كل الكرات الهوائية والأرضية 🛡️',
+        pro2: 'قوة بدنية خارقة تفتك الكرات بدون ارتكاب أخطاء 🥊',
+        con1: 'التسارع بطيء ويحتاج كرت Shadow لتعويض السرعة ⚠️',
         finalScore: '9.6 / 10',
-        headline: 'مراجعة فان دايك بعد 50 مباراة: هل هو المدافع الأقوى؟ 🛡️⚡'
+        verdictTitle: 'الحكم: صخرة الدفاع رقم 1 التي لا غنى عنها في الفوت! 🛡️',
+        headline: 'مراجعة فان دايك 89: هل هو المدافع الأقوى الذي لا يُقهر؟ 🛡️🔥'
     }
 ];
 
 function renderPlayerReviewTemplate() {
-    const isLightBg = (window.MARKET_BG_THEMES[appState.bgTheme || 'store']?.isLight) ?? true;
     const def = TEMPLATES.player_review.defaultState;
     const cardUrl = appState.playerCardUrl || def.playerCardUrl;
 
     return `
-        ${getStoryBackgroundHtml(appState.bgTheme || 'store', appState.bgLighting || 'bright')}
-
-        <!-- Layer 1: Header -->
-        ${renderStoryHeader('layer_review_header', appState.badgeText || def.badgeText, appState.headline || def.headline, appState.subheadline || def.subheadline, isLightBg)}
-
-        <!-- Layer 2: Player Review Card & Verdict Body -->
-        ${isLayerVisible('layer_review_body') ? `
-        <div id="layer_review_body" class="draggable-layer w-full text-center flex flex-col items-center" style="${getLayerStyle('layer_review_body', 165)}; width: 510px; z-index: 25;">
-            <div class="layer-scale-wrapper w-full flex flex-col items-center gap-2.5" style="transform: scale(${getLayerScale('layer_review_body')});">
-                
-                <!-- Main Review Slate -->
-                <div class="w-full max-w-[480px] rounded-3xl p-4 shadow-2xl flex items-center justify-between gap-3" style="background: linear-gradient(135deg, #0e1627 0%, #080d17 100%); border: 2px solid #25395c;">
-                    
-                    <!-- Right: Large Player Card -->
-                    <div class="w-[170px] shrink-0 flex flex-col items-center">
-                        <div class="relative w-full h-[180px] flex items-center justify-center">
-                            <img src="${cardUrl}" class="max-h-full max-w-full object-contain drop-shadow" alt="">
-                        </div>
-                        <span class="text-xs font-black text-white block mt-1">${appState.playerName || def.playerName}</span>
-                        <span class="text-[10.5px] font-mono text-amber-300 font-black block mt-0.5">${appState.playerPrice || def.playerPrice}</span>
-                    </div>
-
-                    <!-- Left: Performance & Verdict Details -->
-                    <div class="flex-1 text-right space-y-2">
-                        
-                        <!-- Games & Stats Pill -->
-                        <div class="p-2 rounded-xl bg-slate-950/90 border border-slate-800 space-y-0.5">
-                            <span class="text-[10px] text-slate-400 block font-bold">🎮 ${appState.gamesPlayed || def.gamesPlayed}</span>
-                            <span class="text-xs font-black text-emerald-400 block">${appState.goalsStats || def.goalsStats}</span>
-                        </div>
-
-                        <!-- Pros & Cons List -->
-                        <div class="space-y-1 text-[10px] font-bold">
-                            <div class="text-emerald-300">${appState.pro1 || def.pro1}</div>
-                            <div class="text-emerald-300">${appState.pro2 || def.pro2}</div>
-                            <div class="text-red-400">${appState.con1 || def.con1}</div>
-                        </div>
-
-                        <!-- Final Score Stamp -->
-                        <div class="p-2 rounded-xl bg-gradient-to-r from-amber-500/20 via-yellow-500/20 to-amber-500/20 border border-amber-400 flex items-center justify-between px-3">
-                            <span class="text-[10.5px] font-black text-slate-300">التقييم النهائي:</span>
-                            <span class="text-xl font-black font-mono text-amber-300">${appState.finalScore || def.finalScore} ⭐</span>
-                        </div>
-                    </div>
+        <div class="relative w-full h-full overflow-hidden select-none flex flex-col justify-between"
+             style="background-image: url('assets/shopcoin_story_official_bg.jpg'); background-size: cover; background-position: center; padding: 22px 18px 18px 18px;">
+            
+            <!-- 1. Top Header -->
+            <div class="text-center w-full flex flex-col items-center gap-1.5 relative z-10">
+                <div class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-[10px] font-black shadow-xs"
+                     style="background: rgba(8, 14, 24, 0.9); border: 1.5px solid rgba(0, 255, 163, 0.45); color: #00ffa3; box-shadow: 0 4px 12px rgba(0,0,0,0.12);">
+                    <span>⭐</span>
+                    <span>${appState.badgeText || def.badgeText}</span>
                 </div>
-
-                <!-- Instant Purchase Capsule -->
-                <div class="w-full max-w-[480px] rounded-2xl p-2 text-center" style="background: #090e18; border: 1.5px solid #10b981;">
-                    <span class="text-xs font-black text-emerald-400">
-                        💰 الكرت يستاهل كل كوينز! شحن ميزانيته متوفر فوراً لناديك بأفضل سعر
-                    </span>
+                <div class="text-[21px] font-black text-slate-950 leading-tight tracking-tight" style="text-shadow: 0 1px 3px rgba(255,255,255,0.9);">
+                    ${appState.headline || def.headline}
+                </div>
+                <div class="text-[10.5px] font-bold text-slate-800 px-3 py-0.5 rounded-full shadow-2xs" 
+                     style="background: rgba(255, 255, 255, 0.88); border: 1px solid rgba(0, 255, 163, 0.4); backdrop-filter: blur(8px);">
+                    ${appState.subheadline || def.subheadline}
                 </div>
             </div>
-            ${renderLayerToolbar('layer_review_body')}
-        </div>
-        ` : ''}
 
-        <!-- Layer 3: CTA -->
-        ${renderStoryCta('layer_review_cta', appState.ctaHeadline || def.ctaHeadline, appState.ctaSub || def.ctaSub)}
+            <!-- 2. Main Player Review Glass Card (البطاقة المركزية الفاخرة) -->
+            <div class="w-full rounded-3xl p-4 shadow-2xl flex flex-col gap-3 relative z-10 my-auto"
+                 style="background: linear-gradient(135deg, rgba(14, 21, 33, 0.94) 0%, rgba(9, 14, 24, 0.98) 100%); border: 1.5px solid rgba(0, 255, 163, 0.35); box-shadow: 0 8px 32px rgba(0,0,0,0.35); backdrop-filter: blur(14px);">
+                
+                <!-- Upper Row: Player Card & Core Ratings -->
+                <div class="flex items-center justify-between gap-3 pb-3 border-b border-white/10">
+                    <!-- Right: Large Player Card -->
+                    <div class="w-[145px] shrink-0 flex flex-col items-center">
+                        <div class="relative w-full h-[170px] flex items-center justify-center filter drop-shadow-[0_4px_16px_rgba(0,255,163,0.25)]">
+                            <img src="${cardUrl}" class="max-h-full max-w-full object-contain" alt="">
+                        </div>
+                        <span class="text-[10.5px] font-black text-white block mt-1 tracking-tight text-center leading-tight"><bdi>${appState.playerName || def.playerName}</bdi></span>
+                        <div class="mt-1 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-950/80 border border-amber-400 text-amber-300 font-mono font-black text-[11px] shadow-xs">
+                            <img src="assets/fc-coin.webp" class="w-3.5 h-3.5 object-contain" alt="c">
+                            <bdi>${appState.playerPrice || def.playerPrice}</bdi>
+                        </div>
+                    </div>
+
+                    <!-- Left: Overall Rating & Skills -->
+                    <div class="flex-1 min-w-0 flex flex-col gap-2 text-right">
+                        <!-- Luxury Gold Score Badge -->
+                        <div class="p-2 rounded-2xl flex flex-col items-center justify-center text-center shadow-lg"
+                             style="background: linear-gradient(135deg, rgba(255, 215, 0, 0.18) 0%, rgba(255, 170, 0, 0.22) 100%); border: 1.5px solid #ffd700; box-shadow: 0 0 20px rgba(255,215,0,0.25);">
+                            <span class="text-[9.5px] font-black text-amber-200">التقييم الإجمالي للكرت</span>
+                            <div dir="ltr" class="text-2xl font-black font-mono text-[#ffd700] flex items-center justify-center gap-1.5 mt-0.5" style="text-shadow: 0 0 12px rgba(255,215,0,0.6);">
+                                <span class="text-lg">⭐</span>
+                                <span>${appState.finalScore || def.finalScore}</span>
+                            </div>
+                        </div>
+
+                        <!-- Skill Moves & Weak Foot -->
+                        <div class="p-1.5 px-2 rounded-xl bg-slate-900/90 border border-slate-700/80 flex items-center justify-between">
+                            <span class="text-[9.5px] font-bold text-slate-400">المهارات والقدم:</span>
+                            <span class="text-[10px] font-black text-emerald-300 font-mono">${appState.skillMoves || def.skillMoves}</span>
+                        </div>
+
+                        <!-- Key Performance Traits -->
+                        <div class="p-1.5 px-2 rounded-xl bg-slate-900/90 border border-slate-700/80 flex flex-col gap-0.5">
+                            <span class="text-[9px] font-bold text-slate-400">أبرز الطاقات:</span>
+                            <span class="text-[9.5px] font-black text-white leading-snug tracking-tight">${appState.keyStats || def.keyStats}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Middle: Pros & Cons (الإيجابيات والسلبيات) -->
+                <div class="flex flex-col gap-1.5 text-[11px] font-bold text-right pt-0.5">
+                    <div class="flex items-start gap-2 bg-emerald-950/40 border border-emerald-500/20 p-2 rounded-xl">
+                        <span class="text-emerald-400 text-xs font-black shrink-0">🟢</span>
+                        <span class="text-emerald-100">${appState.pro1 || def.pro1}</span>
+                    </div>
+                    <div class="flex items-start gap-2 bg-emerald-950/40 border border-emerald-500/20 p-2 rounded-xl">
+                        <span class="text-emerald-400 text-xs font-black shrink-0">🟢</span>
+                        <span class="text-emerald-100">${appState.pro2 || def.pro2}</span>
+                    </div>
+                    <div class="flex items-start gap-2 bg-red-950/40 border border-red-500/20 p-2 rounded-xl">
+                        <span class="text-red-400 text-xs font-black shrink-0">🔴</span>
+                        <span class="text-red-100">${appState.con1 || def.con1}</span>
+                    </div>
+                </div>
+
+                <!-- Lower: Store Verdict (حكم الشوب النهائي) -->
+                <div class="w-full p-2.5 rounded-xl text-center shadow-md flex items-center justify-center gap-1.5"
+                     style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.25) 0%, rgba(16, 185, 129, 0.25) 100%); border: 1.5px solid rgba(250, 204, 21, 0.5);">
+                    <span class="text-[11.5px] font-black text-amber-200 leading-snug text-center">${appState.verdictTitle || def.verdictTitle}</span>
+                </div>
+            </div>
+
+            <!-- 3. Store Coins Offer & Guarantee Bar -->
+            <div class="w-full px-3 py-2 rounded-2xl flex items-center justify-between shadow-sm relative z-10"
+                 style="background: linear-gradient(135deg, rgba(12, 19, 31, 0.92) 0%, rgba(7, 11, 18, 0.96) 100%); border: 1.5px solid rgba(0, 255, 163, 0.3); backdrop-filter: blur(12px);">
+                <div class="text-[10px] font-black text-white flex items-center gap-1.5">
+                    <span>💰</span>
+                    <span>${appState.offerText || def.offerText}</span>
+                </div>
+                <div class="text-[9.5px] font-extrabold text-emerald-300 flex items-center gap-1 shrink-0 mr-1">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span>ضمان 100%</span>
+                </div>
+            </div>
+
+            <!-- 4. CTA Action Island (زر الطلب المباشر) -->
+            <div class="w-full rounded-2xl p-1 shadow-[0_0_25px_rgba(0,255,163,0.3)] relative z-10"
+                 style="background: linear-gradient(135deg, rgba(0,255,163,0.4) 0%, rgba(0,210,122,0.2) 100%); backdrop-filter: blur(10px);">
+                <div class="w-full py-2 px-3.5 rounded-xl flex items-center justify-between cursor-pointer"
+                     style="background: linear-gradient(135deg, #00ffa3 0%, #00d27a 100%); color: #042411;">
+                    <div class="flex flex-col text-right overflow-hidden">
+                        <span class="text-[12px] font-black leading-tight">${appState.ctaHeadline || def.ctaHeadline}</span>
+                        <span class="text-[8.5px] font-extrabold text-emerald-950 mt-0.5 whitespace-nowrap">${appState.ctaSub || def.ctaSub}</span>
+                    </div>
+                    <div class="px-2.5 py-1 rounded-lg bg-emerald-950 text-[#00ffa3] text-[10px] font-black shadow-inner flex items-center gap-1 shrink-0 mr-1.5">
+                        <span>اطلب الآن</span>
+                        <span>⚡</span>
+                    </div>
+                </div>
+            </div>
+        </div>
     `;
 }
 
 function renderPlayerReviewControls() {
+    const def = TEMPLATES.player_review.defaultState;
+
     return `
         <div class="space-y-4">
-            <!-- Presets Row -->
-            <div class="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs">
-                <label class="block text-xs font-black text-slate-800 mb-2">مراجعات جاهزة بنقرة واحدة:</label>
-                <div class="grid grid-cols-1 gap-1.5">
+            <!-- 1. Star Presets Row -->
+            <div class="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-2.5">
+                <div class="flex items-center justify-between pb-1 border-b border-slate-100">
+                    <span class="text-xs font-black text-slate-800 flex items-center gap-1.5">
+                        <span>⭐</span>
+                        <span>اختيار نجم جاهز للمراجعة:</span>
+                    </span>
+                    <span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">جاهز بنقرة واحدة</span>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
                     ${PLAYER_REVIEW_PRESETS.map(p => `
-                        <button type="button" onclick="applyPlayerReviewPreset('${p.id}')" class="w-full py-2 px-3 text-right rounded-lg bg-slate-50 hover:bg-emerald-50 hover:border-emerald-500 border border-slate-200 text-slate-800 text-xs font-bold transition flex items-center justify-between">
-                            <span>🔍 ${p.name}</span>
-                            <span class="font-mono text-emerald-600 font-black">${p.finalScore}</span>
+                        <button type="button" onclick="applyPlayerReviewPreset('${p.id}')" 
+                                class="p-2 text-right rounded-xl bg-slate-50 hover:bg-emerald-50 hover:border-emerald-500 border border-slate-200 text-slate-800 text-xs font-bold transition flex items-center justify-between">
+                            <span class="font-black text-[11px] truncate">${p.name}</span>
+                            <span class="font-mono text-emerald-600 font-black text-[10.5px] shrink-0 mr-1">${p.finalScore}</span>
                         </button>
                     `).join('')}
                 </div>
             </div>
 
-            <!-- Background & Lighting -->
-            ${renderStoryBackgroundControls()}
-
-            <!-- Review Details Form -->
-            <div class="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs space-y-3 text-right">
-                <label class="block text-xs font-black text-slate-800 border-b pb-1.5">بيانات تقييم ومراجعة اللاعب:</label>
+            <!-- 2. Player Card & Identity -->
+            <div class="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-3">
+                <span class="text-xs font-black text-slate-800 flex items-center gap-1.5 pb-1 border-b border-slate-100">
+                    <span>🎴</span>
+                    <span>بيانات وهوية الكرت:</span>
+                </span>
                 <div>
-                    <label class="block text-[11px] font-bold text-slate-600 mb-1">اسم اللاعب ورتبه:</label>
-                    <input type="text" value="${appState.playerName || ''}" oninput="appState.playerName = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
-                </div>
-                <div>
-                    <label class="block text-[11px] font-bold text-slate-600 mb-1">سعر اللاعب في السوق:</label>
-                    <input type="text" value="${appState.playerPrice || ''}" oninput="appState.playerPrice = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+                    <label class="block text-[10.5px] font-bold text-slate-600 mb-0.5">اسم اللاعب والمركز:</label>
+                    <input type="text" value="${appState.playerName || ''}" 
+                           oninput="appState.playerName = this.value; renderCanvas();" 
+                           class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
                 </div>
                 <div class="grid grid-cols-2 gap-2">
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-600 mb-1">المباريات المجربة:</label>
-                        <input type="text" value="${appState.gamesPlayed || ''}" oninput="appState.gamesPlayed = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+                        <label class="block text-[10.5px] font-bold text-slate-600 mb-0.5">سعر الكرت في السوق:</label>
+                        <input type="text" value="${appState.playerPrice || ''}" 
+                               oninput="appState.playerPrice = this.value; renderCanvas();" 
+                               class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-mono font-bold outline-none focus:border-emerald-500">
                     </div>
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-600 mb-1">الأهداف والإحصائيات:</label>
-                        <input type="text" value="${appState.goalsStats || ''}" oninput="appState.goalsStats = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+                        <label class="block text-[10.5px] font-bold text-amber-700 mb-0.5">التقييم الإجمالي:</label>
+                        <input type="text" value="${appState.finalScore || ''}" 
+                               oninput="appState.finalScore = this.value; renderCanvas();" 
+                               class="w-full px-2.5 py-1.5 rounded-lg bg-white border border-amber-300 text-amber-800 text-xs font-mono font-black outline-none focus:border-amber-500">
                     </div>
                 </div>
                 <div>
-                    <label class="block text-[11px] font-bold text-slate-600 mb-1">التقييم النهائي:</label>
-                    <input type="text" value="${appState.finalScore || ''}" oninput="appState.finalScore = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+                    <label class="block text-[10.5px] font-bold text-slate-600 mb-0.5">رابط صورة الكرت (Card Image URL):</label>
+                    <input type="text" value="${appState.playerCardUrl || ''}" 
+                           oninput="appState.playerCardUrl = this.value; renderCanvas();" 
+                           placeholder="https://..." 
+                           class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-800 text-xs font-mono outline-none focus:border-emerald-500">
+                </div>
+            </div>
+
+            <!-- 3. Skills & Performance -->
+            <div class="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-3">
+                <span class="text-xs font-black text-slate-800 flex items-center gap-1.5 pb-1 border-b border-slate-100">
+                    <span>⚡</span>
+                    <span>المهارات وأبرز الطاقات:</span>
+                </span>
+                <div>
+                    <label class="block text-[10.5px] font-bold text-slate-600 mb-0.5">المهارات والقدم الضعيفة:</label>
+                    <input type="text" value="${appState.skillMoves || ''}" 
+                           oninput="appState.skillMoves = this.value; renderCanvas();" 
+                           placeholder="5★ مهارات • 4★ قدم ضعيفة" 
+                           class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-[10.5px] font-bold text-slate-600 mb-0.5">أبرز الطاقات والأرقام:</label>
+                    <input type="text" value="${appState.keyStats || ''}" 
+                           oninput="appState.keyStats = this.value; renderCanvas();" 
+                           placeholder="⚡ 97 سرعة • 🎯 90 تسديد • 🪄 92 مراوغة" 
+                           class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+                </div>
+            </div>
+
+            <!-- 4. Pros, Cons & Verdict -->
+            <div class="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-3">
+                <span class="text-xs font-black text-slate-800 flex items-center gap-1.5 pb-1 border-b border-slate-100">
+                    <span>📋</span>
+                    <span>الإيجابيات، السلبيات وحكم الشوب:</span>
+                </span>
+                <div>
+                    <label class="block text-[10.5px] font-bold text-emerald-700 mb-0.5">الميزة الأولى (Pro 1):</label>
+                    <input type="text" value="${appState.pro1 || ''}" 
+                           oninput="appState.pro1 = this.value; renderCanvas();" 
+                           class="w-full px-2.5 py-1.5 rounded-lg bg-emerald-50/50 border border-emerald-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-[10.5px] font-bold text-emerald-700 mb-0.5">الميزة الثانية (Pro 2):</label>
+                    <input type="text" value="${appState.pro2 || ''}" 
+                           oninput="appState.pro2 = this.value; renderCanvas();" 
+                           class="w-full px-2.5 py-1.5 rounded-lg bg-emerald-50/50 border border-emerald-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-[10.5px] font-bold text-red-700 mb-0.5">السلبيات أو الملاحظات (Con):</label>
+                    <input type="text" value="${appState.con1 || ''}" 
+                           oninput="appState.con1 = this.value; renderCanvas();" 
+                           class="w-full px-2.5 py-1.5 rounded-lg bg-red-50/50 border border-red-200 text-slate-900 text-xs font-bold outline-none focus:border-red-500">
+                </div>
+                <div>
+                    <label class="block text-[10.5px] font-bold text-amber-800 mb-0.5">حكم الشوب النهائي (Store Verdict):</label>
+                    <input type="text" value="${appState.verdictTitle || ''}" 
+                           oninput="appState.verdictTitle = this.value; renderCanvas();" 
+                           class="w-full px-2.5 py-1.5 rounded-lg bg-amber-50/50 border border-amber-200 text-slate-900 text-xs font-bold outline-none focus:border-amber-500">
+                </div>
+            </div>
+
+            <!-- 5. Story Texts & CTA Controls -->
+            <div class="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-3">
+                <span class="text-xs font-black text-slate-800 block">✍️ نصوص وعروض الستوري:</span>
+
+                <div>
+                    <label class="block text-[10.5px] font-bold text-slate-700 mb-0.5">شارة التنبيه العلوية:</label>
+                    <input type="text" value="${appState.badgeText || ''}" 
+                           oninput="appState.badgeText = this.value; renderCanvas();" 
+                           class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+                </div>
+
+                <div>
+                    <label class="block text-[10.5px] font-bold text-slate-700 mb-0.5">العنوان الرئيسي للستوري:</label>
+                    <input type="text" value="${appState.headline || ''}" 
+                           oninput="appState.headline = this.value; renderCanvas();" 
+                           class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-black outline-none focus:border-emerald-500">
+                </div>
+
+                <div>
+                    <label class="block text-[10.5px] font-bold text-slate-700 mb-0.5">الوصف والضمان:</label>
+                    <input type="text" value="${appState.subheadline || ''}" 
+                           oninput="appState.subheadline = this.value; renderCanvas();" 
+                           class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-medium outline-none focus:border-emerald-500">
+                </div>
+
+                <div>
+                    <label class="block text-[10.5px] font-bold text-slate-700 mb-0.5">نص شريط عرض الكوينز:</label>
+                    <input type="text" value="${appState.offerText || ''}" 
+                           oninput="appState.offerText = this.value; renderCanvas();" 
+                           class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+                </div>
+
+                <div class="pt-2 border-t border-slate-100 space-y-2">
+                    <div>
+                        <label class="block text-[10.5px] font-bold text-slate-700 mb-0.5">عنوان زر الطلب المباشر (CTA):</label>
+                        <input type="text" value="${appState.ctaHeadline || ''}" 
+                               oninput="appState.ctaHeadline = this.value; renderCanvas();" 
+                               class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-[10.5px] font-bold text-slate-700 mb-0.5">نص ضمان الأمان تحت الزر:</label>
+                        <input type="text" value="${appState.ctaSub || ''}" 
+                               oninput="appState.ctaSub = this.value; renderCanvas();" 
+                               class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+                    </div>
                 </div>
             </div>
         </div>
