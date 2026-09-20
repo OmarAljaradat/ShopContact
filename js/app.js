@@ -3151,8 +3151,8 @@ function renderControls() {
 
 
 
-    // Box & Button Customization Card (Only for templates with info box and CTA button like trio/market_drop, excluded for promo_pack, market_tracker, champs_squad, evo_boost)
-    if (currentTemplate !== 'promo_pack' && currentTemplate !== 'store_promo' && currentTemplate !== 'sbc' && currentTemplate !== 'showcase' && currentTemplate !== 'market_tracker' && currentTemplate !== 'champs_squad' && currentTemplate !== 'evo_boost') {
+    // Box & Button Customization Card (Only for templates with info box and CTA button like trio/market_drop, excluded for promo_pack, market_tracker, champs_squad, evo_boost, social_proof)
+    if (currentTemplate !== 'promo_pack' && currentTemplate !== 'store_promo' && currentTemplate !== 'sbc' && currentTemplate !== 'showcase' && currentTemplate !== 'market_tracker' && currentTemplate !== 'champs_squad' && currentTemplate !== 'evo_boost' && currentTemplate !== 'social_proof') {
         html += `
             <div class="mt-4 p-4 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-3.5">
                 <div class="flex items-center justify-between pb-2 border-b border-slate-100">
@@ -3240,8 +3240,8 @@ function renderControls() {
         `;
     }
 
-    // Background Framing & Position Controls (تحريك وتكبير الخلفية - Excluded for promo_pack, market_tracker, champs_squad, evo_boost)
-    if (currentTemplate !== 'promo_pack' && currentTemplate !== 'market_tracker' && currentTemplate !== 'champs_squad' && currentTemplate !== 'evo_boost') {
+    // Background Framing & Position Controls (تحريك وتكبير الخلفية - Excluded for promo_pack, market_tracker, champs_squad, evo_boost, social_proof)
+    if (currentTemplate !== 'promo_pack' && currentTemplate !== 'market_tracker' && currentTemplate !== 'champs_squad' && currentTemplate !== 'evo_boost' && currentTemplate !== 'social_proof') {
         html += `
             <div class="mt-4 p-4 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-3.5">
                 <div class="flex items-center justify-between pb-2 border-b border-slate-100">
@@ -7087,41 +7087,251 @@ window.applyEvoBoostPreset = function(presetId) {
 // 4. SOCIAL PROOF & CUSTOMER VOUCH TEMPLATE
 // ==========================================
 
-const SOCIAL_PROOF_PRESETS = [
-    {
-        id: 'proof_fahad',
-        name: 'فهد (الرياض) - 1.5M كوينز',
-        amountLoaded: '1,500,000 كوينز',
-        deliveryTime: '3 دقائق و 45 ثانية',
-        platform: 'PlayStation 5',
-        customerName: 'فهد الشمري (الرياض)',
-        reviewText: 'والله أفضل متجر تعاملت معه، سرعة خيالية وناديي في أمان تام وتم شحن المليون ونص كاملة بدون أي نقص!',
-        headline: 'شحن فوري جديد تم بنجاح! ناديك في أمان تام 100% 🔒⚡'
-    },
-    {
-        id: 'proof_khaled',
-        name: 'خالد (الكويت) - 3,000,000 كوينز VIP',
-        amountLoaded: '3,000,000 كوينز',
-        deliveryTime: '5 دقائق و 10 ثواني',
-        platform: 'XBOX Series X',
-        customerName: 'خالد المطيري (الكويت)',
-        reviewText: 'شحنت 3 مليون كوينز دفعة واحدة وبأقل من 6 دقائق كانت بالحساب، شغل نظيف واحترافي وتعويض ضريبة كامل 100%.',
-        headline: 'توثيق شحن باقة الحيتان VIP! سرعة وأمان لا ينافسان 👑💰'
-    },
-    {
-        id: 'proof_mohammed',
-        name: 'محمد (جدة) - 800,000 كوينز',
-        amountLoaded: '800,000 كوينز',
-        deliveryTime: 'دقيقتين و 30 ثانية',
-        platform: 'PC EA App',
-        customerName: 'محمد الغامدي (جدة)',
-        reviewText: 'أول مرة أجرب المتجر وكنت متخوف، لكن ما شاء الله تعامل راقي وسرعة خرافية وناديي مضمون!',
-        headline: 'ثقة عملائنا هي الأساس! شحن فوري وضمان شامل النادي 🛡️✨'
-    }
-];
+function getSimulatedFcBarHtml(clubName, coins, points, estDate, isAfter) {
+    const borderColor = isAfter ? 'rgba(16, 185, 129, 0.8)' : '#1e293b';
+    const glow = isAfter ? 'box-shadow: 0 0 20px rgba(16, 185, 129, 0.25);' : '';
+    return `
+        <div class="w-full max-w-[480px] h-[58px] bg-[#0c1017] rounded-xl flex items-center justify-between px-3.5 text-white font-sans shadow-xl border" style="border-color: ${borderColor}; ${glow}" dir="ltr">
+            <!-- Left: Club Name -->
+            <div class="text-[17px] font-black tracking-wide text-white truncate max-w-[130px]">
+                ${clubName || 'Lyon SC'}
+            </div>
+
+            <!-- Middle: Coins and Points -->
+            <div class="flex flex-col items-end justify-center gap-0.5">
+                <!-- Coins row -->
+                <div class="flex items-center gap-1.5">
+                    <span class="text-[13.5px] font-black font-mono text-white tracking-wider">${coins || '0'}</span>
+                    <div class="w-[18px] h-[18px] rounded-full bg-gradient-to-tr from-amber-600 via-amber-400 to-yellow-200 border border-yellow-100 flex items-center justify-center text-[9px] font-black text-amber-950 shadow-xs">
+                        🪙
+                    </div>
+                </div>
+                <!-- Points row -->
+                <div class="flex items-center gap-1">
+                    <span class="text-[12px] font-bold font-mono text-slate-300">${points || '0'}</span>
+                    <span class="text-emerald-400 text-[11px] font-black leading-none">▽</span>
+                    <span class="w-3 h-3 rounded-full bg-slate-700 text-slate-300 flex items-center justify-center text-[8px] leading-none">+</span>
+                </div>
+            </div>
+
+            <!-- Divider -->
+            <div class="w-[1.5px] h-8 bg-slate-700/60 mx-1"></div>
+
+            <!-- Right: Est Date & UT Badge -->
+            <div class="flex items-center gap-2">
+                <div class="flex flex-col items-start text-left leading-tight">
+                    <span class="text-[9.5px] font-semibold text-slate-400">${estDate || 'Est. Feb 2019'}</span>
+                    <span class="text-[11px] font-bold text-slate-200 truncate max-w-[90px]">${clubName || 'Lyon SC'}</span>
+                </div>
+                <div class="w-6 h-7 border-[1.5px] border-slate-300 rounded-[3px_3px_9px_9px] flex items-center justify-center text-[9px] font-black italic text-slate-100 tracking-tighter">
+                    UT
+                </div>
+            </div>
+        </div>
+    `;
+}
 
 function renderSocialProofTemplate() {
-    const isLightBg = (window.MARKET_BG_THEMES[appState.bgTheme || 'store']?.isLight) ?? true;
+    // Lock background to royal white marble store background with bright lighting
+    appState.bgTheme = 'store';
+    appState.bgLighting = 'bright';
+    const isLightBg = true;
+
+    const proofStyle = appState.proofStyle || 'stacked';
+    const proofSource = appState.proofSource || 'photo';
+
+    const clubName = appState.clubName || 'Lyon SC';
+    const coinsBefore = appState.coinsBefore || '274,747';
+    const coinsAfter = appState.coinsAfter || '7,537,797';
+    const fcPoints = appState.fcPoints || '225';
+    const estDate = appState.estDate || 'Est. Feb 2019';
+    const amountLoaded = appState.amountLoaded || '+7,263,050 كوينز';
+    const deliveryTime = appState.deliveryTime || '4 دقائق';
+    const platform = appState.platform || 'PlayStation 5';
+    const beforePhoto = appState.beforePhotoUrl || 'assets/proof_before_sample.png';
+    const afterPhoto = appState.afterPhotoUrl || 'assets/proof_after_sample.png';
+    const fullPhoto = appState.fullPhotoUrl || afterPhoto;
+
+    function getProofItemHtml(isAfter) {
+        if (proofSource === 'simulator') {
+            return getSimulatedFcBarHtml(clubName, isAfter ? coinsAfter : coinsBefore, fcPoints, estDate, isAfter);
+        }
+        const photoSrc = isAfter ? afterPhoto : beforePhoto;
+        const borderColor = isAfter ? 'border-2 border-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.3)]' : 'border border-slate-300 shadow-md';
+        return `
+            <div class="w-full max-w-[480px] h-[58px] rounded-2xl overflow-hidden ${borderColor} bg-[#0c1017] flex items-center justify-center px-1">
+                <img src="${photoSrc}" class="w-full h-full object-contain" alt="${isAfter ? 'بعد الشحن' : 'قبل الشحن'}" />
+            </div>
+        `;
+    }
+
+    const transferBannerHtml = `
+        <div class="w-full max-w-[480px] p-3.5 rounded-2xl bg-gradient-to-r from-slate-950 via-[#071524] to-slate-950 border-2 border-emerald-500/80 shadow-2xl flex items-center justify-between text-white">
+            <div class="flex items-center gap-2.5">
+                <div class="w-11 h-11 rounded-xl bg-emerald-500/20 border border-emerald-400 flex items-center justify-center text-2xl shadow-inner">
+                    🪙
+                </div>
+                <div class="text-right">
+                    <span class="text-[10px] font-bold text-slate-300 block">إجمالي الكوينز التي تم شحنها:</span>
+                    <span class="text-xl font-black font-mono text-emerald-300 tracking-wider">${amountLoaded}</span>
+                </div>
+            </div>
+            <div class="flex flex-col items-end gap-1">
+                <span class="px-2.5 py-0.5 rounded-lg bg-emerald-500/20 border border-emerald-400/40 text-[10.5px] font-black text-emerald-300">
+                    ⏱️ تم خلال: ${deliveryTime}
+                </span>
+                <span class="px-2 py-0.5 rounded-md bg-white/10 text-[10px] font-mono text-slate-200">
+                    🎮 ${platform}
+                </span>
+            </div>
+        </div>
+    `;
+
+    const trustBadgesHtml = `
+        <div class="grid grid-cols-3 gap-2 w-full max-w-[480px] pt-1">
+            <div class="p-2 rounded-xl bg-white/95 border border-slate-200 text-center shadow-xs">
+                <span class="text-xs">🔒</span>
+                <span class="text-[10px] font-black text-slate-800 block">أمان 100% بدون باند</span>
+            </div>
+            <div class="p-2 rounded-xl bg-white/95 border border-slate-200 text-center shadow-xs">
+                <span class="text-xs">🛡️</span>
+                <span class="text-[10px] font-black text-slate-800 block">ضمان كامل للنادي</span>
+            </div>
+            <div class="p-2 rounded-xl bg-white/95 border border-slate-200 text-center shadow-xs">
+                <span class="text-xs">⚡</span>
+                <span class="text-[10px] font-black text-slate-800 block">تسليم فوري مباشر</span>
+            </div>
+        </div>
+    `;
+
+    let bodyContent = '';
+
+    if (proofStyle === 'cards') {
+        bodyContent = `
+            <div class="grid grid-cols-2 gap-2.5 w-full max-w-[480px]">
+                <!-- Before Card -->
+                <div class="rounded-2xl p-2.5 bg-white/95 border border-slate-200 shadow-xl space-y-2 text-center">
+                    <span class="inline-flex items-center gap-1 text-[11px] font-black text-rose-700 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded-lg">
+                        <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+                        <span>قبل الشحن</span>
+                    </span>
+                    <div class="rounded-xl overflow-hidden border border-slate-200 bg-[#0c1017] p-1 flex items-center justify-center h-[48px]">
+                        <img src="${beforePhoto}" class="w-full h-full object-contain" />
+                    </div>
+                    <div class="text-center pt-0.5">
+                        <span class="text-[9.5px] font-bold text-slate-500 block">الرصيد السابق:</span>
+                        <span class="text-sm font-black font-mono text-slate-800"><bdi>${coinsBefore}</bdi></span>
+                    </div>
+                </div>
+
+                <!-- After Card -->
+                <div class="rounded-2xl p-2.5 bg-gradient-to-b from-emerald-50/90 to-white/95 border-2 border-emerald-500 shadow-2xl space-y-2 text-center" style="box-shadow: 0 10px 25px rgba(16, 185, 129, 0.2);">
+                    <span class="inline-flex items-center gap-1 text-[11px] font-black text-emerald-800 bg-emerald-100/80 border border-emerald-300 px-2 py-0.5 rounded-lg">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                        <span>بعد الشحن ⭐</span>
+                    </span>
+                    <div class="rounded-xl overflow-hidden border border-emerald-400/80 bg-[#0c1017] p-1 flex items-center justify-center h-[48px]">
+                        <img src="${afterPhoto}" class="w-full h-full object-contain" />
+                    </div>
+                    <div class="text-center pt-0.5">
+                        <span class="text-[9.5px] font-bold text-emerald-700 block">الرصيد الجديد:</span>
+                        <span class="text-sm font-black font-mono text-emerald-700"><bdi>${coinsAfter}</bdi> 🔥</span>
+                    </div>
+                </div>
+            </div>
+            ${transferBannerHtml}
+            ${trustBadgesHtml}
+        `;
+    } else if (proofStyle === 'full_screenshot') {
+        bodyContent = `
+            <div class="w-full max-w-[480px] rounded-3xl p-3 bg-white/95 border-2 border-emerald-500 shadow-2xl space-y-2.5">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[11px] font-black border border-emerald-200">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                        <span>لقطة شاشة التوثيق المباشرة 📸</span>
+                    </span>
+                    <span class="text-slate-500 font-mono text-[10.5px] font-bold">🎮 ${platform}</span>
+                </div>
+                <div class="w-full h-[230px] rounded-2xl overflow-hidden border border-slate-200 bg-slate-950 shadow-inner flex items-center justify-center">
+                    <img src="${fullPhoto || afterPhoto}" class="w-full h-full object-contain" alt="توثيق الشحن" />
+                </div>
+                <div class="flex items-center justify-between pt-1 text-xs">
+                    <div>
+                        <span class="text-[10px] font-bold text-slate-400 block">المبلغ المشحون:</span>
+                        <span class="text-base font-black font-mono text-emerald-600">${amountLoaded}</span>
+                    </div>
+                    <div class="text-left">
+                        <span class="text-[10px] font-bold text-slate-400 block">سرعة التنفيذ:</span>
+                        <span class="text-xs font-bold text-slate-800 font-mono">⏱️ ${deliveryTime}</span>
+                    </div>
+                </div>
+            </div>
+            ${trustBadgesHtml}
+        `;
+    } else if (proofStyle === 'simulator') {
+        bodyContent = `
+            <!-- Before Bar -->
+            <div class="w-full max-w-[480px] space-y-1.5">
+                <div class="flex items-center justify-between px-2 text-xs font-black">
+                    <span class="text-rose-600 bg-rose-50 border border-rose-200 px-2.5 py-0.5 rounded-lg flex items-center gap-1 shadow-2xs">
+                        <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+                        <span>رصيد الحساب قبل الشحن:</span>
+                    </span>
+                    <span class="text-slate-600 font-bold text-[11px] font-mono"><bdi>${coinsBefore}</bdi> كوينز</span>
+                </div>
+                ${getSimulatedFcBarHtml(clubName, coinsBefore, fcPoints, estDate, false)}
+            </div>
+
+            ${transferBannerHtml}
+
+            <!-- After Bar -->
+            <div class="w-full max-w-[480px] space-y-1.5">
+                <div class="flex items-center justify-between px-2 text-xs font-black">
+                    <span class="text-emerald-700 bg-emerald-50 border border-emerald-300 px-2.5 py-0.5 rounded-lg flex items-center gap-1 shadow-2xs">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                        <span>رصيد الحساب بعد الشحن ⭐:</span>
+                    </span>
+                    <span class="text-emerald-800 font-black text-[12px] font-mono"><bdi>${coinsAfter}</bdi> كوينز</span>
+                </div>
+                ${getSimulatedFcBarHtml(clubName, coinsAfter, fcPoints, estDate, true)}
+            </div>
+
+            ${trustBadgesHtml}
+        `;
+    } else {
+        // Default: 'stacked'
+        bodyContent = `
+            <!-- Before Box -->
+            <div class="w-full max-w-[480px] space-y-1.5">
+                <div class="flex items-center justify-between px-2 text-xs font-black">
+                    <span class="text-rose-600 bg-rose-50 border border-rose-200 px-2.5 py-0.5 rounded-lg flex items-center gap-1 shadow-2xs">
+                        <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+                        <span>رصيد الحساب قبل الشحن:</span>
+                    </span>
+                    <span class="text-slate-600 font-bold text-[11px] font-mono"><bdi>${coinsBefore}</bdi> كوينز</span>
+                </div>
+                ${getProofItemHtml(false)}
+            </div>
+
+            <!-- Transfer Highlight -->
+            ${transferBannerHtml}
+
+            <!-- After Box -->
+            <div class="w-full max-w-[480px] space-y-1.5">
+                <div class="flex items-center justify-between px-2 text-xs font-black">
+                    <span class="text-emerald-700 bg-emerald-50 border border-emerald-300 px-2.5 py-0.5 rounded-lg flex items-center gap-1 shadow-2xs">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                        <span>رصيد الحساب بعد الشحن ⭐:</span>
+                    </span>
+                    <span class="text-emerald-800 font-black text-[12px] font-mono"><bdi>${coinsAfter}</bdi> كوينز</span>
+                </div>
+                ${getProofItemHtml(true)}
+            </div>
+
+            <!-- Trust Badges -->
+            ${trustBadgesHtml}
+        `;
+    }
 
     return `
         ${getStoryBackgroundHtml(appState.bgTheme, appState.bgLighting)}
@@ -7129,64 +7339,11 @@ function renderSocialProofTemplate() {
         <!-- Layer 1: Header -->
         ${renderStoryHeader('layer_proof_header', appState.badgeText || TEMPLATES.social_proof.defaultState.badgeText, appState.headline || TEMPLATES.social_proof.defaultState.headline, appState.subheadline || TEMPLATES.social_proof.defaultState.subheadline, isLightBg)}
 
-        <!-- Layer 2: Social Proof Review Certificate Body -->
+        <!-- Layer 2: Proof Body -->
         ${isLayerVisible('layer_proof_body') ? `
         <div id="layer_proof_body" class="draggable-layer w-full text-center flex flex-col items-center" style="${getLayerStyle('layer_proof_body', 165)}; width: 510px; z-index: 25;">
-            <div class="layer-scale-wrapper w-full flex flex-col items-center gap-3" style="transform: scale(${getLayerScale('layer_proof_body')});">
-                
-                <!-- Main Glass Proof Certificate -->
-                <div class="w-full max-w-[480px] rounded-3xl p-4 shadow-2xl space-y-3" style="background: linear-gradient(180deg, #0e1626 0%, #080d17 60%, #04070d 100%); border: 2px solid rgba(16, 185, 129, 0.8);">
-                    
-                    <!-- Proof Top Pill: Verified Transfer & Platform -->
-                    <div class="flex items-center justify-between border-b border-[#1c2638] pb-2 text-[11px] font-bold">
-                        <div class="flex items-center gap-1.5 text-emerald-400 font-black">
-                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
-                            <span>${appState.proofTag || '✅ تم الشحن بنجاح وتأكيد التسليم'}</span>
-                        </div>
-                        <span class="px-2.5 py-0.5 rounded-lg bg-[#141d2e] text-slate-300 font-mono border border-[#232f46]">${appState.platform || 'PlayStation 5'}</span>
-                    </div>
-
-                    <!-- Giant Amount Loaded Highlight -->
-                    <div class="py-2 bg-gradient-to-r from-emerald-950/60 via-slate-950/80 to-emerald-950/60 rounded-2xl border border-emerald-500/40 text-center space-y-1">
-                        <span class="text-[11px] font-bold text-slate-400">الكمية التي تم شحنها للعميل:</span>
-                        <div class="flex items-center justify-center gap-2 py-0.5" dir="ltr">
-                            <img src="assets/fc-coin.webp" class="w-8 h-8 object-contain drop-shadow" alt="c">
-                            <span class="text-3xl font-black font-mono text-emerald-300 tracking-wider">${appState.amountLoaded || '1,500,000 كوينز'}</span>
-                        </div>
-                        <div class="text-[10.5px] font-bold text-amber-400">
-                            ⏱️ سرعة التنفيذ: <span class="font-mono text-white">${appState.deliveryTime || '3 دقائق و 45 ثانية'}</span>
-                        </div>
-                    </div>
-
-                    <!-- Customer Review Quote Box -->
-                    <div class="bg-[#101726] rounded-2xl p-3 border border-[#1e2a42] text-right space-y-1.5">
-                        <div class="flex items-center justify-between">
-                            <span class="text-xs font-black text-white flex items-center gap-1.5">
-                                <span>👤</span>
-                                <span>${appState.customerName || 'فهد الشمري (الرياض)'}</span>
-                            </span>
-                            <div class="text-amber-400 text-xs tracking-widest">
-                                ⭐⭐⭐⭐⭐
-                            </div>
-                        </div>
-                        <p class="text-xs text-slate-300 leading-relaxed font-bold italic pt-1 border-t border-[#1a2336]">
-                            "${appState.reviewText || 'والله أفضل متجر تعاملت معه، سرعة خيالية وناديي في أمان تام وتم شحن المليون ونص كاملة بدون أي نقص!'}"
-                        </p>
-                    </div>
-
-                    <!-- 3 Security Verification Badges -->
-                    <div class="grid grid-cols-3 gap-1.5 pt-1 text-center">
-                        <div class="p-1.5 rounded-xl bg-[#0f1726] border border-emerald-500/40 text-[9.5px] font-black text-emerald-300">
-                            🔒 0% باند أمان 100%
-                        </div>
-                        <div class="p-1.5 rounded-xl bg-[#0f1726] border border-emerald-500/40 text-[9.5px] font-black text-emerald-300">
-                            🛡️ تغطية الضريبة 100%
-                        </div>
-                        <div class="p-1.5 rounded-xl bg-[#0f1726] border border-emerald-500/40 text-[9.5px] font-black text-emerald-300">
-                            ⚡ نظام راحة فوري
-                        </div>
-                    </div>
-                </div>
+            <div class="layer-scale-wrapper w-full flex flex-col items-center gap-3.5" style="transform: scale(${getLayerScale('layer_proof_body')});">
+                ${bodyContent}
             </div>
             ${renderLayerToolbar('layer_proof_body')}
         </div>
@@ -7198,64 +7355,336 @@ function renderSocialProofTemplate() {
 }
 
 function renderSocialProofControls() {
+    const proofStyle = appState.proofStyle || 'stacked';
+    const proofSource = appState.proofSource || 'photo';
+
     return `
         <div class="space-y-4">
-            <!-- 1. Background Selection -->
-            ${renderStoryBackgroundControls()}
+            <!-- 1. Style / Layout Picker (4 Options) -->
+            <div class="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-2.5">
+                <div class="flex items-center justify-between pb-1.5 border-b border-slate-100">
+                    <span class="text-xs font-black text-slate-800 flex items-center gap-1.5">
+                        <span>📐</span>
+                        <span>شكل وقالب التوثيق (اختر التصميم):</span>
+                    </span>
+                    <span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">4 أشكال مختلفة</span>
+                </div>
+                <div class="grid grid-cols-2 gap-2 text-center">
+                    <button type="button" onclick="setProofStyle('stacked')" 
+                            class="p-2.5 rounded-xl border text-xs font-black transition flex flex-col items-center gap-1 ${proofStyle === 'stacked' ? 'bg-slate-900 text-white border-slate-900 shadow-sm ring-2 ring-emerald-400' : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'}">
+                        <span class="text-sm">📑</span>
+                        <span>الشريط المزدوج (الأصلي)</span>
+                        <span class="text-[9px] font-normal ${proofStyle === 'stacked' ? 'text-slate-300' : 'text-slate-400'}">شريطين مكدسين مع ملخص الوسط</span>
+                    </button>
 
-            <!-- 2. 1-Click Presets -->
-            <div class="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs space-y-2">
-                <span class="text-xs font-black text-slate-800 block">⚡ توثيقات حقيقية جاهزة:</span>
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-1.5">
-                    ${SOCIAL_PROOF_PRESETS.map(p => `
-                        <button type="button" onclick="applySocialProofPreset('${p.id}')" class="p-2 rounded-xl text-right border transition bg-slate-50 border-slate-200 hover:border-emerald-400 text-slate-800 text-xs font-bold">
-                            ${p.name}
-                        </button>
-                    `).join('')}
+                    <button type="button" onclick="setProofStyle('cards')" 
+                            class="p-2.5 rounded-xl border text-xs font-black transition flex flex-col items-center gap-1 ${proofStyle === 'cards' ? 'bg-slate-900 text-white border-slate-900 shadow-sm ring-2 ring-emerald-400' : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'}">
+                        <span class="text-sm">🎴</span>
+                        <span>كروت جنباً إلى جنب</span>
+                        <span class="text-[9px] font-normal ${proofStyle === 'cards' ? 'text-slate-300' : 'text-slate-400'}">مقارنة ببطاقتين متجاورتين</span>
+                    </button>
+
+                    <button type="button" onclick="setProofStyle('full_screenshot')" 
+                            class="p-2.5 rounded-xl border text-xs font-black transition flex flex-col items-center gap-1 ${proofStyle === 'full_screenshot' ? 'bg-slate-900 text-white border-slate-900 shadow-sm ring-2 ring-emerald-400' : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'}">
+                        <span class="text-sm">📺</span>
+                        <span>لقطة شاشة كاملة</span>
+                        <span class="text-[9px] font-normal ${proofStyle === 'full_screenshot' ? 'text-slate-300' : 'text-slate-400'}">لتصوير شاشة التلفاز أو الجوال</span>
+                    </button>
+
+                    <button type="button" onclick="setProofStyle('simulator')" 
+                            class="p-2.5 rounded-xl border text-xs font-black transition flex flex-col items-center gap-1 ${proofStyle === 'simulator' ? 'bg-slate-900 text-white border-slate-900 shadow-sm ring-2 ring-emerald-400' : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'}">
+                        <span class="text-sm">⚡</span>
+                        <span>المحاكي الرقمي 4K</span>
+                        <span class="text-[9px] font-normal ${proofStyle === 'simulator' ? 'text-slate-300' : 'text-slate-400'}">توليد شريط FC الرسمي تلقائياً</span>
+                    </button>
                 </div>
             </div>
 
-            <!-- 3. Transfer Details -->
-            <div class="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs space-y-3">
-                <span class="text-xs font-black text-slate-800 block">🤝 تفاصيل عملية الشحن:</span>
-                <div class="grid grid-cols-2 gap-2">
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-600 mb-1">الكمية المشحونة:</label>
-                        <input type="text" value="${appState.amountLoaded || ''}" oninput="appState.amountLoaded = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
-                    </div>
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-600 mb-1">وقت التنفيذ:</label>
-                        <input type="text" value="${appState.deliveryTime || ''}" oninput="appState.deliveryTime = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
-                    </div>
-                </div>
-                <div class="grid grid-cols-2 gap-2">
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-600 mb-1">المنصة:</label>
-                        <input type="text" value="${appState.platform || ''}" oninput="appState.platform = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
-                    </div>
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-600 mb-1">اسم العميل والمدينة:</label>
-                        <input type="text" value="${appState.customerName || ''}" oninput="appState.customerName = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+            <!-- 2. Source Toggle (Real Photos vs Digital Simulator) -->
+            <div class="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-3">
+                <div class="flex items-center justify-between pb-1 border-b border-slate-100">
+                    <span class="text-xs font-black text-slate-800 flex items-center gap-1.5">
+                        <span>📸</span>
+                        <span>مصدر شريط الحساب:</span>
+                    </span>
+                    <div class="flex items-center gap-1 bg-slate-100 p-0.5 rounded-lg border border-slate-200">
+                        <button type="button" onclick="setProofSource('photo')" class="px-2.5 py-1 rounded-md text-[10.5px] font-black transition ${proofSource === 'photo' ? 'bg-white text-emerald-700 shadow-2xs' : 'text-slate-500 hover:text-slate-800'}">📸 صور حقيقية مرفوعة</button>
+                        <button type="button" onclick="setProofSource('simulator')" class="px-2.5 py-1 rounded-md text-[10.5px] font-black transition ${proofSource === 'simulator' ? 'bg-white text-emerald-700 shadow-2xs' : 'text-slate-500 hover:text-slate-800'}">🖥️ شريط FC المولد</button>
                     </div>
                 </div>
+
+                ${proofSource === 'photo' ? `
+                    <!-- Real Photos Upload Section -->
+                    <div class="space-y-3 pt-1">
+                        <!-- Before Photo -->
+                        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                            <div class="flex items-center justify-between">
+                                <span class="text-[11px] font-black text-rose-700 flex items-center gap-1">
+                                    <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+                                    <span>صورة قبل الشحن (رصيد البداية):</span>
+                                </span>
+                                <input type="file" id="file_proof_before" accept="image/*" class="hidden" onchange="handleProofPhotoUpload('before', this)">
+                                <button type="button" onclick="document.getElementById('file_proof_before').click()" class="px-2.5 py-1 rounded-lg bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 text-[10.5px] font-black flex items-center gap-1 shadow-2xs">
+                                    <span>📁 رفع صورة من جهازك</span>
+                                </button>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-500 mb-0.5">الرصيد قبل الشحن:</label>
+                                    <input type="text" id="input_proof_coinsBefore" value="${appState.coinsBefore || '274,747'}" 
+                                           oninput="appState.coinsBefore = this.value; renderCanvas();" 
+                                           class="w-full px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-slate-900 text-xs font-mono font-bold">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-500 mb-0.5">رابط الصورة (URL):</label>
+                                    <input type="text" value="${appState.beforePhotoUrl || ''}" 
+                                           oninput="appState.beforePhotoUrl = this.value; renderCanvas();" 
+                                           placeholder="رابط أو ارفع ملف..."
+                                           class="w-full px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-slate-900 text-xs font-mono">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- After Photo -->
+                        <div class="p-3 rounded-xl bg-emerald-50/50 border border-emerald-200 space-y-2">
+                            <div class="flex items-center justify-between">
+                                <span class="text-[11px] font-black text-emerald-800 flex items-center gap-1">
+                                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                                    <span>صورة بعد الشحن (الرصيد المشحون ⭐):</span>
+                                </span>
+                                <input type="file" id="file_proof_after" accept="image/*" class="hidden" onchange="handleProofPhotoUpload('after', this)">
+                                <button type="button" onclick="document.getElementById('file_proof_after').click()" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[10.5px] font-black flex items-center gap-1 shadow-xs">
+                                    <span>📁 رفع صورة من جهازك</span>
+                                </button>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="block text-[10px] font-bold text-emerald-800 mb-0.5">الرصيد بعد الشحن:</label>
+                                    <input type="text" id="input_proof_coinsAfter" value="${appState.coinsAfter || '7,537,797'}" 
+                                           oninput="appState.coinsAfter = this.value; renderCanvas();" 
+                                           class="w-full px-2.5 py-1 rounded-lg bg-white border border-emerald-300 text-slate-900 text-xs font-mono font-bold">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold text-emerald-800 mb-0.5">رابط الصورة (URL):</label>
+                                    <input type="text" value="${appState.afterPhotoUrl || ''}" 
+                                           oninput="appState.afterPhotoUrl = this.value; renderCanvas();" 
+                                           placeholder="رابط أو ارفع ملف..."
+                                           class="w-full px-2.5 py-1 rounded-lg bg-white border border-emerald-200 text-slate-900 text-xs font-mono">
+                                </div>
+                            </div>
+                        </div>
+
+                        ${proofStyle === 'full_screenshot' ? `
+                            <!-- Full Screenshot Option -->
+                            <div class="p-3 rounded-xl bg-cyan-50/50 border border-cyan-200 space-y-2">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[11px] font-black text-cyan-900">📺 صورة الشاشة الكاملة (التلفاز أو الجوال):</span>
+                                    <input type="file" id="file_proof_full" accept="image/*" class="hidden" onchange="handleProofPhotoUpload('full', this)">
+                                    <button type="button" onclick="document.getElementById('file_proof_full').click()" class="px-2.5 py-1 rounded-lg bg-cyan-600 hover:bg-cyan-700 text-white text-[10.5px] font-black">
+                                        📁 رفع لقطة الشاشة
+                                    </button>
+                                </div>
+                                <input type="text" value="${appState.fullPhotoUrl || ''}" placeholder="رابط لقطة الشاشة الكاملة" oninput="appState.fullPhotoUrl = this.value; renderCanvas();" class="w-full px-2.5 py-1 rounded-lg bg-white border border-cyan-200 text-xs font-mono">
+                            </div>
+                        ` : ''}
+
+                        <div class="pt-1 flex items-center justify-between">
+                            <button type="button" onclick="autoCalculateCoinsLoaded()" class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-xs font-black transition flex items-center gap-1.5 shadow-sm">
+                                <span>🪄 حساب كمية الكوينز المشحونة تلقائياً</span>
+                            </button>
+                            <button type="button" onclick="resetProofDefaultSamples()" class="text-[10px] text-slate-400 hover:text-slate-700 font-bold">
+                                استعادة الصور النموذجية ↺
+                            </button>
+                        </div>
+                    </div>
+                ` : `
+                    <!-- Simulator Inputs -->
+                    <div class="space-y-2.5 pt-1">
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-700 mb-1">اسم النادي (Club Name):</label>
+                                <input type="text" value="${appState.clubName || 'Lyon SC'}" 
+                                       oninput="appState.clubName = this.value; renderCanvas();" 
+                                       class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-700 mb-1">تاريخ التأسيس (Est.):</label>
+                                <input type="text" value="${appState.estDate || 'Est. Feb 2019'}" 
+                                       oninput="appState.estDate = this.value; renderCanvas();" 
+                                       class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-3 gap-2">
+                            <div>
+                                <label class="block text-[11px] font-bold text-rose-700 mb-1">الرصيد قبل:</label>
+                                <input type="text" id="input_sim_coinsBefore" value="${appState.coinsBefore || '274,747'}" 
+                                       oninput="appState.coinsBefore = this.value; renderCanvas();" 
+                                       class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-mono font-bold">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-bold text-emerald-700 mb-1">الرصيد بعد:</label>
+                                <input type="text" id="input_sim_coinsAfter" value="${appState.coinsAfter || '7,537,797'}" 
+                                       oninput="appState.coinsAfter = this.value; renderCanvas();" 
+                                       class="w-full px-2.5 py-1.5 rounded-lg bg-emerald-50 border border-emerald-300 text-slate-900 text-xs font-mono font-bold">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-700 mb-1">نقاط FC:</label>
+                                <input type="text" value="${appState.fcPoints || '225'}" 
+                                       oninput="appState.fcPoints = this.value; renderCanvas();" 
+                                       class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-mono font-bold">
+                            </div>
+                        </div>
+
+                        <div class="pt-1">
+                            <button type="button" onclick="autoCalculateCoinsLoaded()" class="w-full py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-xs font-black transition flex items-center justify-center gap-1.5 shadow-sm">
+                                <span>🪄 حساب كمية الكوينز المشحونة وتحديث الملخص</span>
+                            </button>
+                        </div>
+                    </div>
+                `}
+            </div>
+
+            <!-- 3. Transfer Specs -->
+            <div class="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-3">
+                <span class="text-xs font-black text-slate-800 block">⚡ بيانات وتوثيق العملية المشحونة:</span>
+                
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-700 mb-1">الكمية المشحونة (ملخص):</label>
+                        <input type="text" id="input_proof_amountLoaded" value="${appState.amountLoaded || '+7,263,050 كوينز'}" 
+                               oninput="appState.amountLoaded = this.value; renderCanvas();" 
+                               class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold font-mono">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-700 mb-1">مدة التنفيذ والتسليم:</label>
+                        <input type="text" value="${appState.deliveryTime || '4 دقائق'}" 
+                               oninput="appState.deliveryTime = this.value; renderCanvas();" 
+                               class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold">
+                    </div>
+                </div>
+
                 <div>
-                    <label class="block text-[11px] font-bold text-slate-600 mb-1">كلام وتقييم العميل:</label>
-                    <textarea rows="2" oninput="appState.reviewText = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">${appState.reviewText || ''}</textarea>
+                    <label class="block text-[11px] font-bold text-slate-700 mb-1.5">المنصة (Platform):</label>
+                    <div class="grid grid-cols-3 gap-1.5 text-center">
+                        <button type="button" onclick="setProofPlatform('PlayStation 5')" 
+                                class="px-2 py-1.5 rounded-xl border text-xs font-bold transition ${(appState.platform || 'PlayStation 5') === 'PlayStation 5' ? 'bg-slate-900 text-white border-slate-900 shadow-xs' : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'}">
+                            🎮 PlayStation 5
+                        </button>
+                        <button type="button" onclick="setProofPlatform('Xbox Series X|S')" 
+                                class="px-2 py-1.5 rounded-xl border text-xs font-bold transition ${appState.platform === 'Xbox Series X|S' ? 'bg-slate-900 text-white border-slate-900 shadow-xs' : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'}">
+                            🎮 Xbox Series
+                        </button>
+                        <button type="button" onclick="setProofPlatform('PC (EA App / Steam)')" 
+                                class="px-2 py-1.5 rounded-xl border text-xs font-bold transition ${appState.platform === 'PC (EA App / Steam)' ? 'bg-slate-900 text-white border-slate-900 shadow-xs' : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'}">
+                            💻 PC
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. Story Texts & CTA -->
+            <div class="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-3">
+                <span class="text-xs font-black text-slate-800 block">✍️ نصوص وعروض الستوري:</span>
+
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-700 mb-1">شارة التنبيه العلوية:</label>
+                    <input type="text" value="${appState.badgeText || ''}" 
+                           oninput="appState.badgeText = this.value; renderCanvas();" 
+                           class="w-full px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500 focus:bg-white">
+                </div>
+
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-700 mb-1">العنوان الرئيسي للستوري:</label>
+                    <input type="text" value="${appState.headline || ''}" 
+                           oninput="appState.headline = this.value; renderCanvas();" 
+                           class="w-full px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-black outline-none focus:border-emerald-500 focus:bg-white">
+                </div>
+
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-700 mb-1">الوصف التحفيزي:</label>
+                    <input type="text" value="${appState.subheadline || ''}" 
+                           oninput="appState.subheadline = this.value; renderCanvas();" 
+                           class="w-full px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-medium outline-none focus:border-emerald-500 focus:bg-white">
+                </div>
+
+                <div class="pt-2 border-t border-slate-100 space-y-2">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-700 mb-1">عنوان بانر المتجر (CTA):</label>
+                        <input type="text" value="${appState.ctaHeadline || ''}" 
+                               oninput="appState.ctaHeadline = this.value; renderCanvas();" 
+                               class="w-full px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500 focus:bg-white">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-700 mb-1">نص زر الطلب عبر الخاص:</label>
+                        <input type="text" value="${appState.ctaSub || ''}" 
+                               oninput="appState.ctaSub = this.value; renderCanvas();" 
+                               class="w-full px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500 focus:bg-white">
+                    </div>
                 </div>
             </div>
         </div>
     `;
 }
 
-window.applySocialProofPreset = function(presetId) {
-    const p = SOCIAL_PROOF_PRESETS.find(x => x.id === presetId);
-    if (!p) return;
-    Object.keys(p).forEach(k => {
-        if (k !== 'id' && k !== 'name') appState[k] = p[k];
-    });
+window.setProofStyle = function(style) {
+    appState.proofStyle = style;
     renderControls();
     renderCanvas();
-    if (window.showCopyToast) window.showCopyToast(`تم تطبيق توثيق ${p.name} 🤝✨`);
+    if (window.showCopyToast) window.showCopyToast('تم تغيير شكل القالب! ✨');
+};
+
+window.setProofSource = function(source) {
+    appState.proofSource = source;
+    renderControls();
+    renderCanvas();
+    if (window.showCopyToast) window.showCopyToast(`تم تحويل مصدر الشريط إلى: ${source === 'photo' ? 'الصور الحقيقية' : 'محاكي FC'}`);
+};
+
+window.setProofPlatform = function(plat) {
+    appState.platform = plat;
+    renderControls();
+    renderCanvas();
+};
+
+window.handleProofPhotoUpload = function(photoType, fileInput) {
+    if (!fileInput || !fileInput.files || !fileInput.files[0]) return;
+    const file = fileInput.files[0];
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        if (photoType === 'before') appState.beforePhotoUrl = e.target.result;
+        else if (photoType === 'after') appState.afterPhotoUrl = e.target.result;
+        else if (photoType === 'full') appState.fullPhotoUrl = e.target.result;
+        renderControls();
+        renderCanvas();
+        if (window.showCopyToast) window.showCopyToast('تم رفع صورة الشحن بنجاح! 📸');
+    };
+    reader.readAsDataURL(file);
+};
+
+window.resetProofDefaultSamples = function() {
+    appState.beforePhotoUrl = 'assets/proof_before_sample.png';
+    appState.afterPhotoUrl = 'assets/proof_after_sample.png';
+    renderControls();
+    renderCanvas();
+    if (window.showCopyToast) window.showCopyToast('تم استعادة الصور النموذجية! ↺');
+};
+
+window.autoCalculateCoinsLoaded = function() {
+    const bStr = (appState.coinsBefore || '').replace(/[^0-9]/g, '');
+    const aStr = (appState.coinsAfter || '').replace(/[^0-9]/g, '');
+    const bVal = parseInt(bStr, 10) || 0;
+    const aVal = parseInt(aStr, 10) || 0;
+    if (aVal > bVal) {
+        const diff = aVal - bVal;
+        appState.amountLoaded = '+' + diff.toLocaleString('en-US') + ' كوينز';
+        const input = document.getElementById('input_proof_amountLoaded');
+        if (input) input.value = appState.amountLoaded;
+        renderCanvas();
+        if (window.showCopyToast) window.showCopyToast(`تم حساب الفارق: ${appState.amountLoaded} 🪙`);
+    } else {
+        alert('تأكد أن رصيد بعد الشحن أكبر من رصيد قبل الشحن!');
+    }
 };
 
 // ==========================================
