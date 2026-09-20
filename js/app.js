@@ -3151,8 +3151,8 @@ function renderControls() {
 
 
 
-    // Box & Button Customization Card (Only for templates with info box and CTA button like trio/market_drop, excluded for promo_pack)
-    if (currentTemplate !== 'promo_pack' && currentTemplate !== 'store_promo' && currentTemplate !== 'sbc' && currentTemplate !== 'showcase' && currentTemplate !== 'market_tracker') {
+    // Box & Button Customization Card (Only for templates with info box and CTA button like trio/market_drop, excluded for promo_pack, market_tracker, champs_squad)
+    if (currentTemplate !== 'promo_pack' && currentTemplate !== 'store_promo' && currentTemplate !== 'sbc' && currentTemplate !== 'showcase' && currentTemplate !== 'market_tracker' && currentTemplate !== 'champs_squad') {
         html += `
             <div class="mt-4 p-4 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-3.5">
                 <div class="flex items-center justify-between pb-2 border-b border-slate-100">
@@ -3240,8 +3240,8 @@ function renderControls() {
         `;
     }
 
-    // Background Framing & Position Controls (تحريك وتكبير الخلفية - Excluded for promo_pack and market_tracker)
-    if (currentTemplate !== 'promo_pack' && currentTemplate !== 'market_tracker') {
+    // Background Framing & Position Controls (تحريك وتكبير الخلفية - Excluded for promo_pack, market_tracker, champs_squad)
+    if (currentTemplate !== 'promo_pack' && currentTemplate !== 'market_tracker' && currentTemplate !== 'champs_squad') {
         html += `
             <div class="mt-4 p-4 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-3.5">
                 <div class="flex items-center justify-between pb-2 border-b border-slate-100">
@@ -6262,13 +6262,17 @@ const CHAMPS_SQUAD_PRESETS = [
 ];
 
 function renderChampsSquadTemplate() {
-    const isLightBg = (window.MARKET_BG_THEMES[appState.bgTheme || 'store']?.isLight) ?? true;
+    appState.bgTheme = 'store';
+    appState.bgLighting = 'bright';
+    const isLightBg = true;
     const c1 = appState.card1 || TEMPLATES.champs_squad.defaultState.card1;
     const c2 = appState.card2 || TEMPLATES.champs_squad.defaultState.card2;
     const c3 = appState.card3 || TEMPLATES.champs_squad.defaultState.card3;
 
+    const formatFormation = (f) => String(f || '').replace(/(\d+[-/]\d+(?:[-/]\d+)*)/g, '<span dir="ltr" class="inline-block font-mono font-black mx-0.5">$1</span>');
+
     return `
-        ${getStoryBackgroundHtml(appState.bgTheme, appState.bgLighting)}
+        ${getStoryBackgroundHtml('store', 'bright')}
 
         <!-- Layer 1: Header -->
         ${renderStoryHeader('layer_champs_header', appState.badgeText || TEMPLATES.champs_squad.defaultState.badgeText, appState.headline || TEMPLATES.champs_squad.defaultState.headline, appState.subheadline || TEMPLATES.champs_squad.defaultState.subheadline, isLightBg)}
@@ -6281,13 +6285,13 @@ function renderChampsSquadTemplate() {
                 <!-- Tactical Badges Ribbon -->
                 <div class="w-full max-w-[480px] flex items-center justify-center gap-2 text-center">
                     <div class="px-3 py-1 rounded-xl bg-slate-950/95 border border-emerald-500/80 shadow-lg text-emerald-400 text-xs font-black">
-                        ⚽ ${appState.formation || 'خطة 4-3-2-1 الميتا'}
+                        <span>⚽</span> <span>${formatFormation(appState.formation || 'خطة 4-3-2-1 الميتا')}</span>
                     </div>
                     <div class="px-3 py-1 rounded-xl bg-slate-950/95 border border-amber-500/80 shadow-lg text-amber-300 text-xs font-black">
-                        💎 ${appState.chemistry || '33 / 33 كيمياء كاملة'}
+                        <span>💎</span> <span>${formatFormation(appState.chemistry || '33 / 33 كيمياء كاملة')}</span>
                     </div>
                     <div class="px-3 py-1 rounded-xl bg-slate-950/95 border border-teal-500/80 shadow-lg text-teal-300 text-xs font-black">
-                        ${appState.rankTarget || '🏆 رانك 1'}
+                        <bdi>${appState.rankTarget || '🏆 رانك 1'}</bdi>
                     </div>
                 </div>
 
@@ -6359,88 +6363,257 @@ function renderChampsSquadTemplate() {
 }
 
 function renderChampsSquadControls() {
+    const c1 = appState.card1 || TEMPLATES.champs_squad.defaultState.card1;
+    const c2 = appState.card2 || TEMPLATES.champs_squad.defaultState.card2;
+    const c3 = appState.card3 || TEMPLATES.champs_squad.defaultState.card3;
+
+    const players = [
+        { index: 1, defaultRole: 'الهداف الحاسم (ST)', title: 'اللاعب الأول (اليمين / ST)', data: c1 },
+        { index: 2, defaultRole: 'صانع الألعاب والكنترول (CAM)', title: 'اللاعب الثاني (الوسط المرتفع / CAM)', data: c2 },
+        { index: 3, defaultRole: 'الجدار الدفاعي (CB)', title: 'اللاعب الثالث (اليسار / CB)', data: c3 }
+    ];
+
     return `
         <div class="space-y-4">
-            <!-- 1. Background Selection -->
-            ${renderStoryBackgroundControls()}
+            <!-- 1. Tactical Setup & Budget -->
+            <div class="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs space-y-3">
+                <div class="flex items-center justify-between pb-1.5 border-b border-slate-100">
+                    <span class="text-xs font-black text-slate-900 flex items-center gap-1.5">
+                        <span>⚔️</span>
+                        <span>التكتيك وميزانية التشكيلة:</span>
+                    </span>
+                    <span class="text-[10px] font-black text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                        تشكيلة الفوت الميتا
+                    </span>
+                </div>
 
-            <!-- 2. 1-Click Presets -->
-            <div class="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs space-y-2">
-                <span class="text-xs font-black text-slate-800 block">⚡ تشكيلات جاهزة بنقرة واحدة:</span>
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-1.5">
-                    ${CHAMPS_SQUAD_PRESETS.map(p => `
-                        <button type="button" onclick="applyChampsSquadPreset('${p.id}')" class="p-2 rounded-xl text-right border transition bg-slate-50 border-slate-200 hover:border-emerald-400 text-slate-800 text-xs font-bold">
-                            ${p.name}
-                        </button>
-                    `).join('')}
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-700 mb-1">الخطة التكتيكية:</label>
+                        <input type="text" value="${appState.formation || ''}" 
+                               placeholder="خطة 4-3-2-1 الميتا"
+                               oninput="appState.formation = this.value; renderCanvas();" 
+                               class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500 focus:bg-white transition">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-700 mb-1">ميزانية التشكيلة الإجمالية:</label>
+                        <input type="text" value="${appState.squadBudget || ''}" 
+                               placeholder="850,000 كوينز"
+                               oninput="appState.squadBudget = this.value; renderCanvas();" 
+                               class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500 focus:bg-white transition">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-700 mb-1">الكيمياء:</label>
+                        <input type="text" value="${appState.chemistry || ''}" 
+                               placeholder="33 / 33 كيمياء كاملة"
+                               oninput="appState.chemistry = this.value; renderCanvas();" 
+                               class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500 focus:bg-white transition">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-700 mb-1">الهدف / الرانك المتوقع:</label>
+                        <input type="text" value="${appState.rankTarget || ''}" 
+                               placeholder="🏆 تشكيلة رانك 1 (15+ فوز مضمون)"
+                               oninput="appState.rankTarget = this.value; renderCanvas();" 
+                               class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500 focus:bg-white transition">
+                    </div>
                 </div>
             </div>
 
-            <!-- 3. Tactical Setup & Budget -->
-            <div class="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs space-y-3">
-                <span class="text-xs font-black text-slate-800 block">⚔️ التكتيك والميزانية:</span>
-                <div class="grid grid-cols-2 gap-2">
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-600 mb-1">الخطة التكتيكية:</label>
-                        <input type="text" value="${appState.formation || ''}" oninput="appState.formation = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
-                    </div>
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-600 mb-1">ميزانية التشكيلة:</label>
-                        <input type="text" value="${appState.squadBudget || ''}" oninput="appState.squadBudget = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
-                    </div>
+            <!-- 2. Core Players Data with Search & Upload -->
+            <div class="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs space-y-3.5">
+                <div class="flex items-center justify-between pb-1.5 border-b border-slate-100">
+                    <span class="text-xs font-black text-slate-900 flex items-center gap-1.5">
+                        <span>👥</span>
+                        <span>ركائز ونجوم التشكيلة الثلاثة:</span>
+                    </span>
+                    <span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                        سحب مباشر من FUT.GG ⚡
+                    </span>
                 </div>
-                <div class="grid grid-cols-2 gap-2">
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-600 mb-1">الكيمياء:</label>
-                        <input type="text" value="${appState.chemistry || ''}" oninput="appState.chemistry = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+
+                ${players.map(p => `
+                    <div class="p-3 bg-slate-50/80 rounded-xl space-y-2.5 border border-slate-200">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-1.5">
+                                <span class="w-5 h-5 rounded-full bg-emerald-600 text-white font-black text-[10px] flex items-center justify-center">${p.index}</span>
+                                <span class="text-xs font-black text-slate-800">${p.title}:</span>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <img src="${p.data.url}" class="w-6 h-8 object-contain rounded border border-slate-200 bg-white" alt="">
+                                <span class="text-[10.5px] font-black text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                                    ${p.data.name || ''} (${p.data.rating || ''})
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Live Fetch or File Upload -->
+                        <div class="flex gap-1.5">
+                            <input type="text" id="input_champs_p${p.index}" 
+                                   placeholder="ابحث باسم اللاعب (مثال: مبابي، بيلينغهام) أو رابط FUT.GG"
+                                   onkeydown="if(event.key==='Enter') fetchChampsPlayerCard(${p.index})"
+                                   class="flex-1 px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-900 text-[11px] outline-none focus:border-emerald-600 transition shadow-2xs">
+                            <button id="btn_fetch_champs_p${p.index}" type="button" onclick="fetchChampsPlayerCard(${p.index})" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[11px] transition shrink-0 flex items-center gap-1 shadow-xs cursor-pointer">
+                                <span>⚡ سحب</span>
+                            </button>
+                            <label class="px-2.5 py-1.5 rounded-lg bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-[11px] font-bold cursor-pointer transition shrink-0 flex items-center gap-1 shadow-2xs" title="رفع صورة كرت">
+                                <span>📁 رفع</span>
+                                <input type="file" accept="image/*" class="hidden" onchange="handleChampsPlayerUpload(${p.index}, this)">
+                            </label>
+                        </div>
+
+                        <!-- Manual Fields: Name, Rating, Role -->
+                        <div class="grid grid-cols-3 gap-1.5 pt-1">
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-600 mb-0.5">اسم اللاعب:</label>
+                                <input type="text" value="${p.data.name || ''}" 
+                                       placeholder="الاسم" 
+                                       oninput="updateChampsPlayer(${p.index}, 'name', this.value)" 
+                                       class="w-full px-2 py-1 rounded-md bg-white border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-600 mb-0.5">التقييم والمركز:</label>
+                                <input type="text" value="${p.data.rating || ''}" 
+                                       placeholder="91 ST" 
+                                       oninput="updateChampsPlayer(${p.index}, 'rating', this.value)" 
+                                       class="w-full px-2 py-1 rounded-md bg-white border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-600 mb-0.5">الدور بالتشكيلة:</label>
+                                <input type="text" value="${p.data.role || p.defaultRole}" 
+                                       placeholder="${p.defaultRole}" 
+                                       oninput="updateChampsPlayer(${p.index}, 'role', this.value)" 
+                                       class="w-full px-2 py-1 rounded-md bg-white border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-500 mb-0.5">رابط صورة الكرت المباشر:</label>
+                            <input type="text" value="${p.data.url || ''}" 
+                                   placeholder="رابط الصورة" 
+                                   oninput="updateChampsPlayer(${p.index}, 'url', this.value)" 
+                                   class="w-full px-2 py-1 rounded-md bg-white border border-slate-200 text-slate-700 text-[10.5px] font-mono outline-none focus:border-emerald-500">
+                        </div>
                     </div>
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-600 mb-1">الهدف / الرانك:</label>
-                        <input type="text" value="${appState.rankTarget || ''}" oninput="appState.rankTarget = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
-                    </div>
-                </div>
+                `).join('')}
             </div>
 
-            <!-- 4. Core Players Data -->
+            <!-- 3. Headlines & CTA Settings -->
             <div class="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs space-y-3">
-                <span class="text-xs font-black text-slate-800 block">👥 نجوم التشكيلة الثلاثة:</span>
-                
-                <!-- Player 1 -->
-                <div class="p-2 bg-slate-50 rounded-xl space-y-1.5 border border-slate-200">
-                    <span class="text-[11px] font-bold text-slate-700 block">اللاعب الأول (اليمين / ST):</span>
-                    <div class="grid grid-cols-3 gap-1.5">
-                        <input type="text" value="${appState.card1?.name || ''}" placeholder="الاسم" oninput="if(!appState.card1) appState.card1={}; appState.card1.name=this.value; renderCanvas();" class="px-2 py-1 rounded bg-white border border-slate-200 text-xs">
-                        <input type="text" value="${appState.card1?.rating || ''}" placeholder="التقييم" oninput="if(!appState.card1) appState.card1={}; appState.card1.rating=this.value; renderCanvas();" class="px-2 py-1 rounded bg-white border border-slate-200 text-xs">
-                        <input type="text" value="${appState.card1?.role || ''}" placeholder="الدور" oninput="if(!appState.card1) appState.card1={}; appState.card1.role=this.value; renderCanvas();" class="px-2 py-1 rounded bg-white border border-slate-200 text-xs">
-                    </div>
-                    <input type="text" value="${appState.card1?.url || ''}" placeholder="رابط صورة الكرت" oninput="if(!appState.card1) appState.card1={}; appState.card1.url=this.value; renderCanvas();" class="w-full px-2 py-1 rounded bg-white border border-slate-200 text-[10.5px] font-mono">
+                <div class="flex items-center gap-1.5 pb-1.5 border-b border-slate-100">
+                    <span class="text-xs font-black text-slate-900">✍️ نصوص وعروض الستوري:</span>
                 </div>
 
-                <!-- Player 2 -->
-                <div class="p-2 bg-slate-50 rounded-xl space-y-1.5 border border-slate-200">
-                    <span class="text-[11px] font-bold text-slate-700 block">اللاعب الثاني (الوسط / CAM):</span>
-                    <div class="grid grid-cols-3 gap-1.5">
-                        <input type="text" value="${appState.card2?.name || ''}" placeholder="الاسم" oninput="if(!appState.card2) appState.card2={}; appState.card2.name=this.value; renderCanvas();" class="px-2 py-1 rounded bg-white border border-slate-200 text-xs">
-                        <input type="text" value="${appState.card2?.rating || ''}" placeholder="التقييم" oninput="if(!appState.card2) appState.card2={}; appState.card2.rating=this.value; renderCanvas();" class="px-2 py-1 rounded bg-white border border-slate-200 text-xs">
-                        <input type="text" value="${appState.card2?.role || ''}" placeholder="الدور" oninput="if(!appState.card2) appState.card2={}; appState.card2.role=this.value; renderCanvas();" class="px-2 py-1 rounded bg-white border border-slate-200 text-xs">
-                    </div>
-                    <input type="text" value="${appState.card2?.url || ''}" placeholder="رابط صورة الكرت" oninput="if(!appState.card2) appState.card2={}; appState.card2.url=this.value; renderCanvas();" class="w-full px-2 py-1 rounded bg-white border border-slate-200 text-[10.5px] font-mono">
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-700 mb-1">شارة التنبيه العلوية:</label>
+                    <input type="text" value="${appState.badgeText || ''}" 
+                           oninput="appState.badgeText = this.value; renderCanvas();" 
+                           class="w-full px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500 focus:bg-white">
                 </div>
 
-                <!-- Player 3 -->
-                <div class="p-2 bg-slate-50 rounded-xl space-y-1.5 border border-slate-200">
-                    <span class="text-[11px] font-bold text-slate-700 block">اللاعب الثالث (اليسار / CB):</span>
-                    <div class="grid grid-cols-3 gap-1.5">
-                        <input type="text" value="${appState.card3?.name || ''}" placeholder="الاسم" oninput="if(!appState.card3) appState.card3={}; appState.card3.name=this.value; renderCanvas();" class="px-2 py-1 rounded bg-white border border-slate-200 text-xs">
-                        <input type="text" value="${appState.card3?.rating || ''}" placeholder="التقييم" oninput="if(!appState.card3) appState.card3={}; appState.card3.rating=this.value; renderCanvas();" class="px-2 py-1 rounded bg-white border border-slate-200 text-xs">
-                        <input type="text" value="${appState.card3?.role || ''}" placeholder="الدور" oninput="if(!appState.card3) appState.card3={}; appState.card3.role=this.value; renderCanvas();" class="px-2 py-1 rounded bg-white border border-slate-200 text-xs">
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-700 mb-1">العنوان الرئيسي للستوري:</label>
+                    <input type="text" value="${appState.headline || ''}" 
+                           oninput="appState.headline = this.value; renderCanvas();" 
+                           class="w-full px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500 focus:bg-white">
+                </div>
+
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-700 mb-1">الوصف التحفيزي:</label>
+                    <input type="text" value="${appState.subheadline || ''}" 
+                           oninput="appState.subheadline = this.value; renderCanvas();" 
+                           class="w-full px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-medium outline-none focus:border-emerald-500 focus:bg-white">
+                </div>
+
+                <div class="pt-2 border-t border-slate-100 space-y-2">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-700 mb-1">عنوان بانر المتجر (CTA):</label>
+                        <input type="text" value="${appState.ctaHeadline || ''}" 
+                               oninput="appState.ctaHeadline = this.value; renderCanvas();" 
+                               class="w-full px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500 focus:bg-white">
                     </div>
-                    <input type="text" value="${appState.card3?.url || ''}" placeholder="رابط صورة الكرت" oninput="if(!appState.card3) appState.card3={}; appState.card3.url=this.value; renderCanvas();" class="w-full px-2 py-1 rounded bg-white border border-slate-200 text-[10.5px] font-mono">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-700 mb-1">نص زر الطلب عبر الخاص:</label>
+                        <input type="text" value="${appState.ctaSub || ''}" 
+                               oninput="appState.ctaSub = this.value; renderCanvas();" 
+                               class="w-full px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500 focus:bg-white">
+                    </div>
                 </div>
             </div>
         </div>
     `;
 }
+
+window.updateChampsPlayer = function(playerIndex, field, value) {
+    const key = 'card' + playerIndex;
+    if (!appState[key]) {
+        appState[key] = JSON.parse(JSON.stringify(TEMPLATES.champs_squad.defaultState[key] || {}));
+    }
+    appState[key][field] = value;
+    renderCanvas();
+};
+
+window.fetchChampsPlayerCard = async function(playerIndex) {
+    const input = document.getElementById(`input_champs_p${playerIndex}`);
+    if (!input || !input.value.trim()) {
+        alert('يرجى كتابة اسم اللاعب (مثل مبابي أو بيلينغهام) أو لصق رابط الكرت من FUT.GG أو فوت بين');
+        return;
+    }
+    const val = input.value.trim();
+    const btn = document.getElementById(`btn_fetch_champs_p${playerIndex}`);
+    const originalText = btn ? btn.innerHTML : '';
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<span>جاري...</span> <span class="animate-spin">⏳</span>';
+    }
+
+    try {
+        const res = await fetch(`/api/fetch-futgg?url=${encodeURIComponent(val)}`);
+        if (!res.ok) throw new Error(`خطأ في السيرفر (${res.status})`);
+        const data = await res.json();
+        if (data.success && data.cardImage) {
+            const key = 'card' + playerIndex;
+            if (!appState[key]) {
+                appState[key] = JSON.parse(JSON.stringify(TEMPLATES.champs_squad.defaultState[key] || {}));
+            }
+            appState[key].url = data.cardImage;
+            if (data.playerName) appState[key].name = data.playerName;
+            if (data.rating) appState[key].rating = `${data.rating} ${data.position || ''}`.trim();
+            input.value = '';
+            renderControls();
+            renderCanvas();
+            if (window.showCopyToast) window.showCopyToast(`تم جلب كرت ${data.playerName} بنجاح! ⚡`);
+        } else {
+            alert(data.error || 'تعذر سحب كرت اللاعب. تأكد من الاسم أو الرابط');
+        }
+    } catch (e) {
+        alert('حدث خطأ أثناء جلب الكرت: ' + e.message);
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
+    }
+};
+
+window.handleChampsPlayerUpload = function(playerIndex, fileInput) {
+    if (!fileInput || !fileInput.files || !fileInput.files[0]) return;
+    const file = fileInput.files[0];
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const key = 'card' + playerIndex;
+        if (!appState[key]) {
+            appState[key] = JSON.parse(JSON.stringify(TEMPLATES.champs_squad.defaultState[key] || {}));
+        }
+        appState[key].url = e.target.result;
+        renderControls();
+        renderCanvas();
+        if (window.showCopyToast) window.showCopyToast(`تم رفع كرت اللاعب ${playerIndex} بنجاح! 📁`);
+    };
+    reader.readAsDataURL(file);
+};
 
 window.applyChampsSquadPreset = function(presetId) {
     const p = CHAMPS_SQUAD_PRESETS.find(x => x.id === presetId);
