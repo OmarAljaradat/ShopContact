@@ -4576,26 +4576,27 @@ window.ReelsEngine = (function() {
             .replace(/'/g, '&#039;');
     }
 
-    function formatTitleLines(rawText, defaultText = '') {
+    function formatTitleLines(rawText, defaultText = '', forceNoWrap = true) {
         const text = (rawText !== undefined && rawText !== null && String(rawText).trim() !== '') ? String(rawText) : defaultText;
         if (!text) return '';
         const lines = text.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
         if (lines.length === 0) return '';
-        return lines.map(line => `<span class="block max-w-[325px] mx-auto text-center leading-tight whitespace-normal break-words">${escapeHtml(line)}</span>`).join('');
+        const wrapClass = (forceNoWrap || lines.length > 1) ? 'whitespace-nowrap' : 'whitespace-normal break-words';
+        return lines.map(line => `<span class="block w-full mx-auto text-center leading-tight ${wrapClass}">${escapeHtml(line)}</span>`).join('');
     }
 
     function getTitleFontClass(rawText, defaultText = '') {
         const text = (rawText !== undefined && rawText !== null && String(rawText).trim() !== '') ? String(rawText) : defaultText;
-        if (!text) return 'text-3xl md:text-4xl';
+        if (!text) return 'text-3xl leading-tight';
         const lines = text.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
         const lineCount = lines.length || 1;
         const maxLen = lines.length ? Math.max(...lines.map(l => l.length)) : 0;
 
-        if (maxLen > 40 || lineCount >= 4) return 'text-lg md:text-xl leading-snug';
-        if (maxLen > 28 || lineCount === 3) return 'text-2xl md:text-3xl leading-tight';
-        if (maxLen > 18 || lineCount === 2) return 'text-3xl md:text-4xl leading-tight';
-        if (maxLen > 10) return 'text-4xl md:text-5xl leading-tight';
-        return 'text-4xl md:text-5xl leading-tight';
+        if (maxLen > 40 || lineCount >= 4) return 'text-base leading-snug';
+        if (maxLen > 30 || lineCount === 3) return 'text-xl leading-tight';
+        if (maxLen > 18) return 'text-2xl leading-tight';
+        if (maxLen > 10 || lineCount === 2) return 'text-3xl leading-tight';
+        return 'text-4xl leading-tight';
     }
 
     function countTitleLines(rawText) {
@@ -5522,7 +5523,7 @@ window.ReelsEngine = (function() {
                 ${!currentSlide.hideTitle ? `
                     <div data-drag-id="introTitle" class="z-20 select-none relative ${dragCursor} ${selectRing('introTitle')}" style="${posStyle(layout.introTitle)}">
                         <div class="reel-anim-layer" style="${getElemAnimStyle('introTitle')}">
-                            <div class="w-[325px] max-w-[325px] mx-auto text-center px-2" dir="rtl">
+                            <div class="w-full max-w-[400px] mx-auto text-center px-2" dir="rtl">
                                 <h1 class="${getTitleFontClass(currentSlide.title || state.title)} font-black text-slate-950 leading-snug drop-shadow-sm pointer-events-none space-y-0.5">
                                     ${formatTitleLines(currentSlide.title || state.title, 'أفضل 5 مهاجمين للبدايات')}
                                 </h1>
@@ -5537,8 +5538,8 @@ window.ReelsEngine = (function() {
                     <div data-drag-id="introSubtitle" class="z-20 select-none relative ${dragCursor} ${selectRing('introSubtitle')}" style="${posStyle(layout.introSubtitle)}">
                         <div class="reel-anim-layer" style="${getElemAnimStyle('introSubtitle')}">
                             <div class="w-[390px] max-w-[390px] text-center px-3" dir="rtl">
-                                <p class="text-sm md:text-base font-bold text-slate-600 leading-relaxed pointer-events-none space-y-0.5">
-                                    ${formatTitleLines(currentSlide.subtitle || state.subtitle, 'الوصف والتحفيز')}
+                                <p class="text-sm font-bold text-slate-600 leading-relaxed pointer-events-none space-y-0.5">
+                                    ${formatTitleLines(currentSlide.subtitle || state.subtitle, 'الوصف والتحفيز', false)}
                                 </p>
                             </div>
                         </div>
@@ -5579,8 +5580,8 @@ window.ReelsEngine = (function() {
                 ${!currentSlide.hideTitle ? `
                     <div data-drag-id="title" class="z-20 select-none relative ${dragCursor} ${selectRing('title')}" style="${posStyle(layout.title)}">
                         <div class="reel-anim-layer" style="${getElemAnimStyle('title')}">
-                            <div class="w-[325px] max-w-[325px] mx-auto text-center px-2" dir="rtl">
-                                <div class="text-base md:text-lg font-black text-slate-950 leading-tight drop-shadow-xs pointer-events-none space-y-0.5">
+                            <div class="w-full max-w-[400px] mx-auto text-center px-2" dir="rtl">
+                                <div class="text-base font-black text-slate-950 leading-tight drop-shadow-xs pointer-events-none space-y-0.5">
                                     ${formatTitleLines(state.title, 'عنوان الريل')}
                                 </div>
                             </div>
@@ -5642,7 +5643,7 @@ window.ReelsEngine = (function() {
                 ${!currentSlide.hideTitle ? `
                     <div data-drag-id="title" class="z-20 select-none relative ${dragCursor} ${selectRing('title')}" style="${posStyle(layout.title)}">
                         <div class="reel-anim-layer" style="${getElemAnimStyle('title')}">
-                            <div class="w-max max-w-none text-center px-2" dir="rtl">
+                            <div class="w-full max-w-[400px] mx-auto text-center px-2" dir="rtl">
                                 <span class="inline-block px-3 py-1 rounded-full bg-slate-900 text-white text-[10px] font-black mb-1 shadow-xs pointer-events-none">
                                     ${state.badge || '⚔️ صراع العمالقة'}
                                 </span>
@@ -5745,7 +5746,7 @@ window.ReelsEngine = (function() {
                 ${!currentSlide.hideTitle ? `
                     <div data-drag-id="outroTitle" class="z-20 select-none relative ${dragCursor} ${selectRing('outroTitle')}" style="${posStyle(layout.outroTitle)}">
                         <div class="reel-anim-layer" style="${getElemAnimStyle('outroTitle')}">
-                            <div class="w-max max-w-none text-center px-2" dir="rtl">
+                            <div class="w-full max-w-[400px] mx-auto text-center px-2" dir="rtl">
                                 <h2 class="${getTitleFontClass(currentSlide.title || 'متجر ShopCoin15')} font-black text-slate-950 leading-snug pointer-events-none space-y-0.5">
                                     ${formatTitleLines(currentSlide.title || 'متجر ShopCoin15', 'متجر ShopCoin15')}
                                 </h2>
