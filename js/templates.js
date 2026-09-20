@@ -610,6 +610,227 @@ const TEMPLATES = {
             ctaSub: 'للطلب تواصل معنا على الخاص: @shop_coin15 📩'
         }
     },
+    loaded_accounts: {
+        id: 'loaded_accounts',
+        name: '🎮 حسابات جاهزة للبيع',
+        icon: 'database',
+        description: 'عرض حساب فيفا كامل محمل بالكوينز مع ماركت ويب آب مفتوح وتسليم فوري',
+        defaultState: {
+            bgTheme: 'store',
+            bgLighting: 'bright',
+            platform: 'PlayStation 5',
+            coinsBalance: '2,500,000 كوينز',
+            marketStatus: '✅ الماركت مفتوح بالويب آب واللعبة',
+            clubLevel: 'ديفيجن 2 • نادي نظيف 100%',
+            accountEmail: 'إيميل أساسي أصلي قابل للنقل بالكامل',
+            priceTag: '79$',
+            oldPrice: '99$',
+            badgeText: '🎮 حسابات فيفا جاهزة ومضمونة • تسليم فوري بالبيانات الأصلية',
+            headline: 'حساب بلايستيشن 5 محمل بـ 2.5M كوينز كاش جاهز للعب! ⚡🔥',
+            subheadline: 'الماركت مفتوح بالويب آب.. استلم الإيميل والباسورد فوراً وابدأ اللعب بنجومك!',
+            ctaHeadline: 'متوفر حسابات لجميع المنصات.. اطلب حسابك عبر الخاص 📩',
+            ctaSub: 'للطلب تواصل معنا على الخاص: @shop_coin15 📩'
+        }
+    },
+    vip_voucher: {
+        id: 'vip_voucher',
+        name: '🎟️ قسيمة الخصم الخاطفة',
+        icon: 'tag',
+        description: 'تذكرة خصم VIP ذهبية مع كود حصري وعداد مقاعد محدودة لتحفيز الشراء الفوري',
+        defaultState: {
+            bgTheme: 'emerald_glow',
+            bgLighting: 'bright',
+            couponCode: 'VIP15',
+            discountAmount: 'خصم 15% فوري',
+            remainingSpots: 'متبقي 3 مقاعد فقط 🔥',
+            expiryTime: '⏳ صالح حتى منتصف الليل فقط',
+            targetPackage: 'على جميع باقات الـ 1M والـ 2M كوينز',
+            badgeText: '🎟️ قسيمة خصم VIP حصرية لمتابعي الستوري • لفترة محدودة',
+            headline: 'كود خصم 15% حصري لأول 5 أشخاص يتواصلون بالخاص! 💰⚡',
+            subheadline: 'انسخ الكود وأرسله لنا بالخاص لتطبيق الخصم فوراً على طلبيتك قبل نفاد المقاعد!',
+            ctaHeadline: 'أرسل الكود VIP15 بالخاص واستلم خصمك فوراً 📩',
+            ctaSub: 'للطلب تواصل معنا على الخاص: @shop_coin15 📩'
+        }
+    },
+    squad_makeover: {
+        id: 'squad_makeover',
+        name: '🛠️ تجديد التشكيلة (قبل / بعد)',
+        icon: 'refresh-cw',
+        description: 'استعراض تحول تشكيلة العميل من ديفيجن ضعيف إلى إليت بالكوينز لجلب طلبات بالخاص',
+        defaultState: {
+            bgTheme: 'store',
+            bgLighting: 'bright',
+            beforeRank: 'ديفيجن 4 • كيمياء 23/33 (تشكيلة عادية)',
+            afterRank: 'ديفيجن إليت 👑 • كيمياء 33/33 (تشكيلة ميتا)',
+            upgradeCost: '850,000 كوينز',
+            card1_url: '/api/image-proxy?url=https%3A%2F%2Fgame-assets.fut.gg%2Fcdn-cgi%2Fimage%2Fquality%3D85%2Cformat%3Dauto%2Cwidth%3D600%2F2027%2Ffutgg-player-item-card%2F27-231747.1b49b357729ba7dbf174dc4aa1e8519ce230b98ad399360e364a59f4b3477f07.webp',
+            card1_name: 'مبابي (91)',
+            card2_url: '/api/image-proxy?url=https%3A%2F%2Fgame-assets.fut.gg%2Fcdn-cgi%2Fimage%2Fquality%3D85%2Cformat%3Dauto%2Cwidth%3D600%2F2027%2Ffutgg-player-item-card%2F27-252371.49e4acdf2d78496f4951f41725cd17fb8efb118d99a69ba074ab76fc62d70735.webp',
+            card2_name: 'بيلينغهام (90)',
+            badgeText: '🛠️ خدمة تجديد التشكيلات وتطوير الفرق • استشارات المتجر الاحترافية',
+            headline: 'حوّلنا فريق عميلنا من ديفيجن 4 إلى ديفيجن إليت بالكوينز! 🤯⚡',
+            subheadline: 'أرسل تشكيلتك الحالية على الخاص.. ونعطيك أفضل 3 تبديلات تضبط فريقك مع خصم خاص!',
+            ctaHeadline: 'أرسل تشكيلتك على الخاص واستشر خبير المتجر مجاناً 📩',
+            ctaSub: 'للطلب تواصل معنا على الخاص: @shop_coin15 📩'
+        }
+    },
+    vip_whales: {
+        id: 'vip_whales',
+        name: '👑 صالة الحيتان VIP',
+        icon: 'crown',
+        description: 'باقة الملايين والشحن الخاص لكبار العملاء مع خدمة مدير حساب واتساب مخصص 24/7',
+        defaultState: {
+            bgTheme: 'gold_lounge',
+            bgLighting: 'bright',
+            tierName: 'باقة الحيتان الملكية (10,000,000 كوينز)',
+            perk1: '👑 مدير حساب خاص VIP عبر الواتساب على مدار الساعة',
+            perk2: '⚡ أولوية شحن قصوى في الطابور (تنفيذ فوري مباشر)',
+            perk3: '💎 أسعار جملة حصرية لا تظهر للعامة مع هدايا إضافية',
+            perk4: '🛡️ حماية وتأمين كامل للنادي مع تعويض فوري 100%',
+            priceTag: '175$',
+            badgeText: '👑 صالة الحيتان الملكية VIP • خدمات الشحن الخاص للملايين',
+            headline: 'باقة الحيتان VIP: شحن كميات الملايين بأقصى فخامة وسرعة! 👑💰',
+            subheadline: 'خدمة مخصصة لكبار العملاء.. مدير حساب خاص وأسعار جملة استثنائية!',
+            ctaHeadline: 'احجز باقة الحيتان الخاصة وتواصل مع الإدارة مباشرة 📩',
+            ctaSub: 'للطلب تواصل معنا على الخاص: @shop_coin15 📩'
+        }
+    },
+    player_duel: {
+        id: 'player_duel',
+        name: '🥊 معركة النجوم وتصويت الستوري',
+        icon: 'swords',
+        description: 'مواجهة رأس برأس ومقارنة طاقات مع مساحة مخصصة لستيكر تصويت إنستغرام',
+        defaultState: {
+            bgTheme: 'store',
+            bgLighting: 'bright',
+            card1: {
+                name: 'كيليان مبابي',
+                rating: '91 ST',
+                stat1: '97 سرعة',
+                stat2: '90 تسديد',
+                stat3: '92 مراوغة',
+                price: '1,850,000 كوينز',
+                url: '/api/image-proxy?url=https%3A%2F%2Fgame-assets.fut.gg%2Fcdn-cgi%2Fimage%2Fquality%3D85%2Cformat%3Dauto%2Cwidth%3D600%2F2027%2Ffutgg-player-item-card%2F27-231747.1b49b357729ba7dbf174dc4aa1e8519ce230b98ad399360e364a59f4b3477f07.webp'
+            },
+            card2: {
+                name: 'فينيسيوس جونيور',
+                rating: '90 LW',
+                stat1: '95 سرعة',
+                stat2: '84 تسديد',
+                stat3: '91 مراوغة',
+                price: '1,250,000 كوينز',
+                url: '/api/image-proxy?url=https%3A%2F%2Fgame-assets.fut.gg%2Fcdn-cgi%2Fimage%2Fquality%3D85%2Cformat%3Dauto%2Cwidth%3D600%2F2027%2Ffutgg-player-item-card%2F27-238794.6715e80f49fb5360b92261f8bd984f7178a47066cff3bfcd2c1b7dd57db13fbf.webp'
+            },
+            pollPrompt: 'من الأفضل لقيادة هجوم ناديك في الفوت؟ صوت تحت 👇',
+            badgeText: '🥊 معركة نجوم الفوت • مقارنة الطاقات واستفتاء المتابعين',
+            headline: 'مبابي ضد فينيسيوس: من المهاجم الأفضل لناديك في الفوت؟ 🤔🔥',
+            subheadline: 'صوّت لنجمك المفضل بالستيكر.. وكوينز الاثنين متوفرة تسليم فوري بالمتجر!',
+            ctaHeadline: 'أياً كان خيارك.. كوينز النجمين متوفرة تسليم فوري ⚡',
+            ctaSub: 'للطلب تواصل معنا على الخاص: @shop_coin15 📩'
+        }
+    },
+    budget_beast: {
+        id: 'budget_beast',
+        name: '💎 تشكيلة الميزانية الذكية (250k)',
+        icon: 'zap',
+        description: 'تشكيلة الميتا المرعبة بـ 250 ألف كوينز لقهر فرق الملايين بأسعار في متناول الجميع',
+        defaultState: {
+            bgTheme: 'store',
+            bgLighting: 'bright',
+            squadCost: '250,000 كوينز فقط',
+            squadTitle: 'ثلاثي الهجوم الخارق الميتا',
+            highlightPill: '⚡ سرعة جنونية + إنهاء قاتل بـ 250k',
+            card1: {
+                name: 'داروين نونيز',
+                rating: '82 ST',
+                trait: 'صاروخ بدني 90 PAC',
+                url: STARTER_BEASTS[0].imageUrl
+            },
+            card2: {
+                name: 'عثمان ديمبيلي',
+                rating: '86 RW',
+                trait: '5 نجوم مهارات وقدم',
+                url: STARTER_BEASTS[1].imageUrl
+            },
+            card3: {
+                name: 'رافاييل لياو',
+                rating: '86 LW',
+                trait: 'قوة وسرعة لا تصد',
+                url: STARTER_BEASTS[2].imageUrl
+            },
+            badgeText: '💎 تشكيلات الميزانية الذكية • قهر فرق الملايين بأقل تكلفة',
+            headline: 'تشكيلة الـ 250 ألف كوينز الميتا التي تجلد فرق الملايين! 🤯🔥',
+            subheadline: 'لا تحتاج ملايين حتى تفوز.. هؤلاء الثلاثة يضمنون لك الفوز برانك الفوت!',
+            ctaHeadline: 'اشحن كوينز التشكيلة كاملة بدقائق بسعر رمزي 💰',
+            ctaSub: 'للطلب تواصل معنا على الخاص: @shop_coin15 📩'
+        }
+    },
+    player_review: {
+        id: 'player_review',
+        name: '🔍 مراجعة الكرت بعد 50 مباراة',
+        icon: 'star',
+        description: 'مراجعة أداء كرت ميتا خارق بعد 50 مباراة مع إيجابيات وسلبيات وتقييم نهائي وشحن فوري',
+        defaultState: {
+            bgTheme: 'store',
+            bgLighting: 'bright',
+            playerCardUrl: '/api/image-proxy?url=https%3A%2F%2Fgame-assets.fut.gg%2Fcdn-cgi%2Fimage%2Fquality%3D85%2Cformat%3Dauto%2Cwidth%3D600%2F2027%2Ffutgg-player-item-card%2F27-231747.1b49b357729ba7dbf174dc4aa1e8519ce230b98ad399360e364a59f4b3477f07.webp',
+            playerName: 'كيليان مبابي (91 ST)',
+            playerPrice: '1,850,000 كوينز',
+            gamesPlayed: '50 مباراة فوت تشامبيونز',
+            goalsStats: '68 هدف ⚽ • 24 أسيست 👟',
+            pro1: '🟢 سرعة انفجارية مستحيل اللحاق به',
+            pro2: '🟢 إنهاء قاتل بالقدمين من أي زاوية',
+            con1: '🔴 سعره مرتفع ويحتاج ميزانية مخصصة',
+            finalScore: '9.8 / 10',
+            verdictTitle: 'الحكم النهائي: كرت حاسم يضمن لك الـ 15 فوز 👑',
+            badgeText: '🔍 مراجعات كروت الميتا بعد 50 مباراة • حكم الخبراء المعتمد',
+            headline: 'مراجعة مبابي بعد 50 مباراة فوت: هل يستاهل كوينزه؟ 🤔🔥',
+            subheadline: 'الأرقام والإيجابيات لا تكذب.. الكرت يحسم المباريات الصعبة بمفرده!',
+            ctaHeadline: 'متوفر شحن كوينز الكرت فوراً لناديك بأفضل سعر 💰',
+            ctaSub: 'للطلب تواصل معنا على الخاص: @shop_coin15 📩'
+        }
+    },
+    gift_friend: {
+        id: 'gift_friend',
+        name: '🎁 أهدي كوينز لخويك',
+        icon: 'gift',
+        description: 'كرت إهداء رقمي راقٍ لشحن كوينز لحساب صديقك كمفاجأة مع رسالة مخصصة',
+        defaultState: {
+            bgTheme: 'store',
+            bgLighting: 'bright',
+            recipientName: 'عبدالعزيز (خوي الدرب)',
+            senderName: 'من: فهد الشمري',
+            giftAmount: '1,000,000 كوينز',
+            giftOccasion: '🎉 بمناسبة تحقيق رانك 1 في الفوت تشامبيونز!',
+            personalNote: 'تستاهل يا كابتن وعقبال التوب 100.. شد حيلك وناديك صار جاهز!',
+            deliveryGuarantee: '🎁 يتم الشحن بحسابه مباشرة مع كرت إهداء فاخر باسمك',
+            badgeText: '🎁 خدمة إهداء الكوينز للأصدقاء • فاجئ خويك بهدية تسعده بناديه',
+            headline: 'فاجئ خويك بهدية كوينز تشحن ناديه وتفرحه فوراً! 🎁⚡',
+            subheadline: 'اختر كمية الكوينز واكتب رسالتك.. ونحن نشحن حسابه ونرسل له كرت الإهداء باسمك!',
+            ctaHeadline: 'اطلب كرت الإهداء وفاجئ صديقك عبر الخاص الآن 📩',
+            ctaSub: 'للطلب تواصل معنا على الخاص: @shop_coin15 📩'
+        }
+    },
+    beat_the_pro: {
+        id: 'beat_the_pro',
+        name: '⚔️ تحدي الفوز على محترف المتجر',
+        icon: 'crosshair',
+        description: 'تحدي مجتمعي حماسي: العب ودية ضد محترف المتجر وإذا فزت تحصل على 500k كوينز مجاناً',
+        defaultState: {
+            bgTheme: 'dark_neon',
+            bgLighting: 'bright',
+            challengePrize: '500,000 كوينز مجاناً',
+            proName: 'كابتن المتجر (Pro Player 15-0)',
+            challengePlatform: 'PlayStation 5 / Cross-Play',
+            howToEnter: 'رد على الستوري بمنصتك وايدي حسابك للدخول بالسحب',
+            consolationPrize: '🎁 كود خصم 15% فوري لكل من يشارك بالتحدي',
+            badgeText: '⚔️ تحدي المجتمع الأسبوعي • العب ضد محترف المتجر واربح',
+            headline: 'تحدي الأسبوع: العب ضد كابتن المتجر واكسب 500k كوينز! 🥊🔥',
+            subheadline: 'إذا قدرت تفوز عليه في مباراة ودية.. مبروك عليك نصف مليون كوينز بناديك فوراً!',
+            ctaHeadline: 'رد على الستوري الآن بمنصتك وايدي حسابك للمشاركة 📩',
+            ctaSub: 'للطلب تواصل معنا على الخاص: @shop_coin15 📩'
+        }
+    },
     trio: {
         id: 'trio',
         name: '👑 تريو 3 لاعبين متداخلين',

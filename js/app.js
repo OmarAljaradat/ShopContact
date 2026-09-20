@@ -16,7 +16,12 @@ window.activeTrioPresetId = null;
 window.currentStudioSuite = 'suite_stories';
 window.currentFitScale = 1.0;
 
-const STORY_TEMPLATE_KEYS = ['promo_pack', 'market_tracker', 'champs_squad', 'evo_boost', 'social_proof', 'flash_sale', 'event_leaks', 'store_promo', 'sbc'];
+const STORY_TEMPLATE_KEYS = [
+    'promo_pack', 'market_tracker', 'champs_squad', 'evo_boost', 'social_proof', 
+    'flash_sale', 'event_leaks', 'loaded_accounts', 'vip_voucher', 'squad_makeover', 
+    'vip_whales', 'player_duel', 'budget_beast', 'player_review', 'gift_friend', 
+    'beat_the_pro', 'store_promo', 'sbc'
+];
 window.STORY_TEMPLATE_KEYS = STORY_TEMPLATE_KEYS;
 
 function getDefaultLayers() {
@@ -140,6 +145,60 @@ function getDefaultLayers() {
             layer_leaks_header: { visible: true, x: null, y: 30, scale: 0.95, label: 'ترويسة رادار التسريبات' },
             layer_leaks_body: { visible: true, x: null, y: 165, scale: 0.95, label: 'كروت نجوم الحدث القادم والتسريبات' },
             layer_leaks_cta: { visible: true, x: null, y: 690, scale: 0.95, label: 'بانر التجهيز المسبق (CTA)' }
+        };
+    } else if (currentTemplate === 'loaded_accounts') {
+        return {
+            layer_acc_header: { visible: true, x: null, y: 30, scale: 0.95, label: 'ترويسة الحسابات الجاهزة' },
+            layer_acc_body: { visible: true, x: null, y: 165, scale: 0.95, label: 'مواصفات الحساب ورصيد الكوينز' },
+            layer_acc_cta: { visible: true, x: null, y: 690, scale: 0.95, label: 'بانر طلب الحساب (CTA)' }
+        };
+    } else if (currentTemplate === 'vip_voucher') {
+        return {
+            layer_voucher_header: { visible: true, x: null, y: 30, scale: 0.95, label: 'ترويسة العرض الحصري' },
+            layer_voucher_body: { visible: true, x: null, y: 165, scale: 0.95, label: 'تذكرة كود الخصم والمقاعد المتبقية' },
+            layer_voucher_cta: { visible: true, x: null, y: 690, scale: 0.95, label: 'بانر تفعيل الكود (CTA)' }
+        };
+    } else if (currentTemplate === 'squad_makeover') {
+        return {
+            layer_makeover_header: { visible: true, x: null, y: 30, scale: 0.95, label: 'ترويسة تطوير التشكيلة' },
+            layer_makeover_body: { visible: true, x: null, y: 165, scale: 0.95, label: 'مقارنة التشكيلة قبل وبعد بالكوينز' },
+            layer_makeover_cta: { visible: true, x: null, y: 690, scale: 0.95, label: 'بانر استشارة التطوير (CTA)' }
+        };
+    } else if (currentTemplate === 'vip_whales') {
+        return {
+            layer_whales_header: { visible: true, x: null, y: 30, scale: 0.95, label: 'ترويسة صالة الحيتان VIP' },
+            layer_whales_body: { visible: true, x: null, y: 165, scale: 0.95, label: 'بطاقة عضوية الحيتان والامتيازات' },
+            layer_whales_cta: { visible: true, x: null, y: 690, scale: 0.95, label: 'بانر حجز باقة الحيتان (CTA)' }
+        };
+    } else if (currentTemplate === 'player_duel') {
+        return {
+            layer_duel_header: { visible: true, x: null, y: 30, scale: 0.95, label: 'ترويسة معركة النجوم' },
+            layer_duel_body: { visible: true, x: null, y: 165, scale: 0.95, label: 'مقارنة اللاعبين ومنطقة تصويت الستوري' },
+            layer_duel_cta: { visible: true, x: null, y: 690, scale: 0.95, label: 'بانر شحن كوينز النجوم (CTA)' }
+        };
+    } else if (currentTemplate === 'budget_beast') {
+        return {
+            layer_budget_header: { visible: true, x: null, y: 30, scale: 0.95, label: 'ترويسة تشكيلة الميزانية' },
+            layer_budget_body: { visible: true, x: null, y: 165, scale: 0.95, label: 'ثلاثي الميتا الرخيص والتكلفة' },
+            layer_budget_cta: { visible: true, x: null, y: 690, scale: 0.95, label: 'بانر شحن التشكيلة (CTA)' }
+        };
+    } else if (currentTemplate === 'player_review') {
+        return {
+            layer_review_header: { visible: true, x: null, y: 30, scale: 0.95, label: 'ترويسة مراجعة الكرت' },
+            layer_review_body: { visible: true, x: null, y: 165, scale: 0.95, label: 'بطاقة تقييم الـ 50 مباراة والإيجابيات' },
+            layer_review_cta: { visible: true, x: null, y: 690, scale: 0.95, label: 'بانر شحن كوينز الكرت (CTA)' }
+        };
+    } else if (currentTemplate === 'gift_friend') {
+        return {
+            layer_gift_header: { visible: true, x: null, y: 30, scale: 0.95, label: 'ترويسة إهداء الكوينز' },
+            layer_gift_body: { visible: true, x: null, y: 165, scale: 0.95, label: 'كرت الإهداء الرقمي واسم المهدى إليه' },
+            layer_gift_cta: { visible: true, x: null, y: 690, scale: 0.95, label: 'بانر طلب كرت الإهداء (CTA)' }
+        };
+    } else if (currentTemplate === 'beat_the_pro') {
+        return {
+            layer_pro_header: { visible: true, x: null, y: 30, scale: 0.95, label: 'ترويسة تحدي المحترف' },
+            layer_pro_body: { visible: true, x: null, y: 165, scale: 0.95, label: 'بوستر التحدي والجائزة وطريقة المشاركة' },
+            layer_pro_cta: { visible: true, x: null, y: 690, scale: 0.95, label: 'بانر التسجيل بالتحدي (CTA)' }
         };
     } else if (currentTemplate === 'sbc') {
         // SBC is Story 9:16 only!
@@ -2703,6 +2762,24 @@ function renderControls() {
         html += renderFlashSaleControls();
     } else if (currentTemplate === 'event_leaks') {
         html += renderEventLeaksControls();
+    } else if (currentTemplate === 'loaded_accounts') {
+        html += renderLoadedAccountsControls();
+    } else if (currentTemplate === 'vip_voucher') {
+        html += renderVipVoucherControls();
+    } else if (currentTemplate === 'squad_makeover') {
+        html += renderSquadMakeoverControls();
+    } else if (currentTemplate === 'vip_whales') {
+        html += renderVipWhalesControls();
+    } else if (currentTemplate === 'player_duel') {
+        html += renderPlayerDuelControls();
+    } else if (currentTemplate === 'budget_beast') {
+        html += renderBudgetBeastControls();
+    } else if (currentTemplate === 'player_review') {
+        html += renderPlayerReviewControls();
+    } else if (currentTemplate === 'gift_friend') {
+        html += renderGiftFriendControls();
+    } else if (currentTemplate === 'beat_the_pro') {
+        html += renderBeatTheProControls();
     } else if (currentTemplate === 'sbc') {
         const banners = Array.isArray(appState.banners) && appState.banners.length > 0 
             ? appState.banners 
@@ -4013,6 +4090,24 @@ function renderCanvas() {
         canvas.innerHTML = renderFlashSaleTemplate();
     } else if (currentTemplate === 'event_leaks') {
         canvas.innerHTML = renderEventLeaksTemplate();
+    } else if (currentTemplate === 'loaded_accounts') {
+        canvas.innerHTML = renderLoadedAccountsTemplate();
+    } else if (currentTemplate === 'vip_voucher') {
+        canvas.innerHTML = renderVipVoucherTemplate();
+    } else if (currentTemplate === 'squad_makeover') {
+        canvas.innerHTML = renderSquadMakeoverTemplate();
+    } else if (currentTemplate === 'vip_whales') {
+        canvas.innerHTML = renderVipWhalesTemplate();
+    } else if (currentTemplate === 'player_duel') {
+        canvas.innerHTML = renderPlayerDuelTemplate();
+    } else if (currentTemplate === 'budget_beast') {
+        canvas.innerHTML = renderBudgetBeastTemplate();
+    } else if (currentTemplate === 'player_review') {
+        canvas.innerHTML = renderPlayerReviewTemplate();
+    } else if (currentTemplate === 'gift_friend') {
+        canvas.innerHTML = renderGiftFriendTemplate();
+    } else if (currentTemplate === 'beat_the_pro') {
+        canvas.innerHTML = renderBeatTheProTemplate();
     } else if (currentTemplate === 'trio') {
         canvas.innerHTML = renderTrioTemplate();
         if (window.triggerAutoSaveTrio) window.triggerAutoSaveTrio();
@@ -7869,3 +7964,1423 @@ window.showCopyToast = function(msg = 'تم بنجاح! 🚀') {
         }, 2500);
     }
 };
+
+
+// ============================================================================
+// 7. LOADED ACCOUNTS READY TO PLAY TEMPLATE (🎮 حسابات جاهزة للبيع)
+// ============================================================================
+
+const LOADED_ACCOUNTS_PRESETS = [
+    {
+        id: 'acc_ps5',
+        name: 'حساب بلايستيشن 5 (2.5M كوينز)',
+        platform: 'PlayStation 5',
+        coinsBalance: '2,500,000 كوينز',
+        marketStatus: '✅ الماركت مفتوح بالويب آب واللعبة',
+        clubLevel: 'ديفيجن 2 • نادي نظيف 100%',
+        accountEmail: 'إيميل أساسي أصلي قابل للنقل بالكامل',
+        priceTag: '79$',
+        oldPrice: '99$',
+        headline: 'حساب بلايستيشن 5 محمل بـ 2.5M كوينز كاش جاهز للعب! ⚡🔥'
+    },
+    {
+        id: 'acc_xbox',
+        name: 'حساب إكس بوكس سيريس (1.8M كوينز)',
+        platform: 'XBOX Series X/S',
+        coinsBalance: '1,800,000 كوينز',
+        marketStatus: '✅ الماركت مفتوح بالويب آب واللعبة',
+        clubLevel: 'ديفيجن 3 • تشكيلة ذهبية قوية',
+        accountEmail: 'إيميل أساسي أول مع كامل البيانات الأصلية',
+        priceTag: '59$',
+        oldPrice: '75$',
+        headline: 'حساب إكس بوكس جاهز للنزول بالـ 1.8M كوينز وماركت مفتوح! 🎮💰'
+    },
+    {
+        id: 'acc_pc',
+        name: 'حساب PC جاهز (3.2M كوينز VIP)',
+        platform: 'PC EA App / Steam',
+        coinsBalance: '3,200,000 كوينز',
+        marketStatus: '✅ الماركت مفتوح بالويب آب واللعبة',
+        clubLevel: 'ديفيجن إليت • نادي أساطير VIP',
+        accountEmail: 'إيميل موثق 100% مع ضمان شامل المتجر',
+        priceTag: '99$',
+        oldPrice: '125$',
+        headline: 'حساب PC خارق بـ 3.2 مليون كوينز وماركت مفتوح فوراً! 👑⚡'
+    }
+];
+
+function renderLoadedAccountsTemplate() {
+    const isLightBg = (window.MARKET_BG_THEMES[appState.bgTheme || 'store']?.isLight) ?? true;
+    const def = TEMPLATES.loaded_accounts.defaultState;
+
+    return `
+        ${getStoryBackgroundHtml(appState.bgTheme || 'store', appState.bgLighting || 'bright')}
+
+        <!-- Layer 1: Header -->
+        ${renderStoryHeader('layer_acc_header', appState.badgeText || def.badgeText, appState.headline || def.headline, appState.subheadline || def.subheadline, isLightBg)}
+
+        <!-- Layer 2: Account Specs & Coins Body -->
+        ${isLayerVisible('layer_acc_body') ? `
+        <div id="layer_acc_body" class="draggable-layer w-full text-center flex flex-col items-center" style="${getLayerStyle('layer_acc_body', 165)}; width: 510px; z-index: 25;">
+            <div class="layer-scale-wrapper w-full flex flex-col items-center gap-2.5" style="transform: scale(${getLayerScale('layer_acc_body')});">
+                
+                <!-- Platform & Market Open Ribbon -->
+                <div class="w-full max-w-[480px] py-1.5 px-3.5 rounded-2xl flex items-center justify-between shadow-xl" style="background: #0d1627; border: 1.5px solid #233758;">
+                    <div class="flex items-center gap-1.5 text-emerald-400 text-xs font-black">
+                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
+                        <span>${appState.marketStatus || def.marketStatus}</span>
+                    </div>
+                    <span class="px-3 py-0.5 rounded-xl bg-slate-900 border border-slate-700 text-slate-200 text-[11px] font-bold font-mono">
+                        🎮 ${appState.platform || def.platform}
+                    </span>
+                </div>
+
+                <!-- Giant Coins Balance Card -->
+                <div class="w-full max-w-[480px] rounded-3xl p-4 shadow-2xl text-center space-y-1" style="background: linear-gradient(135deg, #101c30 0%, #080f1c 100%); border: 2.5px solid #f59e0b; box-shadow: 0 0 35px rgba(245,158,11,0.35);">
+                    <span class="text-xs font-bold text-slate-300 block">الرصيد الكاش المحمل بالحساب جاهز فوراً:</span>
+                    <div class="flex items-center justify-center gap-2.5 py-1" dir="ltr">
+                        <img src="assets/fc-coin.webp" class="w-9 h-9 object-contain drop-shadow" alt="c">
+                        <span class="text-4xl font-black font-mono text-amber-300 tracking-wide">${appState.coinsBalance || def.coinsBalance}</span>
+                    </div>
+                    <div class="text-[11px] font-black text-emerald-400">
+                        ⚡ جاهز لبناء أي فريق تحلم به بدون تضييع وقت
+                    </div>
+                </div>
+
+                <!-- Account Security & Level Details Grid -->
+                <div class="w-full max-w-[480px] grid grid-cols-2 gap-2 text-right">
+                    <div class="p-2.5 rounded-2xl shadow" style="background: #0c1424; border: 1px solid #1f2d47;">
+                        <span class="text-[10px] text-slate-400 block font-bold">مستوى النادي والمنافسات:</span>
+                        <span class="text-xs font-black text-white block mt-0.5">🏆 ${appState.clubLevel || def.clubLevel}</span>
+                    </div>
+                    <div class="p-2.5 rounded-2xl shadow" style="background: #0c1424; border: 1px solid #1f2d47;">
+                        <span class="text-[10px] text-slate-400 block font-bold">بيانات الحساب والإيميل:</span>
+                        <span class="text-xs font-black text-emerald-300 block mt-0.5 truncate">📧 ${appState.accountEmail || def.accountEmail}</span>
+                    </div>
+                </div>
+
+                <!-- Pricing & Instant Delivery Capsule -->
+                <div class="w-full max-w-[480px] rounded-2xl p-2.5 px-4 flex items-center justify-between shadow-xl" style="background: #090e18; border: 1.5px solid #10b981;">
+                    <div class="text-right">
+                        <span class="text-[11px] font-bold text-slate-400 block">سعر الحساب الكامل بالبيانات:</span>
+                        <span class="text-xs font-black text-emerald-400">⚡ تسليم الإيميل والباسورد فوراً عبر الخاص</span>
+                    </div>
+                    <div class="flex items-center gap-2" dir="ltr">
+                        <span class="text-xs text-slate-500 line-through font-mono font-bold">${appState.oldPrice || def.oldPrice}</span>
+                        <span class="text-2xl font-black font-mono text-emerald-300">${appState.priceTag || def.priceTag}</span>
+                    </div>
+                </div>
+            </div>
+            ${renderLayerToolbar('layer_acc_body')}
+        </div>
+        ` : ''}
+
+        <!-- Layer 3: CTA -->
+        ${renderStoryCta('layer_acc_cta', appState.ctaHeadline || def.ctaHeadline, appState.ctaSub || def.ctaSub)}
+    `;
+}
+
+function renderLoadedAccountsControls() {
+    return `
+        <div class="space-y-4">
+            <!-- Presets Row -->
+            <div class="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs">
+                <label class="block text-xs font-black text-slate-800 mb-2">نماذج حسابات جاهزة بنقرة واحدة:</label>
+                <div class="grid grid-cols-1 gap-1.5">
+                    ${LOADED_ACCOUNTS_PRESETS.map(p => `
+                        <button type="button" onclick="applyLoadedAccountsPreset('${p.id}')" class="w-full py-2 px-3 text-right rounded-lg bg-slate-50 hover:bg-emerald-50 hover:border-emerald-500 border border-slate-200 text-slate-800 text-xs font-bold transition flex items-center justify-between">
+                            <span>🎮 ${p.name}</span>
+                            <span class="font-mono text-emerald-600 font-black">${p.priceTag}</span>
+                        </button>
+                    `).join('')}
+                </div>
+            </div>
+
+            <!-- Background & Lighting -->
+            ${renderStoryBackgroundControls()}
+
+            <!-- Account Details Form -->
+            <div class="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs space-y-3 text-right">
+                <label class="block text-xs font-black text-slate-800 border-b pb-1.5">مواصفات الحساب ورصيد الكوينز:</label>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1">المنصة (Platform):</label>
+                        <input type="text" value="${appState.platform || ''}" oninput="appState.platform = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1">رصيد الكوينز:</label>
+                        <input type="text" value="${appState.coinsBalance || ''}" oninput="appState.coinsBalance = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1">حالة سوق الانتقالات (الويب آب):</label>
+                    <input type="text" value="${appState.marketStatus || ''}" oninput="appState.marketStatus = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1">مستوى النادي / ديفيجن:</label>
+                    <input type="text" value="${appState.clubLevel || ''}" oninput="appState.clubLevel = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1">بيانات الإيميل والأمان:</label>
+                    <input type="text" value="${appState.accountEmail || ''}" oninput="appState.accountEmail = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1">السعر المخفض:</label>
+                        <input type="text" value="${appState.priceTag || ''}" oninput="appState.priceTag = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1">السعر السابق (الشطب):</label>
+                        <input type="text" value="${appState.oldPrice || ''}" oninput="appState.oldPrice = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+window.applyLoadedAccountsPreset = function(presetId) {
+    const p = LOADED_ACCOUNTS_PRESETS.find(x => x.id === presetId);
+    if (!p) return;
+    Object.keys(p).forEach(k => {
+        if (k !== 'id' && k !== 'name') appState[k] = p[k];
+    });
+    renderControls();
+    renderCanvas();
+    if (window.showCopyToast) window.showCopyToast(`تم تطبيق ${p.name} 🎮✨`);
+};
+
+
+// ============================================================================
+// 8. VIP FLASH VOUCHER TEMPLATE (🎟️ قسيمة الخصم الخاطفة)
+// ============================================================================
+
+const VIP_VOUCHER_PRESETS = [
+    {
+        id: 'voucher_weekend',
+        name: 'كود خصم الويكند VIP15 (خصم 15%)',
+        couponCode: 'VIP15',
+        discountAmount: 'خصم 15% فوري',
+        remainingSpots: 'متبقي 3 مقاعد فقط 🔥',
+        expiryTime: '⏳ صالح حتى منتصف الليل فقط',
+        targetPackage: 'على جميع باقات الـ 1M والـ 2M كوينز',
+        headline: 'كود خصم 15% حصري لأول 5 أشخاص يتواصلون بالخاص! 💰⚡'
+    },
+    {
+        id: 'voucher_drop',
+        name: 'كود نزول الحدث DROP20 (خصم 20%)',
+        couponCode: 'DROP20',
+        discountAmount: 'خصم 20% فوري كاش',
+        remainingSpots: 'متبقي مقعدان اثنان فقط 🚨',
+        expiryTime: '⏳ متبقي: ساعتان فقط',
+        targetPackage: 'على باقات كوينز باكدجات الحدث',
+        headline: 'كود خاطف 20% خصم لحرق باكدجات الحدث الليلة! 🔥🎁'
+    }
+];
+
+function renderVipVoucherTemplate() {
+    const isLightBg = (window.MARKET_BG_THEMES[appState.bgTheme || 'emerald_glow']?.isLight) ?? false;
+    const def = TEMPLATES.vip_voucher.defaultState;
+
+    return `
+        ${getStoryBackgroundHtml(appState.bgTheme || 'emerald_glow', appState.bgLighting || 'bright')}
+
+        <!-- Layer 1: Header -->
+        ${renderStoryHeader('layer_voucher_header', appState.badgeText || def.badgeText, appState.headline || def.headline, appState.subheadline || def.subheadline, isLightBg)}
+
+        <!-- Layer 2: Golden Perforated VIP Ticket Body -->
+        ${isLayerVisible('layer_voucher_body') ? `
+        <div id="layer_voucher_body" class="draggable-layer w-full text-center flex flex-col items-center" style="${getLayerStyle('layer_voucher_body', 165)}; width: 510px; z-index: 25;">
+            <div class="layer-scale-wrapper w-full flex flex-col items-center gap-3" style="transform: scale(${getLayerScale('layer_voucher_body')});">
+                
+                <!-- Ticket Outer Wrapper with Perforated Notch Simulation -->
+                <div class="w-full max-w-[480px] rounded-3xl p-5 shadow-2xl relative overflow-hidden" style="background: linear-gradient(135deg, #0d1a16 0%, #060e0c 100%); border: 2.5px solid #10b981; box-shadow: 0 0 35px rgba(16,185,129,0.35);">
+                    
+                    <!-- Ticket Header Ribbon -->
+                    <div class="flex items-center justify-between border-b border-emerald-500/30 pb-3">
+                        <div class="flex items-center gap-1.5 text-emerald-400 font-black text-xs">
+                            <span>🎟️</span>
+                            <span>VIP DISCOUNT VOUCHER</span>
+                        </div>
+                        <span class="px-2.5 py-0.5 rounded-full bg-red-950/80 border border-red-500/80 text-red-300 font-black text-[10.5px] animate-pulse">
+                            ${appState.remainingSpots || def.remainingSpots}
+                        </span>
+                    </div>
+
+                    <!-- Giant Coupon Code Box -->
+                    <div class="my-4 py-3 rounded-2xl text-center space-y-1" style="background: linear-gradient(90deg, rgba(16,185,129,0.15) 0%, rgba(245,158,11,0.2) 50%, rgba(16,185,129,0.15) 100%); border: 2px dashed #f59e0b;">
+                        <span class="text-[11px] font-bold text-slate-300 block">كود الخصم الحصري الخاص بك:</span>
+                        <div class="text-4xl font-black font-mono text-amber-300 tracking-[6px] py-1 select-all">
+                            ${appState.couponCode || def.couponCode}
+                        </div>
+                        <div class="text-sm font-black text-emerald-300">
+                            ⚡ ${appState.discountAmount || def.discountAmount}
+                        </div>
+                    </div>
+
+                    <!-- Package Scope & Expiry Pill -->
+                    <div class="flex items-center justify-between text-right px-2 py-1 text-xs">
+                        <span class="text-slate-300 font-bold">${appState.targetPackage || def.targetPackage}</span>
+                        <span class="text-amber-400 font-mono font-black">${appState.expiryTime || def.expiryTime}</span>
+                    </div>
+
+                    <!-- Instructions Banner -->
+                    <div class="mt-3 p-2.5 rounded-xl bg-slate-950/80 border border-emerald-500/40 text-center">
+                        <p class="text-[11px] font-bold text-slate-300">
+                            💬 انسخ الكود وأرسله لنا بالخاص لتطبيق الخصم فوراً على طلبيتك قبل اكتمال العدد!
+                        </p>
+                    </div>
+                </div>
+            </div>
+            ${renderLayerToolbar('layer_voucher_body')}
+        </div>
+        ` : ''}
+
+        <!-- Layer 3: CTA -->
+        ${renderStoryCta('layer_voucher_cta', appState.ctaHeadline || def.ctaHeadline, appState.ctaSub || def.ctaSub)}
+    `;
+}
+
+function renderVipVoucherControls() {
+    return `
+        <div class="space-y-4">
+            <!-- Presets Row -->
+            <div class="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs">
+                <label class="block text-xs font-black text-slate-800 mb-2">أكواد خصم جاهزة بنقرة واحدة:</label>
+                <div class="grid grid-cols-1 gap-1.5">
+                    ${VIP_VOUCHER_PRESETS.map(p => `
+                        <button type="button" onclick="applyVipVoucherPreset('${p.id}')" class="w-full py-2 px-3 text-right rounded-lg bg-slate-50 hover:bg-emerald-50 hover:border-emerald-500 border border-slate-200 text-slate-800 text-xs font-bold transition flex items-center justify-between">
+                            <span>🎟️ ${p.name}</span>
+                            <span class="font-mono text-emerald-600 font-black">${p.couponCode}</span>
+                        </button>
+                    `).join('')}
+                </div>
+            </div>
+
+            <!-- Background & Lighting -->
+            ${renderStoryBackgroundControls()}
+
+            <!-- Voucher Details Form -->
+            <div class="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs space-y-3 text-right">
+                <label class="block text-xs font-black text-slate-800 border-b pb-1.5">تفاصيل قسيمة الخصم:</label>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1">كود الخصم (Coupon Code):</label>
+                        <input type="text" value="${appState.couponCode || ''}" oninput="appState.couponCode = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold font-mono outline-none focus:border-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1">قيمة الخصم:</label>
+                        <input type="text" value="${appState.discountAmount || ''}" oninput="appState.discountAmount = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1">المقاعد المتبقية:</label>
+                        <input type="text" value="${appState.remainingSpots || ''}" oninput="appState.remainingSpots = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1">مدة انتهاء العرض:</label>
+                        <input type="text" value="${appState.expiryTime || ''}" oninput="appState.expiryTime = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1">الباقات المشمولة بالخصم:</label>
+                    <input type="text" value="${appState.targetPackage || ''}" oninput="appState.targetPackage = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+window.applyVipVoucherPreset = function(presetId) {
+    const p = VIP_VOUCHER_PRESETS.find(x => x.id === presetId);
+    if (!p) return;
+    Object.keys(p).forEach(k => {
+        if (k !== 'id' && k !== 'name') appState[k] = p[k];
+    });
+    renderControls();
+    renderCanvas();
+    if (window.showCopyToast) window.showCopyToast(`تم تطبيق قسيمة ${p.name} 🎟️✨`);
+};
+
+
+// ============================================================================
+// 9. SQUAD MAKEOVER TEMPLATE (🛠️ تجديد التشكيلة قبل / بعد)
+// ============================================================================
+
+const SQUAD_MAKEOVER_PRESETS = [
+    {
+        id: 'makeover_elite',
+        name: 'ترقية من ديفيجن 4 إلى إليت (850k كوينز)',
+        beforeRank: 'ديفيجن 4 • كيمياء 23/33 (تشكيلة عادية)',
+        afterRank: 'ديفيجن إليت 👑 • كيمياء 33/33 (تشكيلة ميتا)',
+        upgradeCost: '850,000 كوينز',
+        headline: 'حوّلنا فريق عميلنا من ديفيجن 4 إلى ديفيجن إليت بالكوينز! 🤯⚡'
+    },
+    {
+        id: 'makeover_champs',
+        name: 'ترقية الـ 15 فوز فوت تشامبيونز (1.2M كوينز)',
+        beforeRank: '9 انتصارات فقط في الويكند (رانك 5)',
+        afterRank: '15 فوز مضمون • رانك 1 و 2 🏆',
+        upgradeCost: '1,200,000 كوينز',
+        headline: 'تطوير شامل لنادي العميل أوصله لرانك 1 في الفوت تشامبيونز! ⚔️🔥'
+    }
+];
+
+function renderSquadMakeoverTemplate() {
+    const isLightBg = (window.MARKET_BG_THEMES[appState.bgTheme || 'store']?.isLight) ?? true;
+    const def = TEMPLATES.squad_makeover.defaultState;
+    const c1Url = appState.card1_url || def.card1_url;
+    const c2Url = appState.card2_url || def.card2_url;
+
+    return `
+        ${getStoryBackgroundHtml(appState.bgTheme || 'store', appState.bgLighting || 'bright')}
+
+        <!-- Layer 1: Header -->
+        ${renderStoryHeader('layer_makeover_header', appState.badgeText || def.badgeText, appState.headline || def.headline, appState.subheadline || def.subheadline, isLightBg)}
+
+        <!-- Layer 2: Before & After Overhaul Body -->
+        ${isLayerVisible('layer_makeover_body') ? `
+        <div id="layer_makeover_body" class="draggable-layer w-full text-center flex flex-col items-center" style="${getLayerStyle('layer_makeover_body', 165)}; width: 510px; z-index: 25;">
+            <div class="layer-scale-wrapper w-full flex flex-col items-center gap-2.5" style="transform: scale(${getLayerScale('layer_makeover_body')});">
+                
+                <!-- Before / After Stages Side by Side -->
+                <div class="w-full max-w-[480px] rounded-3xl p-3.5 shadow-2xl flex items-center justify-between gap-2" style="background: #090e18; border: 2px solid #1f2e48;">
+                    
+                    <!-- Left: Before State (Struggling) -->
+                    <div class="flex-1 rounded-2xl p-2.5 text-center flex flex-col items-center opacity-85" style="background: #111a2b; border: 1px solid #243554;">
+                        <span class="px-2 py-0.5 rounded-full bg-red-950 text-red-300 text-[10px] font-black border border-red-500/50 mb-2">
+                            ❌ قبل التطوير
+                        </span>
+                        <div class="w-16 h-16 rounded-full bg-slate-900 border border-slate-700 flex items-center justify-center text-2xl my-1">
+                            📉
+                        </div>
+                        <span class="text-[11px] font-black text-slate-300 block mt-1 leading-snug">
+                            ${appState.beforeRank || def.beforeRank}
+                        </span>
+                        <span class="text-[9.5px] font-bold text-slate-400 mt-1">خسائر متتالية ومعاناة بالدفاع</span>
+                    </div>
+
+                    <!-- Middle: Transformation Energy Bolt -->
+                    <div class="flex flex-col items-center shrink-0">
+                        <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-500 to-emerald-400 p-[2px] shadow-[0_0_20px_rgba(245,158,11,0.6)] flex items-center justify-center text-slate-950 font-black text-base animate-pulse">
+                            ⚡
+                        </div>
+                        <span class="text-[9px] font-black text-amber-400 mt-1 whitespace-nowrap">ترقية المتجر</span>
+                    </div>
+
+                    <!-- Right: After State (Dominating Elite) -->
+                    <div class="flex-1 rounded-2xl p-2.5 text-center flex flex-col items-center" style="background: linear-gradient(180deg, #132438 0%, #0d1a29 100%); border: 1.5px solid #10b981;">
+                        <span class="px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-300 text-[10px] font-black border border-emerald-500/60 mb-2">
+                            ⭐ بعد التطوير
+                        </span>
+                        <div class="flex items-center justify-center gap-1 my-1">
+                            <img src="${c1Url}" class="w-12 h-14 object-contain drop-shadow" alt="">
+                            <img src="${c2Url}" class="w-12 h-14 object-contain drop-shadow" alt="">
+                        </div>
+                        <span class="text-[11px] font-black text-emerald-300 block mt-1 leading-snug">
+                            ${appState.afterRank || def.afterRank}
+                        </span>
+                        <span class="text-[9.5px] font-bold text-amber-300 mt-1">صلابة وسيطرة مطلقة 👑</span>
+                    </div>
+                </div>
+
+                <!-- Total Upgrade Investment Capsule -->
+                <div class="w-full max-w-[480px] rounded-2xl p-2.5 px-4 flex items-center justify-between shadow-xl" style="background: #090e18; border: 1.5px solid #f59e0b;">
+                    <div class="text-right">
+                        <span class="text-[11px] font-bold text-slate-400 block">الميزانية الإجمالية لتجديد التشكيلة بالكامل:</span>
+                        <span class="text-xs font-black text-amber-400">شحن فوري كامل + نصائح تكتيكية مجانية</span>
+                    </div>
+                    <div class="flex items-center gap-1.5" dir="ltr">
+                        <img src="assets/fc-coin.webp" class="w-6 h-6 object-contain" alt="c">
+                        <span class="text-xl font-black font-mono text-white">${appState.upgradeCost || def.upgradeCost}</span>
+                    </div>
+                </div>
+
+                <!-- Consultation Invitation Box -->
+                <div class="w-full max-w-[480px] rounded-2xl p-2.5 text-right shadow" style="background: #0c1424; border: 1px solid #1e2c45;">
+                    <span class="text-[10.5px] font-bold text-slate-300 flex items-center gap-1.5">
+                        <span>💬</span>
+                        <span>أرسل تشكيلتك الحالية على الخاص.. ونعطيك أفضل 3 تبديلات ميتا ترفع مستواك فوراً مع خصم خاص!</span>
+                    </span>
+                </div>
+            </div>
+            ${renderLayerToolbar('layer_makeover_body')}
+        </div>
+        ` : ''}
+
+        <!-- Layer 3: CTA -->
+        ${renderStoryCta('layer_makeover_cta', appState.ctaHeadline || def.ctaHeadline, appState.ctaSub || def.ctaSub)}
+    `;
+}
+
+function renderSquadMakeoverControls() {
+    return `
+        <div class="space-y-4">
+            <!-- Presets Row -->
+            <div class="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs">
+                <label class="block text-xs font-black text-slate-800 mb-2">نماذج تجديد التشكيلة بنقرة واحدة:</label>
+                <div class="grid grid-cols-1 gap-1.5">
+                    ${SQUAD_MAKEOVER_PRESETS.map(p => `
+                        <button type="button" onclick="applySquadMakeoverPreset('${p.id}')" class="w-full py-2 px-3 text-right rounded-lg bg-slate-50 hover:bg-emerald-50 hover:border-emerald-500 border border-slate-200 text-slate-800 text-xs font-bold transition flex items-center justify-between">
+                            <span>🛠️ ${p.name}</span>
+                            <span class="font-mono text-emerald-600 font-black">${p.upgradeCost}</span>
+                        </button>
+                    `).join('')}
+                </div>
+            </div>
+
+            <!-- Background & Lighting -->
+            ${renderStoryBackgroundControls()}
+
+            <!-- Makeover Details Form -->
+            <div class="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs space-y-3 text-right">
+                <label class="block text-xs font-black text-slate-800 border-b pb-1.5">بيانات التجديد والترقية:</label>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1">حالة الفريق قبل التطوير:</label>
+                    <input type="text" value="${appState.beforeRank || ''}" oninput="appState.beforeRank = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1">حالة الفريق بعد التطوير:</label>
+                    <input type="text" value="${appState.afterRank || ''}" oninput="appState.afterRank = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1">تكلفة كوينز التطوير:</label>
+                    <input type="text" value="${appState.upgradeCost || ''}" oninput="appState.upgradeCost = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+window.applySquadMakeoverPreset = function(presetId) {
+    const p = SQUAD_MAKEOVER_PRESETS.find(x => x.id === presetId);
+    if (!p) return;
+    Object.keys(p).forEach(k => {
+        if (k !== 'id' && k !== 'name') appState[k] = p[k];
+    });
+    renderControls();
+    renderCanvas();
+    if (window.showCopyToast) window.showCopyToast(`تم تطبيق تجديد ${p.name} 🛠️✨`);
+};
+
+
+// ============================================================================
+// 10. VIP WHALES LOUNGE TEMPLATE (👑 صالة الحيتان VIP)
+// ============================================================================
+
+const VIP_WHALES_PRESETS = [
+    {
+        id: 'whales_10m',
+        name: 'باقة الحيتان الملكية (10,000,000 كوينز)',
+        tierName: 'باقة الحيتان الملكية (10,000,000 كوينز)',
+        priceTag: '175$',
+        headline: 'باقة الحيتان VIP: شحن كميات الملايين بأقصى فخامة وسرعة! 👑💰'
+    },
+    {
+        id: 'whales_5m',
+        name: 'باقة النخبة VIP (5,000,000 كوينز)',
+        tierName: 'باقة النخبة VIP (5,000,000 كوينز)',
+        priceTag: '89$',
+        headline: 'باقة النخبة VIP: استلم 5 ملايين كوينز كاش بناديك اليوم! 💎⚡'
+    },
+    {
+        id: 'whales_20m',
+        name: 'باقة الأساطير المطلقة (20,000,000 كوينز)',
+        tierName: 'باقة الأساطير المطلقة (20,000,000 كوينز)',
+        priceTag: '330$',
+        headline: 'باقة الـ 20 مليون كوينز: ابنِ تشكيلة الأيقونات الكاملة بناديك! 👑🏆'
+    }
+];
+
+function renderVipWhalesTemplate() {
+    const isLightBg = (window.MARKET_BG_THEMES[appState.bgTheme || 'gold_lounge']?.isLight) ?? false;
+    const def = TEMPLATES.vip_whales.defaultState;
+
+    return `
+        ${getStoryBackgroundHtml(appState.bgTheme || 'gold_lounge', appState.bgLighting || 'bright')}
+
+        <!-- Layer 1: Header -->
+        ${renderStoryHeader('layer_whales_header', appState.badgeText || def.badgeText, appState.headline || def.headline, appState.subheadline || def.subheadline, isLightBg)}
+
+        <!-- Layer 2: Whales Luxury Card Body -->
+        ${isLayerVisible('layer_whales_body') ? `
+        <div id="layer_whales_body" class="draggable-layer w-full text-center flex flex-col items-center" style="${getLayerStyle('layer_whales_body', 165)}; width: 510px; z-index: 25;">
+            <div class="layer-scale-wrapper w-full flex flex-col items-center gap-3" style="transform: scale(${getLayerScale('layer_whales_body')});">
+                
+                <!-- Royal Black & Gold Card Frame -->
+                <div class="w-full max-w-[480px] rounded-3xl p-5 shadow-2xl space-y-3 relative overflow-hidden" style="background: linear-gradient(135deg, #120e06 0%, #080602 100%); border: 2.5px solid #d97706; box-shadow: 0 0 35px rgba(217,119,6,0.35);">
+                    
+                    <!-- Crest & Tier Title -->
+                    <div class="text-center space-y-1 pb-2 border-b border-amber-500/30">
+                        <div class="w-12 h-12 mx-auto rounded-full bg-gradient-to-tr from-amber-600 to-yellow-400 p-[2px] flex items-center justify-center shadow-lg">
+                            <span class="text-2xl">👑</span>
+                        </div>
+                        <h3 class="text-base font-black text-amber-300 tracking-wide">${appState.tierName || def.tierName}</h3>
+                        <span class="text-[11px] font-bold text-slate-300 block">خدمة مخصصة لكبار العملاء وأصحاب الحسابات الثرية</span>
+                    </div>
+
+                    <!-- 4 Royal Perks Grid -->
+                    <div class="space-y-1.5 text-right py-1">
+                        <div class="p-2 rounded-xl bg-[#1c1407] border border-amber-500/30 text-xs font-bold text-amber-200">
+                            ${appState.perk1 || def.perk1}
+                        </div>
+                        <div class="p-2 rounded-xl bg-[#1c1407] border border-amber-500/30 text-xs font-bold text-amber-200">
+                            ${appState.perk2 || def.perk2}
+                        </div>
+                        <div class="p-2 rounded-xl bg-[#1c1407] border border-amber-500/30 text-xs font-bold text-amber-200">
+                            ${appState.perk3 || def.perk3}
+                        </div>
+                        <div class="p-2 rounded-xl bg-[#1c1407] border border-amber-500/30 text-xs font-bold text-amber-200">
+                            ${appState.perk4 || def.perk4}
+                        </div>
+                    </div>
+
+                    <!-- Pricing & Whale Booking -->
+                    <div class="p-2.5 rounded-2xl bg-gradient-to-r from-amber-950/80 via-slate-950 to-amber-950/80 border border-amber-500/60 flex items-center justify-between px-4">
+                        <div class="text-right">
+                            <span class="text-[10.5px] font-bold text-slate-400 block">سعر باقة الحيتان المخفض:</span>
+                            <span class="text-xs font-black text-emerald-400">⚡ تعامل مباشر مع الإدارة</span>
+                        </div>
+                        <div class="flex items-center gap-1.5" dir="ltr">
+                            <span class="text-2xl font-black font-mono text-amber-300">${appState.priceTag || def.priceTag}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            ${renderLayerToolbar('layer_whales_body')}
+        </div>
+        ` : ''}
+
+        <!-- Layer 3: CTA -->
+        ${renderStoryCta('layer_whales_cta', appState.ctaHeadline || def.ctaHeadline, appState.ctaSub || def.ctaSub)}
+    `;
+}
+
+function renderVipWhalesControls() {
+    return `
+        <div class="space-y-4">
+            <!-- Presets Row -->
+            <div class="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs">
+                <label class="block text-xs font-black text-slate-800 mb-2">باقات الحيتان بنقرة واحدة:</label>
+                <div class="grid grid-cols-1 gap-1.5">
+                    ${VIP_WHALES_PRESETS.map(p => `
+                        <button type="button" onclick="applyVipWhalesPreset('${p.id}')" class="w-full py-2 px-3 text-right rounded-lg bg-slate-50 hover:bg-emerald-50 hover:border-emerald-500 border border-slate-200 text-slate-800 text-xs font-bold transition flex items-center justify-between">
+                            <span>👑 ${p.name}</span>
+                            <span class="font-mono text-emerald-600 font-black">${p.priceTag}</span>
+                        </button>
+                    `).join('')}
+                </div>
+            </div>
+
+            <!-- Background & Lighting -->
+            ${renderStoryBackgroundControls()}
+
+            <!-- Whales Form -->
+            <div class="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs space-y-3 text-right">
+                <label class="block text-xs font-black text-slate-800 border-b pb-1.5">بيانات باقة الحيتان:</label>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1">اسم الباقة والكمية:</label>
+                    <input type="text" value="${appState.tierName || ''}" oninput="appState.tierName = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1">السعر المخفض:</label>
+                    <input type="text" value="${appState.priceTag || ''}" oninput="appState.priceTag = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+window.applyVipWhalesPreset = function(presetId) {
+    const p = VIP_WHALES_PRESETS.find(x => x.id === presetId);
+    if (!p) return;
+    Object.keys(p).forEach(k => {
+        if (k !== 'id' && k !== 'name') appState[k] = p[k];
+    });
+    renderControls();
+    renderCanvas();
+    if (window.showCopyToast) window.showCopyToast(`تم تطبيق ${p.name} 👑✨`);
+};
+
+
+// ============================================================================
+// 11. PLAYER DUEL & STORY POLL TEMPLATE (🥊 معركة النجوم وتصويت الستوري)
+// ============================================================================
+
+const PLAYER_DUEL_PRESETS = [
+    {
+        id: 'duel_mbappe_vini',
+        name: 'مبابي ضد فينيسيوس (91 ST vs 90 LW)',
+        card1: {
+            name: 'كيليان مبابي',
+            rating: '91 ST',
+            stat1: '97 سرعة',
+            stat2: '90 تسديد',
+            stat3: '92 مراوغة',
+            price: '1,850,000 كوينز',
+            url: '/api/image-proxy?url=https%3A%2F%2Fgame-assets.fut.gg%2Fcdn-cgi%2Fimage%2Fquality%3D85%2Cformat%3Dauto%2Cwidth%3D600%2F2027%2Ffutgg-player-item-card%2F27-231747.1b49b357729ba7dbf174dc4aa1e8519ce230b98ad399360e364a59f4b3477f07.webp'
+        },
+        card2: {
+            name: 'فينيسيوس جونيور',
+            rating: '90 LW',
+            stat1: '95 سرعة',
+            stat2: '84 تسديد',
+            stat3: '91 مراوغة',
+            price: '1,250,000 كوينز',
+            url: '/api/image-proxy?url=https%3A%2F%2Fgame-assets.fut.gg%2Fcdn-cgi%2Fimage%2Fquality%3D85%2Cformat%3Dauto%2Cwidth%3D600%2F2027%2Ffutgg-player-item-card%2F27-238794.6715e80f49fb5360b92261f8bd984f7178a47066cff3bfcd2c1b7dd57db13fbf.webp'
+        },
+        headline: 'مبابي ضد فينيسيوس: من المهاجم الأفضل لناديك في الفوت؟ 🤔🔥'
+    },
+    {
+        id: 'duel_jude_fede',
+        name: 'بيلينغهام ضد فان دايك (صانع اللعب vs الجدار)',
+        card1: {
+            name: 'جود بيلينغهام',
+            rating: '90 CAM',
+            stat1: '80 سرعة',
+            stat2: '86 تسديد',
+            stat3: '88 مراوغة',
+            price: '480,000 كوينز',
+            url: '/api/image-proxy?url=https%3A%2F%2Fgame-assets.fut.gg%2Fcdn-cgi%2Fimage%2Fquality%3D85%2Cformat%3Dauto%2Cwidth%3D600%2F2027%2Ffutgg-player-item-card%2F27-252371.49e4acdf2d78496f4951f41725cd17fb8efb118d99a69ba074ab76fc62d70735.webp'
+        },
+        card2: {
+            name: 'فيرجيل فان دايك',
+            rating: '89 CB',
+            stat1: '78 سرعة',
+            stat2: '90 دفاع',
+            stat3: '86 فيزيكال',
+            price: '320,000 كوينز',
+            url: '/api/image-proxy?url=https%3A%2F%2Fgame-assets.fut.gg%2Fcdn-cgi%2Fimage%2Fquality%3D85%2Cformat%3Dauto%2Cwidth%3D600%2F2027%2Ffutgg-player-item-card%2F27-203376.17f57c8f215fff6f4edef3889583cc487fefce9b4e7ce1eeba235d634b7424b8.webp'
+        },
+        headline: 'سؤال الويكند: تستثمر كوينزك في الهجوم أم الجدار الدفاعي؟ ⚔️🛡️'
+    }
+];
+
+function renderPlayerDuelTemplate() {
+    const isLightBg = (window.MARKET_BG_THEMES[appState.bgTheme || 'store']?.isLight) ?? true;
+    const def = TEMPLATES.player_duel.defaultState;
+    const c1 = appState.card1 || def.card1;
+    const c2 = appState.card2 || def.card2;
+
+    return `
+        ${getStoryBackgroundHtml(appState.bgTheme || 'store', appState.bgLighting || 'bright')}
+
+        <!-- Layer 1: Header -->
+        ${renderStoryHeader('layer_duel_header', appState.badgeText || def.badgeText, appState.headline || def.headline, appState.subheadline || def.subheadline, isLightBg)}
+
+        <!-- Layer 2: Duel Cards & Poll Area Body -->
+        ${isLayerVisible('layer_duel_body') ? `
+        <div id="layer_duel_body" class="draggable-layer w-full text-center flex flex-col items-center" style="${getLayerStyle('layer_duel_body', 165)}; width: 510px; z-index: 25;">
+            <div class="layer-scale-wrapper w-full flex flex-col items-center gap-2" style="transform: scale(${getLayerScale('layer_duel_body')});">
+                
+                <!-- 2 Cards Facing Each Other with 3D VS -->
+                <div class="relative w-full h-[270px] flex items-center justify-center gap-2 px-1">
+                    
+                    <!-- Card 1 (Right) -->
+                    <div class="flex-1 flex flex-col items-center max-w-[210px] transform -rotate-2">
+                        <div class="relative w-full h-[185px] flex items-center justify-center">
+                            <img src="${c1.url}" class="max-h-full max-w-full object-contain drop-shadow-[0_12px_22px_rgba(0,0,0,0.85)]" alt="">
+                        </div>
+                        <div class="w-full rounded-xl p-1.5 text-center mt-1" style="background: #0d1524; border: 1px solid #1e2c44;">
+                            <span class="text-xs font-black text-white block">${c1.name}</span>
+                            <div class="text-[9.5px] font-mono text-emerald-400 font-bold flex justify-around mt-0.5">
+                                <span>${c1.stat1}</span>
+                                <span>${c1.stat2}</span>
+                            </div>
+                            <span class="text-[10px] font-mono text-amber-300 font-black block mt-0.5">${c1.price}</span>
+                        </div>
+                    </div>
+
+                    <!-- Center Fiery VS Emblem -->
+                    <div class="relative z-20 flex flex-col items-center shrink-0 -my-3">
+                        <div class="w-11 h-11 rounded-full bg-gradient-to-tr from-red-600 via-amber-500 to-yellow-400 p-[2px] shadow-[0_0_22px_rgba(239,68,68,0.8)] flex items-center justify-center text-slate-950 font-black text-sm">
+                            VS
+                        </div>
+                    </div>
+
+                    <!-- Card 2 (Left) -->
+                    <div class="flex-1 flex flex-col items-center max-w-[210px] transform rotate-2">
+                        <div class="relative w-full h-[185px] flex items-center justify-center">
+                            <img src="${c2.url}" class="max-h-full max-w-full object-contain drop-shadow-[0_12px_22px_rgba(0,0,0,0.85)]" alt="">
+                        </div>
+                        <div class="w-full rounded-xl p-1.5 text-center mt-1" style="background: #0d1524; border: 1px solid #1e2c44;">
+                            <span class="text-xs font-black text-white block">${c2.name}</span>
+                            <div class="text-[9.5px] font-mono text-teal-400 font-bold flex justify-around mt-0.5">
+                                <span>${c2.stat1}</span>
+                                <span>${c2.stat2}</span>
+                            </div>
+                            <span class="text-[10px] font-mono text-amber-300 font-black block mt-0.5">${c2.price}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Instagram Poll Sticker Area Simulation -->
+                <div class="w-full max-w-[460px] py-2 px-3 rounded-2xl text-center space-y-1" style="background: #0a111e; border: 1.5px dashed #3b82f6;">
+                    <span class="text-[11px] font-bold text-slate-300 block">🗳️ مساحة مخصصة لستيكر تصويت إنستغرام (Poll Sticker):</span>
+                    <div class="text-xs font-black text-blue-400">
+                        ${appState.pollPrompt || def.pollPrompt}
+                    </div>
+                </div>
+
+                <!-- Price Guarantee Capsule -->
+                <div class="w-full max-w-[460px] rounded-2xl p-2 text-center" style="background: #090e18; border: 1px solid #10b981;">
+                    <span class="text-xs font-black text-emerald-400">
+                        ⚡ كوينز النجمين متوفرة تسليم فوري لناديك بأفضل سعر في السوق!
+                    </span>
+                </div>
+            </div>
+            ${renderLayerToolbar('layer_duel_body')}
+        </div>
+        ` : ''}
+
+        <!-- Layer 3: CTA -->
+        ${renderStoryCta('layer_duel_cta', appState.ctaHeadline || def.ctaHeadline, appState.ctaSub || def.ctaSub)}
+    `;
+}
+
+function renderPlayerDuelControls() {
+    return `
+        <div class="space-y-4">
+            <!-- Presets Row -->
+            <div class="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs">
+                <label class="block text-xs font-black text-slate-800 mb-2">مواجهات جاهزة بنقرة واحدة:</label>
+                <div class="grid grid-cols-1 gap-1.5">
+                    ${PLAYER_DUEL_PRESETS.map(p => `
+                        <button type="button" onclick="applyPlayerDuelPreset('${p.id}')" class="w-full py-2 px-3 text-right rounded-lg bg-slate-50 hover:bg-emerald-50 hover:border-emerald-500 border border-slate-200 text-slate-800 text-xs font-bold transition flex items-center justify-between">
+                            <span>🥊 ${p.name}</span>
+                        </button>
+                    `).join('')}
+                </div>
+            </div>
+
+            <!-- Background & Lighting -->
+            ${renderStoryBackgroundControls()}
+
+            <!-- Duel Details Form -->
+            <div class="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs space-y-3 text-right">
+                <label class="block text-xs font-black text-slate-800 border-b pb-1.5">سؤال الاستفتاء والتصويت:</label>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1">نص الاستفتاء (Poll Question):</label>
+                    <input type="text" value="${appState.pollPrompt || ''}" oninput="appState.pollPrompt = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+window.applyPlayerDuelPreset = function(presetId) {
+    const p = PLAYER_DUEL_PRESETS.find(x => x.id === presetId);
+    if (!p) return;
+    Object.keys(p).forEach(k => {
+        if (k !== 'id' && k !== 'name') appState[k] = p[k];
+    });
+    renderControls();
+    renderCanvas();
+    if (window.showCopyToast) window.showCopyToast(`تم تطبيق مواجهة ${p.name} 🥊✨`);
+};
+
+
+// ============================================================================
+// 12. BUDGET BEAST META SQUAD TEMPLATE (💎 تشكيلة الميزانية الذكية)
+// ============================================================================
+
+const BUDGET_BEAST_PRESETS = [
+    {
+        id: 'budget_attack',
+        name: 'هجوم الرعب بـ 250 ألف كوينز',
+        squadCost: '250,000 كوينز فقط',
+        squadTitle: 'ثلاثي الهجوم الخارق الميتا',
+        highlightPill: '⚡ سرعة جنونية + إنهاء قاتل بـ 250k',
+        headline: 'تشكيلة الـ 250 ألف كوينز الميتا التي تجلد فرق الملايين! 🤯🔥'
+    },
+    {
+        id: 'budget_mid_def',
+        name: 'وسط ودفاع فولاذي بـ 350 ألف كوينز',
+        squadCost: '350,000 كوينز فقط',
+        squadTitle: 'الجدار الدفاعي ومحاور الكنترول',
+        highlightPill: '🛡️ افتكاك بدني وقوة حديدية بـ 350k',
+        headline: 'قفل دفاعك ووسطك بـ 350 ألف كوينز فقط! قوة لا تقهر 🛡️⚡'
+    }
+];
+
+function renderBudgetBeastTemplate() {
+    const isLightBg = (window.MARKET_BG_THEMES[appState.bgTheme || 'store']?.isLight) ?? true;
+    const def = TEMPLATES.budget_beast.defaultState;
+    const c1 = appState.card1 || def.card1;
+    const c2 = appState.card2 || def.card2;
+    const c3 = appState.card3 || def.card3;
+
+    return `
+        ${getStoryBackgroundHtml(appState.bgTheme || 'store', appState.bgLighting || 'bright')}
+
+        <!-- Layer 1: Header -->
+        ${renderStoryHeader('layer_budget_header', appState.badgeText || def.badgeText, appState.headline || def.headline, appState.subheadline || def.subheadline, isLightBg)}
+
+        <!-- Layer 2: Budget Beasts Lineup Body -->
+        ${isLayerVisible('layer_budget_body') ? `
+        <div id="layer_budget_body" class="draggable-layer w-full text-center flex flex-col items-center" style="${getLayerStyle('layer_budget_body', 165)}; width: 510px; z-index: 25;">
+            <div class="layer-scale-wrapper w-full flex flex-col items-center gap-2" style="transform: scale(${getLayerScale('layer_budget_body')});">
+                
+                <!-- Highlight Ribbon -->
+                <div class="px-4 py-1 rounded-full text-xs font-black shadow-lg" style="background: #0d1728; border: 1.5px solid #00FFA3; color: #00FFA3;">
+                    ${appState.highlightPill || def.highlightPill}
+                </div>
+
+                <!-- 3 Overpowered Budget Beasts in Podium Formation -->
+                <div class="relative w-full h-[285px] flex items-center justify-center gap-2 px-1 my-1">
+                    <!-- Left Beast -->
+                    <div class="flex-1 flex flex-col items-center max-w-[155px]" style="transform: rotate(-3deg);">
+                        <div class="relative w-full h-[180px] flex items-center justify-center">
+                            <img src="${c1.url}" class="max-h-full max-w-full object-contain drop-shadow" alt="">
+                        </div>
+                        <div class="text-center truncate max-w-full mt-1">
+                            <span class="text-xs font-black ${isLightBg ? 'text-slate-950' : 'text-white'}">${c1.name}</span>
+                            <span class="text-[9.5px] text-emerald-400 font-bold block">${c1.trait}</span>
+                        </div>
+                    </div>
+
+                    <!-- Center Beast (Elevated) -->
+                    <div class="flex-1 flex flex-col items-center max-w-[170px] -mt-3 z-20">
+                        <div class="relative w-full h-[195px] flex items-center justify-center">
+                            <div class="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[180px] h-[180px] bg-[radial-gradient(ellipse_at_center,rgba(0,255,163,0.3)_0%,transparent_70%)] blur-xl -z-10"></div>
+                            <img src="${c2.url}" class="max-h-full max-w-full object-contain drop-shadow" alt="">
+                        </div>
+                        <div class="text-center truncate max-w-full mt-1">
+                            <span class="text-xs font-black ${isLightBg ? 'text-slate-950' : 'text-white'}">${c2.name}</span>
+                            <span class="text-[9.5px] text-amber-400 font-bold block">${c2.trait}</span>
+                        </div>
+                    </div>
+
+                    <!-- Right Beast -->
+                    <div class="flex-1 flex flex-col items-center max-w-[155px]" style="transform: rotate(3deg);">
+                        <div class="relative w-full h-[180px] flex items-center justify-center">
+                            <img src="${c3.url}" class="max-h-full max-w-full object-contain drop-shadow" alt="">
+                        </div>
+                        <div class="text-center truncate max-w-full mt-1">
+                            <span class="text-xs font-black ${isLightBg ? 'text-slate-950' : 'text-white'}">${c3.name}</span>
+                            <span class="text-[9.5px] text-teal-400 font-bold block">${c3.trait}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Squad Cost Pill -->
+                <div class="w-full max-w-[460px] rounded-2xl p-2.5 px-4 flex items-center justify-between shadow-xl" style="background: #090e18; border: 1.5px solid #10b981;">
+                    <div class="text-right">
+                        <span class="text-[11px] font-bold text-slate-400 block">تكلفة التشكيلة الإجمالية كاملة:</span>
+                        <span class="text-xs font-black text-emerald-400">⚡ شحن فوري بخصم خاص للمبتدئين</span>
+                    </div>
+                    <div class="flex items-center gap-1.5" dir="ltr">
+                        <img src="assets/fc-coin.webp" class="w-6 h-6 object-contain" alt="c">
+                        <span class="text-xl font-black font-mono text-white">${appState.squadCost || def.squadCost}</span>
+                    </div>
+                </div>
+            </div>
+            ${renderLayerToolbar('layer_budget_body')}
+        </div>
+        ` : ''}
+
+        <!-- Layer 3: CTA -->
+        ${renderStoryCta('layer_budget_cta', appState.ctaHeadline || def.ctaHeadline, appState.ctaSub || def.ctaSub)}
+    `;
+}
+
+function renderBudgetBeastControls() {
+    return `
+        <div class="space-y-4">
+            <!-- Presets Row -->
+            <div class="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs">
+                <label class="block text-xs font-black text-slate-800 mb-2">تشكيلات ميزانية جاهزة بنقرة واحدة:</label>
+                <div class="grid grid-cols-1 gap-1.5">
+                    ${BUDGET_BEAST_PRESETS.map(p => `
+                        <button type="button" onclick="applyBudgetBeastPreset('${p.id}')" class="w-full py-2 px-3 text-right rounded-lg bg-slate-50 hover:bg-emerald-50 hover:border-emerald-500 border border-slate-200 text-slate-800 text-xs font-bold transition flex items-center justify-between">
+                            <span>💎 ${p.name}</span>
+                            <span class="font-mono text-emerald-600 font-black">${p.squadCost}</span>
+                        </button>
+                    `).join('')}
+                </div>
+            </div>
+
+            <!-- Background & Lighting -->
+            ${renderStoryBackgroundControls()}
+
+            <!-- Budget Details Form -->
+            <div class="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs space-y-3 text-right">
+                <label class="block text-xs font-black text-slate-800 border-b pb-1.5">بيانات التشكيلة والميزانية:</label>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1">الميزانية الإجمالية:</label>
+                    <input type="text" value="${appState.squadCost || ''}" oninput="appState.squadCost = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1">شريط التمييز العلوي:</label>
+                    <input type="text" value="${appState.highlightPill || ''}" oninput="appState.highlightPill = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+window.applyBudgetBeastPreset = function(presetId) {
+    const p = BUDGET_BEAST_PRESETS.find(x => x.id === presetId);
+    if (!p) return;
+    Object.keys(p).forEach(k => {
+        if (k !== 'id' && k !== 'name') appState[k] = p[k];
+    });
+    renderControls();
+    renderCanvas();
+    if (window.showCopyToast) window.showCopyToast(`تم تطبيق ${p.name} 💎✨`);
+};
+
+
+// ============================================================================
+// 13. PLAYER CARD VERDICT & REVIEW TEMPLATE (🔍 مراجعة الكرت بعد 50 مباراة)
+// ============================================================================
+
+const PLAYER_REVIEW_PRESETS = [
+    {
+        id: 'review_mbappe',
+        name: 'مراجعة كيليان مبابي 91 ST (تقييم 9.8/10)',
+        playerName: 'كيليان مبابي (91 ST)',
+        playerPrice: '1,850,000 كوينز',
+        gamesPlayed: '50 مباراة فوت تشامبيونز',
+        goalsStats: '68 هدف ⚽ • 24 أسيست 👟',
+        pro1: '🟢 سرعة انفجارية مستحيل اللحاق به',
+        pro2: '🟢 إنهاء قاتل بالقدمين من أي زاوية',
+        con1: '🔴 سعره مرتفع ويحتاج ميزانية مخصصة',
+        finalScore: '9.8 / 10',
+        headline: 'مراجعة مبابي بعد 50 مباراة فوت: هل يستاهل كوينزه؟ 🤔🔥'
+    },
+    {
+        id: 'review_vvd',
+        name: 'مراجعة فيرجيل فان دايك 89 CB (تقييم 9.6/10)',
+        playerName: 'فيرجيل فان دايك (89 CB)',
+        playerPrice: '320,000 كوينز',
+        gamesPlayed: '50 مباراة في الديفيجن رايفلز',
+        goalsStats: 'افتكاك 94% 🛡️ • 0 أخطاء فادحة',
+        pro1: '🟢 جدار دفاعي يقطع كل الكرات العرضية',
+        pro2: '🟢 قوة بدنية خارقة تفتك الكرة بدون أخطاء',
+        con1: '🔴 يحتاج تسريع كيميائي بالـ Shadow',
+        finalScore: '9.6 / 10',
+        headline: 'مراجعة فان دايك بعد 50 مباراة: هل هو المدافع الأقوى؟ 🛡️⚡'
+    }
+];
+
+function renderPlayerReviewTemplate() {
+    const isLightBg = (window.MARKET_BG_THEMES[appState.bgTheme || 'store']?.isLight) ?? true;
+    const def = TEMPLATES.player_review.defaultState;
+    const cardUrl = appState.playerCardUrl || def.playerCardUrl;
+
+    return `
+        ${getStoryBackgroundHtml(appState.bgTheme || 'store', appState.bgLighting || 'bright')}
+
+        <!-- Layer 1: Header -->
+        ${renderStoryHeader('layer_review_header', appState.badgeText || def.badgeText, appState.headline || def.headline, appState.subheadline || def.subheadline, isLightBg)}
+
+        <!-- Layer 2: Player Review Card & Verdict Body -->
+        ${isLayerVisible('layer_review_body') ? `
+        <div id="layer_review_body" class="draggable-layer w-full text-center flex flex-col items-center" style="${getLayerStyle('layer_review_body', 165)}; width: 510px; z-index: 25;">
+            <div class="layer-scale-wrapper w-full flex flex-col items-center gap-2.5" style="transform: scale(${getLayerScale('layer_review_body')});">
+                
+                <!-- Main Review Slate -->
+                <div class="w-full max-w-[480px] rounded-3xl p-4 shadow-2xl flex items-center justify-between gap-3" style="background: linear-gradient(135deg, #0e1627 0%, #080d17 100%); border: 2px solid #25395c;">
+                    
+                    <!-- Right: Large Player Card -->
+                    <div class="w-[170px] shrink-0 flex flex-col items-center">
+                        <div class="relative w-full h-[180px] flex items-center justify-center">
+                            <img src="${cardUrl}" class="max-h-full max-w-full object-contain drop-shadow" alt="">
+                        </div>
+                        <span class="text-xs font-black text-white block mt-1">${appState.playerName || def.playerName}</span>
+                        <span class="text-[10.5px] font-mono text-amber-300 font-black block mt-0.5">${appState.playerPrice || def.playerPrice}</span>
+                    </div>
+
+                    <!-- Left: Performance & Verdict Details -->
+                    <div class="flex-1 text-right space-y-2">
+                        
+                        <!-- Games & Stats Pill -->
+                        <div class="p-2 rounded-xl bg-slate-950/90 border border-slate-800 space-y-0.5">
+                            <span class="text-[10px] text-slate-400 block font-bold">🎮 ${appState.gamesPlayed || def.gamesPlayed}</span>
+                            <span class="text-xs font-black text-emerald-400 block">${appState.goalsStats || def.goalsStats}</span>
+                        </div>
+
+                        <!-- Pros & Cons List -->
+                        <div class="space-y-1 text-[10px] font-bold">
+                            <div class="text-emerald-300">${appState.pro1 || def.pro1}</div>
+                            <div class="text-emerald-300">${appState.pro2 || def.pro2}</div>
+                            <div class="text-red-400">${appState.con1 || def.con1}</div>
+                        </div>
+
+                        <!-- Final Score Stamp -->
+                        <div class="p-2 rounded-xl bg-gradient-to-r from-amber-500/20 via-yellow-500/20 to-amber-500/20 border border-amber-400 flex items-center justify-between px-3">
+                            <span class="text-[10.5px] font-black text-slate-300">التقييم النهائي:</span>
+                            <span class="text-xl font-black font-mono text-amber-300">${appState.finalScore || def.finalScore} ⭐</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Instant Purchase Capsule -->
+                <div class="w-full max-w-[480px] rounded-2xl p-2 text-center" style="background: #090e18; border: 1.5px solid #10b981;">
+                    <span class="text-xs font-black text-emerald-400">
+                        💰 الكرت يستاهل كل كوينز! شحن ميزانيته متوفر فوراً لناديك بأفضل سعر
+                    </span>
+                </div>
+            </div>
+            ${renderLayerToolbar('layer_review_body')}
+        </div>
+        ` : ''}
+
+        <!-- Layer 3: CTA -->
+        ${renderStoryCta('layer_review_cta', appState.ctaHeadline || def.ctaHeadline, appState.ctaSub || def.ctaSub)}
+    `;
+}
+
+function renderPlayerReviewControls() {
+    return `
+        <div class="space-y-4">
+            <!-- Presets Row -->
+            <div class="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs">
+                <label class="block text-xs font-black text-slate-800 mb-2">مراجعات جاهزة بنقرة واحدة:</label>
+                <div class="grid grid-cols-1 gap-1.5">
+                    ${PLAYER_REVIEW_PRESETS.map(p => `
+                        <button type="button" onclick="applyPlayerReviewPreset('${p.id}')" class="w-full py-2 px-3 text-right rounded-lg bg-slate-50 hover:bg-emerald-50 hover:border-emerald-500 border border-slate-200 text-slate-800 text-xs font-bold transition flex items-center justify-between">
+                            <span>🔍 ${p.name}</span>
+                            <span class="font-mono text-emerald-600 font-black">${p.finalScore}</span>
+                        </button>
+                    `).join('')}
+                </div>
+            </div>
+
+            <!-- Background & Lighting -->
+            ${renderStoryBackgroundControls()}
+
+            <!-- Review Details Form -->
+            <div class="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs space-y-3 text-right">
+                <label class="block text-xs font-black text-slate-800 border-b pb-1.5">بيانات تقييم ومراجعة اللاعب:</label>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1">اسم اللاعب ورتبه:</label>
+                    <input type="text" value="${appState.playerName || ''}" oninput="appState.playerName = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1">سعر اللاعب في السوق:</label>
+                    <input type="text" value="${appState.playerPrice || ''}" oninput="appState.playerPrice = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1">المباريات المجربة:</label>
+                        <input type="text" value="${appState.gamesPlayed || ''}" oninput="appState.gamesPlayed = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1">الأهداف والإحصائيات:</label>
+                        <input type="text" value="${appState.goalsStats || ''}" oninput="appState.goalsStats = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1">التقييم النهائي:</label>
+                    <input type="text" value="${appState.finalScore || ''}" oninput="appState.finalScore = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+window.applyPlayerReviewPreset = function(presetId) {
+    const p = PLAYER_REVIEW_PRESETS.find(x => x.id === presetId);
+    if (!p) return;
+    Object.keys(p).forEach(k => {
+        if (k !== 'id' && k !== 'name') appState[k] = p[k];
+    });
+    renderControls();
+    renderCanvas();
+    if (window.showCopyToast) window.showCopyToast(`تم تطبيق مراجعة ${p.name} 🔍✨`);
+};
+
+
+// ============================================================================
+// 14. GIFT A FRIEND COIN VOUCHER TEMPLATE (🎁 أهدي كوينز لخويك)
+// ============================================================================
+
+const GIFT_FRIEND_PRESETS = [
+    {
+        id: 'gift_1m',
+        name: 'هدية 1,000,000 كوينز (مبروك الرانك)',
+        recipientName: 'عبدالعزيز (خوي الدرب)',
+        senderName: 'من: فهد الشمري',
+        giftAmount: '1,000,000 كوينز',
+        giftOccasion: '🎉 بمناسبة تحقيق رانك 1 في الفوت تشامبيونز!',
+        personalNote: 'تستاهل يا كابتن وعقبال التوب 100.. شد حيلك وناديك صار جاهز!',
+        headline: 'فاجئ خويك بهدية كوينز تشحن ناديه وتفرحه فوراً! 🎁⚡'
+    },
+    {
+        id: 'gift_starter',
+        name: 'هدية باقة البداية 500,000 كوينز',
+        recipientName: 'خالد (كابتن الفريق)',
+        senderName: 'من: شلة الأصحاب',
+        giftAmount: '500,000 كوينز',
+        giftOccasion: '🎂 بمناسبة يوم ميلادك السعيد!',
+        personalNote: 'أحلى هدية لناديك عشان تقفل التشكيلة الميتا وتجلد بالديفيجن! 🔥',
+        headline: 'أفضل هدية للاعب الفوت: كوينز كاش بناديه مع رسالة خاصة! 🎁👑'
+    }
+];
+
+function renderGiftFriendTemplate() {
+    const isLightBg = (window.MARKET_BG_THEMES[appState.bgTheme || 'store']?.isLight) ?? true;
+    const def = TEMPLATES.gift_friend.defaultState;
+
+    return `
+        ${getStoryBackgroundHtml(appState.bgTheme || 'store', appState.bgLighting || 'bright')}
+
+        <!-- Layer 1: Header -->
+        ${renderStoryHeader('layer_gift_header', appState.badgeText || def.badgeText, appState.headline || def.headline, appState.subheadline || def.subheadline, isLightBg)}
+
+        <!-- Layer 2: Gift Card Voucher Body -->
+        ${isLayerVisible('layer_gift_body') ? `
+        <div id="layer_gift_body" class="draggable-layer w-full text-center flex flex-col items-center" style="${getLayerStyle('layer_gift_body', 165)}; width: 510px; z-index: 25;">
+            <div class="layer-scale-wrapper w-full flex flex-col items-center gap-3" style="transform: scale(${getLayerScale('layer_gift_body')});">
+                
+                <!-- Digital Gift Certificate Box -->
+                <div class="w-full max-w-[480px] rounded-3xl p-5 shadow-2xl space-y-3 relative overflow-hidden" style="background: linear-gradient(135deg, #130f1e 0%, #0a0812 100%); border: 2.5px solid #a855f7; box-shadow: 0 0 35px rgba(168,85,247,0.35);">
+                    
+                    <!-- Gift Bow Ribbon Header -->
+                    <div class="flex items-center justify-between border-b border-purple-500/30 pb-2.5">
+                        <div class="flex items-center gap-1.5 text-purple-300 font-black text-xs">
+                            <span class="text-base">🎁</span>
+                            <span>OFFICIAL GIFT VOUCHER</span>
+                        </div>
+                        <span class="text-[11px] font-bold text-slate-300 font-mono">
+                            ${appState.senderName || def.senderName}
+                        </span>
+                    </div>
+
+                    <!-- To Recipient -->
+                    <div class="text-right">
+                        <span class="text-[10px] text-slate-400 font-bold block">إهداء خاص ومميز إلى:</span>
+                        <span class="text-sm font-black text-white block mt-0.5">👤 ${appState.recipientName || def.recipientName}</span>
+                    </div>
+
+                    <!-- Gift Coins Amount -->
+                    <div class="py-2.5 rounded-2xl bg-purple-950/50 border border-purple-500/40 text-center space-y-0.5">
+                        <span class="text-[11px] font-bold text-slate-300">الهدية المشحونة بناديه:</span>
+                        <div class="flex items-center justify-center gap-2 py-0.5" dir="ltr">
+                            <img src="assets/fc-coin.webp" class="w-8 h-8 object-contain drop-shadow" alt="c">
+                            <span class="text-3xl font-black font-mono text-amber-300 tracking-wide">${appState.giftAmount || def.giftAmount}</span>
+                        </div>
+                        <span class="text-[10.5px] font-bold text-purple-300 block">${appState.giftOccasion || def.giftOccasion}</span>
+                    </div>
+
+                    <!-- Personal Note Quote -->
+                    <div class="p-2.5 rounded-xl bg-slate-950/80 border border-purple-500/30 text-right">
+                        <p class="text-[11px] font-bold text-slate-300 italic">
+                            "${appState.personalNote || def.personalNote}"
+                        </p>
+                    </div>
+
+                    <!-- Guarantee Footer -->
+                    <div class="text-center text-[10px] font-black text-emerald-400 pt-1">
+                        ${appState.deliveryGuarantee || def.deliveryGuarantee}
+                    </div>
+                </div>
+            </div>
+            ${renderLayerToolbar('layer_gift_body')}
+        </div>
+        ` : ''}
+
+        <!-- Layer 3: CTA -->
+        ${renderStoryCta('layer_gift_cta', appState.ctaHeadline || def.ctaHeadline, appState.ctaSub || def.ctaSub)}
+    `;
+}
+
+function renderGiftFriendControls() {
+    return `
+        <div class="space-y-4">
+            <!-- Presets Row -->
+            <div class="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs">
+                <label class="block text-xs font-black text-slate-800 mb-2">نماذج إهداء جاهزة بنقرة واحدة:</label>
+                <div class="grid grid-cols-1 gap-1.5">
+                    ${GIFT_FRIEND_PRESETS.map(p => `
+                        <button type="button" onclick="applyGiftFriendPreset('${p.id}')" class="w-full py-2 px-3 text-right rounded-lg bg-slate-50 hover:bg-emerald-50 hover:border-emerald-500 border border-slate-200 text-slate-800 text-xs font-bold transition flex items-center justify-between">
+                            <span>🎁 ${p.name}</span>
+                            <span class="font-mono text-emerald-600 font-black">${p.giftAmount}</span>
+                        </button>
+                    `).join('')}
+                </div>
+            </div>
+
+            <!-- Background & Lighting -->
+            ${renderStoryBackgroundControls()}
+
+            <!-- Gift Form -->
+            <div class="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs space-y-3 text-right">
+                <label class="block text-xs font-black text-slate-800 border-b pb-1.5">بيانات كرت الإهداء:</label>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1">اسم المهدى إليه (الصديق):</label>
+                        <input type="text" value="${appState.recipientName || ''}" oninput="appState.recipientName = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1">اسم المهدي (أنت):</label>
+                        <input type="text" value="${appState.senderName || ''}" oninput="appState.senderName = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1">كمية الكوينز المهداة:</label>
+                    <input type="text" value="${appState.giftAmount || ''}" oninput="appState.giftAmount = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1">المناسبة:</label>
+                    <input type="text" value="${appState.giftOccasion || ''}" oninput="appState.giftOccasion = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1">رسالتك الخاصة له:</label>
+                    <input type="text" value="${appState.personalNote || ''}" oninput="appState.personalNote = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+window.applyGiftFriendPreset = function(presetId) {
+    const p = GIFT_FRIEND_PRESETS.find(x => x.id === presetId);
+    if (!p) return;
+    Object.keys(p).forEach(k => {
+        if (k !== 'id' && k !== 'name') appState[k] = p[k];
+    });
+    renderControls();
+    renderCanvas();
+    if (window.showCopyToast) window.showCopyToast(`تم تطبيق إهداء ${p.name} 🎁✨`);
+};
+
+
+// ============================================================================
+// 15. BEAT THE PRO CHALLENGE TEMPLATE (⚔️ تحدي الفوز على محترف المتجر)
+// ============================================================================
+
+const BEAT_THE_PRO_PRESETS = [
+    {
+        id: 'pro_500k',
+        name: 'تحدي كابتن المتجر على 500,000 كوينز',
+        challengePrize: '500,000 كوينز مجاناً',
+        proName: 'كابتن المتجر (Pro Player 15-0)',
+        challengePlatform: 'PlayStation 5 / Cross-Play',
+        headline: 'تحدي الأسبوع: العب ضد كابتن المتجر واكسب 500k كوينز! 🥊🔥'
+    },
+    {
+        id: 'pro_1m',
+        name: 'تحدي قمة الويكند على 1,000,000 كوينز',
+        challengePrize: '1,000,000 كوينز مجاناً',
+        proName: 'محترف المتجر بطل التصفيات 🏆',
+        challengePlatform: 'جميع المنصات (Cross-Play)',
+        headline: 'قمة التحدي: اهزم بطل المتجر واكسب مليون كوينز كاش بناديك! ⚔️💰'
+    }
+];
+
+function renderBeatTheProTemplate() {
+    const isLightBg = (window.MARKET_BG_THEMES[appState.bgTheme || 'dark_neon']?.isLight) ?? false;
+    const def = TEMPLATES.beat_the_pro.defaultState;
+
+    return `
+        ${getStoryBackgroundHtml(appState.bgTheme || 'dark_neon', appState.bgLighting || 'bright')}
+
+        <!-- Layer 1: Header -->
+        ${renderStoryHeader('layer_pro_header', appState.badgeText || def.badgeText, appState.headline || def.headline, appState.subheadline || def.subheadline, isLightBg)}
+
+        <!-- Layer 2: Challenge Poster Body -->
+        ${isLayerVisible('layer_pro_body') ? `
+        <div id="layer_pro_body" class="draggable-layer w-full text-center flex flex-col items-center" style="${getLayerStyle('layer_pro_body', 165)}; width: 510px; z-index: 25;">
+            <div class="layer-scale-wrapper w-full flex flex-col items-center gap-2.5" style="transform: scale(${getLayerScale('layer_pro_body')});">
+                
+                <!-- Challenge Poster Frame -->
+                <div class="w-full max-w-[480px] rounded-3xl p-5 shadow-2xl space-y-3 relative overflow-hidden" style="background: linear-gradient(135deg, #130a10 0%, #080407 100%); border: 2.5px solid #ef4444; box-shadow: 0 0 35px rgba(239,68,68,0.4);">
+                    
+                    <!-- Top Matchup Ribbon -->
+                    <div class="flex items-center justify-between border-b border-red-500/30 pb-2.5">
+                        <div class="flex items-center gap-1.5 text-red-400 font-black text-xs">
+                            <span>🥊</span>
+                            <span>COMMUNITY PRO CHALLENGE</span>
+                        </div>
+                        <span class="px-2.5 py-0.5 rounded-lg bg-red-950 text-red-300 font-bold text-[10.5px] border border-red-500/60 font-mono">
+                            ${appState.challengePlatform || def.challengePlatform}
+                        </span>
+                    </div>
+
+                    <!-- Giant Bounty Prize -->
+                    <div class="py-3 rounded-2xl text-center space-y-1" style="background: linear-gradient(90deg, rgba(239,68,68,0.2) 0%, rgba(245,158,11,0.25) 50%, rgba(239,68,68,0.2) 100%); border: 1.5px solid #f59e0b;">
+                        <span class="text-xs font-bold text-slate-300 block">جائزة الفوز على المحترف:</span>
+                        <div class="text-3xl font-black font-mono text-amber-300 tracking-wide">
+                            ${appState.challengePrize || def.challengePrize}
+                        </div>
+                        <span class="text-[10.5px] font-black text-emerald-400 block">شحن فوري مباشر بناديك فور انتهاء المباراة</span>
+                    </div>
+
+                    <!-- Opponent Tag -->
+                    <div class="p-2 rounded-xl bg-slate-950/80 border border-slate-800 text-center">
+                        <span class="text-xs font-black text-white">
+                            الخصم: <span class="text-amber-400">${appState.proName || def.proName}</span>
+                        </span>
+                    </div>
+
+                    <!-- How to Enter Steps -->
+                    <div class="space-y-1 text-right text-[11px] font-bold text-slate-300 px-2">
+                        <div>1️⃣ ${appState.howToEnter || def.howToEnter}</div>
+                        <div>2️⃣ يتم السحب واختيار المتحدي يوم الخميس القادم</div>
+                        <div class="text-amber-400">🎁 ${appState.consolationPrize || def.consolationPrize}</div>
+                    </div>
+                </div>
+            </div>
+            ${renderLayerToolbar('layer_pro_body')}
+        </div>
+        ` : ''}
+
+        <!-- Layer 3: CTA -->
+        ${renderStoryCta('layer_pro_cta', appState.ctaHeadline || def.ctaHeadline, appState.ctaSub || def.ctaSub)}
+    `;
+}
+
+function renderBeatTheProControls() {
+    return `
+        <div class="space-y-4">
+            <!-- Presets Row -->
+            <div class="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs">
+                <label class="block text-xs font-black text-slate-800 mb-2">تحديات جاهزة بنقرة واحدة:</label>
+                <div class="grid grid-cols-1 gap-1.5">
+                    ${BEAT_THE_PRO_PRESETS.map(p => `
+                        <button type="button" onclick="applyBeatTheProPreset('${p.id}')" class="w-full py-2 px-3 text-right rounded-lg bg-slate-50 hover:bg-emerald-50 hover:border-emerald-500 border border-slate-200 text-slate-800 text-xs font-bold transition flex items-center justify-between">
+                            <span>⚔️ ${p.name}</span>
+                            <span class="font-mono text-emerald-600 font-black">${p.challengePrize}</span>
+                        </button>
+                    `).join('')}
+                </div>
+            </div>
+
+            <!-- Background & Lighting -->
+            ${renderStoryBackgroundControls()}
+
+            <!-- Challenge Form -->
+            <div class="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs space-y-3 text-right">
+                <label class="block text-xs font-black text-slate-800 border-b pb-1.5">بيانات التحدي والجائزة:</label>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1">قيمة الجائزة:</label>
+                    <input type="text" value="${appState.challengePrize || ''}" oninput="appState.challengePrize = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1">اسم كابتن المتجر / المحترف:</label>
+                    <input type="text" value="${appState.proName || ''}" oninput="appState.proName = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1">المنصة وطريقة اللعب:</label>
+                    <input type="text" value="${appState.challengePlatform || ''}" oninput="appState.challengePlatform = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+window.applyBeatTheProPreset = function(presetId) {
+    const p = BEAT_THE_PRO_PRESETS.find(x => x.id === presetId);
+    if (!p) return;
+    Object.keys(p).forEach(k => {
+        if (k !== 'id' && k !== 'name') appState[k] = p[k];
+    });
+    renderControls();
+    renderCanvas();
+    if (window.showCopyToast) window.showCopyToast(`تم تطبيق تحدي ${p.name} ⚔️✨`);
+};
+
