@@ -20,7 +20,7 @@ const STORY_TEMPLATE_KEYS = [
     'promo_pack', 'market_tracker', 'champs_squad', 'evo_boost', 'social_proof', 
     'flash_sale', 'loaded_accounts', 'squad_makeover', 
     'player_duel', 'budget_beast', 'player_review', 
-    'store_promo', 'sbc'
+    'custom_story', 'store_promo', 'sbc'
 ];
 window.STORY_TEMPLATE_KEYS = STORY_TEMPLATE_KEYS;
 
@@ -169,6 +169,12 @@ function getDefaultLayers() {
             layer_review_header: { visible: true, x: null, y: 30, scale: 0.95, label: 'ترويسة مراجعة الكرت' },
             layer_review_body: { visible: true, x: null, y: 165, scale: 0.95, label: 'بطاقة تقييم الـ 50 مباراة والإيجابيات' },
             layer_review_cta: { visible: true, x: null, y: 690, scale: 0.95, label: 'بانر شحن كوينز الكرت (CTA)' }
+        };
+    } else if (currentTemplate === 'custom_story') {
+        return {
+            layer_custom_header: { visible: true, x: null, y: 30, scale: 0.95, label: 'ترويسة القالب الخاص' },
+            layer_custom_body: { visible: true, x: null, y: 165, scale: 0.95, label: 'محتوى التصميم الخاص المخصص' },
+            layer_custom_cta: { visible: true, x: null, y: 690, scale: 0.95, label: 'بانر الطلب والتواصل (CTA)' }
         };
     } else if (currentTemplate === 'sbc') {
         // SBC is Story 9:16 only!
@@ -2740,6 +2746,8 @@ function renderControls() {
         html += renderBudgetBeastControls();
     } else if (currentTemplate === 'player_review') {
         html += renderPlayerReviewControls();
+    } else if (currentTemplate === 'custom_story') {
+        html += renderCustomStoryControls();
     } else if (currentTemplate === 'sbc') {
         const banners = Array.isArray(appState.banners) && appState.banners.length > 0 
             ? appState.banners 
@@ -4058,6 +4066,8 @@ function renderCanvas() {
         canvas.innerHTML = renderBudgetBeastTemplate();
     } else if (currentTemplate === 'player_review') {
         canvas.innerHTML = renderPlayerReviewTemplate();
+    } else if (currentTemplate === 'custom_story') {
+        canvas.innerHTML = renderCustomStoryTemplate();
     } else if (currentTemplate === 'trio') {
         canvas.innerHTML = renderTrioTemplate();
         if (window.triggerAutoSaveTrio) window.triggerAutoSaveTrio();
@@ -8580,5 +8590,138 @@ window.applyPlayerReviewPreset = function(presetId) {
     renderCanvas();
     if (window.showCopyToast) window.showCopyToast(`تم تطبيق مراجعة ${p.name} 🔍✨`);
 };
+
+
+// ============================================================================
+// 14. CUSTOM STORY TEMPLATE (✨ قالب خاص - تصميمك المخصص)
+// ============================================================================
+
+function renderCustomStoryTemplate() {
+    const isLightBg = (window.MARKET_BG_THEMES[appState.bgTheme || 'store']?.isLight) ?? true;
+    const def = TEMPLATES.custom_story.defaultState;
+
+    return `
+        ${getStoryBackgroundHtml(appState.bgTheme || 'store', appState.bgLighting || 'bright')}
+
+        <!-- Layer 1: Header -->
+        ${renderStoryHeader('layer_custom_header', appState.badgeText || def.badgeText, appState.headline || def.headline, appState.subheadline || def.subheadline, isLightBg)}
+
+        <!-- Layer 2: Custom Design Body -->
+        ${isLayerVisible('layer_custom_body') ? `
+        <div id="layer_custom_body" class="draggable-layer w-full text-center flex flex-col items-center" style="${getLayerStyle('layer_custom_body', 165)}; width: 510px; z-index: 25;">
+            <div class="layer-scale-wrapper w-full flex flex-col items-center gap-3" style="transform: scale(${getLayerScale('layer_custom_body')});">
+                
+                <!-- Main Custom Canvas Area -->
+                <div class="w-full max-w-[480px] rounded-3xl p-6 shadow-2xl relative overflow-hidden backdrop-blur-md" style="background: linear-gradient(135deg, rgba(14, 22, 38, 0.92) 0%, rgba(8, 13, 23, 0.96) 100%); border: 2px solid rgba(16, 185, 129, 0.4); box-shadow: 0 0 35px rgba(16, 185, 129, 0.2);">
+                    
+                    <!-- Decorative Top Glow -->
+                    <div class="pointer-events-none absolute -top-12 left-1/2 -translate-x-1/2 w-48 h-48 bg-emerald-500/20 blur-3xl rounded-full"></div>
+
+                    <!-- Custom Card Header Tag -->
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+                        <div class="flex items-center gap-2 text-emerald-400 font-black text-xs">
+                            <span class="text-base">✨</span>
+                            <span>CUSTOM STUDIO TEMPLATE</span>
+                        </div>
+                        <span class="px-3 py-1 rounded-full bg-emerald-950/80 border border-emerald-500/60 text-emerald-300 font-bold text-[10.5px]">
+                            قالب مخصص بانتظار فكرتك 🎨
+                        </span>
+                    </div>
+
+                    <!-- Dynamic Custom Elements Area (Built per user's prompt) -->
+                    <div class="py-6 px-4 rounded-2xl bg-slate-900/80 border border-slate-800 text-center space-y-3">
+                        <div class="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 p-[2px] flex items-center justify-center shadow-lg">
+                            <div class="w-full h-full bg-[#080d18] rounded-[14px] flex items-center justify-center text-2xl">
+                                🎨
+                            </div>
+                        </div>
+
+                        <h4 class="text-sm font-black text-white">
+                            ${appState.customHeadline || 'مساحة التصميم المخصص جاهزة!'}
+                        </h4>
+
+                        <p class="text-xs text-slate-300 font-medium leading-relaxed max-w-sm mx-auto">
+                            ${appState.customDesc || 'اشرح لي الآن في الدردشة فكرة التصميم، العناصر، الألوان، وأي صور أو جداول تريدها، وسأقوم ببرمجتها وتطبيقها هنا مباشرة بدقة 4K!'}
+                        </p>
+
+                        <!-- Flexible Feature Tags Container -->
+                        <div class="flex flex-wrap items-center justify-center gap-2 pt-2">
+                            <span class="px-3 py-1 rounded-xl bg-slate-950 border border-slate-700 text-[11px] font-bold text-slate-300">
+                                ⚡ ${appState.customText1 || 'عنصر مخصص 1'}
+                            </span>
+                            <span class="px-3 py-1 rounded-xl bg-slate-950 border border-slate-700 text-[11px] font-bold text-slate-300">
+                                💎 ${appState.customText2 || 'عنصر مخصص 2'}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Trust / Footer Guarantee -->
+                    <div class="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-[10.5px] font-bold text-slate-400">
+                        <span>🛡️ متجر ShopCoin15 الرسمي</span>
+                        <span class="text-emerald-400 font-black">⚡ تسليم فوري بالخاص</span>
+                    </div>
+
+                </div>
+            </div>
+            ${renderLayerToolbar('layer_custom_body')}
+        </div>
+        ` : ''}
+
+        <!-- Layer 3: CTA -->
+        ${renderStoryCta('layer_custom_cta', appState.ctaHeadline || def.ctaHeadline, appState.ctaSub || def.ctaSub)}
+    `;
+}
+
+function renderCustomStoryControls() {
+    return `
+        <div class="space-y-4">
+            <!-- Instruction Notice -->
+            <div class="p-3.5 rounded-2xl bg-gradient-to-r from-emerald-950/80 via-slate-900 to-emerald-950/80 border border-emerald-500/40 text-right space-y-1.5 shadow-sm">
+                <div class="flex items-center gap-2 text-emerald-400 font-black text-xs">
+                    <span>✨</span>
+                    <span>قالب خاص مخصص:</span>
+                </div>
+                <p class="text-[11px] font-bold text-slate-300 leading-relaxed">
+                    اشرح لي في الدردشة فكرة التصميم بالكامل وسأقوم ببرمجة وتطبيق كافة تفاصيلها هنا فوراً وتجهيز حقولها!
+                </p>
+            </div>
+
+            <!-- Background & Lighting Controls -->
+            ${renderStoryBackgroundControls()}
+
+            <!-- Custom Story Form -->
+            <div class="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs space-y-3 text-right">
+                <label class="block text-xs font-black text-slate-800 border-b pb-1.5">بيانات ونصوص القالب:</label>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1">شارة الستوري العلوية (Badge):</label>
+                    <input type="text" value="${appState.badgeText || ''}" oninput="appState.badgeText = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1">العنوان الرئيسي:</label>
+                    <input type="text" value="${appState.headline || ''}" oninput="appState.headline = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1">الوصف الفرعي:</label>
+                    <input type="text" value="${appState.subheadline || ''}" oninput="appState.subheadline = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1">نص مخصص 1:</label>
+                        <input type="text" value="${appState.customText1 || ''}" oninput="appState.customText1 = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1">نص مخصص 2:</label>
+                        <input type="text" value="${appState.customText2 || ''}" oninput="appState.customText2 = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1">عنوان زر الطلب (CTA):</label>
+                    <input type="text" value="${appState.ctaHeadline || ''}" oninput="appState.ctaHeadline = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+                </div>
+            </div>
+        </div>
+    `;
+}
+
 
 

@@ -720,6 +720,23 @@ const TEMPLATES = {
             ctaSub: 'للطلب تواصل معنا على الخاص: @shop_coin15 📩'
         }
     },
+    custom_story: {
+        id: 'custom_story',
+        name: '✨ قالب خاص',
+        icon: 'sparkles',
+        description: 'قالب خاص ومخصص بالكامل يتم تصميمه وبرمجته حسب فكرتك وعناصرك بدقة واحترافية',
+        defaultState: {
+            bgTheme: 'store',
+            bgLighting: 'bright',
+            badgeText: '✨ تصميم خاص وحصري • متجر ShopCoin15',
+            headline: 'عنوان الستوري الخاص بك 🔥',
+            subheadline: 'اشرح فكرتك وسنقوم ببرمجة التصميم وتطبيقه هنا فوراً!',
+            customText1: 'عنصر مخصص 1',
+            customText2: 'عنصر مخصص 2',
+            ctaHeadline: 'للطلب والاستفسار تواصل معنا على الخاص 📩',
+            ctaSub: 'خدمة سريعة ومضمونة 100% • تسليم فوري'
+        }
+    },
     trio: {
         id: 'trio',
         name: '👑 تريو 3 لاعبين متداخلين',
