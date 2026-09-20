@@ -427,6 +427,189 @@ const TEMPLATES = {
             }
         }
     },
+    promo_pack: {
+        id: 'promo_pack',
+        name: '🔥 باكدجات المتجر الحارقة',
+        icon: 'package',
+        description: 'تسويق كوينز لفتح باكدجات المتجر محدودة الوقت والأيقونات مع عداد زمني وأضواء الووك أوت',
+        defaultState: {
+            bgTheme: 'store',
+            bgLighting: 'bright',
+            packTitle: 'باكدج نجوم النخبة 85+ x10',
+            packSub: 'فرصة خروج أيقونة أو لاعب حدث خارق 100%',
+            packPrice: '650,000 كوينز',
+            timeRemaining: '⏳ متبقي: 14 ساعة فقط',
+            packImageUrl: 'assets/fc27_jumbo_gold_pack.png',
+            star1_name: 'مبابي (91)',
+            star1_url: '/api/image-proxy?url=https%3A%2F%2Fgame-assets.fut.gg%2Fcdn-cgi%2Fimage%2Fquality%3D85%2Cformat%3Dauto%2Cwidth%3D600%2F2027%2Ffutgg-player-item-card%2F27-231747.1b49b357729ba7dbf174dc4aa1e8519ce230b98ad399360e364a59f4b3477f07.webp',
+            star2_name: 'بيلينغهام (90)',
+            star2_url: '/api/image-proxy?url=https%3A%2F%2Fgame-assets.fut.gg%2Fcdn-cgi%2Fimage%2Fquality%3D85%2Cformat%3Dauto%2Cwidth%3D600%2F2027%2Ffutgg-player-item-card%2F27-252371.49e4acdf2d78496f4951f41725cd17fb8efb118d99a69ba074ab76fc62d70735.webp',
+            badgeText: '🚨 باكدج متجر محدود الوقت • ينتهي عند 8:00 مساءً',
+            headline: 'باكدج الـ 85+ x10 الخارق نزل بالمتجر! لا تفوت فرصة الأيقون 🎁🔥',
+            subheadline: 'مطفر وما عندك كوينز؟ اشحن كوينزك الآن بـ 3 دقائق وافتح الباكدج قبل الحذف!',
+            ctaHeadline: 'متوفر شحن كمية الباكدج فوراً لجميع المنصات 💰',
+            ctaSub: 'للطلب تواصل معنا على الخاص: @shop_coin15 📩'
+        }
+    },
+    champs_squad: {
+        id: 'champs_squad',
+        name: '⚔️ تشكيلة الفوت تشامبيونز الأسبوعية',
+        icon: 'shield',
+        description: 'عرض تشكيلة وتكتيك الـ 15 فوز مع ميزانية الكوينز الإجمالية لبناء الفريق قبل بداية البطولة',
+        defaultState: {
+            bgTheme: 'store',
+            bgLighting: 'bright',
+            formation: 'خطة 4-3-2-1 الميتا',
+            rankTarget: '🏆 تشكيلة رانك 1 (15+ فوز مضمون)',
+            squadBudget: '850,000 كوينز',
+            chemistry: '33 / 33 كيمياء كاملة',
+            card1: {
+                role: 'الهداف الحاسم (ST)',
+                name: 'كيليان مبابي',
+                rating: '91 ST',
+                url: '/api/image-proxy?url=https%3A%2F%2Fgame-assets.fut.gg%2Fcdn-cgi%2Fimage%2Fquality%3D85%2Cformat%3Dauto%2Cwidth%3D600%2F2027%2Ffutgg-player-item-card%2F27-231747.1b49b357729ba7dbf174dc4aa1e8519ce230b98ad399360e364a59f4b3477f07.webp'
+            },
+            card2: {
+                role: 'صانع الألعاب والكنترول (CAM)',
+                name: 'جود بيلينغهام',
+                rating: '90 CAM',
+                url: '/api/image-proxy?url=https%3A%2F%2Fgame-assets.fut.gg%2Fcdn-cgi%2Fimage%2Fquality%3D85%2Cformat%3Dauto%2Cwidth%3D600%2F2027%2Ffutgg-player-item-card%2F27-252371.49e4acdf2d78496f4951f41725cd17fb8efb118d99a69ba074ab76fc62d70735.webp'
+            },
+            card3: {
+                role: 'الجدار الدفاعي (CB)',
+                name: 'فان دايك',
+                rating: '89 CB',
+                url: '/api/image-proxy?url=https%3A%2F%2Fgame-assets.fut.gg%2Fcdn-cgi%2Fimage%2Fquality%3D85%2Cformat%3Dauto%2Cwidth%3D600%2F2027%2Ffutgg-player-item-card%2F27-203376.17f57c8f215fff6f4edef3889583cc487fefce9b4e7ce1eeba235d634b7424b8.webp'
+            },
+            badgeText: '🏆 تكتيك وتشكيـلة الـ 15 فـوز • Weekend League FC 27',
+            headline: 'التشكيلة الميتا لرانك 1 في الفوت تشامبيونز! قفلها اليوم ⚽⚡',
+            subheadline: 'ميزانية التشكيلة كاملة متوفرة لدينا بخصم خاص وتسليم فوري خلال دقائق!',
+            ctaHeadline: 'خصم 10% عند شحن ميزانية التشكيلة بالكامل 💰',
+            ctaSub: 'للطلب تواصل معنا على الخاص: @shop_coin15 📩'
+        }
+    },
+    evo_boost: {
+        id: 'evo_boost',
+        name: '🧬 تطويرات الإيفولوشن الخارقة',
+        icon: 'zap',
+        description: 'مقارنة الكرت قبل وبعد التطوير وتكلفة الـ 100k كوينز لتحويله إلى وحش في الملعب',
+        defaultState: {
+            bgTheme: 'store',
+            bgLighting: 'bright',
+            evoTitle: 'تطوير: الجناح الفولاذي (Relentless Winger)',
+            evoCost: '100,000 كوينز',
+            boostSummary: '+12 سرعة • +14 تسديد • +11 مراوغة',
+            beforeCard: {
+                name: 'باركولا (الكرت العادي)',
+                rating: '80 LW',
+                pac: '89',
+                sho: '71',
+                pas: '74',
+                dri: '82',
+                url: '/api/image-proxy?url=https%3A%2F%2Fgame-assets.fut.gg%2Fcdn-cgi%2Fimage%2Fquality%3D85%2Cformat%3Dauto%2Cwidth%3D600%2F2027%2Ffutgg-player-item-card%2F27-50596300.9b5dfc98a731bb7f8958c0eec6247d0bc94a42cb7d86de10a1c5482685f6b716.webp'
+            },
+            afterCard: {
+                name: 'باركولا (بعد الإيفو الخارق)',
+                rating: '87 LW',
+                pac: '98',
+                sho: '85',
+                pas: '84',
+                dri: '93',
+                url: '/api/image-proxy?url=https%3A%2F%2Fgame-assets.fut.gg%2Fcdn-cgi%2Fimage%2Fquality%3D85%2Cformat%3Dauto%2Cwidth%3D600%2F2027%2Ffutgg-player-item-card%2F27-50596300.9b5dfc98a731bb7f8958c0eec6247d0bc94a42cb7d86de10a1c5482685f6b716.webp'
+            },
+            badgeText: '🧬 أقوى إيفولوشن نزل باللعبة • تحويل كرت عادي إلى غول!',
+            headline: 'حوّل كرت بـ 15 ألف إلى أسطورة أقوى من كروت الملايين! 🤯🔥',
+            subheadline: 'الإيفو الجديد نزل باللعبة.. اشحن كوينز تفعيل التطوير الآن وطوّره فوراً!',
+            ctaHeadline: 'متوفر شحن كوينز تفعيل الإيفو فوراً بأفضل الأسعار 💰',
+            ctaSub: 'للطلب تواصل معنا على الخاص: @shop_coin15 📩'
+        }
+    },
+    social_proof: {
+        id: 'social_proof',
+        name: '🤝 توثيق ثقة العملاء والتحويلات',
+        icon: 'check-circle',
+        description: 'توثيق شحن فوري حقيقي وتقييم 5 نجوم وبادجات الضريبة والأمان 0% باند لكسر تردد العميل',
+        defaultState: {
+            bgTheme: 'store',
+            bgLighting: 'bright',
+            amountLoaded: '1,500,000 كوينز',
+            deliveryTime: '3 دقائق و 45 ثانية',
+            platform: 'PlayStation 5',
+            customerName: 'فهد الشمري (الرياض)',
+            rating: '5/5',
+            reviewText: 'والله أفضل متجر تعاملت معه، سرعة خيالية وناديي في أمان تام وتم شحن المليون ونص كاملة بدون أي نقص!',
+            proofTag: '✅ تم الشحن بنجاح وتم تسليم الحساب للعميل',
+            badgeText: '🛡️ توثيق عمليات الشحن اليومية • ثقة أكثر من 5000 عميل',
+            headline: 'شحن فوري جديد تم بنجاح! ناديك في أمان تام 100% 🔒⚡',
+            subheadline: 'ضمان شامل الضريبة وضمان النادي بالكامل.. اشحن كوينزك وأنت مرتاح البال!',
+            ctaHeadline: 'جاهز تشحن ناديك وتستلم خلال دقائق؟ 💰',
+            ctaSub: 'للطلب تواصل معنا على الخاص: @shop_coin15 📩'
+        }
+    },
+    flash_sale: {
+        id: 'flash_sale',
+        name: '💰 جدول باقات الكوينز والعروض',
+        icon: 'dollar-sign',
+        description: 'جدول باقات كوينز فاخر (500k, 1M, 2M) مع شارات الأكثر طلباً والخصومات السريعة',
+        defaultState: {
+            bgTheme: 'store',
+            bgLighting: 'bright',
+            saleTitle: 'عروض كوينز الويكند الحارقة ⚡',
+            saleExpiry: '⏳ العرض ساري حتى منتصف الليل فقط',
+            tier1: {
+                amount: '500,000 كوينز',
+                oldPrice: '15$',
+                price: '11$',
+                badge: '⚡ باقة البداية'
+            },
+            tier2: {
+                amount: '1,000,000 كوينز',
+                oldPrice: '28$',
+                price: '21$',
+                badge: '⭐ الأكثر طلباً'
+            },
+            tier3: {
+                amount: '2,000,000 كوينز',
+                oldPrice: '52$',
+                price: '39$',
+                badge: '👑 باقة الحيتان VIP'
+            },
+            badgeText: '⚡ عروض كوينز حصرية لفترة محدودة • أسعار اليوم الأقوى',
+            headline: 'باقات الكوينز الأقوى لجميع المنصات! اختر باقتك واستلم بدقيقة 💰🔥',
+            subheadline: 'جميع الباقات تشمل تغطية الضريبة 100% وتسليم فوري بدون انتظار!',
+            ctaHeadline: 'الكميات تنفد سريعاً.. اطلب باقتك عبر الخاص الآن 📩',
+            ctaSub: 'للطلب تواصل معنا على الخاص: @shop_coin15 📩'
+        }
+    },
+    event_leaks: {
+        id: 'event_leaks',
+        name: '💣 تسريبات نجوم الحدث القادم',
+        icon: 'alert-triangle',
+        description: 'رادار تسريبات أحداث الجمعة لتحفيز الشحن المسبق للكوينز قبل ارتفاع أسعار السوق',
+        defaultState: {
+            bgTheme: 'cyber_blue',
+            bgLighting: 'bright',
+            eventName: 'حدث الـ CENTURIONS القادم',
+            eventDay: 'الجمعة القادمة الساعة 8:00 مساءً',
+            card1: {
+                name: 'كيليان مبابي',
+                rating: '93 ST',
+                leakNote: '🔥 تسريب: سرعة 98 وتسديد 93',
+                url: '/api/image-proxy?url=https%3A%2F%2Fgame-assets.fut.gg%2Fcdn-cgi%2Fimage%2Fquality%3D85%2Cformat%3Dauto%2Cwidth%3D600%2F2027%2Ffutgg-player-item-card%2F27-231747.1b49b357729ba7dbf174dc4aa1e8519ce230b98ad399360e364a59f4b3477f07.webp'
+            },
+            card2: {
+                name: 'فينيسيوس جونيور',
+                rating: '92 LW',
+                leakNote: '⚡ تسريب: مراوغة 94 وميتا خارق',
+                url: '/api/image-proxy?url=https%3A%2F%2Fgame-assets.fut.gg%2Fcdn-cgi%2Fimage%2Fquality%3D85%2Cformat%3Dauto%2Cwidth%3D600%2F2027%2Ffutgg-player-item-card%2F27-238794.6715e80f49fb5360b92261f8bd984f7178a47066cff3bfcd2c1b7dd57db13fbf.webp'
+            },
+            badgeText: '🚨 تسريبات حصرية ومؤكدة • حدث الـ CENTURIONS القادم',
+            headline: 'رسمياً: أقوى كروت الحدث القادم يوم الجمعة! جهّز كوينزك من الآن 💣🔥',
+            subheadline: 'الحدث القادم كروته خارقة وراح تطير أسعارها.. اشحن كوينزك اليوم بأسعار هادية!',
+            ctaHeadline: 'تجهيز كوينز مسبق لجميع المنصات بأسعار مخفضة 💰',
+            ctaSub: 'للطلب تواصل معنا على الخاص: @shop_coin15 📩'
+        }
+    },
     trio: {
         id: 'trio',
         name: '👑 تريو 3 لاعبين متداخلين',
