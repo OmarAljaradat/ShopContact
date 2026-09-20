@@ -373,7 +373,9 @@ const TEMPLATES = {
         icon: 'trending-up',
         description: 'عرض 1 أو 2 أو 3 لاعبين مع صندوق تحليل السوق الحقيقي من فوت بين (التريند الأخضر/الأحمر، السعر، والمبيعات) لتحفيز الشراء الفوري',
         defaultState: {
-            bgTheme: 'store',
+            displayLayout: 'classic', // 'classic' | 'horizontal' | 'badge' | 'vs' | 'ticker' | 'pods' | 'spotlight'
+            bgTheme: 'store', // 'store' | 'daylight_arena' | 'cyber_blue' | 'emerald_glow' | 'gold_lounge' | 'dark_neon'
+            bgLighting: 'bright', // 'bright' | 'medium' | 'dim'
             cardCount: 2, // 1, 2, or 3
             platform: 'ps_xbox', // 'ps_xbox' | 'pc'
             badgeText: '🚨 رادار سوق FC 27 • تنبيه تحركات الأسعار في FUTBIN',
@@ -693,6 +695,66 @@ const SBC_PRESETS = [
     }
 ];
 
+const MARKET_DISPLAY_LAYOUTS = [
+    { id: 'classic', name: 'الكلاسيكي الموزّع', icon: '🏛️', desc: 'كروت بأعلى وصناديق فوت بين تحتها' },
+    { id: 'horizontal', name: 'الشرائط الأفقية', icon: '💳', desc: 'كل لاعب بشريط زجاجي عريض ومدمج' },
+    { id: 'badge', name: 'درع السعر العائم', icon: '🛡️', desc: 'كروت كبيرة مع بادج سعر وضاء ملتصق' },
+    { id: 'vs', name: 'مواجهة رادار (VS)', icon: '⚔️', desc: 'مقارنة نارية ثنائية وجهاً لوجه' },
+    { id: 'ticker', name: 'بورصة وتداول الماركت', icon: '📊', desc: 'كروت مع جدول صفقات مالي احترافي' },
+    { id: 'pods', name: 'كبسولات زجاجية', icon: '💎', desc: 'حاوية زجاجية موحدة للكارت والسعر' },
+    { id: 'spotlight', name: 'بطل مع رادار مصغر', icon: '🌟', desc: 'كارت بطل رئيسي مع صفقات سريعة' }
+];
+
+const MARKET_BG_THEMES = {
+    store: {
+        id: 'store',
+        name: '🏛️ رخام ملكي أبيض وذهبي',
+        url: 'assets/store-bg-pure.png',
+        isLight: true,
+        desc: 'ناصع وفائق الفخامة'
+    },
+    daylight_arena: {
+        id: 'daylight_arena',
+        name: '🏟️ ستاديوم نهاري ناصع',
+        url: 'assets/shopcoin_arena_bg.jpg',
+        isLight: false,
+        style: 'filter: brightness(1.22) saturate(1.15);',
+        desc: 'أجواء استاديوم نهاري مشرق'
+    },
+    cyber_blue: {
+        id: 'cyber_blue',
+        name: '⚡ سايبر بلو نيون مشرق',
+        url: 'assets/story-bg.jpg',
+        isLight: false,
+        style: 'filter: hue-rotate(190deg) brightness(1.2) contrast(1.1);',
+        desc: 'طاقة وأضواء زرقاء حيوية'
+    },
+    emerald_glow: {
+        id: 'emerald_glow',
+        name: '🌿 زمردي متجر الكوينز المشع',
+        url: 'assets/story-bg.jpg',
+        isLight: false,
+        style: 'filter: hue-rotate(90deg) brightness(1.25) saturate(1.2);',
+        desc: 'أخضر زمردي مبهج ومضاء'
+    },
+    gold_lounge: {
+        id: 'gold_lounge',
+        name: '👑 صالة الذهب VIP الملكية',
+        url: 'assets/shopcoin_gold_lounge.jpg',
+        isLight: false,
+        style: 'filter: brightness(1.15) saturate(1.1);',
+        desc: 'صالة ذهبية فخمة ودافئة'
+    },
+    dark_neon: {
+        id: 'dark_neon',
+        name: '🌌 مدرج ليلي بأضواء كاشفة',
+        url: 'assets/story-bg.jpg',
+        isLight: false,
+        style: 'filter: brightness(1.05) contrast(1.15);',
+        desc: 'مدرج ليلي بأضواء كاشفة وضاءة'
+    }
+};
+
 window.TEMPLATES = TEMPLATES;
 window.POPULAR_FUTGG_STARS = POPULAR_FUTGG_STARS;
 window.STARTER_BEASTS = STARTER_BEASTS;
@@ -702,5 +764,8 @@ window.POPULAR_POTM_STARS = POPULAR_POTM_STARS;
 window.SBC_PRESETS = SBC_PRESETS;
 window.SHOWCASE_BG_THEMES = SHOWCASE_BG_THEMES;
 window.SHOWCASE_STARS_PRESETS = SHOWCASE_STARS_PRESETS;
+window.MARKET_DISPLAY_LAYOUTS = MARKET_DISPLAY_LAYOUTS;
+window.MARKET_BG_THEMES = MARKET_BG_THEMES;
+
 
 

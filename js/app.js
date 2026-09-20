@@ -4471,50 +4471,37 @@ function renderFutbinPriceBox(player, mode = 'standard') {
     `;
 }
 
-function renderMarketTrackerTemplate() {
-    const isStoreBg = appState.bgTheme === 'store' || !appState.bgTheme;
-    const isDarkBg = appState.bgTheme === 'dark';
-    const bgUrl = isStoreBg 
-        ? (window.EMBEDDED_ASSETS?.STORE_BG_PURE || 'assets/store-bg-pure.png') 
-        : (isDarkBg ? 'assets/story-bg.jpg' : 'assets/shopcoin_arena_bg.jpg');
+// ---------------------------------------------------------
+// 7 DISTINCT MARKET DISPLAY LAYOUTS FOR CARDS & FUTBIN DATA
+// ---------------------------------------------------------
 
-    const cardCount = parseInt(appState.cardCount, 10) || 2;
-    const p1 = appState.player1 || TEMPLATES.market_tracker.defaultState.player1;
-    const p2 = appState.player2 || TEMPLATES.market_tracker.defaultState.player2;
-    const p3 = appState.player3 || TEMPLATES.market_tracker.defaultState.player3;
-
-    // Build Player Section HTML based on Card Count
-    let playersContentHtml = '';
-
+// 1. Classic Stack (1, 2, or 3 cards with FUTBIN boxes below)
+function renderMarketLayoutClassic(p1, p2, p3, cardCount, platform, isLightBg) {
     if (cardCount === 1) {
-        // 1 Player: Hero Showcase (Single Large Player)
-        playersContentHtml = `
+        return `
             <div class="w-full flex flex-col items-center gap-2">
-                <!-- Tag Badge -->
                 ${p1.tag ? `
                 <div class="px-3 py-1 rounded-full bg-slate-900/90 border border-emerald-400 text-emerald-300 text-xs font-black shadow-lg">
                     ${p1.tag}
                 </div>` : ''}
 
-                <!-- Large Player Card -->
                 <div class="relative w-[240px] h-[270px] flex items-center justify-center">
                     <div class="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-[radial-gradient(ellipse_at_center,rgba(0,255,163,0.28)_0%,rgba(0,240,255,0.08)_50%,transparent_70%)] blur-2xl -z-10"></div>
                     <img src="${p1.cardUrl}" class="max-h-full max-w-full object-contain pointer-events-none drop-shadow-[0_20px_35px_rgba(0,0,0,0.85)]" alt="${p1.name}">
                 </div>
 
-                <!-- Player Name Title -->
                 <div class="text-center">
-                    <span class="text-base font-black text-white drop-shadow-md">${p1.arName || p1.name}</span>
-                    <span class="text-xs font-bold text-emerald-400 font-mono ml-1.5">(${p1.rating} ${p1.position})</span>
+                    <span class="text-base font-black ${isLightBg ? 'text-slate-900' : 'text-white'} drop-shadow-md">${p1.arName || p1.name}</span>
+                    <span class="text-xs font-bold text-emerald-500 font-mono ml-1.5">(${p1.rating} ${p1.position})</span>
                 </div>
 
-                <!-- Authentic FUTBIN Market Box (Hero mode) -->
                 ${renderFutbinPriceBox(p1, 'hero')}
             </div>
         `;
-    } else if (cardCount === 2) {
-        // 2 Players: Duo Comparison (Side-by-side)
-        playersContentHtml = `
+    }
+
+    if (cardCount === 2) {
+        return `
             <div class="w-full flex items-start justify-center gap-3.5 px-2">
                 <!-- Player 1 Column -->
                 <div class="flex-1 flex flex-col items-center gap-1.5 max-w-[245px]">
@@ -4523,19 +4510,16 @@ function renderMarketTrackerTemplate() {
                         ${p1.tag}
                     </div>` : ''}
 
-                    <!-- Card Image -->
                     <div class="relative w-full h-[225px] flex items-center justify-center">
                         <div class="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[210px] h-[210px] bg-[radial-gradient(ellipse_at_center,rgba(0,255,163,0.22)_0%,transparent_70%)] blur-xl -z-10"></div>
                         <img src="${p1.cardUrl}" class="max-h-full max-w-full object-contain pointer-events-none drop-shadow-[0_15px_25px_rgba(0,0,0,0.8)]" alt="${p1.name}">
                     </div>
 
-                    <!-- Player Name -->
                     <div class="text-center truncate max-w-full">
-                        <span class="text-xs font-black text-white drop-shadow">${p1.arName || p1.name}</span>
-                        <span class="text-[10px] font-bold text-emerald-400 font-mono">(${p1.rating})</span>
+                        <span class="text-xs font-black ${isLightBg ? 'text-slate-900' : 'text-white'} drop-shadow">${p1.arName || p1.name}</span>
+                        <span class="text-[10px] font-bold text-emerald-500 font-mono">(${p1.rating})</span>
                     </div>
 
-                    <!-- FUTBIN Box 1 -->
                     ${renderFutbinPriceBox(p1, 'standard')}
                 </div>
 
@@ -4546,93 +4530,507 @@ function renderMarketTrackerTemplate() {
                         ${p2.tag}
                     </div>` : ''}
 
-                    <!-- Card Image -->
                     <div class="relative w-full h-[225px] flex items-center justify-center">
                         <div class="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[210px] h-[210px] bg-[radial-gradient(ellipse_at_center,rgba(0,240,255,0.20)_0%,transparent_70%)] blur-xl -z-10"></div>
                         <img src="${p2.cardUrl}" class="max-h-full max-w-full object-contain pointer-events-none drop-shadow-[0_15px_25px_rgba(0,0,0,0.8)]" alt="${p2.name}">
                     </div>
 
-                    <!-- Player Name -->
                     <div class="text-center truncate max-w-full">
-                        <span class="text-xs font-black text-white drop-shadow">${p2.arName || p2.name}</span>
-                        <span class="text-[10px] font-bold text-emerald-400 font-mono">(${p2.rating})</span>
+                        <span class="text-xs font-black ${isLightBg ? 'text-slate-900' : 'text-white'} drop-shadow">${p2.arName || p2.name}</span>
+                        <span class="text-[10px] font-bold text-emerald-500 font-mono">(${p2.rating})</span>
                     </div>
 
-                    <!-- FUTBIN Box 2 -->
                     ${renderFutbinPriceBox(p2, 'standard')}
-                </div>
-            </div>
-        `;
-    } else {
-        // 3 Players: Trio Radar (3 columns)
-        playersContentHtml = `
-            <div class="w-full grid grid-cols-3 gap-2 px-1">
-                <!-- Player 1 -->
-                <div class="flex flex-col items-center gap-1">
-                    ${p1.tag ? `
-                    <div class="px-1.5 py-0.5 rounded-full bg-slate-950/90 border border-emerald-400 text-emerald-300 text-[9px] font-black shadow truncate max-w-full">
-                        ${p1.tag}
-                    </div>` : ''}
-
-                    <div class="relative w-full h-[160px] flex items-center justify-center">
-                        <img src="${p1.cardUrl}" class="max-h-full max-w-full object-contain pointer-events-none drop-shadow-[0_12px_20px_rgba(0,0,0,0.8)]" alt="${p1.name}">
-                    </div>
-
-                    <div class="text-center truncate max-w-full">
-                        <span class="text-[11px] font-black text-white">${p1.arName || p1.name}</span>
-                        <span class="text-[9px] font-bold text-emerald-400 font-mono">(${p1.rating})</span>
-                    </div>
-
-                    ${renderFutbinPriceBox(p1, 'compact')}
-                </div>
-
-                <!-- Player 2 -->
-                <div class="flex flex-col items-center gap-1">
-                    ${p2.tag ? `
-                    <div class="px-1.5 py-0.5 rounded-full bg-slate-950/90 border border-emerald-400 text-emerald-300 text-[9px] font-black shadow truncate max-w-full">
-                        ${p2.tag}
-                    </div>` : ''}
-
-                    <div class="relative w-full h-[160px] flex items-center justify-center">
-                        <img src="${p2.cardUrl}" class="max-h-full max-w-full object-contain pointer-events-none drop-shadow-[0_12px_20px_rgba(0,0,0,0.8)]" alt="${p2.name}">
-                    </div>
-
-                    <div class="text-center truncate max-w-full">
-                        <span class="text-[11px] font-black text-white">${p2.arName || p2.name}</span>
-                        <span class="text-[9px] font-bold text-emerald-400 font-mono">(${p2.rating})</span>
-                    </div>
-
-                    ${renderFutbinPriceBox(p2, 'compact')}
-                </div>
-
-                <!-- Player 3 -->
-                <div class="flex flex-col items-center gap-1">
-                    ${p3.tag ? `
-                    <div class="px-1.5 py-0.5 rounded-full bg-slate-950/90 border border-emerald-400 text-emerald-300 text-[9px] font-black shadow truncate max-w-full">
-                        ${p3.tag}
-                    </div>` : ''}
-
-                    <div class="relative w-full h-[160px] flex items-center justify-center">
-                        <img src="${p3.cardUrl}" class="max-h-full max-w-full object-contain pointer-events-none drop-shadow-[0_12px_20px_rgba(0,0,0,0.8)]" alt="${p3.name}">
-                    </div>
-
-                    <div class="text-center truncate max-w-full">
-                        <span class="text-[11px] font-black text-white">${p3.arName || p3.name}</span>
-                        <span class="text-[9px] font-bold text-emerald-400 font-mono">(${p3.rating})</span>
-                    </div>
-
-                    ${renderFutbinPriceBox(p3, 'compact')}
                 </div>
             </div>
         `;
     }
 
+    // 3 Cards Trio
+    return `
+        <div class="w-full grid grid-cols-3 gap-2 px-1">
+            ${[p1, p2, p3].map(p => `
+                <div class="flex flex-col items-center gap-1">
+                    ${p.tag ? `
+                    <div class="px-1.5 py-0.5 rounded-full bg-slate-950/90 border border-emerald-400 text-emerald-300 text-[9px] font-black shadow truncate max-w-full">
+                        ${p.tag}
+                    </div>` : ''}
+
+                    <div class="relative w-full h-[160px] flex items-center justify-center">
+                        <img src="${p.cardUrl}" class="max-h-full max-w-full object-contain pointer-events-none drop-shadow-[0_12px_20px_rgba(0,0,0,0.8)]" alt="${p.name}">
+                    </div>
+
+                    <div class="text-center truncate max-w-full">
+                        <span class="text-[11px] font-black ${isLightBg ? 'text-slate-900' : 'text-white'}">${p.arName || p.name}</span>
+                        <span class="text-[9px] font-bold text-emerald-500 font-mono">(${p.rating})</span>
+                    </div>
+
+                    ${renderFutbinPriceBox(p, 'compact')}
+                </div>
+            `).join('')}
+        </div>
+    `;
+}
+
+// 2. Horizontal Glass Strips
+function renderMarketLayoutHorizontal(p1, p2, p3, cardCount, platform, isLightBg) {
+    const players = [p1, p2, p3].slice(0, cardCount);
+    const cardHeight = cardCount === 3 ? 'h-[115px]' : (cardCount === 1 ? 'h-[175px]' : 'h-[135px]');
+    const cardImgW = cardCount === 3 ? 'w-[95px]' : (cardCount === 1 ? 'w-[140px]' : 'w-[110px]');
+
+    return `
+        <div class="w-full flex flex-col gap-2.5 px-2">
+            ${players.map(p => {
+                const isUp = (p.trendDir || 'up') === 'up';
+                const trendBg = isUp ? 'rgba(0, 255, 133, 0.15)' : 'rgba(255, 77, 77, 0.15)';
+                const trendColor = isUp ? '#00ff85' : '#ff4d4d';
+                const trendIcon = isUp ? '▲' : '▼';
+                const salesList = (p.recentSales || '').split(/[|\n]/).map(s => s.trim()).filter(Boolean);
+
+                return `
+                    <div class="w-full rounded-2xl bg-[#090e18]/95 border border-[#222a3d] p-2.5 flex items-center justify-between gap-3 shadow-2xl backdrop-blur-md">
+                        <!-- Card Cutout / Shield with Aura -->
+                        <div class="${cardImgW} ${cardHeight} relative flex items-center justify-center shrink-0">
+                            <div class="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[130px] h-[130px] bg-[radial-gradient(ellipse_at_center,rgba(0,255,163,0.25)_0%,transparent_70%)] blur-lg -z-10"></div>
+                            <img src="${p.cardUrl}" class="max-h-full max-w-full object-contain drop-shadow-[0_12px_22px_rgba(0,0,0,0.85)]" alt="${p.name}">
+                            ${p.tag ? `
+                            <div class="absolute -top-1 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-full bg-slate-950/95 border border-emerald-400 text-emerald-300 text-[8.5px] font-black whitespace-nowrap shadow">
+                                ${p.tag}
+                            </div>` : ''}
+                        </div>
+
+                        <!-- Stats & FUTBIN Market Info -->
+                        <div class="flex-1 flex flex-col justify-between h-full space-y-1.5 text-right">
+                            <!-- Player Name & Platform Tag -->
+                            <div class="flex items-center justify-between border-b border-[#1b2233] pb-1">
+                                <div class="flex items-center gap-1.5">
+                                    <span class="text-sm font-black text-white">${p.arName || p.name}</span>
+                                    <span class="text-[10.5px] font-mono font-bold text-emerald-400">(${p.rating} ${p.position})</span>
+                                </div>
+                                <span class="text-[9px] font-mono font-bold px-2 py-0.5 rounded bg-[#161d2b] border border-[#232d42] text-slate-300">${platform}</span>
+                            </div>
+
+                            <!-- Big Price & Trend Row -->
+                            <div class="flex items-center justify-between" dir="ltr">
+                                <div class="flex items-center gap-1.5">
+                                    <img src="assets/fc-coin.webp" class="w-6 h-6 object-contain drop-shadow" alt="Coin">
+                                    <span class="text-2xl font-black font-mono text-white tracking-wide">${p.price}</span>
+                                </div>
+                                <div class="flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-mono font-black shadow-xs" style="background: ${trendBg}; color: ${trendColor}; border: 1px solid ${trendColor}40;">
+                                    <span>${p.trend}</span>
+                                    <span>${trendIcon}</span>
+                                </div>
+                            </div>
+
+                            <!-- Recent Sales Mini Strip -->
+                            ${salesList.length > 0 ? `
+                            <div class="flex items-center gap-1 overflow-hidden" dir="ltr">
+                                <span class="text-[8px] font-mono text-slate-400 shrink-0">SALES:</span>
+                                <div class="flex items-center gap-1 flex-1 overflow-hidden">
+                                    ${salesList.slice(0, 3).map(s => `
+                                        <span class="bg-[#141a27] px-1.5 py-0.5 rounded text-[8.5px] font-mono text-slate-200 border border-[#21293b] whitespace-nowrap truncate">🪙 ${s}</span>
+                                    `).join('')}
+                                </div>
+                            </div>` : ''}
+
+                            <!-- Footer: Updated & Price Range -->
+                            <div class="flex items-center justify-between text-[8px] font-mono text-slate-400 pt-1 border-t border-[#1b2233]" dir="ltr">
+                                <span class="truncate">UPDATED: ${p.updatedText || 'JUST NOW'}</span>
+                                <span class="text-slate-300 font-bold">PR: ${p.priceRange || '600 - MAX'}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('')}
+        </div>
+    `;
+}
+
+// 3. Floating Price Shield / Overlay Badge
+function renderMarketLayoutBadge(p1, p2, p3, cardCount, platform, isLightBg) {
+    const players = [p1, p2, p3].slice(0, cardCount);
+    const cardH = cardCount === 3 ? 'h-[175px]' : (cardCount === 1 ? 'h-[270px]' : 'h-[235px]');
+
+    return `
+        <div class="w-full flex flex-col items-center gap-2 px-1">
+            <div class="w-full flex items-start justify-center gap-3">
+                ${players.map(p => {
+                    const isUp = (p.trendDir || 'up') === 'up';
+                    const trendColor = isUp ? '#00ff85' : '#ff4d4d';
+                    const trendIcon = isUp ? '▲' : '▼';
+                    const salesList = (p.recentSales || '').split(/[|\n]/).map(s => s.trim()).filter(Boolean);
+
+                    return `
+                        <div class="flex-1 flex flex-col items-center max-w-[245px]">
+                            <!-- Player Tag -->
+                            ${p.tag ? `
+                            <div class="px-2.5 py-0.5 rounded-full bg-slate-950/90 border border-emerald-400 text-emerald-300 text-[10px] font-black shadow mb-1 truncate max-w-full">
+                                ${p.tag}
+                            </div>` : ''}
+
+                            <!-- Large Card Image -->
+                            <div class="relative w-full ${cardH} flex items-center justify-center">
+                                <div class="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[220px] h-[220px] bg-[radial-gradient(ellipse_at_center,rgba(0,255,163,0.22)_0%,transparent_70%)] blur-xl -z-10"></div>
+                                <img src="${p.cardUrl}" class="max-h-full max-w-full object-contain drop-shadow-[0_18px_30px_rgba(0,0,0,0.85)]" alt="${p.name}">
+                            </div>
+
+                            <!-- Attached Floating Price Shield Badge -->
+                            <div class="relative -mt-6 z-20 w-full rounded-2xl bg-[#090e18]/95 border-2 border-emerald-400/90 p-2 shadow-[0_12px_30px_rgba(0,0,0,0.9)] text-center flex flex-col items-center gap-1 backdrop-blur-md">
+                                <div class="w-full flex items-center justify-between text-[9px] font-mono px-1">
+                                    <span class="text-slate-400 font-bold">${platform}</span>
+                                    <span class="font-black" style="color: ${trendColor};">${trendIcon} ${p.trend}</span>
+                                </div>
+
+                                <div class="flex items-center justify-center gap-1.5 py-0.5" dir="ltr">
+                                    <img src="assets/fc-coin.webp" class="w-5 h-5 object-contain" alt="c">
+                                    <span class="text-xl font-black font-mono text-white tracking-wide">${p.price}</span>
+                                </div>
+
+                                <div class="text-[9.5px] font-mono text-slate-300 font-bold">
+                                    ${p.arName || p.name} (${p.rating})
+                                </div>
+
+                                ${salesList.length > 0 ? `
+                                <div class="w-full pt-1 border-t border-slate-800 text-[8px] font-mono text-slate-400 truncate text-center">
+                                    SALES: ${salesList.slice(0, 2).join(' • ')}
+                                </div>` : ''}
+                            </div>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+
+            <!-- Ticker Underneath -->
+            <div class="w-full mt-2 py-2 px-3.5 rounded-xl bg-slate-950/95 border border-emerald-500/50 flex items-center justify-between text-[10.5px] text-emerald-300 font-black shadow-lg">
+                <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> 🚨 أسعار رسمية حية من فوت بين</span>
+                <span>⚡ شحن فوري وضمان شامل النادي</span>
+            </div>
+        </div>
+    `;
+}
+
+// 4. Market Duel / VS Battle
+function renderMarketLayoutVS(p1, p2, platform, isLightBg) {
+    const isUp1 = (p1.trendDir || 'up') === 'up';
+    const isUp2 = (p2.trendDir || 'up') === 'up';
+
+    return `
+        <div class="w-full flex flex-col items-center gap-2 px-1">
+            <!-- 2 Cards Facing Each Other with VS Badge -->
+            <div class="w-full flex items-center justify-center gap-2 relative">
+                <!-- Card 1 -->
+                <div class="flex-1 flex flex-col items-center max-w-[215px]" style="transform: rotate(2deg);">
+                    <div class="relative w-full h-[200px] flex items-center justify-center">
+                        <div class="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[180px] h-[180px] bg-[radial-gradient(ellipse_at_center,rgba(0,255,163,0.25)_0%,transparent_70%)] blur-xl -z-10"></div>
+                        <img src="${p1.cardUrl}" class="max-h-full max-w-full object-contain drop-shadow-[0_15px_25px_rgba(0,0,0,0.85)]" alt="${p1.name}">
+                    </div>
+                    <span class="text-xs font-black ${isLightBg ? 'text-slate-900' : 'text-white'} mt-1">${p1.arName || p1.name} (${p1.rating})</span>
+                </div>
+
+                <!-- Center 3D VS Badge -->
+                <div class="relative z-20 -my-2 flex flex-col items-center shrink-0">
+                    <div class="w-13 h-13 rounded-2xl bg-gradient-to-tr from-amber-500 via-yellow-400 to-amber-600 p-[2px] shadow-[0_0_25px_rgba(245,158,11,0.75)] flex items-center justify-center font-black text-slate-950 text-sm tracking-widest animate-pulse">
+                        VS
+                    </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="flex-1 flex flex-col items-center max-w-[215px]" style="transform: rotate(-2deg);">
+                    <div class="relative w-full h-[200px] flex items-center justify-center">
+                        <div class="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[180px] h-[180px] bg-[radial-gradient(ellipse_at_center,rgba(0,240,255,0.25)_0%,transparent_70%)] blur-xl -z-10"></div>
+                        <img src="${p2.cardUrl}" class="max-h-full max-w-full object-contain drop-shadow-[0_15px_25px_rgba(0,0,0,0.85)]" alt="${p2.name}">
+                    </div>
+                    <span class="text-xs font-black ${isLightBg ? 'text-slate-900' : 'text-white'} mt-1">${p2.arName || p2.name} (${p2.rating})</span>
+                </div>
+            </div>
+
+            <!-- Unified Comparison Matrix Card -->
+            <div class="w-full rounded-2xl bg-[#090e18]/95 border border-amber-500/50 p-3 shadow-2xl backdrop-blur-md">
+                <div class="grid grid-cols-2 gap-3" dir="ltr">
+                    <!-- Player 1 Stats -->
+                    <div class="flex flex-col items-center gap-1 text-center border-r border-[#1c2436] pr-2">
+                        <div class="flex items-center gap-1">
+                            <img src="assets/fc-coin.webp" class="w-5 h-5 object-contain" alt="c">
+                            <span class="text-lg font-black font-mono text-white">${p1.price}</span>
+                        </div>
+                        <div class="text-[10px] font-mono font-black ${isUp1 ? 'text-[#00ff85]' : 'text-[#ff4d4d]'}">
+                            ${isUp1 ? '▲' : '▼'} ${p1.trend}
+                        </div>
+                        <span class="text-[8px] font-mono text-slate-400">PR: ${p1.priceRange || '600 - MAX'}</span>
+                    </div>
+
+                    <!-- Player 2 Stats -->
+                    <div class="flex flex-col items-center gap-1 text-center pl-2">
+                        <div class="flex items-center gap-1">
+                            <img src="assets/fc-coin.webp" class="w-5 h-5 object-contain" alt="c">
+                            <span class="text-lg font-black font-mono text-white">${p2.price}</span>
+                        </div>
+                        <div class="text-[10px] font-mono font-black ${isUp2 ? 'text-[#00ff85]' : 'text-[#ff4d4d]'}">
+                            ${isUp2 ? '▲' : '▼'} ${p2.trend}
+                        </div>
+                        <span class="text-[8px] font-mono text-slate-400">PR: ${p2.priceRange || '600 - MAX'}</span>
+                    </div>
+                </div>
+
+                <!-- Bottom Callout -->
+                <div class="mt-2.5 pt-2 border-t border-[#1c2436] text-center text-xs font-black text-amber-300">
+                    ⚡ أي اللاعبين تبي تقفله في تشكيلتك قبل ارتفاع فوت تشامبيونز؟
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// 5. Pro Trading Floor / Market Ticker
+function renderMarketLayoutTicker(p1, p2, p3, cardCount, platform, isLightBg) {
+    const players = [p1, p2, p3].slice(0, cardCount);
+
+    return `
+        <div class="w-full flex flex-col items-center gap-2 px-1">
+            <!-- Top Row: Card Podiums -->
+            <div class="w-full flex items-center justify-center gap-3">
+                ${players.map(p => `
+                    <div class="flex flex-col items-center">
+                        <div class="relative w-[130px] h-[155px] flex items-center justify-center">
+                            <div class="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[120px] h-[120px] bg-[radial-gradient(ellipse_at_center,rgba(0,255,163,0.22)_0%,transparent_70%)] blur-lg -z-10"></div>
+                            <img src="${p.cardUrl}" class="max-h-full max-w-full object-contain drop-shadow-[0_12px_20px_rgba(0,0,0,0.85)]" alt="${p.name}">
+                        </div>
+                        <span class="text-[11px] font-black ${isLightBg ? 'text-slate-900' : 'text-white'}">${p.arName || p.name}</span>
+                    </div>
+                `).join('')}
+            </div>
+
+            <!-- Digital Market Ledger / Trading Board -->
+            <div class="w-full rounded-2xl bg-[#080d16]/95 border border-[#20293d] p-3 shadow-2xl backdrop-blur-md space-y-2">
+                <!-- Board Header -->
+                <div class="flex items-center justify-between pb-1.5 border-b border-[#1b2336] text-[10px] font-mono">
+                    <div class="flex items-center gap-1.5 text-emerald-400 font-black">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                        <span>FUTBIN LIVE TRADING BOARD</span>
+                    </div>
+                    <span class="text-slate-400 font-bold">${platform}</span>
+                </div>
+
+                <!-- Rows for each player -->
+                <div class="space-y-1.5" dir="ltr">
+                    ${players.map(p => {
+                        const isUp = (p.trendDir || 'up') === 'up';
+                        const trendColor = isUp ? '#00ff85' : '#ff4d4d';
+                        const trendIcon = isUp ? '▲' : '▼';
+                        return `
+                            <div class="flex items-center justify-between bg-[#111724] px-2.5 py-1.5 rounded-xl border border-[#1e2638]">
+                                <div class="flex items-center gap-2">
+                                    <img src="${p.cardUrl}" class="w-6 h-8 object-contain" alt="">
+                                    <div class="text-left">
+                                        <span class="text-xs font-black text-white block">${p.arName || p.name}</span>
+                                        <span class="text-[9px] font-mono text-slate-400">${p.rating} ${p.position}</span>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center gap-1">
+                                    <img src="assets/fc-coin.webp" class="w-4 h-4 object-contain" alt="c">
+                                    <span class="text-sm font-black font-mono text-white">${p.price}</span>
+                                </div>
+
+                                <div class="px-2 py-0.5 rounded text-[10.5px] font-mono font-black" style="color:${trendColor}; background:${trendColor}18; border: 1px solid ${trendColor}30;">
+                                    ${trendIcon} ${p.trend}
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+
+                <!-- Footer Guarantee -->
+                <div class="pt-1 border-t border-[#1b2336] flex items-center justify-between text-[9px] font-bold text-slate-400">
+                    <span>⚡ متوسط سرعة الشحن: أقل من دقيقة</span>
+                    <span class="text-emerald-400">🔒 كوينز مضمونة 100% بدون باند</span>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// 6. Luxury Glass Pods
+function renderMarketLayoutPods(p1, p2, p3, cardCount, platform, isLightBg) {
+    const players = [p1, p2, p3].slice(0, cardCount);
+    const podCardH = cardCount === 3 ? 'h-[135px]' : (cardCount === 1 ? 'h-[220px]' : 'h-[175px]');
+
+    return `
+        <div class="w-full flex items-center justify-center gap-3 px-1">
+            ${players.map(p => {
+                const isUp = (p.trendDir || 'up') === 'up';
+                const trendColor = isUp ? '#00ff85' : '#ff4d4d';
+                const trendIcon = isUp ? '▲' : '▼';
+                const salesList = (p.recentSales || '').split(/[|\n]/).map(s => s.trim()).filter(Boolean);
+
+                return `
+                    <div class="flex-1 rounded-3xl bg-gradient-to-b from-[#0e1626]/95 via-[#090e18]/95 to-[#050811]/95 border border-emerald-500/40 p-2.5 shadow-2xl backdrop-blur-md flex flex-col items-center justify-between gap-1.5">
+                        <!-- Top Tag -->
+                        ${p.tag ? `
+                        <div class="px-2 py-0.5 rounded-full bg-slate-950/90 border border-emerald-400 text-emerald-300 text-[9px] font-black truncate max-w-full">
+                            ${p.tag}
+                        </div>` : ''}
+
+                        <!-- Card Float -->
+                        <div class="relative w-full ${podCardH} flex items-center justify-center">
+                            <div class="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[160px] h-[160px] bg-[radial-gradient(ellipse_at_center,rgba(0,255,163,0.22)_0%,transparent_70%)] blur-lg -z-10"></div>
+                            <img src="${p.cardUrl}" class="max-h-full max-w-full object-contain drop-shadow-[0_12px_22px_rgba(0,0,0,0.85)]" alt="${p.name}">
+                        </div>
+
+                        <!-- Name & Rating -->
+                        <div class="text-center truncate max-w-full">
+                            <span class="text-xs font-black text-white">${p.arName || p.name}</span>
+                            <span class="text-[10px] font-mono text-emerald-400 font-bold ml-1">(${p.rating})</span>
+                        </div>
+
+                        <!-- Price Capsule Bottom -->
+                        <div class="w-full bg-[#121927] rounded-xl p-2 border border-[#202a3d] space-y-1 text-center" dir="ltr">
+                            <div class="flex items-center justify-between text-[8px] font-mono text-slate-400">
+                                <span>${platform}</span>
+                                <span class="font-black" style="color: ${trendColor};">${trendIcon} ${p.trend}</span>
+                            </div>
+
+                            <div class="flex items-center justify-center gap-1 py-0.5">
+                                <img src="assets/fc-coin.webp" class="w-5 h-5 object-contain" alt="c">
+                                <span class="text-base font-black font-mono text-white">${p.price}</span>
+                            </div>
+
+                            ${salesList.length > 0 ? `
+                            <div class="text-[7.5px] font-mono text-slate-300 truncate">
+                                SALES: ${salesList.slice(0, 2).join(' | ')}
+                            </div>` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('')}
+        </div>
+    `;
+}
+
+// 7. Hero Spotlight & Mini Radar
+function renderMarketLayoutSpotlight(p1, p2, p3, cardCount, platform, isLightBg) {
+    const isUp1 = (p1.trendDir || 'up') === 'up';
+    const otherPlayers = [p2, p3].slice(0, cardCount - 1);
+
+    return `
+        <div class="w-full flex items-center justify-between gap-3 px-1">
+            <!-- Left Hero Showcase (Player 1) -->
+            <div class="flex-1 flex flex-col items-center gap-1.5 max-w-[270px]">
+                <div class="px-2.5 py-0.5 rounded-full bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 text-[10px] font-black shadow">
+                    ⭐ صفقة الرادار الأولى
+                </div>
+
+                <div class="relative w-full h-[220px] flex items-center justify-center">
+                    <div class="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[210px] h-[210px] bg-[radial-gradient(ellipse_at_center,rgba(0,255,163,0.28)_0%,transparent_70%)] blur-xl -z-10"></div>
+                    <img src="${p1.cardUrl}" class="max-h-full max-w-full object-contain drop-shadow-[0_16px_28px_rgba(0,0,0,0.85)]" alt="${p1.name}">
+                </div>
+
+                <div class="text-center">
+                    <span class="text-sm font-black ${isLightBg ? 'text-slate-900' : 'text-white'}">${p1.arName || p1.name}</span>
+                    <span class="text-[11px] font-bold text-emerald-500 font-mono">(${p1.rating} ${p1.position})</span>
+                </div>
+
+                ${renderFutbinPriceBox(p1, 'standard')}
+            </div>
+
+            <!-- Right: Alternative Mini Deals List -->
+            <div class="flex-1 flex flex-col gap-2 max-w-[220px]">
+                <div class="text-xs font-black ${isLightBg ? 'text-slate-800' : 'text-white'} flex items-center gap-1">
+                    <span>🔥</span>
+                    <span>صفقات بديلة مقترحة:</span>
+                </div>
+
+                ${otherPlayers.length > 0 ? otherPlayers.map(p => {
+                    const isUp = (p.trendDir || 'up') === 'up';
+                    const trendColor = isUp ? '#00ff85' : '#ff4d4d';
+                    return `
+                        <div class="w-full rounded-2xl bg-[#090e18]/95 border border-[#1f273b] p-2 flex items-center gap-2 shadow-xl backdrop-blur-md">
+                            <div class="w-12 h-16 shrink-0 relative flex items-center justify-center">
+                                <img src="${p.cardUrl}" class="max-h-full max-w-full object-contain drop-shadow" alt="">
+                            </div>
+                            <div class="flex-1 text-right overflow-hidden">
+                                <span class="text-xs font-black text-white block truncate">${p.arName || p.name}</span>
+                                <div class="flex items-center gap-1 my-0.5" dir="ltr">
+                                    <img src="assets/fc-coin.webp" class="w-3.5 h-3.5 object-contain" alt="">
+                                    <span class="text-xs font-black font-mono text-white">${p.price}</span>
+                                </div>
+                                <span class="text-[9px] font-mono font-bold" style="color: ${trendColor};">${isUp ? '▲' : '▼'} ${p.trend}</span>
+                            </div>
+                        </div>
+                    `;
+                }).join('') : `
+                    <div class="rounded-2xl bg-[#090e18]/95 border border-slate-800 p-3 text-center text-xs text-slate-400">
+                        قم باختيار 2 أو 3 كروت لعرض الصفقات البديلة هنا!
+                    </div>
+                `}
+
+                <!-- Urgency Box -->
+                <div class="rounded-2xl bg-gradient-to-r from-emerald-950/80 to-slate-950/80 border border-emerald-500/50 p-2.5 text-center">
+                    <span class="text-[10.5px] font-black text-emerald-300 block">⚡ الأسعار ترتفع كل ساعة!</span>
+                    <span class="text-[9px] text-slate-300">اشحن كوينزك الآن ووفّر فرق السعر</span>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function renderMarketTrackerTemplate() {
+    const activeLayout = appState.displayLayout || 'classic';
+    const activeBgKey = appState.bgTheme || 'store';
+    const bgMeta = (window.MARKET_BG_THEMES && window.MARKET_BG_THEMES[activeBgKey]) || {
+        url: 'assets/store-bg-pure.png',
+        isLight: true,
+        style: ''
+    };
+    const bgUrl = bgMeta.url || (window.EMBEDDED_ASSETS?.STORE_BG_PURE || 'assets/store-bg-pure.png');
+    const bgCustomStyle = bgMeta.style || '';
+    const isLightBg = !!bgMeta.isLight;
+
+    // Lighting Overlay (Bright & Vibrant by default, zero murky dark veil)
+    const bgLighting = appState.bgLighting || (isLightBg ? 'bright' : 'medium');
+    let overlayHtml = '';
+    if (bgLighting === 'bright') {
+        if (isLightBg) {
+            overlayHtml = `<div class="absolute inset-0 bg-gradient-to-b from-white/20 via-transparent to-amber-50/15 pointer-events-none"></div>`;
+        } else {
+            overlayHtml = `<div class="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/20 pointer-events-none"></div>`;
+        }
+    } else if (bgLighting === 'medium') {
+        overlayHtml = `<div class="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/40 pointer-events-none"></div>`;
+    } else {
+        overlayHtml = `<div class="absolute inset-0 bg-gradient-to-b from-black/45 via-black/20 to-black/70 pointer-events-none"></div>`;
+    }
+
+    const cardCount = parseInt(appState.cardCount, 10) || 2;
+    const p1 = appState.player1 || TEMPLATES.market_tracker.defaultState.player1;
+    const p2 = appState.player2 || TEMPLATES.market_tracker.defaultState.player2;
+    const p3 = appState.player3 || TEMPLATES.market_tracker.defaultState.player3;
+    const platform = (appState.platform === 'pc' ? 'PC' : 'PS / XBOX');
+
+    // Build Player Section HTML based on activeLayout
+    let playersContentHtml = '';
+    if (activeLayout === 'horizontal') {
+        playersContentHtml = renderMarketLayoutHorizontal(p1, p2, p3, cardCount, platform, isLightBg);
+    } else if (activeLayout === 'badge') {
+        playersContentHtml = renderMarketLayoutBadge(p1, p2, p3, cardCount, platform, isLightBg);
+    } else if (activeLayout === 'vs') {
+        playersContentHtml = renderMarketLayoutVS(p1, p2, platform, isLightBg);
+    } else if (activeLayout === 'ticker') {
+        playersContentHtml = renderMarketLayoutTicker(p1, p2, p3, cardCount, platform, isLightBg);
+    } else if (activeLayout === 'pods') {
+        playersContentHtml = renderMarketLayoutPods(p1, p2, p3, cardCount, platform, isLightBg);
+    } else if (activeLayout === 'spotlight') {
+        playersContentHtml = renderMarketLayoutSpotlight(p1, p2, p3, cardCount, platform, isLightBg);
+    } else {
+        playersContentHtml = renderMarketLayoutClassic(p1, p2, p3, cardCount, platform, isLightBg);
+    }
+
     return `
         <!-- Background -->
         <div class="absolute inset-0 w-full h-full overflow-hidden pointer-events-none">
-            <div class="w-full h-full" style="background-image: url('${bgUrl}'); background-size: cover; background-position: center center;"></div>
+            <div class="w-full h-full" style="background-image: url('${bgUrl}'); background-size: cover; background-position: center center; ${bgCustomStyle}"></div>
         </div>
-        <div class="absolute inset-0 bg-gradient-to-b from-[#080b12]/80 via-[#080b12]/50 to-[#080b12]/90 pointer-events-none"></div>
+        ${overlayHtml}
 
         <!-- Official Logos -->
         ${getFc27LogoHtml()}
@@ -4653,13 +5051,13 @@ function renderMarketTrackerTemplate() {
                 </div>
 
                 <!-- Main Story Headline -->
-                <h1 class="text-xl font-black text-white drop-shadow-[0_4px_16px_rgba(0,0,0,0.95)] leading-tight max-w-[460px] px-2">
+                <h1 class="text-xl font-black ${isLightBg ? 'text-slate-950 drop-shadow-[0_2px_8px_rgba(0,0,0,0.18)]' : 'text-white drop-shadow-[0_4px_16px_rgba(0,0,0,0.95)]'} leading-tight max-w-[460px] px-2">
                     ${appState.headline || 'الأسعار في مسار تصاعدي! اشحن كوينزك وقفّل لاعبك قبل الارتفاع 📈⚡'}
                 </h1>
 
                 <!-- Subheadline -->
                 ${appState.subheadline ? `
-                <p class="text-[11.5px] font-bold text-slate-300 drop-shadow max-w-[430px] px-2 leading-relaxed">
+                <p class="text-[11.5px] ${isLightBg ? 'text-slate-700 font-extrabold drop-shadow-xs' : 'text-slate-300 font-bold drop-shadow'} max-w-[430px] px-2 leading-relaxed">
                     ${appState.subheadline}
                 </p>` : ''}
             </div>
@@ -4716,52 +5114,100 @@ function renderMarketTrackerControls() {
     const p3 = appState.player3 || TEMPLATES.market_tracker.defaultState.player3;
     const activePlatform = appState.platform || 'ps_xbox';
     const activeBg = appState.bgTheme || 'store';
+    const activeLayout = appState.displayLayout || 'classic';
+    const activeLighting = appState.bgLighting || 'bright';
 
     let html = `
         <div class="space-y-4">
-            <!-- 1. Card Count & Presentation Mode -->
+            <!-- 0. Presentation Style Picker (7 Distinct Layouts) -->
+            <div class="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs space-y-2">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-black text-slate-800 flex items-center gap-1.5">
+                        <span>🎨</span>
+                        <span>طريقة وأسلوب عرض الأسعار والبطاقات:</span>
+                    </span>
+                    <span class="text-[10px] font-black px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">7 أنماط مختلفة ✨</span>
+                </div>
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-1.5 pt-1">
+                    ${(window.MARKET_DISPLAY_LAYOUTS || []).map(lay => `
+                        <button type="button" onclick="setMarketLayout('${lay.id}')" class="p-2 rounded-xl text-right border transition flex flex-col justify-between gap-1 cursor-pointer ${activeLayout === lay.id ? 'bg-emerald-50 border-2 border-emerald-500 text-emerald-950 font-black shadow-xs' : 'bg-slate-50 border-slate-200 hover:border-slate-300 text-slate-700'}">
+                            <div class="flex items-center gap-1.5 text-xs font-black">
+                                <span>${lay.icon}</span>
+                                <span>${lay.name}</span>
+                            </div>
+                            <div class="text-[9.5px] text-slate-500 leading-tight">${lay.desc}</div>
+                        </button>
+                    `).join('')}
+                </div>
+            </div>
+
+            <!-- 1. Background Themes & Lighting Intensity -->
+            <div class="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs space-y-2.5">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-black text-slate-800 flex items-center gap-1.5">
+                        <span>🖼️</span>
+                        <span>خلفية الستوري وإضاءتها:</span>
+                    </span>
+                    <span class="text-[10px] font-black text-emerald-600">مشرقة وفاخرة 100%</span>
+                </div>
+
+                <!-- 6 Background Themes -->
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-1.5 pt-1">
+                    ${Object.values(window.MARKET_BG_THEMES || {}).map(bg => `
+                        <button type="button" onclick="setMarketBgTheme('${bg.id}')" class="p-2 rounded-xl text-right border transition flex flex-col justify-between gap-0.5 cursor-pointer ${activeBg === bg.id ? 'bg-emerald-50 border-2 border-emerald-500 text-emerald-950 font-black shadow-xs' : 'bg-slate-50 border-slate-200 hover:border-slate-300 text-slate-700'}">
+                            <span class="text-xs font-black truncate">${bg.name}</span>
+                            <span class="text-[9px] text-slate-500 truncate">${bg.desc || ''}</span>
+                        </button>
+                    `).join('')}
+                </div>
+
+                <!-- Brightness Intensity -->
+                <div class="pt-2 border-t border-slate-100 flex items-center justify-between">
+                    <span class="text-[11px] font-bold text-slate-600">إضاءة الخلفية:</span>
+                    <div class="flex items-center gap-1">
+                        <button type="button" onclick="setMarketBgLighting('bright')" class="px-2.5 py-1 rounded-lg text-[10.5px] font-bold border transition cursor-pointer ${activeLighting === 'bright' ? 'bg-emerald-600 text-white font-black shadow-xs' : 'bg-slate-100 border-slate-200 text-slate-700'}">
+                            ✨ ناصع ومشرق
+                        </button>
+                        <button type="button" onclick="setMarketBgLighting('medium')" class="px-2.5 py-1 rounded-lg text-[10.5px] font-bold border transition cursor-pointer ${activeLighting === 'medium' ? 'bg-emerald-600 text-white font-black shadow-xs' : 'bg-slate-100 border-slate-200 text-slate-700'}">
+                            🌟 متوازن
+                        </button>
+                        <button type="button" onclick="setMarketBgLighting('dim')" class="px-2.5 py-1 rounded-lg text-[10.5px] font-bold border transition cursor-pointer ${activeLighting === 'dim' ? 'bg-emerald-600 text-white font-black shadow-xs' : 'bg-slate-100 border-slate-200 text-slate-700'}">
+                            🎬 سينمائي
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Card Count & Platform Selection -->
             <div class="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs space-y-2.5">
                 <div class="flex items-center justify-between">
                     <span class="text-xs font-black text-slate-800 flex items-center gap-1.5">
                         <span>👥</span>
-                        <span>عدد اللاعبين المعروضين بالستوري:</span>
+                        <span>عدد اللاعبين المعروضين:</span>
                     </span>
                     <div class="flex items-center gap-1">
-                        <button type="button" onclick="setMarketCardCount(1)" class="px-2.5 py-1 rounded-lg text-xs font-bold transition ${cardCount === 1 ? 'bg-emerald-600 text-white font-black shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}">
+                        <button type="button" onclick="setMarketCardCount(1)" class="px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer ${cardCount === 1 ? 'bg-emerald-600 text-white font-black shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}">
                             🌟 كرت فردي
                         </button>
-                        <button type="button" onclick="setMarketCardCount(2)" class="px-2.5 py-1 rounded-lg text-xs font-bold transition ${cardCount === 2 ? 'bg-emerald-600 text-white font-black shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}">
+                        <button type="button" onclick="setMarketCardCount(2)" class="px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer ${cardCount === 2 ? 'bg-emerald-600 text-white font-black shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}">
                             👥 كرتين (ثنائي)
                         </button>
-                        <button type="button" onclick="setMarketCardCount(3)" class="px-2.5 py-1 rounded-lg text-xs font-bold transition ${cardCount === 3 ? 'bg-emerald-600 text-white font-black shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}">
+                        <button type="button" onclick="setMarketCardCount(3)" class="px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer ${cardCount === 3 ? 'bg-emerald-600 text-white font-black shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}">
                             👑 3 كروت
                         </button>
                     </div>
                 </div>
 
-                <!-- Platform & Theme Selection -->
-                <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100">
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-600 mb-1">🎮 منصة فوت بين:</label>
-                        <div class="grid grid-cols-2 gap-1">
-                            <button type="button" onclick="setMarketPlatform('ps_xbox')" class="py-1 px-1.5 rounded-lg text-[10.5px] font-bold border transition ${activePlatform === 'ps_xbox' ? 'bg-emerald-50 border-emerald-500 text-emerald-950 font-black' : 'bg-slate-50 border-slate-200 text-slate-700'}">
-                                PS / XBOX
-                            </button>
-                            <button type="button" onclick="setMarketPlatform('pc')" class="py-1 px-1.5 rounded-lg text-[10.5px] font-bold border transition ${activePlatform === 'pc' ? 'bg-emerald-50 border-emerald-500 text-emerald-950 font-black' : 'bg-slate-50 border-slate-200 text-slate-700'}">
-                                PC
-                            </button>
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-600 mb-1">🖼️ نمط الخلفية:</label>
-                        <div class="grid grid-cols-2 gap-1">
-                            <button type="button" onclick="setMarketBgTheme('store')" class="py-1 px-1.5 rounded-lg text-[10.5px] font-bold border transition ${activeBg === 'store' ? 'bg-emerald-50 border-emerald-500 text-emerald-950 font-black' : 'bg-slate-50 border-slate-200 text-slate-700'}">
-                                🏛️ رخام المتجر
-                            </button>
-                            <button type="button" onclick="setMarketBgTheme('dark')" class="py-1 px-1.5 rounded-lg text-[10.5px] font-bold border transition ${activeBg === 'dark' ? 'bg-emerald-50 border-emerald-500 text-emerald-950 font-black' : 'bg-slate-50 border-slate-200 text-slate-700'}">
-                                🌌 أرينا داكنة
-                            </button>
-                        </div>
+                <!-- Platform Selection -->
+                <div class="pt-2 border-t border-slate-100 flex items-center justify-between">
+                    <span class="text-[11px] font-bold text-slate-600">🎮 منصة فوت بين:</span>
+                    <div class="flex items-center gap-1">
+                        <button type="button" onclick="setMarketPlatform('ps_xbox')" class="py-1 px-3 rounded-lg text-[10.5px] font-bold border transition cursor-pointer ${activePlatform === 'ps_xbox' ? 'bg-emerald-50 border-emerald-500 text-emerald-950 font-black' : 'bg-slate-50 border-slate-200 text-slate-700'}">
+                            PS / XBOX
+                        </button>
+                        <button type="button" onclick="setMarketPlatform('pc')" class="py-1 px-3 rounded-lg text-[10.5px] font-bold border transition cursor-pointer ${activePlatform === 'pc' ? 'bg-emerald-50 border-emerald-500 text-emerald-950 font-black' : 'bg-slate-50 border-slate-200 text-slate-700'}">
+                            PC
+                        </button>
                     </div>
                 </div>
             </div>
@@ -4969,6 +5415,18 @@ window.setMarketPlatform = function(plat) {
 
 window.setMarketBgTheme = function(theme) {
     appState.bgTheme = theme;
+    renderControls();
+    renderCanvas();
+};
+
+window.setMarketLayout = function(layout) {
+    appState.displayLayout = layout;
+    renderControls();
+    renderCanvas();
+};
+
+window.setMarketBgLighting = function(lighting) {
+    appState.bgLighting = lighting;
     renderControls();
     renderCanvas();
 };
