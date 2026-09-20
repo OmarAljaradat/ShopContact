@@ -7719,34 +7719,24 @@ function renderFlashSaleTemplate() {
         badge: 'الأسطورية 💎'
     });
 
-    const storyBgKey = appState.storyBg || 'stadium';
-    let bgUrl = 'assets/shopcoin_story_stadium_bg.jpg';
-    if (storyBgKey === 'tunnel') {
-        bgUrl = 'assets/shopcoin_story_tunnel_bg.jpg';
-    } else if (storyBgKey === 'classic') {
-        bgUrl = 'assets/shopcoin_story_official_bg.jpg';
-    }
+    const bgUrl = 'assets/shopcoin_story_official_bg.jpg';
 
     return `
         <div class="relative w-full h-full overflow-hidden select-none flex flex-col justify-between"
              style="background-image: url('${bgUrl}'); background-size: cover; background-position: center; padding: 22px 18px 18px 18px;">
             
-            <!-- Dark Ambient Vignette -->
-            <div class="absolute inset-0 pointer-events-none" 
-                 style="background: radial-gradient(circle at 50% 15%, rgba(0, 255, 163, 0.08) 0%, transparent 60%), linear-gradient(180deg, rgba(3, 7, 18, 0.4) 0%, rgba(3, 7, 18, 0.15) 50%, rgba(3, 7, 18, 0.65) 100%);"></div>
-
             <!-- 1. Top Header -->
             <div class="text-center w-full flex flex-col items-center gap-1.5 relative z-10">
-                <div class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-[10px] font-black"
-                     style="background: rgba(8, 14, 24, 0.88); border: 1.5px solid rgba(0, 255, 163, 0.45); color: #00ffa3; box-shadow: 0 0 15px rgba(0,255,163,0.25); backdrop-filter: blur(10px);">
+                <div class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-[10px] font-black shadow-xs"
+                     style="background: rgba(8, 14, 24, 0.9); border: 1.5px solid rgba(0, 255, 163, 0.45); color: #00ffa3; box-shadow: 0 4px 12px rgba(0,0,0,0.12);">
                     <span>⚡</span>
                     <span>${appState.badgeText || 'عروض كوينز حصرية لفترة محدودة • أسعار اليوم الأقوى'}</span>
                 </div>
-                <div class="text-[21px] font-black text-white leading-tight tracking-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.9)]">
+                <div class="text-[21px] font-black text-slate-950 leading-tight tracking-tight" style="text-shadow: 0 1px 3px rgba(255,255,255,0.9);">
                     ${appState.headline || 'باقات الكوينز الأقوى لجميع المنصات! 💰🔥'}
                 </div>
-                <div class="text-[10.5px] font-bold text-slate-200 px-3 py-0.5 rounded-full" 
-                     style="background: rgba(13, 20, 32, 0.75); border: 1px solid rgba(255,255,255,0.12); backdrop-filter: blur(8px);">
+                <div class="text-[10.5px] font-bold text-slate-800 px-3 py-0.5 rounded-full shadow-2xs" 
+                     style="background: rgba(255, 255, 255, 0.88); border: 1px solid rgba(0, 255, 163, 0.4); backdrop-filter: blur(8px);">
                     ${appState.subheadline || 'تسليم فوري بدقيقة واحدة • ضمان وأمان كامل للنادي 100% بدون باند 🛡️'}
                 </div>
             </div>
@@ -7760,7 +7750,7 @@ function renderFlashSaleTemplate() {
                         <span>${t1.badge || 'باقة التوفير ⚡'}</span>
                     </div>
                     <div class="w-full h-[54px] rounded-2xl flex items-center justify-between px-4 transition"
-                         style="background: linear-gradient(90deg, rgba(14, 21, 33, 0.88) 0%, rgba(9, 14, 24, 0.94) 100%); border: 1.5px solid rgba(0, 255, 163, 0.3); box-shadow: 0 6px 20px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.12); backdrop-filter: blur(12px);">
+                         style="background: linear-gradient(90deg, rgba(14, 21, 33, 0.92) 0%, rgba(9, 14, 24, 0.96) 100%); border: 1.5px solid rgba(0, 255, 163, 0.35); box-shadow: 0 6px 20px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.12); backdrop-filter: blur(12px);">
                         <div class="flex items-center gap-2.5">
                             <div class="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
                                  style="background: rgba(0, 255, 163, 0.12); border: 1px solid rgba(0, 255, 163, 0.35);">
@@ -7787,7 +7777,7 @@ function renderFlashSaleTemplate() {
                         <span>${t2.badge || 'الأكثر طلباً • BEST SELLER ⭐'}</span>
                     </div>
                     <div class="w-full h-[56px] rounded-2xl flex items-center justify-between px-4 transition scale-[1.02]"
-                         style="background: linear-gradient(90deg, rgba(35, 29, 14, 0.92) 0%, rgba(20, 17, 10, 0.96) 100%); border: 2px solid #ffd700; box-shadow: 0 0 28px rgba(255,215,0,0.35), inset 0 1px 0 rgba(255,255,255,0.3); backdrop-filter: blur(14px);">
+                         style="background: linear-gradient(90deg, rgba(35, 29, 14, 0.94) 0%, rgba(20, 17, 10, 0.98) 100%); border: 2px solid #ffd700; box-shadow: 0 0 28px rgba(255,215,0,0.35), inset 0 1px 0 rgba(255,255,255,0.3); backdrop-filter: blur(14px);">
                         <div class="flex items-center gap-2.5">
                             <div class="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
                                  style="background: rgba(255, 215, 0, 0.18); border: 1px solid rgba(255, 215, 0, 0.5);">
@@ -7814,7 +7804,7 @@ function renderFlashSaleTemplate() {
                         <span>${t3.badge || 'باقة VIP 👑'}</span>
                     </div>
                     <div class="w-full h-[54px] rounded-2xl flex items-center justify-between px-4 transition"
-                         style="background: linear-gradient(90deg, rgba(14, 21, 33, 0.88) 0%, rgba(9, 14, 24, 0.94) 100%); border: 1.5px solid rgba(0, 255, 163, 0.3); box-shadow: 0 6px 20px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.12); backdrop-filter: blur(12px);">
+                         style="background: linear-gradient(90deg, rgba(14, 21, 33, 0.92) 0%, rgba(9, 14, 24, 0.96) 100%); border: 1.5px solid rgba(0, 255, 163, 0.35); box-shadow: 0 6px 20px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.12); backdrop-filter: blur(12px);">
                         <div class="flex items-center gap-2.5">
                             <div class="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
                                  style="background: rgba(0, 255, 163, 0.12); border: 1px solid rgba(0, 255, 163, 0.35);">
@@ -7841,7 +7831,7 @@ function renderFlashSaleTemplate() {
                         <span>${t4.badge || 'الأسطورية 💎'}</span>
                     </div>
                     <div class="w-full h-[54px] rounded-2xl flex items-center justify-between px-4 transition"
-                         style="background: linear-gradient(90deg, rgba(14, 21, 33, 0.88) 0%, rgba(9, 14, 24, 0.94) 100%); border: 1.5px solid rgba(0, 255, 163, 0.3); box-shadow: 0 6px 20px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.12); backdrop-filter: blur(12px);">
+                         style="background: linear-gradient(90deg, rgba(14, 21, 33, 0.92) 0%, rgba(9, 14, 24, 0.96) 100%); border: 1.5px solid rgba(0, 255, 163, 0.35); box-shadow: 0 6px 20px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.12); backdrop-filter: blur(12px);">
                         <div class="flex items-center gap-2.5">
                             <div class="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
                                  style="background: rgba(0, 255, 163, 0.12); border: 1px solid rgba(0, 255, 163, 0.35);">
@@ -7864,7 +7854,7 @@ function renderFlashSaleTemplate() {
 
             <!-- 3. Unified Glass Hub: Features & Trust & Payment (متناسقة تماماً وبنفس الهوية الفاخرة) -->
             <div class="w-full rounded-2xl flex flex-col gap-2 p-3 relative z-10"
-                 style="background: linear-gradient(135deg, rgba(12, 19, 31, 0.88) 0%, rgba(7, 11, 18, 0.94) 100%); backdrop-filter: blur(14px); border: 1.5px solid rgba(0, 255, 163, 0.28); box-shadow: 0 8px 30px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1);">
+                 style="background: linear-gradient(135deg, rgba(12, 19, 31, 0.92) 0%, rgba(7, 11, 18, 0.96) 100%); backdrop-filter: blur(14px); border: 1.5px solid rgba(0, 255, 163, 0.32); box-shadow: 0 8px 30px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.1);">
                 
                 <!-- Top Row: Features Header & Live Guarantee -->
                 <div class="flex items-center justify-between pb-1.5 border-b border-white/10">
@@ -7910,7 +7900,7 @@ function renderFlashSaleTemplate() {
             </div>
 
             <!-- 4. CTA Action Island (زر الطلب المباشر) -->
-            <div class="w-full rounded-2xl p-1 shadow-[0_0_30px_rgba(0,255,163,0.35)] relative z-10"
+            <div class="w-full rounded-2xl p-1 shadow-[0_0_25px_rgba(0,255,163,0.3)] relative z-10"
                  style="background: linear-gradient(135deg, rgba(0,255,163,0.4) 0%, rgba(0,210,122,0.2) 100%); backdrop-filter: blur(10px);">
                 <div class="w-full py-2 px-3.5 rounded-xl flex items-center justify-between cursor-pointer"
                      style="background: linear-gradient(135deg, #00ffa3 0%, #00d27a 100%); color: #042411;">
@@ -7939,42 +7929,9 @@ function renderFlashSaleControls() {
         badge: 'الأسطورية 💎'
     });
 
-    const activeBg = appState.storyBg || 'stadium';
-
     return `
         <div class="space-y-4">
-            <!-- 1. Background Theme Selector -->
-            <div class="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-2.5">
-                <div class="flex items-center justify-between">
-                    <span class="text-xs font-black text-slate-800 flex items-center gap-1.5">
-                        <span>🎨</span>
-                        <span>خلفية الستوري الإبداعية:</span>
-                    </span>
-                    <span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">3 خلفيات سينمائية</span>
-                </div>
-                <div class="grid grid-cols-3 gap-2">
-                    <button type="button" onclick="setFlashSaleBg('stadium')" 
-                            class="px-2 py-2 rounded-xl text-center font-bold text-xs border transition ${activeBg === 'stadium' ? 'bg-emerald-50 border-emerald-500 text-emerald-900 shadow-xs ring-2 ring-emerald-400/20' : 'bg-slate-50 border-slate-200 text-slate-700 hover:border-slate-300'}">
-                        <div class="text-base mb-0.5">🏟️</div>
-                        <div class="font-black text-[10.5px]">استاد النيون</div>
-                        <div class="text-[9px] text-slate-500">ليزر وإضاءة</div>
-                    </button>
-                    <button type="button" onclick="setFlashSaleBg('tunnel')" 
-                            class="px-2 py-2 rounded-xl text-center font-bold text-xs border transition ${activeBg === 'tunnel' ? 'bg-emerald-50 border-emerald-500 text-emerald-900 shadow-xs ring-2 ring-emerald-400/20' : 'bg-slate-50 border-slate-200 text-slate-700 hover:border-slate-300'}">
-                        <div class="text-base mb-0.5">⚡</div>
-                        <div class="font-black text-[10.5px]">نفق الأبطال</div>
-                        <div class="text-[9px] text-slate-500">سايبر تكتيكي</div>
-                    </button>
-                    <button type="button" onclick="setFlashSaleBg('classic')" 
-                            class="px-2 py-2 rounded-xl text-center font-bold text-xs border transition ${activeBg === 'classic' ? 'bg-emerald-50 border-emerald-500 text-emerald-900 shadow-xs ring-2 ring-emerald-400/20' : 'bg-slate-50 border-slate-200 text-slate-700 hover:border-slate-300'}">
-                        <div class="text-base mb-0.5">🌿</div>
-                        <div class="font-black text-[10.5px]">كلاسيكي هادئ</div>
-                        <div class="text-[9px] text-slate-500">الاستاد الفاتح</div>
-                    </button>
-                </div>
-            </div>
-
-            <!-- 2. Currency Quick Switcher -->
+            <!-- 1. Currency Quick Switcher -->
             <div class="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-xs flex items-center justify-between">
                 <span class="text-xs font-black text-slate-800 flex items-center gap-1.5">
                     <span>💱</span>
@@ -7988,7 +7945,7 @@ function renderFlashSaleControls() {
                 </div>
             </div>
 
-            <!-- 3. 4 Tiers Setup -->
+            <!-- 2. 4 Tiers Setup -->
             <div class="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-3">
                 <span class="text-xs font-black text-slate-800 flex items-center gap-1.5 pb-1 border-b border-slate-100">
                     <span>💰</span>
