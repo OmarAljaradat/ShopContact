@@ -6418,12 +6418,12 @@ window.ReelsEngine = (function() {
                         <span class="text-base">⏳</span>
                         <div>
                             <div class="text-xs font-black text-white flex items-center gap-1.5">
-                                <span>شريط تقدم الريل (Story Bar):</span>
+                                <span>شريط التقدم العلوي</span>
                                 <span class="text-[9.5px] px-2 py-0.5 rounded-full font-bold ${state.progressBar.enabled ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-zinc-800 text-zinc-500'}">
                                     ${state.progressBar.enabled ? 'نقاط VIP الذكية ⚪' : 'مخفي ✕'}
                                 </span>
                             </div>
-                            <p class="text-[9.5px] text-zinc-400">كبسولات ذكية تتمدد تلقائياً مع حركة وعرض كل سلايد</p>
+                            <p class="text-[9.5px] text-zinc-400">نقاط ذكية تتمدد تلقائياً أثناء عرض السلايد</p>
                         </div>
                     </div>
                     <button type="button" onclick="ReelsEngine.toggleProgressBar()" 
@@ -6521,43 +6521,6 @@ window.ReelsEngine = (function() {
                     </button>
                 </div>
 
-                <!-- 6. TIKTOK AUTO PUBLISHING INTEGRATION -->
-                <div class="p-3.5 rounded-2xl bg-gradient-to-br from-slate-950 via-zinc-900 to-black border border-zinc-800 text-white shadow-md space-y-2.5">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-2">
-                            <span class="text-lg">🎵</span>
-                            <div>
-                                <h4 class="text-xs font-black text-white flex items-center gap-1.5">
-                                    <span>نشر تيك توك التلقائي</span>
-                                    <span id="tiktokStatusBadge" class="text-[9.5px] px-2 py-0.5 rounded-full font-bold bg-zinc-800 text-zinc-400 border border-zinc-700">جاري الفحص...</span>
-                                </h4>
-                                <p class="text-[10px] text-zinc-400">نشر مباشر على حسابك بلمسة واحدة</p>
-                            </div>
-                        </div>
-                        <div id="tiktokActionBtnArea">
-                            <button type="button" onclick="ReelsEngine.loginTikTok()" class="px-2.5 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-[10.5px] font-bold text-zinc-300 transition">
-                                🔗 ربط
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Privacy Level Selector -->
-                    <div class="flex items-center justify-between gap-2 p-2 rounded-xl bg-zinc-900/90 border border-zinc-800 text-[11px]">
-                        <span class="text-zinc-400 font-bold shrink-0">نوع النشر:</span>
-                        <select id="tiktokPrivacyLevel" class="w-full bg-black/70 text-zinc-200 text-[10.5px] font-bold rounded-lg px-2 py-1 border border-zinc-700 outline-none">
-                            <option value="PUBLIC_TO_EVERYONE">🌐 نشر عام ومباشر للجميع (Public)</option>
-                            <option value="SELF_ONLY">🔒 نشر مباشر بحسابي (أنا فقط - Private)</option>
-                            <option value="MUTUAL_FOLLOW_FRIENDS">👥 للأصدقاء المشتركين فقط</option>
-                        </select>
-                    </div>
-
-                    <!-- Direct Publish Button -->
-                    <button type="button" id="btnPublishTikTok" onclick="ReelsEngine.publishToTikTok()"
-                            class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-[#FE2C55] via-[#ff0050] to-[#25F4EE] hover:brightness-110 text-white font-black text-xs transition flex items-center justify-center gap-2 shadow-lg shadow-[#FE2C55]/20 cursor-pointer active:scale-[0.99]">
-                        <span>🚀 نشر الريل على تيك توك بنقرة واحدة</span>
-                    </button>
-                    <div id="tiktokPublishStatus" class="hidden text-[11px] p-2.5 rounded-xl text-center font-bold"></div>
-                </div>
 
                 <!-- 7. EXPORT ACTIONS -->
                 <div class="pt-2 border-t border-slate-200 space-y-2">
@@ -6593,7 +6556,6 @@ window.ReelsEngine = (function() {
         `;
 
         container.innerHTML = html;
-        checkTikTokStatus();
     }
 
     function renderSlideForm(slide) {
