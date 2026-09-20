@@ -335,25 +335,25 @@ window.ReelsEngine = (function() {
     const ANIM_ENABLED_STORAGE_KEY = 'shopcoin15_reels_anim_enabled_v2';
 
     const DEFAULT_ELEMENT_ANIMATIONS = {
-        title: { type: 'fadeUp', delay: 0.05, duration: 0.6 },
-        card: { type: 'popScale', delay: 0.2, duration: 0.65 },
-        cardA: { type: 'slideRight', delay: 0.15, duration: 0.6 },
-        cardB: { type: 'slideLeft', delay: 0.25, duration: 0.6 },
-        vsBadge: { type: 'popScale', delay: 0.35, duration: 0.5 },
-        playerName: { type: 'fadeUp', delay: 0.3, duration: 0.6 },
-        rank: { type: 'popScale', delay: 0.05, duration: 0.5 },
-        scLogo: { type: 'glowPulse', delay: 0.4, duration: 0.7 },
-        fcLogo: { type: 'fadeDown', delay: 0.1, duration: 0.6 },
-        introTitle: { type: 'fadeUp', delay: 0.1, duration: 0.6 },
-        introBadge: { type: 'fadeDown', delay: 0.0, duration: 0.5 },
-        introSubtitle: { type: 'fadeUp', delay: 0.25, duration: 0.6 },
-        introCta: { type: 'popScale', delay: 0.4, duration: 0.6 },
-        outroLogo: { type: 'glowPulse', delay: 0.1, duration: 0.7 },
-        outroTitle: { type: 'fadeUp', delay: 0.2, duration: 0.6 },
-        outroSubtitle: { type: 'fadeUp', delay: 0.3, duration: 0.6 },
-        outroFeatures: { type: 'popScale', delay: 0.35, duration: 0.6 },
-        outroCta: { type: 'popScale', delay: 0.5, duration: 0.6 },
-        question: { type: 'fadeUp', delay: 0.4, duration: 0.6 }
+        title: { type: 'fadeUp', delay: 0.05, duration: 0.38 },
+        card: { type: 'popScale', delay: 0.06, duration: 0.38 },
+        cardA: { type: 'slideRight', delay: 0.05, duration: 0.38 },
+        cardB: { type: 'slideLeft', delay: 0.10, duration: 0.38 },
+        vsBadge: { type: 'popScale', delay: 0.18, duration: 0.35 },
+        playerName: { type: 'fadeUp', delay: 0.12, duration: 0.35 },
+        rank: { type: 'popScale', delay: 0.05, duration: 0.35 },
+        scLogo: { type: 'glowPulse', delay: 0.20, duration: 0.45 },
+        fcLogo: { type: 'fadeDown', delay: 0.05, duration: 0.35 },
+        introTitle: { type: 'fadeUp', delay: 0.05, duration: 0.38 },
+        introBadge: { type: 'fadeDown', delay: 0.0, duration: 0.35 },
+        introSubtitle: { type: 'fadeUp', delay: 0.12, duration: 0.38 },
+        introCta: { type: 'popScale', delay: 0.20, duration: 0.38 },
+        outroLogo: { type: 'glowPulse', delay: 0.05, duration: 0.45 },
+        outroTitle: { type: 'fadeUp', delay: 0.10, duration: 0.38 },
+        outroSubtitle: { type: 'fadeUp', delay: 0.16, duration: 0.38 },
+        outroFeatures: { type: 'popScale', delay: 0.20, duration: 0.38 },
+        outroCta: { type: 'popScale', delay: 0.28, duration: 0.38 },
+        question: { type: 'fadeUp', delay: 0.18, duration: 0.38 }
     };
 
     const ANIMATION_TYPES = [
@@ -518,7 +518,7 @@ window.ReelsEngine = (function() {
         if (!globalAudioCtx && typeof window !== 'undefined') {
             const AudioCtx = window.AudioContext || window.webkitAudioContext;
             if (AudioCtx) {
-                globalAudioCtx = new AudioCtx();
+                globalAudioCtx = new AudioCtx({ latencyHint: 'interactive' });
             }
         }
         if (globalAudioCtx && globalAudioCtx.state === 'suspended') {
@@ -2222,14 +2222,14 @@ window.ReelsEngine = (function() {
         const cfg = getSlideSfxConfig(slide);
 
         const sfxList = [
-            { key: 'cardSlam', sfxType: 'card_slam', label: 'صدمة الكرت', sub: 'Card Slam', icon: '🃏', time: '0.35s' },
-            { key: 'coin', sfxType: 'coin', label: 'كاش ورنين كوينز', sub: 'Cha-Ching!', icon: '🪙', time: '0.85s' },
+            { key: 'cardSlam', sfxType: 'card_slam', label: 'صدمة الكرت', sub: 'Card Slam', icon: '🃏', time: '0.06s' },
+            { key: 'coin', sfxType: 'coin', label: 'كاش ورنين كوينز', sub: 'Cha-Ching!', icon: '🪙', time: '0.18s' },
             { key: 'whoosh', sfxType: 'whoosh', label: 'سحب هوائي', sub: 'Whoosh', icon: '💨', time: '0.0s' },
             { key: 'boom', sfxType: 'boom', label: 'ضربة درامية', sub: 'Bass Boom', icon: '💥', time: '0.0s' },
-            { key: 'whistle', sfxType: 'whistle', label: 'صفارة حكم', sub: 'Whistle', icon: '📢', time: '0.15s' },
-            { key: 'crowd', sfxType: 'crowd', label: 'هتاف الجماهير', sub: 'Crowd Cheer', icon: '🏟️', time: '0.35s' },
-            { key: 'electric', sfxType: 'electric', label: 'شرارة طاقة', sub: 'Energy Zap', icon: '⚡', time: '0.35s' },
-            { key: 'rankBell', sfxType: 'rank_bell', label: 'جرس الرانك', sub: 'Rank Bell', icon: '🔔', time: '0.20s' }
+            { key: 'whistle', sfxType: 'whistle', label: 'صفارة حكم', sub: 'Whistle', icon: '📢', time: '0.04s' },
+            { key: 'crowd', sfxType: 'crowd', label: 'هتاف الجماهير', sub: 'Crowd Cheer', icon: '🏟️', time: '0.08s' },
+            { key: 'electric', sfxType: 'electric', label: 'شرارة طاقة', sub: 'Energy Zap', icon: '⚡', time: '0.06s' },
+            { key: 'rankBell', sfxType: 'rank_bell', label: 'جرس الرانك', sub: 'Rank Bell', icon: '🔔', time: '0.05s' }
         ];
 
         const activeCount = Object.keys(cfg).filter(k => cfg[k]).length;
@@ -2320,12 +2320,12 @@ window.ReelsEngine = (function() {
         try {
             if (cfg.whoosh) playWhooshSound(customDest, 0.75, ctx, timeOffset + 0);
             if (cfg.boom) playBoomSound(customDest, 1.0, ctx, timeOffset + 0);
-            if (cfg.whistle) playWhistleSound(customDest, 0.75, ctx, timeOffset + 0.15);
-            if (cfg.rankBell) playRankBellSound(customDest, 0.9, ctx, timeOffset + 0.20);
-            if (cfg.cardSlam) playCardSlamSound(customDest, 1.0, ctx, timeOffset + 0.35);
-            if (cfg.electric) playElectricZapSound(customDest, 0.9, ctx, timeOffset + 0.35);
-            if (cfg.crowd) playCrowdCheerSound(customDest, 0.85, ctx, timeOffset + 0.35);
-            if (cfg.coin) playCoinCashRegisterSound(customDest, 1.15, ctx, timeOffset + 0.85);
+            if (cfg.whistle) playWhistleSound(customDest, 0.75, ctx, timeOffset + 0.04);
+            if (cfg.rankBell) playRankBellSound(customDest, 0.9, ctx, timeOffset + 0.05);
+            if (cfg.cardSlam) playCardSlamSound(customDest, 1.0, ctx, timeOffset + 0.06);
+            if (cfg.electric) playElectricZapSound(customDest, 0.9, ctx, timeOffset + 0.06);
+            if (cfg.crowd) playCrowdCheerSound(customDest, 0.85, ctx, timeOffset + 0.08);
+            if (cfg.coin) playCoinCashRegisterSound(customDest, 1.15, ctx, timeOffset + 0.18);
         } catch (e) {
             console.warn('[Reels Audio] triggerSlideAudio warning:', e.message);
         }

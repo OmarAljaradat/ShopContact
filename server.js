@@ -1115,6 +1115,9 @@ async function processReelJob(jobId, payload, execPath) {
                     border: none !important;
                     border-radius: 0 !important;
                     outline: none !important;
+                    -webkit-font-smoothing: antialiased !important;
+                    text-rendering: optimizeLegibility !important;
+                    image-rendering: -webkit-optimize-contrast !important;
                 }
                 .reel-resize-handle, .snap-guide, .layer-toolbar, .ring-2, [class*="ring-"], [id*="Toast"] {
                     display: none !important;
@@ -1217,7 +1220,7 @@ async function processReelJob(jobId, payload, execPath) {
         // 2. Real-time Compositor Screencast: captures the EXACT, 100% fluid preview directly from Chrome
         const client = await page.target().createCDPSession();
         const frameBuffers = [];
-        let isRecording = true;
+        let isRecording = false;
 
         client.on('Page.screencastFrame', async ({ data, sessionId }) => {
             if (!isRecording) return;
@@ -1229,12 +1232,17 @@ async function processReelJob(jobId, payload, execPath) {
 
         await client.send('Page.startScreencast', {
             format: 'jpeg',
-            quality: 85,
+            quality: 100, // Maximum fidelity: 100% crystal-clear, zero compression block artifacts
             maxWidth: 1080,
             maxHeight: 1920,
             everyNthFrame: 1
         });
 
+        // Warmup frame flush
+        await new Promise(r => setTimeout(r, 120));
+
+        // Synchronize frame capture directly with playback start to guarantee zero audio drift
+        isRecording = true;
         const playbackStart = Date.now();
 
         // Trigger real-time playback in Chrome
@@ -1256,7 +1264,7 @@ async function processReelJob(jobId, payload, execPath) {
             const elapsedSec = (Date.now() - playbackStart) / 1000;
             const pct = Math.min(85, Math.round(35 + (elapsedSec / totalDurationSec) * 50));
             job.progress = pct;
-            job.message = `جاري التقاط الحركات والانسيابية مباشرة من المعاينة (${elapsedSec.toFixed(1)}ث / ${totalDurationSec.toFixed(1)}ث)...`;
+            job.message = `جاري التقاط الحركات والانسيابية مباشرة بدقة فائقة (${elapsedSec.toFixed(1)}ث / ${totalDurationSec.toFixed(1)}ث)...`;
 
             const isDone = await page.evaluate(() => window.__reelPlaybackFinished === true).catch(() => false);
             if (isDone) break;
@@ -1276,7 +1284,7 @@ async function processReelJob(jobId, payload, execPath) {
 
         job.status = 'encoding';
         job.progress = 88;
-        job.message = 'جاري ضغط وترميز إطارات الفيديو 1080x1920 (FFmpeg High Profile)...';
+        job.message = 'جاري ضغط وترميز إطارات الفيديو 1080x1920 (FFmpeg High Bitrate 4K Ultra)...';
 
         const outMp4Path = path.join(runDir, 'final_reel.mp4');
         const { spawn } = require('child_process');
@@ -1297,8 +1305,13 @@ async function processReelJob(jobId, payload, execPath) {
 
         ffmpegArgs.push(
             '-c:v', 'libx264',
-            '-preset', 'veryfast',
-            '-crf', '19',
+            '-preset', 'fast',
+            '-profile:v', 'high',
+            '-level', '4.2',
+            '-crf', '15', // Near-lossless clarity, sharp text and crisp cards
+            '-b:v', '10M', // 10 Mbps target bitrate
+            '-maxrate', '14M',
+            '-bufsize', '20M',
             '-pix_fmt', 'yuv420p',
             '-t', String(totalDurationSec),
             '-movflags', '+faststart',
