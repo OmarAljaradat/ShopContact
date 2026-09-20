@@ -18,9 +18,9 @@ window.currentFitScale = 1.0;
 
 const STORY_TEMPLATE_KEYS = [
     'promo_pack', 'market_tracker', 'champs_squad', 'evo_boost', 'social_proof', 
-    'flash_sale', 'event_leaks', 'loaded_accounts', 'vip_voucher', 'squad_makeover', 
-    'vip_whales', 'player_duel', 'budget_beast', 'player_review', 'gift_friend', 
-    'beat_the_pro', 'store_promo', 'sbc'
+    'flash_sale', 'loaded_accounts', 'squad_makeover', 
+    'player_duel', 'budget_beast', 'player_review', 
+    'store_promo', 'sbc'
 ];
 window.STORY_TEMPLATE_KEYS = STORY_TEMPLATE_KEYS;
 
@@ -140,35 +140,17 @@ function getDefaultLayers() {
             layer_sale_body: { visible: true, x: null, y: 165, scale: 0.95, label: 'بطاقات باقات الكوينز والأسعار' },
             layer_sale_cta: { visible: true, x: null, y: 690, scale: 0.95, label: 'بانر الطلب المباشر (CTA)' }
         };
-    } else if (currentTemplate === 'event_leaks') {
-        return {
-            layer_leaks_header: { visible: true, x: null, y: 30, scale: 0.95, label: 'ترويسة رادار التسريبات' },
-            layer_leaks_body: { visible: true, x: null, y: 165, scale: 0.95, label: 'كروت نجوم الحدث القادم والتسريبات' },
-            layer_leaks_cta: { visible: true, x: null, y: 690, scale: 0.95, label: 'بانر التجهيز المسبق (CTA)' }
-        };
     } else if (currentTemplate === 'loaded_accounts') {
         return {
             layer_acc_header: { visible: true, x: null, y: 30, scale: 0.95, label: 'ترويسة الحسابات الجاهزة' },
             layer_acc_body: { visible: true, x: null, y: 165, scale: 0.95, label: 'مواصفات الحساب ورصيد الكوينز' },
             layer_acc_cta: { visible: true, x: null, y: 690, scale: 0.95, label: 'بانر طلب الحساب (CTA)' }
         };
-    } else if (currentTemplate === 'vip_voucher') {
-        return {
-            layer_voucher_header: { visible: true, x: null, y: 30, scale: 0.95, label: 'ترويسة العرض الحصري' },
-            layer_voucher_body: { visible: true, x: null, y: 165, scale: 0.95, label: 'تذكرة كود الخصم والمقاعد المتبقية' },
-            layer_voucher_cta: { visible: true, x: null, y: 690, scale: 0.95, label: 'بانر تفعيل الكود (CTA)' }
-        };
     } else if (currentTemplate === 'squad_makeover') {
         return {
             layer_makeover_header: { visible: true, x: null, y: 30, scale: 0.95, label: 'ترويسة تطوير التشكيلة' },
             layer_makeover_body: { visible: true, x: null, y: 165, scale: 0.95, label: 'مقارنة التشكيلة قبل وبعد بالكوينز' },
             layer_makeover_cta: { visible: true, x: null, y: 690, scale: 0.95, label: 'بانر استشارة التطوير (CTA)' }
-        };
-    } else if (currentTemplate === 'vip_whales') {
-        return {
-            layer_whales_header: { visible: true, x: null, y: 30, scale: 0.95, label: 'ترويسة صالة الحيتان VIP' },
-            layer_whales_body: { visible: true, x: null, y: 165, scale: 0.95, label: 'بطاقة عضوية الحيتان والامتيازات' },
-            layer_whales_cta: { visible: true, x: null, y: 690, scale: 0.95, label: 'بانر حجز باقة الحيتان (CTA)' }
         };
     } else if (currentTemplate === 'player_duel') {
         return {
@@ -187,18 +169,6 @@ function getDefaultLayers() {
             layer_review_header: { visible: true, x: null, y: 30, scale: 0.95, label: 'ترويسة مراجعة الكرت' },
             layer_review_body: { visible: true, x: null, y: 165, scale: 0.95, label: 'بطاقة تقييم الـ 50 مباراة والإيجابيات' },
             layer_review_cta: { visible: true, x: null, y: 690, scale: 0.95, label: 'بانر شحن كوينز الكرت (CTA)' }
-        };
-    } else if (currentTemplate === 'gift_friend') {
-        return {
-            layer_gift_header: { visible: true, x: null, y: 30, scale: 0.95, label: 'ترويسة إهداء الكوينز' },
-            layer_gift_body: { visible: true, x: null, y: 165, scale: 0.95, label: 'كرت الإهداء الرقمي واسم المهدى إليه' },
-            layer_gift_cta: { visible: true, x: null, y: 690, scale: 0.95, label: 'بانر طلب كرت الإهداء (CTA)' }
-        };
-    } else if (currentTemplate === 'beat_the_pro') {
-        return {
-            layer_pro_header: { visible: true, x: null, y: 30, scale: 0.95, label: 'ترويسة تحدي المحترف' },
-            layer_pro_body: { visible: true, x: null, y: 165, scale: 0.95, label: 'بوستر التحدي والجائزة وطريقة المشاركة' },
-            layer_pro_cta: { visible: true, x: null, y: 690, scale: 0.95, label: 'بانر التسجيل بالتحدي (CTA)' }
         };
     } else if (currentTemplate === 'sbc') {
         // SBC is Story 9:16 only!
@@ -2760,26 +2730,16 @@ function renderControls() {
         html += renderSocialProofControls();
     } else if (currentTemplate === 'flash_sale') {
         html += renderFlashSaleControls();
-    } else if (currentTemplate === 'event_leaks') {
-        html += renderEventLeaksControls();
     } else if (currentTemplate === 'loaded_accounts') {
         html += renderLoadedAccountsControls();
-    } else if (currentTemplate === 'vip_voucher') {
-        html += renderVipVoucherControls();
     } else if (currentTemplate === 'squad_makeover') {
         html += renderSquadMakeoverControls();
-    } else if (currentTemplate === 'vip_whales') {
-        html += renderVipWhalesControls();
     } else if (currentTemplate === 'player_duel') {
         html += renderPlayerDuelControls();
     } else if (currentTemplate === 'budget_beast') {
         html += renderBudgetBeastControls();
     } else if (currentTemplate === 'player_review') {
         html += renderPlayerReviewControls();
-    } else if (currentTemplate === 'gift_friend') {
-        html += renderGiftFriendControls();
-    } else if (currentTemplate === 'beat_the_pro') {
-        html += renderBeatTheProControls();
     } else if (currentTemplate === 'sbc') {
         const banners = Array.isArray(appState.banners) && appState.banners.length > 0 
             ? appState.banners 
@@ -4088,26 +4048,16 @@ function renderCanvas() {
         canvas.innerHTML = renderSocialProofTemplate();
     } else if (currentTemplate === 'flash_sale') {
         canvas.innerHTML = renderFlashSaleTemplate();
-    } else if (currentTemplate === 'event_leaks') {
-        canvas.innerHTML = renderEventLeaksTemplate();
     } else if (currentTemplate === 'loaded_accounts') {
         canvas.innerHTML = renderLoadedAccountsTemplate();
-    } else if (currentTemplate === 'vip_voucher') {
-        canvas.innerHTML = renderVipVoucherTemplate();
     } else if (currentTemplate === 'squad_makeover') {
         canvas.innerHTML = renderSquadMakeoverTemplate();
-    } else if (currentTemplate === 'vip_whales') {
-        canvas.innerHTML = renderVipWhalesTemplate();
     } else if (currentTemplate === 'player_duel') {
         canvas.innerHTML = renderPlayerDuelTemplate();
     } else if (currentTemplate === 'budget_beast') {
         canvas.innerHTML = renderBudgetBeastTemplate();
     } else if (currentTemplate === 'player_review') {
         canvas.innerHTML = renderPlayerReviewTemplate();
-    } else if (currentTemplate === 'gift_friend') {
-        canvas.innerHTML = renderGiftFriendTemplate();
-    } else if (currentTemplate === 'beat_the_pro') {
-        canvas.innerHTML = renderBeatTheProTemplate();
     } else if (currentTemplate === 'trio') {
         canvas.innerHTML = renderTrioTemplate();
         if (window.triggerAutoSaveTrio) window.triggerAutoSaveTrio();
@@ -6842,178 +6792,6 @@ window.applyFlashSalePreset = function(presetId) {
     if (window.showCopyToast) window.showCopyToast(`تم تطبيق ${p.name} 💰✨`);
 };
 
-// ==========================================
-// 6. EVENT LEAKS & UPCOMING STARS RADAR
-// ==========================================
-
-const EVENT_LEAKS_PRESETS = [
-    {
-        id: 'leaks_centurions',
-        name: 'حدث الـ CENTURIONS (مبابي وفينيسيوس)',
-        eventName: 'حدث الـ CENTURIONS القادم',
-        eventDay: 'الجمعة القادمة الساعة 8:00 مساءً',
-        headline: 'رسمياً: أقوى كروت الحدث القادم يوم الجمعة! جهّز كوينزك من الآن 💣🔥'
-    },
-    {
-        id: 'leaks_rttf',
-        name: 'حدث ROAD TO THE FINAL (دوري الأبطال)',
-        eventName: 'حدث دوري أبطال أوروبا (RTTF)',
-        eventDay: 'الجمعة القادمة الساعة 8:00 مساءً',
-        headline: 'تسريبات كروت دوري الأبطال القادمة! الأسعار ستنفجر قريباً 🚨💰'
-    }
-];
-
-function renderEventLeaksTemplate() {
-    const isLightBg = (window.MARKET_BG_THEMES[appState.bgTheme || 'cyber_blue']?.isLight) ?? false;
-    const c1 = appState.card1 || TEMPLATES.event_leaks.defaultState.card1;
-    const c2 = appState.card2 || TEMPLATES.event_leaks.defaultState.card2;
-
-    return `
-        ${getStoryBackgroundHtml(appState.bgTheme || 'cyber_blue', appState.bgLighting || 'bright')}
-
-        <!-- Layer 1: Header -->
-        ${renderStoryHeader('layer_leaks_header', appState.badgeText || TEMPLATES.event_leaks.defaultState.badgeText, appState.headline || TEMPLATES.event_leaks.defaultState.headline, appState.subheadline || TEMPLATES.event_leaks.defaultState.subheadline, isLightBg)}
-
-        <!-- Layer 2: Leaks Radar Body -->
-        ${isLayerVisible('layer_leaks_body') ? `
-        <div id="layer_leaks_body" class="draggable-layer w-full text-center flex flex-col items-center" style="${getLayerStyle('layer_leaks_body', 165)}; width: 510px; z-index: 25;">
-            <div class="layer-scale-wrapper w-full flex flex-col items-center gap-2" style="transform: scale(${getLayerScale('layer_leaks_body')});">
-                
-                <!-- Event Date & Classified Radar Badge -->
-                <div class="px-4 py-1.5 rounded-full bg-slate-950/95 border-2 border-red-500/80 shadow-2xl text-red-300 text-xs font-black tracking-wide flex items-center gap-2 animate-pulse">
-                    <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping"></span>
-                    <span>🚨 ${appState.eventName || 'حدث الـ CENTURIONS'} • ${appState.eventDay || 'الجمعة 8:00 مساءً'}</span>
-                </div>
-
-                <!-- 2 Leaked Cards Side by Side with Confidential Stamps -->
-                <div class="relative w-full h-[285px] flex items-center justify-center gap-3 px-2 my-1">
-                    <!-- Card 1 (Left) -->
-                    <div class="flex-1 flex flex-col items-center max-w-[220px] relative">
-                        <div class="absolute top-4 -right-1 z-30 px-2 py-0.5 rounded bg-red-600/90 text-white font-black text-[9px] tracking-wider transform rotate-12 shadow-lg border border-red-400">
-                            LEAKED 🚨
-                        </div>
-                        <div class="relative w-full h-[200px] flex items-center justify-center">
-                            <div class="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[180px] h-[180px] bg-[radial-gradient(ellipse_at_center,rgba(239,68,68,0.25)_0%,transparent_70%)] blur-xl -z-10"></div>
-                            <img src="${c1.url}" class="max-h-full max-w-full object-contain drop-shadow-[0_15px_25px_rgba(0,0,0,0.85)]" alt="">
-                        </div>
-                        <div class="text-center mt-1">
-                            <span class="text-xs font-black text-white">${c1.name}</span>
-                            <span class="text-[10px] font-mono text-red-400 font-bold">(${c1.rating})</span>
-                        </div>
-                        <div class="mt-1 px-2 py-0.5 rounded-md bg-[#131b2c] border border-[#22304d] text-[9.5px] font-bold text-slate-300 truncate max-w-full">
-                            ${c1.leakNote || '🔥 تسريب: سرعة 98 وتسديد 93'}
-                        </div>
-                    </div>
-
-                    <!-- Card 2 (Right) -->
-                    <div class="flex-1 flex flex-col items-center max-w-[220px] relative">
-                        <div class="absolute top-4 -left-1 z-30 px-2 py-0.5 rounded bg-red-600/90 text-white font-black text-[9px] tracking-wider transform -rotate-12 shadow-lg border border-red-400">
-                            LEAKED 🚨
-                        </div>
-                        <div class="relative w-full h-[200px] flex items-center justify-center">
-                            <div class="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[180px] h-[180px] bg-[radial-gradient(ellipse_at_center,rgba(0,240,255,0.22)_0%,transparent_70%)] blur-xl -z-10"></div>
-                            <img src="${c2.url}" class="max-h-full max-w-full object-contain drop-shadow-[0_15px_25px_rgba(0,0,0,0.85)]" alt="">
-                        </div>
-                        <div class="text-center mt-1">
-                            <span class="text-xs font-black text-white">${c2.name}</span>
-                            <span class="text-[10px] font-mono text-cyan-400 font-bold">(${c2.rating})</span>
-                        </div>
-                        <div class="mt-1 px-2 py-0.5 rounded-md bg-[#131b2c] border border-[#22304d] text-[9.5px] font-bold text-slate-300 truncate max-w-full">
-                            ${c2.leakNote || '⚡ تسريب: مراوغة 94 وميتا خارق'}
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Market Pre-Event Urgency Warning Box -->
-                <div class="w-full max-w-[470px] rounded-2xl bg-gradient-to-r from-red-950/90 via-[#10192a]/95 to-red-950/90 border border-red-500/50 p-2.5 text-center space-y-1 shadow-2xl backdrop-blur-md">
-                    <span class="text-[11px] font-black text-red-300 block">⚠️ نصيحة المتجر الذكية:</span>
-                    <p class="text-[10px] font-bold text-slate-300 leading-relaxed">
-                        أسعار كروت الميتا سترتفع 20-35% فور انطلاق الحدث.. اشحن كوينزك اليوم بأسعار هادية وجهّز ناديك قبل الغلاء!
-                    </p>
-                </div>
-            </div>
-            ${renderLayerToolbar('layer_leaks_body')}
-        </div>
-        ` : ''}
-
-        <!-- Layer 3: CTA -->
-        ${renderStoryCta('layer_leaks_cta', appState.ctaHeadline || TEMPLATES.event_leaks.defaultState.ctaHeadline, appState.ctaSub || TEMPLATES.event_leaks.defaultState.ctaSub)}
-    `;
-}
-
-function renderEventLeaksControls() {
-    return `
-        <div class="space-y-4">
-            <!-- 1. Background Selection -->
-            ${renderStoryBackgroundControls()}
-
-            <!-- 2. 1-Click Presets -->
-            <div class="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs space-y-2">
-                <span class="text-xs font-black text-slate-800 block">⚡ أحداث وتسريبات جاهزة:</span>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-                    ${EVENT_LEAKS_PRESETS.map(p => `
-                        <button type="button" onclick="applyEventLeaksPreset('${p.id}')" class="p-2 rounded-xl text-right border transition bg-slate-50 border-slate-200 hover:border-emerald-400 text-slate-800 text-xs font-bold">
-                            ${p.name}
-                        </button>
-                    `).join('')}
-                </div>
-            </div>
-
-            <!-- 3. Event & Date Details -->
-            <div class="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs space-y-3">
-                <span class="text-xs font-black text-slate-800 block">🚨 بيانات الحدث المسرب:</span>
-                <div class="grid grid-cols-2 gap-2">
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-600 mb-1">اسم الحدث:</label>
-                        <input type="text" value="${appState.eventName || ''}" oninput="appState.eventName = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
-                    </div>
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-600 mb-1">موعد النزول:</label>
-                        <input type="text" value="${appState.eventDay || ''}" oninput="appState.eventDay = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
-                    </div>
-                </div>
-            </div>
-
-            <!-- 4. Leaked Cards Data -->
-            <div class="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs space-y-3">
-                <span class="text-xs font-black text-slate-800 block">⭐ بيانات نجوم التسريبات:</span>
-                
-                <div class="p-2 bg-slate-50 rounded-xl space-y-1.5 border border-slate-200">
-                    <span class="text-[11px] font-bold text-slate-700 block">اللاعب الأول (اليسار):</span>
-                    <div class="grid grid-cols-2 gap-1.5">
-                        <input type="text" value="${appState.card1?.name || ''}" placeholder="اسم اللاعب" oninput="if(!appState.card1) appState.card1={}; appState.card1.name=this.value; renderCanvas();" class="px-2 py-1 rounded bg-white border text-xs">
-                        <input type="text" value="${appState.card1?.rating || ''}" placeholder="التقييم المسرب" oninput="if(!appState.card1) appState.card1={}; appState.card1.rating=this.value; renderCanvas();" class="px-2 py-1 rounded bg-white border text-xs">
-                    </div>
-                    <input type="text" value="${appState.card1?.leakNote || ''}" placeholder="ملاحظة التسريب (مثل: سرعة 98 وتسديد 93)" oninput="if(!appState.card1) appState.card1={}; appState.card1.leakNote=this.value; renderCanvas();" class="w-full px-2 py-1 rounded bg-white border text-xs">
-                    <input type="text" value="${appState.card1?.url || ''}" placeholder="رابط صورة الكرت" oninput="if(!appState.card1) appState.card1={}; appState.card1.url=this.value; renderCanvas();" class="w-full px-2 py-1 rounded bg-white border text-[10.5px] font-mono">
-                </div>
-
-                <div class="p-2 bg-slate-50 rounded-xl space-y-1.5 border border-slate-200">
-                    <span class="text-[11px] font-bold text-slate-700 block">اللاعب الثاني (اليمين):</span>
-                    <div class="grid grid-cols-2 gap-1.5">
-                        <input type="text" value="${appState.card2?.name || ''}" placeholder="اسم اللاعب" oninput="if(!appState.card2) appState.card2={}; appState.card2.name=this.value; renderCanvas();" class="px-2 py-1 rounded bg-white border text-xs">
-                        <input type="text" value="${appState.card2?.rating || ''}" placeholder="التقييم المسرب" oninput="if(!appState.card2) appState.card2={}; appState.card2.rating=this.value; renderCanvas();" class="px-2 py-1 rounded bg-white border text-xs">
-                    </div>
-                    <input type="text" value="${appState.card2?.leakNote || ''}" placeholder="ملاحظة التسريب" oninput="if(!appState.card2) appState.card2={}; appState.card2.leakNote=this.value; renderCanvas();" class="w-full px-2 py-1 rounded bg-white border text-xs">
-                    <input type="text" value="${appState.card2?.url || ''}" placeholder="رابط صورة الكرت" oninput="if(!appState.card2) appState.card2={}; appState.card2.url=this.value; renderCanvas();" class="w-full px-2 py-1 rounded bg-white border text-[10.5px] font-mono">
-                </div>
-            </div>
-        </div>
-    `;
-}
-
-window.applyEventLeaksPreset = function(presetId) {
-    const p = EVENT_LEAKS_PRESETS.find(x => x.id === presetId);
-    if (!p) return;
-    Object.keys(p).forEach(k => {
-        if (k !== 'id' && k !== 'name') appState[k] = p[k];
-    });
-    renderControls();
-    renderCanvas();
-    if (window.showCopyToast) window.showCopyToast(`تم تطبيق تسريبات ${p.name} 💣✨`);
-};
-
-
 // 1. Template Renderer: TRIO 3 Overlapping Players
 function renderTrioTemplate() {
     const isStoreBg = appState.bgTheme === 'store' || !appState.bgTheme;
@@ -8151,158 +7929,6 @@ window.applyLoadedAccountsPreset = function(presetId) {
 };
 
 
-// ============================================================================
-// 8. VIP FLASH VOUCHER TEMPLATE (🎟️ قسيمة الخصم الخاطفة)
-// ============================================================================
-
-const VIP_VOUCHER_PRESETS = [
-    {
-        id: 'voucher_weekend',
-        name: 'كود خصم الويكند VIP15 (خصم 15%)',
-        couponCode: 'VIP15',
-        discountAmount: 'خصم 15% فوري',
-        remainingSpots: 'متبقي 3 مقاعد فقط 🔥',
-        expiryTime: '⏳ صالح حتى منتصف الليل فقط',
-        targetPackage: 'على جميع باقات الـ 1M والـ 2M كوينز',
-        headline: 'كود خصم 15% حصري لأول 5 أشخاص يتواصلون بالخاص! 💰⚡'
-    },
-    {
-        id: 'voucher_drop',
-        name: 'كود نزول الحدث DROP20 (خصم 20%)',
-        couponCode: 'DROP20',
-        discountAmount: 'خصم 20% فوري كاش',
-        remainingSpots: 'متبقي مقعدان اثنان فقط 🚨',
-        expiryTime: '⏳ متبقي: ساعتان فقط',
-        targetPackage: 'على باقات كوينز باكدجات الحدث',
-        headline: 'كود خاطف 20% خصم لحرق باكدجات الحدث الليلة! 🔥🎁'
-    }
-];
-
-function renderVipVoucherTemplate() {
-    const isLightBg = (window.MARKET_BG_THEMES[appState.bgTheme || 'emerald_glow']?.isLight) ?? false;
-    const def = TEMPLATES.vip_voucher.defaultState;
-
-    return `
-        ${getStoryBackgroundHtml(appState.bgTheme || 'emerald_glow', appState.bgLighting || 'bright')}
-
-        <!-- Layer 1: Header -->
-        ${renderStoryHeader('layer_voucher_header', appState.badgeText || def.badgeText, appState.headline || def.headline, appState.subheadline || def.subheadline, isLightBg)}
-
-        <!-- Layer 2: Golden Perforated VIP Ticket Body -->
-        ${isLayerVisible('layer_voucher_body') ? `
-        <div id="layer_voucher_body" class="draggable-layer w-full text-center flex flex-col items-center" style="${getLayerStyle('layer_voucher_body', 165)}; width: 510px; z-index: 25;">
-            <div class="layer-scale-wrapper w-full flex flex-col items-center gap-3" style="transform: scale(${getLayerScale('layer_voucher_body')});">
-                
-                <!-- Ticket Outer Wrapper with Perforated Notch Simulation -->
-                <div class="w-full max-w-[480px] rounded-3xl p-5 shadow-2xl relative overflow-hidden" style="background: linear-gradient(135deg, #0d1a16 0%, #060e0c 100%); border: 2.5px solid #10b981; box-shadow: 0 0 35px rgba(16,185,129,0.35);">
-                    
-                    <!-- Ticket Header Ribbon -->
-                    <div class="flex items-center justify-between border-b border-emerald-500/30 pb-3">
-                        <div class="flex items-center gap-1.5 text-emerald-400 font-black text-xs">
-                            <span>🎟️</span>
-                            <span>VIP DISCOUNT VOUCHER</span>
-                        </div>
-                        <span class="px-2.5 py-0.5 rounded-full bg-red-950/80 border border-red-500/80 text-red-300 font-black text-[10.5px] animate-pulse">
-                            ${appState.remainingSpots || def.remainingSpots}
-                        </span>
-                    </div>
-
-                    <!-- Giant Coupon Code Box -->
-                    <div class="my-4 py-3 rounded-2xl text-center space-y-1" style="background: linear-gradient(90deg, rgba(16,185,129,0.15) 0%, rgba(245,158,11,0.2) 50%, rgba(16,185,129,0.15) 100%); border: 2px dashed #f59e0b;">
-                        <span class="text-[11px] font-bold text-slate-300 block">كود الخصم الحصري الخاص بك:</span>
-                        <div class="text-4xl font-black font-mono text-amber-300 tracking-[6px] py-1 select-all">
-                            ${appState.couponCode || def.couponCode}
-                        </div>
-                        <div class="text-sm font-black text-emerald-300">
-                            ⚡ ${appState.discountAmount || def.discountAmount}
-                        </div>
-                    </div>
-
-                    <!-- Package Scope & Expiry Pill -->
-                    <div class="flex items-center justify-between text-right px-2 py-1 text-xs">
-                        <span class="text-slate-300 font-bold">${appState.targetPackage || def.targetPackage}</span>
-                        <span class="text-amber-400 font-mono font-black">${appState.expiryTime || def.expiryTime}</span>
-                    </div>
-
-                    <!-- Instructions Banner -->
-                    <div class="mt-3 p-2.5 rounded-xl bg-slate-950/80 border border-emerald-500/40 text-center">
-                        <p class="text-[11px] font-bold text-slate-300">
-                            💬 انسخ الكود وأرسله لنا بالخاص لتطبيق الخصم فوراً على طلبيتك قبل اكتمال العدد!
-                        </p>
-                    </div>
-                </div>
-            </div>
-            ${renderLayerToolbar('layer_voucher_body')}
-        </div>
-        ` : ''}
-
-        <!-- Layer 3: CTA -->
-        ${renderStoryCta('layer_voucher_cta', appState.ctaHeadline || def.ctaHeadline, appState.ctaSub || def.ctaSub)}
-    `;
-}
-
-function renderVipVoucherControls() {
-    return `
-        <div class="space-y-4">
-            <!-- Presets Row -->
-            <div class="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs">
-                <label class="block text-xs font-black text-slate-800 mb-2">أكواد خصم جاهزة بنقرة واحدة:</label>
-                <div class="grid grid-cols-1 gap-1.5">
-                    ${VIP_VOUCHER_PRESETS.map(p => `
-                        <button type="button" onclick="applyVipVoucherPreset('${p.id}')" class="w-full py-2 px-3 text-right rounded-lg bg-slate-50 hover:bg-emerald-50 hover:border-emerald-500 border border-slate-200 text-slate-800 text-xs font-bold transition flex items-center justify-between">
-                            <span>🎟️ ${p.name}</span>
-                            <span class="font-mono text-emerald-600 font-black">${p.couponCode}</span>
-                        </button>
-                    `).join('')}
-                </div>
-            </div>
-
-            <!-- Background & Lighting -->
-            ${renderStoryBackgroundControls()}
-
-            <!-- Voucher Details Form -->
-            <div class="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs space-y-3 text-right">
-                <label class="block text-xs font-black text-slate-800 border-b pb-1.5">تفاصيل قسيمة الخصم:</label>
-                <div class="grid grid-cols-2 gap-2">
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-600 mb-1">كود الخصم (Coupon Code):</label>
-                        <input type="text" value="${appState.couponCode || ''}" oninput="appState.couponCode = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold font-mono outline-none focus:border-emerald-500">
-                    </div>
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-600 mb-1">قيمة الخصم:</label>
-                        <input type="text" value="${appState.discountAmount || ''}" oninput="appState.discountAmount = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
-                    </div>
-                </div>
-                <div class="grid grid-cols-2 gap-2">
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-600 mb-1">المقاعد المتبقية:</label>
-                        <input type="text" value="${appState.remainingSpots || ''}" oninput="appState.remainingSpots = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
-                    </div>
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-600 mb-1">مدة انتهاء العرض:</label>
-                        <input type="text" value="${appState.expiryTime || ''}" oninput="appState.expiryTime = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-[11px] font-bold text-slate-600 mb-1">الباقات المشمولة بالخصم:</label>
-                    <input type="text" value="${appState.targetPackage || ''}" oninput="appState.targetPackage = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
-                </div>
-            </div>
-        </div>
-    `;
-}
-
-window.applyVipVoucherPreset = function(presetId) {
-    const p = VIP_VOUCHER_PRESETS.find(x => x.id === presetId);
-    if (!p) return;
-    Object.keys(p).forEach(k => {
-        if (k !== 'id' && k !== 'name') appState[k] = p[k];
-    });
-    renderControls();
-    renderCanvas();
-    if (window.showCopyToast) window.showCopyToast(`تم تطبيق قسيمة ${p.name} 🎟️✨`);
-};
-
 
 // ============================================================================
 // 9. SQUAD MAKEOVER TEMPLATE (🛠️ تجديد التشكيلة قبل / بعد)
@@ -8464,144 +8090,6 @@ window.applySquadMakeoverPreset = function(presetId) {
     if (window.showCopyToast) window.showCopyToast(`تم تطبيق تجديد ${p.name} 🛠️✨`);
 };
 
-
-// ============================================================================
-// 10. VIP WHALES LOUNGE TEMPLATE (👑 صالة الحيتان VIP)
-// ============================================================================
-
-const VIP_WHALES_PRESETS = [
-    {
-        id: 'whales_10m',
-        name: 'باقة الحيتان الملكية (10,000,000 كوينز)',
-        tierName: 'باقة الحيتان الملكية (10,000,000 كوينز)',
-        priceTag: '175$',
-        headline: 'باقة الحيتان VIP: شحن كميات الملايين بأقصى فخامة وسرعة! 👑💰'
-    },
-    {
-        id: 'whales_5m',
-        name: 'باقة النخبة VIP (5,000,000 كوينز)',
-        tierName: 'باقة النخبة VIP (5,000,000 كوينز)',
-        priceTag: '89$',
-        headline: 'باقة النخبة VIP: استلم 5 ملايين كوينز كاش بناديك اليوم! 💎⚡'
-    },
-    {
-        id: 'whales_20m',
-        name: 'باقة الأساطير المطلقة (20,000,000 كوينز)',
-        tierName: 'باقة الأساطير المطلقة (20,000,000 كوينز)',
-        priceTag: '330$',
-        headline: 'باقة الـ 20 مليون كوينز: ابنِ تشكيلة الأيقونات الكاملة بناديك! 👑🏆'
-    }
-];
-
-function renderVipWhalesTemplate() {
-    const isLightBg = (window.MARKET_BG_THEMES[appState.bgTheme || 'gold_lounge']?.isLight) ?? false;
-    const def = TEMPLATES.vip_whales.defaultState;
-
-    return `
-        ${getStoryBackgroundHtml(appState.bgTheme || 'gold_lounge', appState.bgLighting || 'bright')}
-
-        <!-- Layer 1: Header -->
-        ${renderStoryHeader('layer_whales_header', appState.badgeText || def.badgeText, appState.headline || def.headline, appState.subheadline || def.subheadline, isLightBg)}
-
-        <!-- Layer 2: Whales Luxury Card Body -->
-        ${isLayerVisible('layer_whales_body') ? `
-        <div id="layer_whales_body" class="draggable-layer w-full text-center flex flex-col items-center" style="${getLayerStyle('layer_whales_body', 165)}; width: 510px; z-index: 25;">
-            <div class="layer-scale-wrapper w-full flex flex-col items-center gap-3" style="transform: scale(${getLayerScale('layer_whales_body')});">
-                
-                <!-- Royal Black & Gold Card Frame -->
-                <div class="w-full max-w-[480px] rounded-3xl p-5 shadow-2xl space-y-3 relative overflow-hidden" style="background: linear-gradient(135deg, #120e06 0%, #080602 100%); border: 2.5px solid #d97706; box-shadow: 0 0 35px rgba(217,119,6,0.35);">
-                    
-                    <!-- Crest & Tier Title -->
-                    <div class="text-center space-y-1 pb-2 border-b border-amber-500/30">
-                        <div class="w-12 h-12 mx-auto rounded-full bg-gradient-to-tr from-amber-600 to-yellow-400 p-[2px] flex items-center justify-center shadow-lg">
-                            <span class="text-2xl">👑</span>
-                        </div>
-                        <h3 class="text-base font-black text-amber-300 tracking-wide">${appState.tierName || def.tierName}</h3>
-                        <span class="text-[11px] font-bold text-slate-300 block">خدمة مخصصة لكبار العملاء وأصحاب الحسابات الثرية</span>
-                    </div>
-
-                    <!-- 4 Royal Perks Grid -->
-                    <div class="space-y-1.5 text-right py-1">
-                        <div class="p-2 rounded-xl bg-[#1c1407] border border-amber-500/30 text-xs font-bold text-amber-200">
-                            ${appState.perk1 || def.perk1}
-                        </div>
-                        <div class="p-2 rounded-xl bg-[#1c1407] border border-amber-500/30 text-xs font-bold text-amber-200">
-                            ${appState.perk2 || def.perk2}
-                        </div>
-                        <div class="p-2 rounded-xl bg-[#1c1407] border border-amber-500/30 text-xs font-bold text-amber-200">
-                            ${appState.perk3 || def.perk3}
-                        </div>
-                        <div class="p-2 rounded-xl bg-[#1c1407] border border-amber-500/30 text-xs font-bold text-amber-200">
-                            ${appState.perk4 || def.perk4}
-                        </div>
-                    </div>
-
-                    <!-- Pricing & Whale Booking -->
-                    <div class="p-2.5 rounded-2xl bg-gradient-to-r from-amber-950/80 via-slate-950 to-amber-950/80 border border-amber-500/60 flex items-center justify-between px-4">
-                        <div class="text-right">
-                            <span class="text-[10.5px] font-bold text-slate-400 block">سعر باقة الحيتان المخفض:</span>
-                            <span class="text-xs font-black text-emerald-400">⚡ تعامل مباشر مع الإدارة</span>
-                        </div>
-                        <div class="flex items-center gap-1.5" dir="ltr">
-                            <span class="text-2xl font-black font-mono text-amber-300">${appState.priceTag || def.priceTag}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            ${renderLayerToolbar('layer_whales_body')}
-        </div>
-        ` : ''}
-
-        <!-- Layer 3: CTA -->
-        ${renderStoryCta('layer_whales_cta', appState.ctaHeadline || def.ctaHeadline, appState.ctaSub || def.ctaSub)}
-    `;
-}
-
-function renderVipWhalesControls() {
-    return `
-        <div class="space-y-4">
-            <!-- Presets Row -->
-            <div class="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs">
-                <label class="block text-xs font-black text-slate-800 mb-2">باقات الحيتان بنقرة واحدة:</label>
-                <div class="grid grid-cols-1 gap-1.5">
-                    ${VIP_WHALES_PRESETS.map(p => `
-                        <button type="button" onclick="applyVipWhalesPreset('${p.id}')" class="w-full py-2 px-3 text-right rounded-lg bg-slate-50 hover:bg-emerald-50 hover:border-emerald-500 border border-slate-200 text-slate-800 text-xs font-bold transition flex items-center justify-between">
-                            <span>👑 ${p.name}</span>
-                            <span class="font-mono text-emerald-600 font-black">${p.priceTag}</span>
-                        </button>
-                    `).join('')}
-                </div>
-            </div>
-
-            <!-- Background & Lighting -->
-            ${renderStoryBackgroundControls()}
-
-            <!-- Whales Form -->
-            <div class="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs space-y-3 text-right">
-                <label class="block text-xs font-black text-slate-800 border-b pb-1.5">بيانات باقة الحيتان:</label>
-                <div>
-                    <label class="block text-[11px] font-bold text-slate-600 mb-1">اسم الباقة والكمية:</label>
-                    <input type="text" value="${appState.tierName || ''}" oninput="appState.tierName = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
-                </div>
-                <div>
-                    <label class="block text-[11px] font-bold text-slate-600 mb-1">السعر المخفض:</label>
-                    <input type="text" value="${appState.priceTag || ''}" oninput="appState.priceTag = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
-                </div>
-            </div>
-        </div>
-    `;
-}
-
-window.applyVipWhalesPreset = function(presetId) {
-    const p = VIP_WHALES_PRESETS.find(x => x.id === presetId);
-    if (!p) return;
-    Object.keys(p).forEach(k => {
-        if (k !== 'id' && k !== 'name') appState[k] = p[k];
-    });
-    renderControls();
-    renderCanvas();
-    if (window.showCopyToast) window.showCopyToast(`تم تطبيق ${p.name} 👑✨`);
-};
 
 
 // ============================================================================
@@ -9093,294 +8581,4 @@ window.applyPlayerReviewPreset = function(presetId) {
     if (window.showCopyToast) window.showCopyToast(`تم تطبيق مراجعة ${p.name} 🔍✨`);
 };
 
-
-// ============================================================================
-// 14. GIFT A FRIEND COIN VOUCHER TEMPLATE (🎁 أهدي كوينز لخويك)
-// ============================================================================
-
-const GIFT_FRIEND_PRESETS = [
-    {
-        id: 'gift_1m',
-        name: 'هدية 1,000,000 كوينز (مبروك الرانك)',
-        recipientName: 'عبدالعزيز (خوي الدرب)',
-        senderName: 'من: فهد الشمري',
-        giftAmount: '1,000,000 كوينز',
-        giftOccasion: '🎉 بمناسبة تحقيق رانك 1 في الفوت تشامبيونز!',
-        personalNote: 'تستاهل يا كابتن وعقبال التوب 100.. شد حيلك وناديك صار جاهز!',
-        headline: 'فاجئ خويك بهدية كوينز تشحن ناديه وتفرحه فوراً! 🎁⚡'
-    },
-    {
-        id: 'gift_starter',
-        name: 'هدية باقة البداية 500,000 كوينز',
-        recipientName: 'خالد (كابتن الفريق)',
-        senderName: 'من: شلة الأصحاب',
-        giftAmount: '500,000 كوينز',
-        giftOccasion: '🎂 بمناسبة يوم ميلادك السعيد!',
-        personalNote: 'أحلى هدية لناديك عشان تقفل التشكيلة الميتا وتجلد بالديفيجن! 🔥',
-        headline: 'أفضل هدية للاعب الفوت: كوينز كاش بناديه مع رسالة خاصة! 🎁👑'
-    }
-];
-
-function renderGiftFriendTemplate() {
-    const isLightBg = (window.MARKET_BG_THEMES[appState.bgTheme || 'store']?.isLight) ?? true;
-    const def = TEMPLATES.gift_friend.defaultState;
-
-    return `
-        ${getStoryBackgroundHtml(appState.bgTheme || 'store', appState.bgLighting || 'bright')}
-
-        <!-- Layer 1: Header -->
-        ${renderStoryHeader('layer_gift_header', appState.badgeText || def.badgeText, appState.headline || def.headline, appState.subheadline || def.subheadline, isLightBg)}
-
-        <!-- Layer 2: Gift Card Voucher Body -->
-        ${isLayerVisible('layer_gift_body') ? `
-        <div id="layer_gift_body" class="draggable-layer w-full text-center flex flex-col items-center" style="${getLayerStyle('layer_gift_body', 165)}; width: 510px; z-index: 25;">
-            <div class="layer-scale-wrapper w-full flex flex-col items-center gap-3" style="transform: scale(${getLayerScale('layer_gift_body')});">
-                
-                <!-- Digital Gift Certificate Box -->
-                <div class="w-full max-w-[480px] rounded-3xl p-5 shadow-2xl space-y-3 relative overflow-hidden" style="background: linear-gradient(135deg, #130f1e 0%, #0a0812 100%); border: 2.5px solid #a855f7; box-shadow: 0 0 35px rgba(168,85,247,0.35);">
-                    
-                    <!-- Gift Bow Ribbon Header -->
-                    <div class="flex items-center justify-between border-b border-purple-500/30 pb-2.5">
-                        <div class="flex items-center gap-1.5 text-purple-300 font-black text-xs">
-                            <span class="text-base">🎁</span>
-                            <span>OFFICIAL GIFT VOUCHER</span>
-                        </div>
-                        <span class="text-[11px] font-bold text-slate-300 font-mono">
-                            ${appState.senderName || def.senderName}
-                        </span>
-                    </div>
-
-                    <!-- To Recipient -->
-                    <div class="text-right">
-                        <span class="text-[10px] text-slate-400 font-bold block">إهداء خاص ومميز إلى:</span>
-                        <span class="text-sm font-black text-white block mt-0.5">👤 ${appState.recipientName || def.recipientName}</span>
-                    </div>
-
-                    <!-- Gift Coins Amount -->
-                    <div class="py-2.5 rounded-2xl bg-purple-950/50 border border-purple-500/40 text-center space-y-0.5">
-                        <span class="text-[11px] font-bold text-slate-300">الهدية المشحونة بناديه:</span>
-                        <div class="flex items-center justify-center gap-2 py-0.5" dir="ltr">
-                            <img src="assets/fc-coin.webp" class="w-8 h-8 object-contain drop-shadow" alt="c">
-                            <span class="text-3xl font-black font-mono text-amber-300 tracking-wide">${appState.giftAmount || def.giftAmount}</span>
-                        </div>
-                        <span class="text-[10.5px] font-bold text-purple-300 block">${appState.giftOccasion || def.giftOccasion}</span>
-                    </div>
-
-                    <!-- Personal Note Quote -->
-                    <div class="p-2.5 rounded-xl bg-slate-950/80 border border-purple-500/30 text-right">
-                        <p class="text-[11px] font-bold text-slate-300 italic">
-                            "${appState.personalNote || def.personalNote}"
-                        </p>
-                    </div>
-
-                    <!-- Guarantee Footer -->
-                    <div class="text-center text-[10px] font-black text-emerald-400 pt-1">
-                        ${appState.deliveryGuarantee || def.deliveryGuarantee}
-                    </div>
-                </div>
-            </div>
-            ${renderLayerToolbar('layer_gift_body')}
-        </div>
-        ` : ''}
-
-        <!-- Layer 3: CTA -->
-        ${renderStoryCta('layer_gift_cta', appState.ctaHeadline || def.ctaHeadline, appState.ctaSub || def.ctaSub)}
-    `;
-}
-
-function renderGiftFriendControls() {
-    return `
-        <div class="space-y-4">
-            <!-- Presets Row -->
-            <div class="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs">
-                <label class="block text-xs font-black text-slate-800 mb-2">نماذج إهداء جاهزة بنقرة واحدة:</label>
-                <div class="grid grid-cols-1 gap-1.5">
-                    ${GIFT_FRIEND_PRESETS.map(p => `
-                        <button type="button" onclick="applyGiftFriendPreset('${p.id}')" class="w-full py-2 px-3 text-right rounded-lg bg-slate-50 hover:bg-emerald-50 hover:border-emerald-500 border border-slate-200 text-slate-800 text-xs font-bold transition flex items-center justify-between">
-                            <span>🎁 ${p.name}</span>
-                            <span class="font-mono text-emerald-600 font-black">${p.giftAmount}</span>
-                        </button>
-                    `).join('')}
-                </div>
-            </div>
-
-            <!-- Background & Lighting -->
-            ${renderStoryBackgroundControls()}
-
-            <!-- Gift Form -->
-            <div class="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs space-y-3 text-right">
-                <label class="block text-xs font-black text-slate-800 border-b pb-1.5">بيانات كرت الإهداء:</label>
-                <div class="grid grid-cols-2 gap-2">
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-600 mb-1">اسم المهدى إليه (الصديق):</label>
-                        <input type="text" value="${appState.recipientName || ''}" oninput="appState.recipientName = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
-                    </div>
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-600 mb-1">اسم المهدي (أنت):</label>
-                        <input type="text" value="${appState.senderName || ''}" oninput="appState.senderName = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-[11px] font-bold text-slate-600 mb-1">كمية الكوينز المهداة:</label>
-                    <input type="text" value="${appState.giftAmount || ''}" oninput="appState.giftAmount = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
-                </div>
-                <div>
-                    <label class="block text-[11px] font-bold text-slate-600 mb-1">المناسبة:</label>
-                    <input type="text" value="${appState.giftOccasion || ''}" oninput="appState.giftOccasion = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
-                </div>
-                <div>
-                    <label class="block text-[11px] font-bold text-slate-600 mb-1">رسالتك الخاصة له:</label>
-                    <input type="text" value="${appState.personalNote || ''}" oninput="appState.personalNote = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
-                </div>
-            </div>
-        </div>
-    `;
-}
-
-window.applyGiftFriendPreset = function(presetId) {
-    const p = GIFT_FRIEND_PRESETS.find(x => x.id === presetId);
-    if (!p) return;
-    Object.keys(p).forEach(k => {
-        if (k !== 'id' && k !== 'name') appState[k] = p[k];
-    });
-    renderControls();
-    renderCanvas();
-    if (window.showCopyToast) window.showCopyToast(`تم تطبيق إهداء ${p.name} 🎁✨`);
-};
-
-
-// ============================================================================
-// 15. BEAT THE PRO CHALLENGE TEMPLATE (⚔️ تحدي الفوز على محترف المتجر)
-// ============================================================================
-
-const BEAT_THE_PRO_PRESETS = [
-    {
-        id: 'pro_500k',
-        name: 'تحدي كابتن المتجر على 500,000 كوينز',
-        challengePrize: '500,000 كوينز مجاناً',
-        proName: 'كابتن المتجر (Pro Player 15-0)',
-        challengePlatform: 'PlayStation 5 / Cross-Play',
-        headline: 'تحدي الأسبوع: العب ضد كابتن المتجر واكسب 500k كوينز! 🥊🔥'
-    },
-    {
-        id: 'pro_1m',
-        name: 'تحدي قمة الويكند على 1,000,000 كوينز',
-        challengePrize: '1,000,000 كوينز مجاناً',
-        proName: 'محترف المتجر بطل التصفيات 🏆',
-        challengePlatform: 'جميع المنصات (Cross-Play)',
-        headline: 'قمة التحدي: اهزم بطل المتجر واكسب مليون كوينز كاش بناديك! ⚔️💰'
-    }
-];
-
-function renderBeatTheProTemplate() {
-    const isLightBg = (window.MARKET_BG_THEMES[appState.bgTheme || 'dark_neon']?.isLight) ?? false;
-    const def = TEMPLATES.beat_the_pro.defaultState;
-
-    return `
-        ${getStoryBackgroundHtml(appState.bgTheme || 'dark_neon', appState.bgLighting || 'bright')}
-
-        <!-- Layer 1: Header -->
-        ${renderStoryHeader('layer_pro_header', appState.badgeText || def.badgeText, appState.headline || def.headline, appState.subheadline || def.subheadline, isLightBg)}
-
-        <!-- Layer 2: Challenge Poster Body -->
-        ${isLayerVisible('layer_pro_body') ? `
-        <div id="layer_pro_body" class="draggable-layer w-full text-center flex flex-col items-center" style="${getLayerStyle('layer_pro_body', 165)}; width: 510px; z-index: 25;">
-            <div class="layer-scale-wrapper w-full flex flex-col items-center gap-2.5" style="transform: scale(${getLayerScale('layer_pro_body')});">
-                
-                <!-- Challenge Poster Frame -->
-                <div class="w-full max-w-[480px] rounded-3xl p-5 shadow-2xl space-y-3 relative overflow-hidden" style="background: linear-gradient(135deg, #130a10 0%, #080407 100%); border: 2.5px solid #ef4444; box-shadow: 0 0 35px rgba(239,68,68,0.4);">
-                    
-                    <!-- Top Matchup Ribbon -->
-                    <div class="flex items-center justify-between border-b border-red-500/30 pb-2.5">
-                        <div class="flex items-center gap-1.5 text-red-400 font-black text-xs">
-                            <span>🥊</span>
-                            <span>COMMUNITY PRO CHALLENGE</span>
-                        </div>
-                        <span class="px-2.5 py-0.5 rounded-lg bg-red-950 text-red-300 font-bold text-[10.5px] border border-red-500/60 font-mono">
-                            ${appState.challengePlatform || def.challengePlatform}
-                        </span>
-                    </div>
-
-                    <!-- Giant Bounty Prize -->
-                    <div class="py-3 rounded-2xl text-center space-y-1" style="background: linear-gradient(90deg, rgba(239,68,68,0.2) 0%, rgba(245,158,11,0.25) 50%, rgba(239,68,68,0.2) 100%); border: 1.5px solid #f59e0b;">
-                        <span class="text-xs font-bold text-slate-300 block">جائزة الفوز على المحترف:</span>
-                        <div class="text-3xl font-black font-mono text-amber-300 tracking-wide">
-                            ${appState.challengePrize || def.challengePrize}
-                        </div>
-                        <span class="text-[10.5px] font-black text-emerald-400 block">شحن فوري مباشر بناديك فور انتهاء المباراة</span>
-                    </div>
-
-                    <!-- Opponent Tag -->
-                    <div class="p-2 rounded-xl bg-slate-950/80 border border-slate-800 text-center">
-                        <span class="text-xs font-black text-white">
-                            الخصم: <span class="text-amber-400">${appState.proName || def.proName}</span>
-                        </span>
-                    </div>
-
-                    <!-- How to Enter Steps -->
-                    <div class="space-y-1 text-right text-[11px] font-bold text-slate-300 px-2">
-                        <div>1️⃣ ${appState.howToEnter || def.howToEnter}</div>
-                        <div>2️⃣ يتم السحب واختيار المتحدي يوم الخميس القادم</div>
-                        <div class="text-amber-400">🎁 ${appState.consolationPrize || def.consolationPrize}</div>
-                    </div>
-                </div>
-            </div>
-            ${renderLayerToolbar('layer_pro_body')}
-        </div>
-        ` : ''}
-
-        <!-- Layer 3: CTA -->
-        ${renderStoryCta('layer_pro_cta', appState.ctaHeadline || def.ctaHeadline, appState.ctaSub || def.ctaSub)}
-    `;
-}
-
-function renderBeatTheProControls() {
-    return `
-        <div class="space-y-4">
-            <!-- Presets Row -->
-            <div class="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs">
-                <label class="block text-xs font-black text-slate-800 mb-2">تحديات جاهزة بنقرة واحدة:</label>
-                <div class="grid grid-cols-1 gap-1.5">
-                    ${BEAT_THE_PRO_PRESETS.map(p => `
-                        <button type="button" onclick="applyBeatTheProPreset('${p.id}')" class="w-full py-2 px-3 text-right rounded-lg bg-slate-50 hover:bg-emerald-50 hover:border-emerald-500 border border-slate-200 text-slate-800 text-xs font-bold transition flex items-center justify-between">
-                            <span>⚔️ ${p.name}</span>
-                            <span class="font-mono text-emerald-600 font-black">${p.challengePrize}</span>
-                        </button>
-                    `).join('')}
-                </div>
-            </div>
-
-            <!-- Background & Lighting -->
-            ${renderStoryBackgroundControls()}
-
-            <!-- Challenge Form -->
-            <div class="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs space-y-3 text-right">
-                <label class="block text-xs font-black text-slate-800 border-b pb-1.5">بيانات التحدي والجائزة:</label>
-                <div>
-                    <label class="block text-[11px] font-bold text-slate-600 mb-1">قيمة الجائزة:</label>
-                    <input type="text" value="${appState.challengePrize || ''}" oninput="appState.challengePrize = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
-                </div>
-                <div>
-                    <label class="block text-[11px] font-bold text-slate-600 mb-1">اسم كابتن المتجر / المحترف:</label>
-                    <input type="text" value="${appState.proName || ''}" oninput="appState.proName = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
-                </div>
-                <div>
-                    <label class="block text-[11px] font-bold text-slate-600 mb-1">المنصة وطريقة اللعب:</label>
-                    <input type="text" value="${appState.challengePlatform || ''}" oninput="appState.challengePlatform = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
-                </div>
-            </div>
-        </div>
-    `;
-}
-
-window.applyBeatTheProPreset = function(presetId) {
-    const p = BEAT_THE_PRO_PRESETS.find(x => x.id === presetId);
-    if (!p) return;
-    Object.keys(p).forEach(k => {
-        if (k !== 'id' && k !== 'name') appState[k] = p[k];
-    });
-    renderControls();
-    renderCanvas();
-    if (window.showCopyToast) window.showCopyToast(`تم تطبيق تحدي ${p.name} ⚔️✨`);
-};
 

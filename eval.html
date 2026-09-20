@@ -87,7 +87,7 @@
                 <div>
                     <h1 class="text-base font-black text-white flex items-center gap-2">
                         <span>منصة تقييم وتصفية قوالب الستوري</span>
-                        <span class="text-xs px-2.5 py-0.5 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-500/50 font-mono">18 قوالب</span>
+                        <span class="text-xs px-2.5 py-0.5 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-500/50 font-mono">13 قوالب</span>
                     </h1>
                     <p class="text-xs text-slate-400 font-medium">عدّل براحتك: حدد خيارك لكل قالب واكتب ملاحظاتك، ثم اضغط على زر النسخ المباشر لإرسالها في الشات!</p>
                 </div>
@@ -103,7 +103,7 @@
                     <span class="text-slate-600">|</span>
                     <span class="text-red-400 flex items-center gap-1"><span id="countDelete">0</span> ❌</span>
                     <span class="text-slate-600">|</span>
-                    <span class="text-slate-400 flex items-center gap-1"><span id="countUnrated">18</span> ⏳</span>
+                    <span class="text-slate-400 flex items-center gap-1"><span id="countUnrated">13</span> ⏳</span>
                 </div>
 
                 <!-- Copy to Chat Button -->
@@ -135,7 +135,7 @@
             <div class="flex items-center gap-2 flex-wrap text-xs font-bold">
                 <span class="text-slate-400 ml-1">تصفية القائمة:</span>
                 <button type="button" onclick="setFilter('all')" id="tab_all" class="px-3.5 py-1.5 rounded-xl bg-emerald-500/20 text-emerald-300 border border-emerald-500/50 transition">
-                    الكل (18)
+                    الكل (13)
                 </button>
                 <button type="button" onclick="setFilter('keep')" id="tab_keep" class="px-3.5 py-1.5 rounded-xl bg-slate-900 text-slate-400 border border-slate-800 hover:text-white transition">
                     ✅ اعتماد فقط
@@ -235,38 +235,24 @@
             },
             {
                 id: 'social_proof',
-                name: '🤝 توثيق ثقة العملاء والتحويلات',
+                name: '🤝 تم الشحن (توثيق الحساب قبل / بعد)',
                 category: 'مصداقية وثقة',
-                desc: 'شهادة زجاجية راقية توثق شحنة حقيقية (1.5M) وسرعة التسليم بالدقائق وتقييم 5 نجوم وضمان الأمان.',
+                desc: 'توثيق شحن كوينز الحساب بصورة الحساب قبل الشحن وصورة بعد الشحن مع تفاصيل العملية والضمان.',
                 defaultRating: { sales: 5, visual: 5, ease: 5 }
             },
             {
                 id: 'flash_sale',
                 name: '💰 جدول باقات الكوينز والعروض',
                 category: 'تسعير وباقات',
-                desc: 'جدول أسعار 3 باقات كوينز مدرجة (500k / 1M الأكثر طلباً بوهج ذهبي / 2M VIP) مع أسعار الشطب.',
+                desc: 'جدول أسعار باقات الكوينز والعروض الترويجية الحصرية بتصميم المتجر.',
                 defaultRating: { sales: 5, visual: 5, ease: 5 }
-            },
-            {
-                id: 'event_leaks',
-                name: '💣 تسريبات نجوم الحدث القادم',
-                category: 'أخبار وتسريبات',
-                desc: 'رادار تسريبات أحداث الجمعة مع أختام LEAKED الحمراء ونصيحة الشحن المسبق قبل ارتفاع الأسعار.',
-                defaultRating: { sales: 4, visual: 5, ease: 4 }
             },
             {
                 id: 'loaded_accounts',
                 name: '🎮 حسابات جاهزة للبيع',
                 category: 'صفقات كبرى',
-                desc: 'عرض حساب فيفا كامل محمل بالكوينز (2.5M) مع ماركت ويب آب مفتوح وتسليم فوري بالبيانات الأصلية.',
+                desc: 'عرض حساب فيفا كامل محمل بالكوينز مع ماركت ويب آب مفتوح وتسليم فوري بالبيانات الأصلية.',
                 defaultRating: { sales: 5, visual: 4, ease: 5 }
-            },
-            {
-                id: 'vip_voucher',
-                name: '🎟️ قسيمة الخصم الخاطفة',
-                category: 'عروض خاصة',
-                desc: 'تذكرة VIP ذهبية/زمردية مقطوعة الأطراف مع كود حصري وعداد مقاعد محدودة لتحفيز الشراء الفوري.',
-                defaultRating: { sales: 5, visual: 5, ease: 5 }
             },
             {
                 id: 'squad_makeover',
@@ -276,24 +262,17 @@
                 defaultRating: { sales: 5, visual: 4, ease: 4 }
             },
             {
-                id: 'vip_whales',
-                name: '👑 صالة الحيتان VIP',
-                category: 'خدمات النخبة',
-                desc: 'ثيم ملكي أسود وذهبي لكبار العملاء ومشتريات الملايين (5M-20M) مع خدمة مدير حساب واتساب 24/7.',
-                defaultRating: { sales: 4, visual: 5, ease: 4 }
-            },
-            {
                 id: 'player_duel',
                 name: '🥊 معركة النجوم وتصويت الستوري',
                 category: 'تفاعل واستفتاء',
-                desc: 'مواجهة رأس برأس (مبابي vs فيني) مع مقارنة الطاقات ومساحة مخصصة لستيكر تصويت إنستغرام.',
+                desc: 'مواجهة رأس برأس ومقارنة الطاقات ومساحة مخصصة لستيكر تصويت إنستغرام.',
                 defaultRating: { sales: 4, visual: 5, ease: 5 }
             },
             {
                 id: 'budget_beast',
                 name: '💎 تشكيلة الميزانية الذكية (250k)',
                 category: 'تشكيلات رخيصة',
-                desc: 'تشكيلة الميتا المرعبة بـ 250 ألف كوينز لقهر فرق الملايين بأسعار في متناول المبتدئين.',
+                desc: 'تشكيلة الميتا المرعبة بـ 250 ألف كوينز لقهر فرق الملايين بأسعار في متناول الجميع.',
                 defaultRating: { sales: 5, visual: 4, ease: 5 }
             },
             {
@@ -301,20 +280,6 @@
                 name: '🔍 مراجعة الكرت بعد 50 مباراة',
                 category: 'مراجعات وحكم',
                 desc: 'مراجعة أداء كرت ميتا خارق بعد 50 مباراة مع إيجابيات وسلبيات وتقييم نهائي وشحن فوري.',
-                defaultRating: { sales: 4, visual: 5, ease: 4 }
-            },
-            {
-                id: 'gift_friend',
-                name: '🎁 أهدي كوينز لخويك',
-                category: 'هدايا ومفاجآت',
-                desc: 'كرت إهداء رقمي راقٍ لشحن كوينز لحساب صديقك كمفاجأة في المناسبات مع رسالة مخصصة باسمك.',
-                defaultRating: { sales: 4, visual: 5, ease: 4 }
-            },
-            {
-                id: 'beat_the_pro',
-                name: '⚔️ تحدي الفوز على محترف المتجر',
-                category: 'تحديات المجتمع',
-                desc: 'بوستر تحدي حماسي: العب ودية ضد محترف المتجر وإذا فزت تحصل على 500k كوينز مجاناً بناديك.',
                 defaultRating: { sales: 4, visual: 5, ease: 4 }
             },
             {
@@ -436,7 +401,7 @@
                     <div class="glass-card rounded-2xl p-12 text-center text-slate-400 space-y-2">
                         <div class="text-3xl">🔍</div>
                         <p class="text-sm font-bold">لا توجد قوالب تطابق هذا الفلتر حالياً.</p>
-                        <button onclick="setFilter('all')" class="text-xs text-emerald-400 hover:underline">عرض كل القوالب (18)</button>
+                        <button onclick="setFilter('all')" class="text-xs text-emerald-400 hover:underline">عرض كل القوالب (13)</button>
                     </div>
                 `;
                 return;

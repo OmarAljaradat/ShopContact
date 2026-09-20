@@ -581,35 +581,6 @@ const TEMPLATES = {
             ctaSub: 'للطلب تواصل معنا على الخاص: @shop_coin15 📩'
         }
     },
-    event_leaks: {
-        id: 'event_leaks',
-        name: '💣 تسريبات نجوم الحدث القادم',
-        icon: 'alert-triangle',
-        description: 'رادار تسريبات أحداث الجمعة لتحفيز الشحن المسبق للكوينز قبل ارتفاع أسعار السوق',
-        defaultState: {
-            bgTheme: 'cyber_blue',
-            bgLighting: 'bright',
-            eventName: 'حدث الـ CENTURIONS القادم',
-            eventDay: 'الجمعة القادمة الساعة 8:00 مساءً',
-            card1: {
-                name: 'كيليان مبابي',
-                rating: '93 ST',
-                leakNote: '🔥 تسريب: سرعة 98 وتسديد 93',
-                url: '/api/image-proxy?url=https%3A%2F%2Fgame-assets.fut.gg%2Fcdn-cgi%2Fimage%2Fquality%3D85%2Cformat%3Dauto%2Cwidth%3D600%2F2027%2Ffutgg-player-item-card%2F27-231747.1b49b357729ba7dbf174dc4aa1e8519ce230b98ad399360e364a59f4b3477f07.webp'
-            },
-            card2: {
-                name: 'فينيسيوس جونيور',
-                rating: '92 LW',
-                leakNote: '⚡ تسريب: مراوغة 94 وميتا خارق',
-                url: '/api/image-proxy?url=https%3A%2F%2Fgame-assets.fut.gg%2Fcdn-cgi%2Fimage%2Fquality%3D85%2Cformat%3Dauto%2Cwidth%3D600%2F2027%2Ffutgg-player-item-card%2F27-238794.6715e80f49fb5360b92261f8bd984f7178a47066cff3bfcd2c1b7dd57db13fbf.webp'
-            },
-            badgeText: '🚨 تسريبات حصرية ومؤكدة • حدث الـ CENTURIONS القادم',
-            headline: 'رسمياً: أقوى كروت الحدث القادم يوم الجمعة! جهّز كوينزك من الآن 💣🔥',
-            subheadline: 'الحدث القادم كروته خارقة وراح تطير أسعارها.. اشحن كوينزك اليوم بأسعار هادية!',
-            ctaHeadline: 'تجهيز كوينز مسبق لجميع المنصات بأسعار مخفضة 💰',
-            ctaSub: 'للطلب تواصل معنا على الخاص: @shop_coin15 📩'
-        }
-    },
     loaded_accounts: {
         id: 'loaded_accounts',
         name: '🎮 حسابات جاهزة للبيع',
@@ -632,26 +603,6 @@ const TEMPLATES = {
             ctaSub: 'للطلب تواصل معنا على الخاص: @shop_coin15 📩'
         }
     },
-    vip_voucher: {
-        id: 'vip_voucher',
-        name: '🎟️ قسيمة الخصم الخاطفة',
-        icon: 'tag',
-        description: 'تذكرة خصم VIP ذهبية مع كود حصري وعداد مقاعد محدودة لتحفيز الشراء الفوري',
-        defaultState: {
-            bgTheme: 'emerald_glow',
-            bgLighting: 'bright',
-            couponCode: 'VIP15',
-            discountAmount: 'خصم 15% فوري',
-            remainingSpots: 'متبقي 3 مقاعد فقط 🔥',
-            expiryTime: '⏳ صالح حتى منتصف الليل فقط',
-            targetPackage: 'على جميع باقات الـ 1M والـ 2M كوينز',
-            badgeText: '🎟️ قسيمة خصم VIP حصرية لمتابعي الستوري • لفترة محدودة',
-            headline: 'كود خصم 15% حصري لأول 5 أشخاص يتواصلون بالخاص! 💰⚡',
-            subheadline: 'انسخ الكود وأرسله لنا بالخاص لتطبيق الخصم فوراً على طلبيتك قبل نفاد المقاعد!',
-            ctaHeadline: 'أرسل الكود VIP15 بالخاص واستلم خصمك فوراً 📩',
-            ctaSub: 'للطلب تواصل معنا على الخاص: @shop_coin15 📩'
-        }
-    },
     squad_makeover: {
         id: 'squad_makeover',
         name: '🛠️ تجديد التشكيلة (قبل / بعد)',
@@ -671,27 +622,6 @@ const TEMPLATES = {
             headline: 'حوّلنا فريق عميلنا من ديفيجن 4 إلى ديفيجن إليت بالكوينز! 🤯⚡',
             subheadline: 'أرسل تشكيلتك الحالية على الخاص.. ونعطيك أفضل 3 تبديلات تضبط فريقك مع خصم خاص!',
             ctaHeadline: 'أرسل تشكيلتك على الخاص واستشر خبير المتجر مجاناً 📩',
-            ctaSub: 'للطلب تواصل معنا على الخاص: @shop_coin15 📩'
-        }
-    },
-    vip_whales: {
-        id: 'vip_whales',
-        name: '👑 صالة الحيتان VIP',
-        icon: 'crown',
-        description: 'باقة الملايين والشحن الخاص لكبار العملاء مع خدمة مدير حساب واتساب مخصص 24/7',
-        defaultState: {
-            bgTheme: 'gold_lounge',
-            bgLighting: 'bright',
-            tierName: 'باقة الحيتان الملكية (10,000,000 كوينز)',
-            perk1: '👑 مدير حساب خاص VIP عبر الواتساب على مدار الساعة',
-            perk2: '⚡ أولوية شحن قصوى في الطابور (تنفيذ فوري مباشر)',
-            perk3: '💎 أسعار جملة حصرية لا تظهر للعامة مع هدايا إضافية',
-            perk4: '🛡️ حماية وتأمين كامل للنادي مع تعويض فوري 100%',
-            priceTag: '175$',
-            badgeText: '👑 صالة الحيتان الملكية VIP • خدمات الشحن الخاص للملايين',
-            headline: 'باقة الحيتان VIP: شحن كميات الملايين بأقصى فخامة وسرعة! 👑💰',
-            subheadline: 'خدمة مخصصة لكبار العملاء.. مدير حساب خاص وأسعار جملة استثنائية!',
-            ctaHeadline: 'احجز باقة الحيتان الخاصة وتواصل مع الإدارة مباشرة 📩',
             ctaSub: 'للطلب تواصل معنا على الخاص: @shop_coin15 📩'
         }
     },
@@ -787,47 +717,6 @@ const TEMPLATES = {
             headline: 'مراجعة مبابي بعد 50 مباراة فوت: هل يستاهل كوينزه؟ 🤔🔥',
             subheadline: 'الأرقام والإيجابيات لا تكذب.. الكرت يحسم المباريات الصعبة بمفرده!',
             ctaHeadline: 'متوفر شحن كوينز الكرت فوراً لناديك بأفضل سعر 💰',
-            ctaSub: 'للطلب تواصل معنا على الخاص: @shop_coin15 📩'
-        }
-    },
-    gift_friend: {
-        id: 'gift_friend',
-        name: '🎁 أهدي كوينز لخويك',
-        icon: 'gift',
-        description: 'كرت إهداء رقمي راقٍ لشحن كوينز لحساب صديقك كمفاجأة مع رسالة مخصصة',
-        defaultState: {
-            bgTheme: 'store',
-            bgLighting: 'bright',
-            recipientName: 'عبدالعزيز (خوي الدرب)',
-            senderName: 'من: فهد الشمري',
-            giftAmount: '1,000,000 كوينز',
-            giftOccasion: '🎉 بمناسبة تحقيق رانك 1 في الفوت تشامبيونز!',
-            personalNote: 'تستاهل يا كابتن وعقبال التوب 100.. شد حيلك وناديك صار جاهز!',
-            deliveryGuarantee: '🎁 يتم الشحن بحسابه مباشرة مع كرت إهداء فاخر باسمك',
-            badgeText: '🎁 خدمة إهداء الكوينز للأصدقاء • فاجئ خويك بهدية تسعده بناديه',
-            headline: 'فاجئ خويك بهدية كوينز تشحن ناديه وتفرحه فوراً! 🎁⚡',
-            subheadline: 'اختر كمية الكوينز واكتب رسالتك.. ونحن نشحن حسابه ونرسل له كرت الإهداء باسمك!',
-            ctaHeadline: 'اطلب كرت الإهداء وفاجئ صديقك عبر الخاص الآن 📩',
-            ctaSub: 'للطلب تواصل معنا على الخاص: @shop_coin15 📩'
-        }
-    },
-    beat_the_pro: {
-        id: 'beat_the_pro',
-        name: '⚔️ تحدي الفوز على محترف المتجر',
-        icon: 'crosshair',
-        description: 'تحدي مجتمعي حماسي: العب ودية ضد محترف المتجر وإذا فزت تحصل على 500k كوينز مجاناً',
-        defaultState: {
-            bgTheme: 'dark_neon',
-            bgLighting: 'bright',
-            challengePrize: '500,000 كوينز مجاناً',
-            proName: 'كابتن المتجر (Pro Player 15-0)',
-            challengePlatform: 'PlayStation 5 / Cross-Play',
-            howToEnter: 'رد على الستوري بمنصتك وايدي حسابك للدخول بالسحب',
-            consolationPrize: '🎁 كود خصم 15% فوري لكل من يشارك بالتحدي',
-            badgeText: '⚔️ تحدي المجتمع الأسبوعي • العب ضد محترف المتجر واربح',
-            headline: 'تحدي الأسبوع: العب ضد كابتن المتجر واكسب 500k كوينز! 🥊🔥',
-            subheadline: 'إذا قدرت تفوز عليه في مباراة ودية.. مبروك عليك نصف مليون كوينز بناديك فوراً!',
-            ctaHeadline: 'رد على الستوري الآن بمنصتك وايدي حسابك للمشاركة 📩',
             ctaSub: 'للطلب تواصل معنا على الخاص: @shop_coin15 📩'
         }
     },
