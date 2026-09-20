@@ -5856,9 +5856,9 @@ function renderStoryCta(layerKey, ctaHeadline, ctaSub) {
                     <div class="flex items-center justify-center gap-3 text-[9.5px] font-bold text-slate-400 pt-0.5">
                         <span>⚡ تسليم فوري</span>
                         <span>•</span>
-                        <span>🛡️ ضمان وأمان كامل للنادي</span>
+                        <span>🛡️ موثوقية وأمان كامل</span>
                         <span>•</span>
-                        <span>🔒 أمان 100% بدون باند</span>
+                        <span>🔒 دعم مباشر وسريع</span>
                     </div>
                 </div>
             </div>
@@ -5915,13 +5915,13 @@ const PROMO_POPULAR_STARS = [
 ];
 
 function renderPromoPackTemplate() {
-    const isLightBg = (window.MARKET_BG_THEMES[appState.bgTheme || 'store']?.isLight) ?? true;
+    const isLightBg = (window.MARKET_BG_THEMES[appState.bgTheme || 'official_stadium']?.isLight) ?? true;
     const s1Url = appState.star1_url || TEMPLATES.promo_pack.defaultState.star1_url;
     const s2Url = appState.star2_url || TEMPLATES.promo_pack.defaultState.star2_url;
-    const packImg = appState.packImageUrl || 'assets/fc27_jumbo_gold_pack.png';
+    const packImg = appState.packImageUrl || '/api/image-proxy?url=https%3A%2F%2Fgame-assets.futnext.com%2Fpacks%2F22.png';
 
     return `
-        ${getStoryBackgroundHtml(appState.bgTheme, appState.bgLighting)}
+        ${getStoryBackgroundHtml(appState.bgTheme || 'official_stadium', appState.bgLighting)}
 
         <!-- Layer 1: Header -->
         ${renderStoryHeader('layer_promo_header', appState.badgeText || TEMPLATES.promo_pack.defaultState.badgeText, appState.headline || TEMPLATES.promo_pack.defaultState.headline, appState.subheadline || TEMPLATES.promo_pack.defaultState.subheadline, isLightBg)}
@@ -5934,7 +5934,7 @@ function renderPromoPackTemplate() {
                 <!-- Urgency Countdown Capsule -->
                 <div class="px-4 py-1.5 rounded-full bg-red-950/95 border-2 border-red-500/80 shadow-2xl text-red-300 text-xs font-black tracking-wide flex items-center gap-2 animate-pulse">
                     <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping"></span>
-                    <span>${appState.timeRemaining || '⏳ متبقي: 14 ساعة فقط'}</span>
+                    <span>${appState.timeRemaining || '⏳ متبقي: 4 أيام و 23 ساعة'}</span>
                 </div>
 
                 <!-- 3D Pack Opening Stage (Pack in center + 2 walkout cards emerging) -->
@@ -5946,7 +5946,7 @@ function renderPromoPackTemplate() {
                     <div class="absolute flex flex-col items-center" style="right: 35px; top: 12px; width: 175px; z-index: 12; transform: rotate(11deg) scale(0.92); filter: drop-shadow(0 16px 28px rgba(0,0,0,0.85));">
                         <img src="${s1Url}" class="w-full object-contain pointer-events-none" alt="">
                         <div class="mt-[-10px] px-2.5 py-0.5 rounded-full bg-slate-950/95 border border-amber-400 text-amber-300 text-[10px] font-black shadow">
-                            ⭐ ${appState.star1_name || 'نجم ووك أوت 1'}
+                            ⭐ ${appState.star1_name || 'مبابي (91)'}
                         </div>
                     </div>
 
@@ -5954,7 +5954,7 @@ function renderPromoPackTemplate() {
                     <div class="absolute flex flex-col items-center" style="left: 35px; top: 12px; width: 175px; z-index: 10; transform: rotate(-11deg) scale(0.92); filter: drop-shadow(0 16px 28px rgba(0,0,0,0.85));">
                         <img src="${s2Url}" class="w-full object-contain pointer-events-none" alt="">
                         <div class="mt-[-10px] px-2.5 py-0.5 rounded-full bg-slate-950/95 border border-amber-400 text-amber-300 text-[10px] font-black shadow">
-                            ⭐ ${appState.star2_name || 'نجم ووك أوت 2'}
+                            ⭐ ${appState.star2_name || 'بيلينغهام (90)'}
                         </div>
                     </div>
 
@@ -5968,18 +5968,21 @@ function renderPromoPackTemplate() {
                 <div class="w-full max-w-[460px] rounded-2xl bg-gradient-to-r from-[#0d1522]/95 via-[#080d17]/95 to-[#0d1522]/95 border-2 border-amber-500/70 p-3 shadow-2xl backdrop-blur-md text-center space-y-1.5">
                     <div class="text-sm font-black text-amber-300 flex items-center justify-center gap-1.5">
                         <span>🎁</span>
-                        <span>${appState.packTitle || 'باكدج نجوم النخبة 85+ x10'}</span>
+                        <span>${appState.packTitle || 'باكدج فاونديشن 11 (Foundations XI)'}</span>
                     </div>
 
                     <div class="text-[11px] font-bold text-slate-300">
-                        ${appState.packSub || 'فرصة خروج أيقونة أو لاعب حدث خارق 100%'}
+                        ${appState.packSub || 'يشمل اختيار لاعب ذهبي 82+ واختيار 81+ و 9 لاعبين ذهبيين 🔥'}
                     </div>
 
-                    <div class="pt-1 border-t border-[#1e293b] flex items-center justify-between px-3">
-                        <span class="text-xs font-bold text-slate-400">سعر الباكدج بالمتجر:</span>
+                    <div class="pt-1.5 border-t border-[#1e293b] flex items-center justify-between px-3">
+                        <div class="flex flex-col items-start text-right">
+                            <span class="text-[11px] font-bold text-slate-400">سعر الباكدج بالمتجر:</span>
+                            ${appState.packPoints ? `<span class="text-[10px] font-black text-amber-300/90" dir="ltr">⚡ ${appState.packPoints}</span>` : ''}
+                        </div>
                         <div class="flex items-center gap-1.5" dir="ltr">
                             <img src="assets/fc-coin.webp" class="w-5 h-5 object-contain" alt="c">
-                            <span class="text-lg font-black font-mono text-amber-400">${appState.packPrice || '650,000 كوينز'}</span>
+                            <span class="text-lg font-black font-mono text-amber-400">${appState.packPrice || '60,000 كوينز'}</span>
                         </div>
                     </div>
                 </div>
@@ -5998,26 +6001,102 @@ function renderPromoPackControls() {
     const defaultS2 = TEMPLATES.promo_pack.defaultState.star2_url;
     const currentS1 = appState.star1_url || defaultS1;
     const currentS2 = appState.star2_url || defaultS2;
-    const currentPackImg = appState.packImageUrl || 'assets/fc27_jumbo_gold_pack.png';
+    const currentPackImg = appState.packImageUrl || '/api/image-proxy?url=https%3A%2F%2Fgame-assets.futnext.com%2Fpacks%2F22.png';
+    const packsList = window.futnextPacksCache || window.FUTNEXT_STORE_PACKS || [];
+
+    // Trigger async fetch from server if cache not loaded yet
+    if (!window.futnextPacksCache && !window.isLoadingFutnextPacks) {
+        window.isLoadingFutnextPacks = true;
+        fetch('/api/futnext-packs')
+            .then(r => r.json())
+            .then(d => {
+                if (d && d.packs && Array.isArray(d.packs) && d.packs.length > 0) {
+                    window.futnextPacksCache = d.packs;
+                    if (window.currentTemplate === 'promo_pack') {
+                        renderControls();
+                    }
+                }
+            })
+            .catch(() => {})
+            .finally(() => { window.isLoadingFutnextPacks = false; });
+    }
 
     return `
         <div class="space-y-4">
-            <!-- 1. Pack Details & Image -->
+            <!-- 0. Background Selection (3 Approved Official Options) -->
+            ${renderStoryBgSelector('خلفية ستوري الباكدج:')}
+
+            <!-- 1. Live FUTNext Store Packs Selector -->
             <div class="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs space-y-3">
                 <div class="flex items-center justify-between">
                     <span class="text-xs font-black text-slate-800 flex items-center gap-1.5">
-                        <span>🎁</span>
-                        <span>تفاصيل باكدج المتجر والصورة:</span>
+                        <span>🌐</span>
+                        <span>باكات متجر FC 27 المباشرة (FUTNext):</span>
+                    </span>
+                    <button id="btn_refresh_futnext" type="button" onclick="refreshFutnextPacks()" class="px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold text-[10.5px] transition flex items-center gap-1 shadow-2xs cursor-pointer">
+                        <span>🔄 تحديث المتجر</span>
+                    </button>
+                </div>
+
+                <!-- Custom Search / Link / ID Fetcher -->
+                <div class="flex gap-1.5">
+                    <input type="text" id="input_futnext_custom" placeholder="الصق رابط باكدج من FUTNext أو رقم الباك (مثال: 22 أو 3)..." onkeydown="if(event.key==='Enter') fetchFutnextPackByInput()" class="flex-1 px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-medium outline-none focus:border-emerald-500 focus:bg-white transition">
+                    <button type="button" onclick="fetchFutnextPackByInput()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs transition shrink-0 flex items-center gap-1 shadow-xs cursor-pointer">
+                        <span>⚡ جلب</span>
+                    </button>
+                </div>
+
+                <!-- Interactive Pack Cards Grid -->
+                <div>
+                    <div class="text-[10px] text-slate-500 font-bold mb-2 flex items-center justify-between">
+                        <span>اختر الباكدج لتطبيقه وتوليد الإعلان فوراً بضغطة زر:</span>
+                        <span class="text-[9.5px] text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200 font-bold">${packsList.length} باكات متوفرة</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[320px] overflow-y-auto pr-1">
+                        ${packsList.map(p => {
+                            const isSelected = (appState.selectedPackId === p.id) || (appState.packTitle && appState.packTitle.includes(p.name));
+                            return `
+                                <div onclick="applyFutnextPack('${p.id}')" class="p-2.5 rounded-xl border transition cursor-pointer flex items-center gap-2.5 ${isSelected ? 'bg-amber-50/80 border-amber-500 ring-2 ring-amber-400/40 shadow-sm' : 'bg-slate-50 hover:bg-slate-100 border-slate-200'}">
+                                    <div class="w-12 h-12 shrink-0 rounded-lg bg-slate-900 border border-slate-700/60 p-1 flex items-center justify-center shadow-xs">
+                                        <img src="${p.img}" class="max-w-full max-h-full object-contain" alt="">
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="text-[11px] font-black text-slate-900 truncate flex items-center gap-1">
+                                            ${isSelected ? '<span class="text-amber-500">✔</span>' : ''}
+                                            <span title="${p.arName || p.name}">${p.arName || p.name}</span>
+                                        </div>
+                                        <div class="flex items-center gap-1 mt-0.5 flex-wrap">
+                                            <span class="px-1.5 py-0.2 rounded bg-amber-100 text-amber-900 text-[9.5px] font-black font-mono" dir="ltr">${p.cost}</span>
+                                            ${p.points ? `<span class="px-1.5 py-0.2 rounded bg-slate-200 text-slate-800 text-[9px] font-bold" dir="ltr">${p.points}</span>` : ''}
+                                        </div>
+                                        <div class="text-[9px] text-red-600 font-bold mt-0.5 truncate">
+                                            ${p.expires}
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Pack Details & Image Manual Fine-Tuning -->
+            <div class="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs space-y-3">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-black text-slate-800 flex items-center gap-1.5">
+                        <span>✏️</span>
+                        <span>تعديل تفاصيل الباكدج والسعر يدوياً:</span>
                     </span>
                     <span class="text-[10px] font-bold text-amber-600 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
-                        باك المتجر الرسمي
+                        تعديل حر
                     </span>
                 </div>
 
                 <!-- Pack Name -->
                 <div>
                     <label class="block text-[11px] font-bold text-slate-700 mb-1">اسم الباكدج بالمتجر:</label>
-                    <input type="text" value="${appState.packTitle || ''}" placeholder="اكتب اسم الباكدج (مثال: باكدج 85+ x10، باكدج الأيقونة...)" oninput="appState.packTitle = this.value; renderCanvas();" class="w-full px-3 py-2 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500 focus:bg-white transition">
+                    <input type="text" value="${appState.packTitle || ''}" placeholder="اكتب اسم الباكدج" oninput="appState.packTitle = this.value; renderCanvas();" class="w-full px-3 py-2 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500 focus:bg-white transition">
                 </div>
 
                 <!-- Pack Image Customizer -->
@@ -6028,40 +6107,44 @@ function renderPromoPackControls() {
                             <img src="${currentPackImg}" class="max-w-full max-h-full object-contain" alt="Pack Preview">
                         </div>
                         <div class="flex-1 flex flex-col gap-1.5">
-                            <input type="text" value="${appState.packImageUrl || ''}" placeholder="رابط صورة الباكدج أو ارفع سكرين شوت من المتجر" oninput="appState.packImageUrl = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-900 text-[11px] font-mono outline-none focus:border-emerald-500">
+                            <input type="text" value="${appState.packImageUrl || ''}" placeholder="رابط صورة الباكدج أو ارفع من جهازك" oninput="appState.packImageUrl = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-900 text-[11px] font-mono outline-none focus:border-emerald-500">
                             <div class="flex items-center gap-1.5">
                                 <label class="flex-1 px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 text-emerald-800 text-[10.5px] font-bold cursor-pointer transition flex items-center justify-center gap-1 shadow-2xs">
-                                    <span>📁 رفع صورة الباك من جهازك</span>
+                                    <span>📁 رفع صورة من جهازك</span>
                                     <input type="file" accept="image/*" class="hidden" onchange="handlePromoPackFileUpload('pack', this)">
                                 </label>
-                                <button type="button" onclick="appState.packImageUrl = 'assets/fc27_jumbo_gold_pack.png'; renderControls(); renderCanvas();" class="px-2 py-1 rounded-lg bg-white hover:bg-slate-100 border border-slate-200 text-slate-600 text-[10px] font-bold transition shadow-2xs">
-                                    🔄 الافتراضي
+                                <button type="button" onclick="appState.packImageUrl = '/api/image-proxy?url=https%3A%2F%2Fgame-assets.futnext.com%2Fpacks%2F22.png'; renderControls(); renderCanvas();" class="px-2 py-1 rounded-lg bg-white hover:bg-slate-100 border border-slate-200 text-slate-600 text-[10px] font-bold transition shadow-2xs">
+                                    🔄 فاونديشن 11
                                 </button>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Price & Timer -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <!-- Price, Points & Timer -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-700 mb-1">سعر الباكدج بالكوينز:</label>
-                        <input type="text" value="${appState.packPrice || ''}" placeholder="مثال: 650,000 كوينز" oninput="appState.packPrice = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500 focus:bg-white transition">
+                        <label class="block text-[11px] font-bold text-slate-700 mb-1">سعر الكوينز:</label>
+                        <input type="text" value="${appState.packPrice || ''}" placeholder="مثال: 60,000 كوينز" oninput="appState.packPrice = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500 focus:bg-white transition">
                     </div>
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-700 mb-1">العداد الزمني المتبقي:</label>
-                        <input type="text" value="${appState.timeRemaining || ''}" placeholder="مثال: ⏳ متبقي: 14 ساعة فقط" oninput="appState.timeRemaining = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500 focus:bg-white transition">
+                        <label class="block text-[11px] font-bold text-slate-700 mb-1">نقاط FC Points:</label>
+                        <input type="text" value="${appState.packPoints || ''}" placeholder="مثال: 750 FC Points" oninput="appState.packPoints = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500 focus:bg-white transition">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-700 mb-1">العداد الزمني:</label>
+                        <input type="text" value="${appState.timeRemaining || ''}" placeholder="مثال: ⏳ متبقي: 4 أيام" oninput="appState.timeRemaining = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500 focus:bg-white transition">
                     </div>
                 </div>
 
                 <!-- Sub Description -->
                 <div>
                     <label class="block text-[11px] font-bold text-slate-700 mb-1">الوصف الفرعي للباكدج:</label>
-                    <input type="text" value="${appState.packSub || ''}" placeholder="مثال: فرصة خروج أيقونة أو لاعب حدث خارق 100%" oninput="appState.packSub = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500 focus:bg-white transition">
+                    <input type="text" value="${appState.packSub || ''}" placeholder="مثال: يشمل اختيار لاعب ذهبي 82+..." oninput="appState.packSub = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500 focus:bg-white transition">
                 </div>
             </div>
 
-            <!-- 2. Walkout Star Cards (Direct FUTBIN / FUT.GG Fetch) -->
+            <!-- 3. Walkout Star Cards (Direct FUTBIN / FUT.GG Fetch) -->
             <div class="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs space-y-3.5">
                 <div class="flex items-center justify-between">
                     <span class="text-xs font-black text-slate-800 flex items-center gap-1.5">
@@ -6170,7 +6253,7 @@ function renderPromoPackControls() {
                 </div>
             </div>
 
-            <!-- 3. Headline & CTA Texts -->
+            <!-- 4. Headline & CTA Texts -->
             <div class="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs space-y-3">
                 <span class="text-xs font-black text-slate-800 block">📝 نصوص الإعلان والشحن:</span>
                 <div>
@@ -6199,6 +6282,108 @@ function renderPromoPackControls() {
         </div>
     `;
 }
+
+window.applyFutnextPack = function(packId) {
+    const packsList = window.futnextPacksCache || window.FUTNEXT_STORE_PACKS || [];
+    const pack = packsList.find(p => p.id === packId);
+    if (!pack) return;
+
+    appState.selectedPackId = pack.id;
+    appState.packTitle = pack.arName || pack.name;
+    appState.packImageUrl = pack.img.startsWith('/') ? pack.img : `/api/image-proxy?url=${encodeURIComponent(pack.img)}`;
+    appState.packPrice = pack.cost;
+    appState.packPoints = pack.points || '';
+    appState.timeRemaining = pack.expires;
+    appState.packSub = pack.arDesc || pack.desc;
+    if (pack.headline) appState.headline = pack.headline;
+    if (pack.badgeText) appState.badgeText = pack.badgeText;
+
+    renderControls();
+    renderCanvas();
+    if (window.showCopyToast) {
+        window.showCopyToast(`تم تطبيق ${pack.arName || pack.name} بنجاح! 🎁⚡`);
+    }
+};
+
+window.refreshFutnextPacks = async function() {
+    const btn = document.getElementById('btn_refresh_futnext');
+    const originalHtml = btn ? btn.innerHTML : '';
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<span>جاري التحديث...</span> <span class="animate-spin">⏳</span>';
+    }
+    try {
+        const res = await fetch('/api/futnext-packs?refresh=true');
+        const data = await res.json();
+        if (data && data.packs && Array.isArray(data.packs) && data.packs.length > 0) {
+            window.futnextPacksCache = data.packs;
+            if (window.showCopyToast) {
+                window.showCopyToast(`تم تحديث ${data.packs.length} باكدج مباشر من FUTNext! ⚡`);
+            }
+        }
+    } catch(err) {
+        console.warn('FUTNext refresh error:', err);
+        if (window.showCopyToast) {
+            window.showCopyToast('تم استخدام الباكات المخزنة لعدم توفر اتصال بالمتجر');
+        }
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = originalHtml || '<span>🔄 تحديث المتجر</span>';
+        }
+        renderControls();
+    }
+};
+
+window.fetchFutnextPackByInput = async function() {
+    const input = document.getElementById('input_futnext_custom');
+    if (!input || !input.value.trim()) {
+        alert('يرجى كتابة اسم الباكدج أو رقمه أو لصق الرابط من FUTNext');
+        return;
+    }
+    const val = input.value.trim().toLowerCase();
+    const packsList = window.futnextPacksCache || window.FUTNEXT_STORE_PACKS || [];
+    
+    // Check if matches any existing pack
+    const found = packsList.find(p => 
+        (p.name && p.name.toLowerCase().includes(val)) ||
+        (p.arName && p.arName.toLowerCase().includes(val)) ||
+        (p.id && p.id.toLowerCase().includes(val)) ||
+        (p.img && p.img.includes(val))
+    );
+
+    if (found) {
+        window.applyFutnextPack(found.id);
+        input.value = '';
+        return;
+    }
+
+    // If a number was entered (e.g. 22 or 3 or 4)
+    const numMatch = val.match(/\d+/);
+    if (numMatch) {
+        const packNum = numMatch[0];
+        const newPack = {
+            id: 'futnext_custom_' + packNum,
+            name: `Store Pack #${packNum}`,
+            arName: `باكدج المتجر #${packNum}`,
+            img: `https://game-assets.futnext.com/packs/${packNum}.png`,
+            cost: '100,000 كوينز',
+            points: '2,000 FC Points',
+            expires: '⏳ متبقي: 24 ساعة فقط',
+            desc: 'باكدج متجر حصري متوفر الآن في EA FC 27',
+            arDesc: 'باكدج متجر حصري متوفر الآن في EA FC 27 لاقتناص نجوم الميتا 🔥',
+            headline: `باكدج المتجر الجديد نزل الآن! لا تفوت فرصة الأيقون 🎁🔥`,
+            badgeText: '🚨 باكدج متجر حصري • ينتهي قريباً'
+        };
+        packsList.push(newPack);
+        window.futnextPacksCache = packsList;
+        window.applyFutnextPack(newPack.id);
+        input.value = '';
+        return;
+    }
+
+    alert('تعذر العثور على هذا الباكدج. جرب اختيار أحد الباكات المباشرة في القائمة أدناه.');
+};
 
 window.fetchPromoPackStar = async function(starIndex) {
     const input = document.getElementById(`input_promo_star_${starIndex}`);

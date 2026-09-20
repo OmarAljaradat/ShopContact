@@ -453,20 +453,22 @@ const TEMPLATES = {
         icon: 'package',
         description: 'تسويق كوينز لفتح باكدجات المتجر محدودة الوقت والأيقونات مع عداد زمني وأضواء الووك أوت',
         defaultState: {
-            bgTheme: 'store',
+            bgTheme: 'official_stadium',
             bgLighting: 'bright',
-            packTitle: 'باكدج نجوم النخبة 85+ x10',
-            packSub: 'فرصة خروج أيقونة أو لاعب حدث خارق 100%',
-            packPrice: '650,000 كوينز',
-            timeRemaining: '⏳ متبقي: 14 ساعة فقط',
-            packImageUrl: 'assets/fc27_jumbo_gold_pack.png',
+            selectedPackId: 'futnext_foundations_xi_pack',
+            packTitle: 'باكدج فاونديشن 11 (Foundations XI)',
+            packSub: 'يشمل اختيار لاعب 82+ واختيار 81+ و 9 لاعبين ذهبيين 🔥',
+            packPrice: '60,000 كوينز',
+            packPoints: '750 FC Points',
+            timeRemaining: '⏳ متبقي: 4 أيام و 23 ساعة',
+            packImageUrl: '/api/image-proxy?url=https%3A%2F%2Fgame-assets.futnext.com%2Fpacks%2F22.png',
             star1_name: 'مبابي (91)',
             star1_url: '/api/image-proxy?url=https%3A%2F%2Fgame-assets.fut.gg%2Fcdn-cgi%2Fimage%2Fquality%3D85%2Cformat%3Dauto%2Cwidth%3D600%2F2027%2Ffutgg-player-item-card%2F27-231747.1b49b357729ba7dbf174dc4aa1e8519ce230b98ad399360e364a59f4b3477f07.webp',
             star2_name: 'بيلينغهام (90)',
             star2_url: '/api/image-proxy?url=https%3A%2F%2Fgame-assets.fut.gg%2Fcdn-cgi%2Fimage%2Fquality%3D85%2Cformat%3Dauto%2Cwidth%3D600%2F2027%2Ffutgg-player-item-card%2F27-252371.49e4acdf2d78496f4951f41725cd17fb8efb118d99a69ba074ab76fc62d70735.webp',
-            badgeText: '🚨 باكدج متجر محدود الوقت • ينتهي عند 8:00 مساءً',
-            headline: 'باكدج الـ 85+ x10 الخارق نزل بالمتجر! لا تفوت فرصة الأيقون 🎁🔥',
-            subheadline: 'مطفر وما عندك كوينز؟ اشحن كوينزك الآن بـ 3 دقائق وافتح الباكدج قبل الحذف!',
+            badgeText: '🚨 باكدج متجر حصري • ينتهي قريباً',
+            headline: 'باكدج فاونديشن 11 نزل بالمتجر! فرصة نارية للووك أوت 🎁🔥',
+            subheadline: 'وفر كوينز الباكدج الآن بأسرع تسليم وبأفضل سعر! اشحن وافتح قبل انتهاء الوقت!',
             ctaHeadline: 'متوفر شحن كمية الباكدج فوراً لجميع المنصات 💰',
             ctaSub: 'للطلب تواصل معنا على الخاص: @shop_coin15 📩'
         }
@@ -1092,6 +1094,89 @@ const MARKET_BG_THEMES = {
     }
 };
 
+const FUTNEXT_STORE_PACKS = [
+    {
+        id: 'futnext_foundations_xi_pack',
+        name: 'Foundations XI Pack',
+        arName: 'باكدج فاونديشن 11 (Foundations XI)',
+        isPromo: true,
+        img: 'https://game-assets.futnext.com/packs/22.png',
+        desc: 'Includes 1 Gold Player Pick (1 of 5), rated 82 or higher and 1 Gold Player Pick (1 of 5), rated 81 or higher. Also includes 9 Gold Player Items. All items untradeable.',
+        arDesc: 'يشمل اختيار لاعب ذهبي 82+ واختيار 81+ و 9 لاعبين ذهبيين 🔥',
+        expires: '⏳ متبقي: 4 أيام و 23 ساعة',
+        points: '750 FC Points',
+        cost: '60,000 كوينز',
+        costRaw: '60K',
+        avgReturns: '7.22K',
+        headline: 'باكدج فاونديشن 11 نزل بالمتجر! فرصة نارية للووك أوت 🎁🔥',
+        badgeText: '🚨 باكدج متجر حصري • ينتهي قريباً'
+    },
+    {
+        id: 'futnext_baseline_gold_players_pack',
+        name: 'Baseline Gold Players Pack',
+        arName: 'باكدج بيسلاين الذهبي (Baseline Gold)',
+        isPromo: true,
+        img: 'https://game-assets.futnext.com/packs/3.png',
+        desc: 'Includes 5 Gold Player Items, with 1 guaranteed to be rated 80 or higher.',
+        arDesc: 'يشمل 5 لاعبين ذهبيين مع لاعب مضمون بتقييم 80 أو أعلى ⚡',
+        expires: '⏳ متبقي: 4 أيام و 23 ساعة',
+        points: '400 FC Points',
+        cost: '25,000 كوينز',
+        costRaw: '25K',
+        avgReturns: '3.71K',
+        headline: 'باكدج بيسلاين الذهبي نزل بالمتجر بـ 25 ألف كوينز فقط! ⚡🎁',
+        badgeText: '⚡ باكدج اقتصادي وسريع بالمتجر'
+    },
+    {
+        id: 'futnext_jumbo_rare_players_pack',
+        name: 'Jumbo Rare Players Pack',
+        arName: 'جامبو رير بلايرز (100K Pack)',
+        isPromo: true,
+        img: 'https://game-assets.futnext.com/packs/4.png',
+        desc: '24 Rare Gold Players, all rare with guaranteed high-rated walkouts.',
+        arDesc: '24 لاعب ذهبي نادر بالكامل مع ضمان نجوم ووك أوت وأيقونات 👑',
+        expires: '⏳ متبقي: 24 ساعة فقط',
+        points: '2,000 FC Points',
+        cost: '100,000 كوينز',
+        costRaw: '100K',
+        avgReturns: '38.5K',
+        headline: 'باكدج الـ 100K نزل بالمتجر! أكبر فرصة لاقتناص نجوم الميتا 💎🔥',
+        badgeText: '🔥 باكدج الـ 100K الأقوى بالمتجر'
+    },
+    {
+        id: 'futnext_ultimate_pack',
+        name: 'Ultimate Pack',
+        arName: 'ألتيميت باك (125K Pack)',
+        isPromo: true,
+        img: 'https://game-assets.futnext.com/packs/22.png',
+        desc: '30 Rare Gold Players with the highest walkout probability.',
+        arDesc: '30 لاعب ذهبي نادر مع أعلى نسبة لخروج نجوم التيم أوف ذا ويك والأيقونات 🌟',
+        expires: '⏳ متبقي: 12 ساعة فقط',
+        points: '2,500 FC Points',
+        cost: '125,000 كوينز',
+        costRaw: '125K',
+        avgReturns: '52.0K',
+        headline: 'باكدج الألتيميت 125K الخارق نزل بالمتجر! حان وقت الحظ الأسطوري 👑🎁',
+        badgeText: '👑 الباكدج الملكي الأقوى • Ultimate Pack'
+    },
+    {
+        id: 'futnext_rare_mega_pack',
+        name: 'Rare Mega Pack',
+        arName: 'رير ميجا باك (Rare Mega Pack)',
+        isPromo: true,
+        img: 'https://game-assets.futnext.com/packs/2.png',
+        desc: '30 items, all Rare, including players and consumables.',
+        arDesc: '30 عنصراً نادراً بالكامل تجمع بين أفضل اللاعبين والعناصر المساعدة 💎',
+        expires: '⏳ متبقي: 2 يوم',
+        points: '1,100 FC Points',
+        cost: '55,000 كوينز',
+        costRaw: '55K',
+        avgReturns: '16.8K',
+        headline: 'باكدج رير ميجا باك متوفر الآن بالمتجر! ارفع حظك وفجر التشكيلة 🚀🌟',
+        badgeText: '💎 باكدج رير ميجا باك المفضل'
+    }
+];
+
 window.TEMPLATES = TEMPLATES;
 window.POPULAR_FUTGG_STARS = POPULAR_FUTGG_STARS;
 window.STARTER_BEASTS = STARTER_BEASTS;
@@ -1103,6 +1188,7 @@ window.SHOWCASE_BG_THEMES = SHOWCASE_BG_THEMES;
 window.SHOWCASE_STARS_PRESETS = SHOWCASE_STARS_PRESETS;
 window.MARKET_DISPLAY_LAYOUTS = MARKET_DISPLAY_LAYOUTS;
 window.MARKET_BG_THEMES = MARKET_BG_THEMES;
+window.FUTNEXT_STORE_PACKS = FUTNEXT_STORE_PACKS;
 
 
 

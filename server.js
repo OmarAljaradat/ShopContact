@@ -6,6 +6,7 @@ const { URL } = require('url');
 const { execFile } = require('child_process');
 const autoWatcher = require('./auto-watcher-engine');
 const tiktokEngine = require('./tiktok-engine');
+const futnextScraper = require('./futnext-scraper');
 
 let ffmpegPath = null;
 try {
@@ -645,7 +646,7 @@ function proxyImage(imageUrl, clientRes) {
 
         const parsed = new URL(imageUrl);
         const protocol = parsed.protocol === 'https:' ? https : http;
-        const referer = parsed.hostname.includes('futbin') ? 'https://www.futbin.com/' : 'https://www.fut.gg/';
+        const referer = parsed.hostname.includes('futbin') ? 'https://www.futbin.com/' : (parsed.hostname.includes('futnext') ? 'https://futnext.com/' : 'https://www.fut.gg/');
 
         protocol.get(imageUrl, {
             headers: {
@@ -1639,6 +1640,29 @@ const server = http.createServer((req, res) => {
                 res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*' });
                 res.end(JSON.stringify({ success: false, error: err.message }));
             });
+        return;
+    }
+
+    // API: FUTNext Store Packs (Live & Cached)
+    if (reqPath === '/api/futnext-packs') {
+        const forceRefresh = parsedUrl.searchParams.get('refresh') === 'true' || parsedUrl.searchParams.get('force') === 'true';
+        if (forceRefresh) {
+            futnextScraper.scrapeFutnextPacks()
+                .then(packs => {
+                    res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*' });
+                    res.end(JSON.stringify({ success: true, packs, source: 'live' }));
+                })
+                .catch(err => {
+                    const fallback = futnextScraper.getFallbackOrCached();
+                    res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*' });
+                    res.end(JSON.stringify({ success: true, packs: fallback, error: err.message, source: 'cached_fallback' }));
+                });
+            return;
+        }
+
+        const cached = futnextScraper.getFallbackOrCached();
+        res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*' });
+        res.end(JSON.stringify({ success: true, packs: cached, source: 'cached' }));
         return;
     }
 
