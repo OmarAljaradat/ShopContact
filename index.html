@@ -75,6 +75,12 @@
                     <span class="text-pink-500">↗</span>
                 </a>
 
+                <!-- Dedicated Standalone Reels Studio (Local) -->
+                <a href="reels.html" class="btn-download-action px-3 sm:px-3.5 py-2 rounded-full bg-gradient-to-r from-rose-500 via-pink-500 to-rose-600 hover:brightness-105 text-white font-black text-xs transition flex items-center gap-1.5 shadow-sm shadow-rose-500/20" title="فتح استوديو الريلز المخصص (محلي حصرياً)">
+                    <span>🎬 استوديو الريلز</span>
+                    <span class="hidden sm:inline-block px-1.5 py-0.5 rounded-full bg-black/20 text-[9px] font-black">محلي</span>
+                </a>
+
                 <!-- Primary: Native 4K Ultra Engine -->
                 <button id="btnDownloadJpg" class="btn-download-action btn-luxury bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-500 hover:brightness-105 text-white font-black shadow-md shadow-emerald-600/20 text-xs py-2 px-3 sm:px-4" title="استخراج فوري بجودة 4K بمحرك المتصفح الأصلي (Native Engine)">
                     <span id="btnDownloadJpgLabel">👑 4K</span>
@@ -119,8 +125,8 @@
                 <span class="text-xs font-black text-slate-800">اختر مساحة العمل المطلوبة (مفصولة ومنظمة بالكامل):</span>
             </div>
 
-            <!-- 4 Suite Switcher Tab Buttons -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-2.5" id="suiteNavigation">
+            <!-- 3 Suite Switcher Tab Buttons (Cloud & Local) -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5" id="suiteNavigation">
                 <button type="button" onclick="switchStudioSuite('suite_stories')" id="suiteTab_stories" class="suite-tab-btn suite-tab-stories active p-3 rounded-2xl border-2 transition text-right flex items-center gap-3 bg-white border-emerald-500">
                     <span class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg shrink-0 border border-emerald-200">📱</span>
                     <div>
@@ -142,14 +148,6 @@
                     <div>
                         <div class="text-xs font-black text-slate-900">استوديو الكاروسيل</div>
                         <div class="text-[10.5px] text-blue-600 font-bold">لعبة تركيب التصميم (12 مرجع) وتصدير 4K</div>
-                    </div>
-                </button>
-
-                <button type="button" onclick="switchStudioSuite('suite_reels')" id="suiteTab_reels" class="suite-tab-btn suite-tab-reels p-3 rounded-2xl border-2 transition text-right flex items-center gap-3 bg-white border-slate-200 hover:border-rose-400">
-                    <span class="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-lg shrink-0 border border-rose-200">🎬</span>
-                    <div>
-                        <div class="text-xs font-black text-slate-900">استوديو الريلز</div>
-                        <div class="text-[10.5px] text-slate-500 font-medium">أغلفة وهوكات فيديو Safe Zone</div>
                     </div>
                 </button>
             </div>
@@ -282,12 +280,7 @@
                     </div>
                 </div>
 
-                <!-- Suite Reels Dedicated Controls Panel -->
-                <div id="suite_reels_panel" class="hidden double-bezel">
-                    <div class="double-bezel-inner p-5">
-                        <!-- Populated by ReelsEngine.renderEditorControls() -->
-                    </div>
-                </div>
+
 
                 <!-- AI Copywriter Box -->
                 <div class="double-bezel" id="captionSection">
@@ -328,7 +321,7 @@
                     </div>
                     <!-- Direct Format Actions -->
                     <div class="flex items-center gap-2 flex-wrap justify-end">
-                        <button type="button" onclick="if(window.ReelsEngine && typeof window.ReelsEngine.openFullscreenPreview === 'function') { window.ReelsEngine.openFullscreenPreview(); } else if (window.CanvasExporter && typeof window.CanvasExporter.openFullscreen === 'function') { window.CanvasExporter.openFullscreen(); }" class="btn-download-action px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 hover:brightness-110 text-white font-black text-xs transition flex items-center gap-1.5 shadow-md shadow-purple-600/25 active:scale-95 cursor-pointer" title="معاينة سينمائية ملء الشاشة على كامل الشاشة (Fullscreen Cinema)">
+                        <button type="button" onclick="if (window.CanvasExporter && typeof window.CanvasExporter.openFullscreen === 'function') { window.CanvasExporter.openFullscreen(); }" class="btn-download-action px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 hover:brightness-110 text-white font-black text-xs transition flex items-center gap-1.5 shadow-md shadow-purple-600/25 active:scale-95 cursor-pointer" title="معاينة ملء الشاشة (Fullscreen)">
                             <span>⛶ ملء الشاشة</span>
                         </button>
                         <button onclick="TelegramManager.sendCurrentDesign()" class="btn-download-action btn-telegram-action px-3 py-1.5 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 hover:brightness-105 text-white font-black text-xs transition flex items-center gap-1 shadow-md shadow-sky-500/20" title="إرسال التصميم والكابشن لهاتفك مباشرة عبر تيليجرام بنقرة واحدة">
@@ -349,9 +342,6 @@
                     </div>
                 </div>
 
-                <!-- Reels Top Player Toolbar (Placed above canvas so it is immediately accessible at the top without scrolling) -->
-                <div id="reelsPlayerToolbarTopContainer" class="w-full mb-3 hidden"></div>
-
                 <!-- Preview Frame Container (Auto-fitted, never cropped) -->
                 <div id="previewContainer" class="w-full p-2 sm:p-4 rounded-3xl border border-slate-200 shadow-sm flex items-center justify-center min-h-[440px] sm:min-h-[520px] overflow-hidden">
                     <!-- Scaled stage wrapper that fits full canvas on screen -->
@@ -365,9 +355,6 @@
 
                 <!-- Carousel Filmstrip Container (Shown when in Carousel suite) -->
                 <div id="carouselFilmstripContainer" class="w-full mt-3 hidden"></div>
-
-                <!-- Reels Interactive Player & Controls Bar (Shown when in Reels suite) -->
-                <div id="reelsPlayerToolbarContainer" class="w-full mt-3 hidden"></div>
 
                 <div class="mt-4 text-center">
                     <p class="text-[11px] text-slate-500 font-medium">
@@ -570,87 +557,6 @@
         تم النسخ بنجاح! 🚀
     </div>
 
-    <!-- Reels & Canvas Fullscreen Cinema Mode Modal (100% Immersive Full-Screen Preview) -->
-    <div id="reelsCinemaModal" class="hidden fixed inset-0 z-[99999999] bg-[#070709] flex flex-col items-center justify-between overflow-hidden select-none" dir="rtl">
-        <style>
-            #reelsCinemaModal .reel-resize-handle,
-            #reelsCinemaModal .snap-guide,
-            #reelsCinemaModal .layer-toolbar,
-            #reelsCinemaModal [class*="ring-"],
-            #reelsCinemaModal [id*="Toast"] {
-                display: none !important;
-            }
-        </style>
-        <!-- Top Ambient Glow -->
-        <div class="absolute top-0 left-0 right-0 h-44 bg-gradient-to-b from-emerald-500/15 via-purple-500/5 to-transparent pointer-events-none"></div>
-
-        <!-- Top Header & Segmented Progress Bar (Instagram / TikTok Style) -->
-        <div class="relative w-full max-w-xl mx-auto px-4 pt-3 pb-2 z-20 flex flex-col gap-2">
-            <!-- Segmented Progress Bar Container -->
-            <div id="cinemaProgressSegments" class="w-full flex items-center gap-1.5 h-1.5">
-                <!-- Dynamically populated per slide -->
-            </div>
-
-            <div class="flex items-center justify-between text-white text-xs">
-                <div class="flex items-center gap-2">
-                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                    <span class="font-black text-emerald-400">معاينة الريلز ملء الشاشة 🎬</span>
-                    <span id="cinemaSlideIndicator" class="text-zinc-400 text-[11px] font-mono">سلايد 1/1</span>
-                </div>
-                <div class="flex items-center gap-2">
-                    <button type="button" onclick="if(window.ReelsEngine && typeof window.ReelsEngine.toggleMute === 'function') window.ReelsEngine.toggleMute();" id="btnCinemaMute" class="p-2 rounded-xl bg-zinc-800/80 hover:bg-zinc-700 text-zinc-300 hover:text-white transition cursor-pointer" title="كتم / تشغيل الصوت">
-                        <span id="cinemaMuteIcon">🔊</span>
-                    </button>
-                    <button type="button" onclick="if(window.ReelsEngine && typeof window.ReelsEngine.closeFullscreenPreview === 'function') window.ReelsEngine.closeFullscreenPreview();" class="px-3.5 py-1.5 rounded-xl bg-rose-600/90 hover:bg-rose-500 text-white font-bold text-xs transition flex items-center gap-1.5 shadow-lg shadow-rose-600/30 cursor-pointer active:scale-95" title="خروج من ملء الشاشة (Esc)">
-                        <span>✕ خروج</span>
-                        <kbd class="hidden sm:inline-block px-1.5 py-0.5 rounded bg-black/30 text-[10px] text-zinc-200">Esc</kbd>
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Center Cinema Stage Wrapper (Holds #canvasScaleStage at 100% height) -->
-        <div id="reelsCinemaStageWrapper" class="relative flex-1 w-full flex items-center justify-center overflow-hidden my-auto">
-            <!-- Stage moved here dynamically when in Cinema mode -->
-            <div id="reelsCinemaStage" class="relative flex items-center justify-center"></div>
-
-            <!-- Left & Right Click Navigation Zones (Instagram Stories Tap to Next/Prev) -->
-            <div onclick="if(window.ReelsEngine && typeof window.ReelsEngine.prevSlide === 'function') window.ReelsEngine.prevSlide();" class="absolute left-0 top-0 bottom-0 w-1/4 cursor-w-resize z-10 opacity-0 hover:opacity-100 transition flex items-center justify-start pl-4 group" title="السلايد السابق (انقر هنا)">
-                <span class="p-3 rounded-full bg-black/50 text-white text-xl backdrop-blur-sm shadow-xl group-hover:scale-110 transition">◀</span>
-            </div>
-            <div onclick="if(window.ReelsEngine && typeof window.ReelsEngine.nextSlide === 'function') window.ReelsEngine.nextSlide();" class="absolute right-0 top-0 bottom-0 w-1/4 cursor-e-resize z-10 opacity-0 hover:opacity-100 transition flex items-center justify-end pr-4 group" title="السلايد التالي (انقر هنا)">
-                <span class="p-3 rounded-full bg-black/50 text-white text-xl backdrop-blur-sm shadow-xl group-hover:scale-110 transition">▶</span>
-            </div>
-        </div>
-
-        <!-- Bottom Cinema Floating Controls Bar -->
-        <div class="relative w-full max-w-xl mx-auto px-4 pb-4 pt-2 z-20">
-            <div class="p-2 sm:p-2.5 bg-zinc-900/90 backdrop-blur-xl rounded-2xl border border-zinc-800/80 shadow-2xl flex items-center justify-between text-white flex-wrap gap-2">
-                <div class="flex items-center gap-1.5 flex-wrap">
-                    <button type="button" onclick="if(window.ReelsEngine && typeof window.ReelsEngine.prevSlide === 'function') window.ReelsEngine.prevSlide();" class="p-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-xs font-black transition active:scale-95 cursor-pointer" title="السلايد السابق">
-                        ⏪ السابق
-                    </button>
-                    <button type="button" onclick="if(window.ReelsEngine && typeof window.ReelsEngine.togglePlayPause === 'function') window.ReelsEngine.togglePlayPause();" id="btnCinemaPlay" class="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:brightness-110 text-white text-xs font-black transition flex items-center gap-1.5 shadow-lg shadow-emerald-500/25 active:scale-95 cursor-pointer" title="تشغيل / إيقاف (مسافة Space)">
-                        <span id="cinemaPlayIcon">⏸️ إيقاف</span>
-                    </button>
-                    <button type="button" onclick="if(window.ReelsEngine && typeof window.ReelsEngine.nextSlide === 'function') window.ReelsEngine.nextSlide();" class="p-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-xs font-black transition active:scale-95 cursor-pointer" title="السلايد التالي">
-                        التالي ⏩
-                    </button>
-                    <button type="button" onclick="if(window.ReelsEngine && typeof window.ReelsEngine.replaySlideAnimations === 'function') window.ReelsEngine.replaySlideAnimations();" class="p-2 rounded-xl bg-purple-600/90 hover:bg-purple-500 text-white text-xs font-black transition flex items-center gap-1 shadow-sm active:scale-95 cursor-pointer" title="إعادة تشغيل حركة السلايد الحالي">
-                        <span>🔄 إعادة الحركة</span>
-                    </button>
-                </div>
-
-                <div class="flex items-center gap-2">
-                    <span class="hidden sm:inline-block text-[11px] text-zinc-400 font-medium">💡 مسطرة <kbd class="px-1.5 py-0.5 rounded bg-zinc-800 text-[10px] text-emerald-400">Space</kbd> للتشغيل</span>
-                    <button type="button" onclick="if(window.ReelsEngine && typeof window.ReelsEngine.exportReelVideo === 'function') window.ReelsEngine.exportReelVideo();" class="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:brightness-105 text-white font-black text-xs transition flex items-center gap-1 shadow-md shadow-emerald-600/20 active:scale-95 cursor-pointer" title="تحميل الفيديو 1080x1920">
-                        <span>🎬 تحميل فيديو</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Scripts -->
     <script src="js/assets-data.js?v=13.0"></script>
     <script src="js/templates.js?v=13.0"></script>
@@ -659,7 +565,6 @@
     <script src="js/telegram.js?v=14.0"></script>
     <script src="js/carousel-engine.js?v=13.0"></script>
     <script src="js/fix-webm-duration.min.js"></script>
-    <script src="js/reels-engine.js?v=68.6"></script>
     <script src="js/app.js?v=25.0"></script>
     <script src="js/ai-assistant.js?v=13.0"></script>
 </body>

@@ -1053,17 +1053,14 @@ async function processReelJob(jobId, payload, execPath) {
         const framesDir = path.join(runDir, 'frames');
         fs.mkdirSync(framesDir, { recursive: true });
 
-        page = await ensureNativePage(PORT);
-        if (!page) {
+        const b = await ensureNativeBrowser();
+        if (!b) {
             throw new Error('تعذر تشغيل محرك المتصفح Chromium على السيرفر');
         }
-
+        page = await b.newPage();
         await page.setViewport({ width: 1080, height: 1920, deviceScaleFactor: 1 });
-        await page.evaluate(() => {
-            if (typeof window.switchStudioSuite === 'function') {
-                window.switchStudioSuite('suite_reels');
-            }
-        });
+        await page.goto(`http://127.0.0.1:${PORT}/reels.html`, { waitUntil: 'domcontentloaded', timeout: 25000 });
+        await page.waitForFunction(() => window.ReelsEngine && typeof window.ReelsEngine.loadProject === 'function', { timeout: 15000 });
 
         // Move #canvasScaleStage directly to document.body and cleanly hide surrounding studio chrome
         await page.evaluate(() => {
@@ -1391,11 +1388,8 @@ async function processReelJob(jobId, payload, execPath) {
         job.status = 'error';
         job.error = err.message || 'حدث خطأ غير متوقع أثناء تسجيل الفيديو';
     } finally {
-        if (job.status === 'error') {
-            if (page && !page.isClosed()) {
-                try { await page.close(); } catch(e) {}
-            }
-            if (page === nativePage) nativePage = null;
+        if (page && !page.isClosed()) {
+            try { await page.close(); } catch(e) {}
         }
         if (runDir && fs.existsSync(runDir)) {
             try { fs.rmSync(runDir, { recursive: true, force: true }); } catch(e) {}
@@ -2414,6 +2408,9 @@ const server = http.createServer((req, res) => {
 
     // Static Files Handling
     let filePath = reqPath === '/' || reqPath === '' ? '/index.html' : reqPath;
+    if (reqPath === '/reels' || reqPath === '/reels/') {
+        filePath = '/reels.html';
+    }
     const safePath = path.normalize(path.join(__dirname, filePath));
 
     if (!safePath.startsWith(__dirname)) {

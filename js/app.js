@@ -1033,17 +1033,25 @@ function initTemplateSelector() {
 }
 
 window.switchStudioSuite = function(suiteKey) {
+    if (suiteKey === 'suite_reels') {
+        window.location.href = 'reels.html';
+        return;
+    }
+
+    if (!['suite_stories', 'suite_posts', 'suite_carousel'].includes(suiteKey)) {
+        suiteKey = 'suite_stories';
+    }
+
     window.currentStudioSuite = suiteKey;
     try {
         localStorage.setItem('shopcoin15_active_suite', suiteKey);
     } catch(e) {}
 
-    // 1. Update Suite Navigation Buttons UI
+    // 1. Update Suite Navigation Buttons UI (3 Suites: Stories, Posts, Carousel)
     const suiteMap = {
         suite_stories: { id: 'suiteTab_stories', tabClass: 'suite-tab-stories' },
         suite_posts: { id: 'suiteTab_posts', tabClass: 'suite-tab-posts' },
-        suite_carousel: { id: 'suiteTab_carousel', tabClass: 'suite-tab-carousel' },
-        suite_reels: { id: 'suiteTab_reels', tabClass: 'suite-tab-reels' }
+        suite_carousel: { id: 'suiteTab_carousel', tabClass: 'suite-tab-carousel' }
     };
 
     Object.keys(suiteMap).forEach(key => {
@@ -1061,24 +1069,17 @@ window.switchStudioSuite = function(suiteKey) {
     const templateTitle = document.getElementById('suiteTemplateSectionTitle');
     const templateControlsBox = document.getElementById('templateControlsBox');
     const carouselPanel = document.getElementById('suite_carousel_panel');
-    const reelsPanel = document.getElementById('suite_reels_panel');
     const filmstripContainer = document.getElementById('carouselFilmstripContainer');
     const captionSection = document.getElementById('captionSection');
     const ratioContainer = document.getElementById('ratioSectionTitle')?.closest('.double-bezel');
     const aiAssistantCard = document.getElementById('aiPromptInput')?.closest('.double-bezel');
-
-    const reelsToolbar = document.getElementById('reelsPlayerToolbarContainer');
-    const reelsToolbarTop = document.getElementById('reelsPlayerToolbarTopContainer');
 
     if (suiteKey === 'suite_stories') {
         if (templateSection) templateSection.style.display = '';
         if (templateTitle) templateTitle.textContent = 'اختر قالب الستوري (ستوري المتجر الأصلية أو تحديات الـ SBC):';
         if (templateControlsBox) templateControlsBox.style.display = '';
         if (carouselPanel) carouselPanel.classList.add('hidden');
-        if (reelsPanel) reelsPanel.classList.add('hidden');
         if (filmstripContainer) filmstripContainer.classList.add('hidden');
-        if (reelsToolbar) reelsToolbar.classList.add('hidden');
-        if (reelsToolbarTop) reelsToolbarTop.classList.add('hidden');
         if (captionSection) captionSection.style.display = 'none';
         if (ratioContainer) ratioContainer.style.display = '';
         if (aiAssistantCard) aiAssistantCard.style.display = '';
@@ -1100,10 +1101,7 @@ window.switchStudioSuite = function(suiteKey) {
         if (templateTitle) templateTitle.textContent = 'اختر قالب البوست (كرت النجم وهوية المتجر، ثلاثي النجوم، هبوط الأسعار، أو لاعب الشهر):';
         if (templateControlsBox) templateControlsBox.style.display = '';
         if (carouselPanel) carouselPanel.classList.add('hidden');
-        if (reelsPanel) reelsPanel.classList.add('hidden');
         if (filmstripContainer) filmstripContainer.classList.add('hidden');
-        if (reelsToolbar) reelsToolbar.classList.add('hidden');
-        if (reelsToolbarTop) reelsToolbarTop.classList.add('hidden');
         if (captionSection) captionSection.style.display = '';
         if (ratioContainer) ratioContainer.style.display = '';
         if (aiAssistantCard) aiAssistantCard.style.display = '';
@@ -1128,10 +1126,7 @@ window.switchStudioSuite = function(suiteKey) {
         if (templateControlsBox) templateControlsBox.style.display = 'none';
         if (captionSection) captionSection.style.display = 'none';
         if (carouselPanel) carouselPanel.classList.remove('hidden');
-        if (reelsPanel) reelsPanel.classList.add('hidden');
         if (filmstripContainer) filmstripContainer.classList.remove('hidden');
-        if (reelsToolbar) reelsToolbar.classList.add('hidden');
-        if (reelsToolbarTop) reelsToolbarTop.classList.add('hidden');
         if (ratioContainer) ratioContainer.style.display = 'none';
         if (aiAssistantCard) aiAssistantCard.style.display = 'none';
 
@@ -1141,34 +1136,17 @@ window.switchStudioSuite = function(suiteKey) {
             window.CarouselEngine.renderEditorControls();
             window.CarouselEngine.renderSlideToMainCanvas();
         }
-    } else if (suiteKey === 'suite_reels') {
-        if (templateSection) templateSection.style.display = 'none';
-        if (templateControlsBox) templateControlsBox.style.display = 'none';
-        if (captionSection) captionSection.style.display = '';
-        if (carouselPanel) carouselPanel.classList.add('hidden');
-        if (reelsPanel) reelsPanel.classList.remove('hidden');
-        if (filmstripContainer) filmstripContainer.classList.add('hidden');
-        if (reelsToolbar) reelsToolbar.classList.remove('hidden');
-        if (reelsToolbarTop) reelsToolbarTop.classList.remove('hidden');
-        if (ratioContainer) ratioContainer.style.display = 'none';
-        if (aiAssistantCard) aiAssistantCard.style.display = 'none';
-
-        setRatio('story'); // 9:16 for Reels
-        if (window.ReelsEngine) {
-            window.ReelsEngine.renderEditorControls();
-            window.ReelsEngine.renderPlayerToolbar();
-            window.ReelsEngine.renderCanvas();
-        }
     }
 
     if (window.showCopyToast) {
         const names = {
             suite_stories: 'استوديو الستوري (Stories 9:16) 📱',
             suite_posts: 'استوديو البوستات والفيد (Posts 4:5 & 1:1) 🖼️',
-            suite_carousel: 'استوديو الكاروسيل متعدد السلايدات (Carousel 4:5) 📚',
-            suite_reels: 'استوديو الريلز وهوكات الفيديو (Reels 9:16) 🎬'
+            suite_carousel: 'استوديو الكاروسيل متعدد السلايدات (Carousel 4:5) 📚'
         };
-        window.showCopyToast(`تم فتح ${names[suiteKey]}! ✨`);
+        if (names[suiteKey]) {
+            window.showCopyToast(`تم فتح ${names[suiteKey]}! ✨`);
+        }
     }
 };
 
