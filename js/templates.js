@@ -561,6 +561,7 @@ const TEMPLATES = {
         defaultState: {
             bgTheme: 'store',
             bgLighting: 'bright',
+            storyBg: 'stadium',
             flashSaleStyle: 'square_official',
             saleTitle: 'عروض كوينز الويكند الحارقة ⚡',
             saleExpiry: '⏳ العرض ساري حتى منتصف الليل فقط',

@@ -7719,147 +7719,210 @@ function renderFlashSaleTemplate() {
         badge: 'الأسطورية 💎'
     });
 
+    const storyBgKey = appState.storyBg || 'stadium';
+    let bgUrl = 'assets/shopcoin_story_stadium_bg.jpg';
+    if (storyBgKey === 'tunnel') {
+        bgUrl = 'assets/shopcoin_story_tunnel_bg.jpg';
+    } else if (storyBgKey === 'classic') {
+        bgUrl = 'assets/shopcoin_story_official_bg.jpg';
+    }
+
     return `
         <div class="relative w-full h-full overflow-hidden select-none flex flex-col justify-between"
-             style="background-image: url('assets/shopcoin_story_official_bg.jpg'); background-size: cover; background-position: center; padding: 22px 18px 18px 18px;">
+             style="background-image: url('${bgUrl}'); background-size: cover; background-position: center; padding: 22px 18px 18px 18px;">
             
+            <!-- Dark Ambient Vignette -->
+            <div class="absolute inset-0 pointer-events-none" 
+                 style="background: radial-gradient(circle at 50% 15%, rgba(0, 255, 163, 0.08) 0%, transparent 60%), linear-gradient(180deg, rgba(3, 7, 18, 0.4) 0%, rgba(3, 7, 18, 0.15) 50%, rgba(3, 7, 18, 0.65) 100%);"></div>
+
             <!-- 1. Top Header -->
-            <div class="text-center w-full flex flex-col items-center gap-1.5" style="z-index: 10;">
-                <div class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-black"
-                     style="background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(0, 255, 163, 0.45); color: #00ffa3; box-shadow: 0 4px 12px rgba(0,0,0,0.12);">
+            <div class="text-center w-full flex flex-col items-center gap-1.5 relative z-10">
+                <div class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-[10px] font-black"
+                     style="background: rgba(8, 14, 24, 0.88); border: 1.5px solid rgba(0, 255, 163, 0.45); color: #00ffa3; box-shadow: 0 0 15px rgba(0,255,163,0.25); backdrop-filter: blur(10px);">
                     <span>⚡</span>
                     <span>${appState.badgeText || 'عروض كوينز حصرية لفترة محدودة • أسعار اليوم الأقوى'}</span>
                 </div>
-                <div class="text-[20px] font-black text-slate-900 leading-tight" style="letter-spacing: -0.5px; text-shadow: 0 1px 3px rgba(255,255,255,0.9);">
+                <div class="text-[21px] font-black text-white leading-tight tracking-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.9)]">
                     ${appState.headline || 'باقات الكوينز الأقوى لجميع المنصات! 💰🔥'}
                 </div>
-                <div class="text-[11px] font-bold text-slate-800 px-2.5 py-0.5 rounded-lg" style="background: rgba(255,255,255,0.75); backdrop-filter: blur(4px);">
+                <div class="text-[10.5px] font-bold text-slate-200 px-3 py-0.5 rounded-full" 
+                     style="background: rgba(13, 20, 32, 0.75); border: 1px solid rgba(255,255,255,0.12); backdrop-filter: blur(8px);">
                     ${appState.subheadline || 'تسليم فوري بدقيقة واحدة • ضمان وأمان كامل للنادي 100% بدون باند 🛡️'}
                 </div>
             </div>
 
-            <!-- 2. 4 Tiers Stack -->
-            <div class="w-full flex flex-col gap-3.5 my-1" style="z-index: 10;">
+            <!-- 2. 4 Tiers Stack (Harmonious Glass Capsules) -->
+            <div class="w-full flex flex-col gap-3.5 my-auto relative z-10">
                 <!-- Tier 1 -->
                 <div class="relative w-full">
-                    <div class="absolute -top-2.5 right-7 px-2.5 py-0.5 rounded-full text-[10px] font-black z-10 shadow-xs"
-                         style="background: #e6f4ef; border: 1.5px solid #00ffa3; color: #064e3b;">
-                        ${t1.badge || 'باقة التوفير ⚡'}
+                    <div class="absolute -top-2.5 right-6 px-2.5 py-0.5 rounded-full text-[9.5px] font-black z-10 flex items-center gap-1 shadow-md"
+                         style="background: #091c18; border: 1.5px solid #00ffa3; color: #00ffa3; box-shadow: 0 0 10px rgba(0,255,163,0.3);">
+                        <span>${t1.badge || 'باقة التوفير ⚡'}</span>
                     </div>
-                    <div class="w-full h-[52px] rounded-full flex items-center justify-between px-5 shadow-lg"
-                         style="background: #181c24; border: 1.5px solid #283344;">
-                        <div class="flex items-center gap-2 text-white font-black text-[15px]">
-                            <img src="assets/fc-coin.webp" class="w-6 h-6 object-contain" alt="c">
-                            <bdi>${t1.amount || '500,000 كوينز'}</bdi>
+                    <div class="w-full h-[54px] rounded-2xl flex items-center justify-between px-4 transition"
+                         style="background: linear-gradient(90deg, rgba(14, 21, 33, 0.88) 0%, rgba(9, 14, 24, 0.94) 100%); border: 1.5px solid rgba(0, 255, 163, 0.3); box-shadow: 0 6px 20px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.12); backdrop-filter: blur(12px);">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
+                                 style="background: rgba(0, 255, 163, 0.12); border: 1px solid rgba(0, 255, 163, 0.35);">
+                                <img src="assets/fc-coin.webp" class="w-5 h-5 object-contain" alt="c">
+                            </div>
+                            <span class="text-[16px] font-black text-white leading-tight tracking-wide">
+                                <bdi>${t1.amount || '500,000 كوينز'}</bdi>
+                            </span>
                         </div>
-                        <div class="flex items-center gap-2 font-mono" dir="ltr">
-                            ${t1.oldPrice ? `<span class="text-xs font-bold text-slate-400 line-through"><bdi>${t1.oldPrice}</bdi></span>` : ''}
-                            <span class="text-xl font-black text-[#00ffa3] drop-shadow-[0_0_10px_rgba(0,255,163,0.4)]"><bdi>${t1.price || '11$'}</bdi></span>
+                        <div class="flex items-center gap-2" dir="ltr">
+                            ${t1.oldPrice ? `<span class="text-xs font-bold font-mono text-slate-400 line-through opacity-80 px-1"><bdi>${t1.oldPrice}</bdi></span>` : ''}
+                            <div class="px-3 py-1 rounded-xl font-mono font-black text-[16px] flex items-center justify-center min-w-[62px] text-center"
+                                 style="background: rgba(0, 255, 163, 0.15); border: 1.5px solid #00ffa3; color: #00ffa3; text-shadow: 0 0 10px rgba(0,255,163,0.5); box-shadow: 0 0 10px rgba(0,255,163,0.2);">
+                                <bdi>${t1.price || '11$'}</bdi>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Tier 2 (Featured Bestseller) -->
+                <!-- Tier 2 (Featured Bestseller ⭐) -->
                 <div class="relative w-full">
-                    <div class="absolute -top-2.5 right-7 px-3 py-0.5 rounded-full text-[10px] font-black z-10 shadow-sm"
-                         style="background: linear-gradient(135deg, #fef08a 0%, #facc15 100%); border: 1.5px solid #eab308; color: #713f12;">
-                        ${t2.badge || 'الأكثر طلباً • BEST SELLER ⭐'}
+                    <div class="absolute -top-2.5 right-6 px-3 py-0.5 rounded-full text-[10px] font-black z-10 flex items-center gap-1 shadow-lg"
+                         style="background: linear-gradient(135deg, #ffd700 0%, #ffaa00 100%); color: #1e1300; border: 1.5px solid #fff; box-shadow: 0 0 16px rgba(255,215,0,0.6);">
+                        <span>${t2.badge || 'الأكثر طلباً • BEST SELLER ⭐'}</span>
                     </div>
-                    <div class="w-full h-[54px] rounded-full flex items-center justify-between px-5 scale-[1.02] shadow-[0_0_24px_rgba(250,204,21,0.35)]"
-                         style="background: linear-gradient(135deg, #1f2737 0%, #151a24 100%); border: 2px solid #facc15;">
-                        <div class="flex items-center gap-2 text-white font-black text-[15px]">
-                            <img src="assets/fc-coin.webp" class="w-6 h-6 object-contain drop-shadow" alt="c">
-                            <bdi>${t2.amount || '1,000,000 كوينز'}</bdi>
+                    <div class="w-full h-[56px] rounded-2xl flex items-center justify-between px-4 transition scale-[1.02]"
+                         style="background: linear-gradient(90deg, rgba(35, 29, 14, 0.92) 0%, rgba(20, 17, 10, 0.96) 100%); border: 2px solid #ffd700; box-shadow: 0 0 28px rgba(255,215,0,0.35), inset 0 1px 0 rgba(255,255,255,0.3); backdrop-filter: blur(14px);">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
+                                 style="background: rgba(255, 215, 0, 0.18); border: 1px solid rgba(255, 215, 0, 0.5);">
+                                <img src="assets/fc-coin.webp" class="w-5 h-5 object-contain drop-shadow" alt="c">
+                            </div>
+                            <span class="text-[16px] font-black text-white leading-tight tracking-wide">
+                                <bdi>${t2.amount || '1,000,000 كوينز'}</bdi>
+                            </span>
                         </div>
-                        <div class="flex items-center gap-2 font-mono" dir="ltr">
-                            ${t2.oldPrice ? `<span class="text-xs font-bold text-slate-400 line-through"><bdi>${t2.oldPrice}</bdi></span>` : ''}
-                            <span class="text-xl font-black text-[#facc15] drop-shadow-[0_0_12px_rgba(250,204,21,0.5)]"><bdi>${t2.price || '21$'}</bdi></span>
+                        <div class="flex items-center gap-2" dir="ltr">
+                            ${t2.oldPrice ? `<span class="text-xs font-bold font-mono text-amber-200/80 line-through px-1"><bdi>${t2.oldPrice}</bdi></span>` : ''}
+                            <div class="px-3 py-1 rounded-xl font-mono font-black text-[16px] flex items-center justify-center min-w-[62px] text-center"
+                                 style="background: linear-gradient(135deg, rgba(255,215,0,0.2) 0%, rgba(255,170,0,0.25) 100%); border: 1.5px solid #ffd700; color: #ffd700; text-shadow: 0 0 12px rgba(255,215,0,0.6); box-shadow: 0 0 14px rgba(255,215,0,0.3);">
+                                <bdi>${t2.price || '21$'}</bdi>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Tier 3 -->
                 <div class="relative w-full">
-                    <div class="absolute -top-2.5 right-7 px-2.5 py-0.5 rounded-full text-[10px] font-black z-10 shadow-xs"
-                         style="background: #e6f4ef; border: 1.5px solid #00ffa3; color: #064e3b;">
-                        ${t3.badge || 'باقة VIP 👑'}
+                    <div class="absolute -top-2.5 right-6 px-2.5 py-0.5 rounded-full text-[9.5px] font-black z-10 flex items-center gap-1 shadow-md"
+                         style="background: #091c18; border: 1.5px solid #00ffa3; color: #00ffa3; box-shadow: 0 0 10px rgba(0,255,163,0.3);">
+                        <span>${t3.badge || 'باقة VIP 👑'}</span>
                     </div>
-                    <div class="w-full h-[52px] rounded-full flex items-center justify-between px-5 shadow-lg"
-                         style="background: #181c24; border: 1.5px solid #283344;">
-                        <div class="flex items-center gap-2 text-white font-black text-[15px]">
-                            <img src="assets/fc-coin.webp" class="w-6 h-6 object-contain" alt="c">
-                            <bdi>${t3.amount || '2,000,000 كوينز'}</bdi>
+                    <div class="w-full h-[54px] rounded-2xl flex items-center justify-between px-4 transition"
+                         style="background: linear-gradient(90deg, rgba(14, 21, 33, 0.88) 0%, rgba(9, 14, 24, 0.94) 100%); border: 1.5px solid rgba(0, 255, 163, 0.3); box-shadow: 0 6px 20px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.12); backdrop-filter: blur(12px);">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
+                                 style="background: rgba(0, 255, 163, 0.12); border: 1px solid rgba(0, 255, 163, 0.35);">
+                                <img src="assets/fc-coin.webp" class="w-5 h-5 object-contain" alt="c">
+                            </div>
+                            <span class="text-[16px] font-black text-white leading-tight tracking-wide">
+                                <bdi>${t3.amount || '2,000,000 كوينز'}</bdi>
+                            </span>
                         </div>
-                        <div class="flex items-center gap-2 font-mono" dir="ltr">
-                            ${t3.oldPrice ? `<span class="text-xs font-bold text-slate-400 line-through"><bdi>${t3.oldPrice}</bdi></span>` : ''}
-                            <span class="text-xl font-black text-[#00ffa3] drop-shadow-[0_0_10px_rgba(0,255,163,0.4)]"><bdi>${t3.price || '39$'}</bdi></span>
+                        <div class="flex items-center gap-2" dir="ltr">
+                            ${t3.oldPrice ? `<span class="text-xs font-bold font-mono text-slate-400 line-through opacity-80 px-1"><bdi>${t3.oldPrice}</bdi></span>` : ''}
+                            <div class="px-3 py-1 rounded-xl font-mono font-black text-[16px] flex items-center justify-center min-w-[62px] text-center"
+                                 style="background: rgba(0, 255, 163, 0.15); border: 1.5px solid #00ffa3; color: #00ffa3; text-shadow: 0 0 10px rgba(0,255,163,0.5); box-shadow: 0 0 10px rgba(0,255,163,0.2);">
+                                <bdi>${t3.price || '39$'}</bdi>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Tier 4 -->
                 <div class="relative w-full">
-                    <div class="absolute -top-2.5 right-7 px-2.5 py-0.5 rounded-full text-[10px] font-black z-10 shadow-xs"
-                         style="background: #e6f4ef; border: 1.5px solid #00ffa3; color: #064e3b;">
-                        ${t4.badge || 'الأسطورية 💎'}
+                    <div class="absolute -top-2.5 right-6 px-2.5 py-0.5 rounded-full text-[9.5px] font-black z-10 flex items-center gap-1 shadow-md"
+                         style="background: #091c18; border: 1.5px solid #00ffa3; color: #00ffa3; box-shadow: 0 0 10px rgba(0,255,163,0.3);">
+                        <span>${t4.badge || 'الأسطورية 💎'}</span>
                     </div>
-                    <div class="w-full h-[52px] rounded-full flex items-center justify-between px-5 shadow-lg"
-                         style="background: #181c24; border: 1.5px solid #283344;">
-                        <div class="flex items-center gap-2 text-white font-black text-[15px]">
-                            <img src="assets/fc-coin.webp" class="w-6 h-6 object-contain" alt="c">
-                            <bdi>${t4.amount || '3,000,000 كوينز'}</bdi>
+                    <div class="w-full h-[54px] rounded-2xl flex items-center justify-between px-4 transition"
+                         style="background: linear-gradient(90deg, rgba(14, 21, 33, 0.88) 0%, rgba(9, 14, 24, 0.94) 100%); border: 1.5px solid rgba(0, 255, 163, 0.3); box-shadow: 0 6px 20px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.12); backdrop-filter: blur(12px);">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
+                                 style="background: rgba(0, 255, 163, 0.12); border: 1px solid rgba(0, 255, 163, 0.35);">
+                                <img src="assets/fc-coin.webp" class="w-5 h-5 object-contain" alt="c">
+                            </div>
+                            <span class="text-[16px] font-black text-white leading-tight tracking-wide">
+                                <bdi>${t4.amount || '3,000,000 كوينز'}</bdi>
+                            </span>
                         </div>
-                        <div class="flex items-center gap-2 font-mono" dir="ltr">
-                            ${t4.oldPrice ? `<span class="text-xs font-bold text-slate-400 line-through"><bdi>${t4.oldPrice}</bdi></span>` : ''}
-                            <span class="text-xl font-black text-[#00ffa3] drop-shadow-[0_0_10px_rgba(0,255,163,0.4)]"><bdi>${t4.price || '58$'}</bdi></span>
+                        <div class="flex items-center gap-2" dir="ltr">
+                            ${t4.oldPrice ? `<span class="text-xs font-bold font-mono text-slate-400 line-through opacity-80 px-1"><bdi>${t4.oldPrice}</bdi></span>` : ''}
+                            <div class="px-3 py-1 rounded-xl font-mono font-black text-[16px] flex items-center justify-center min-w-[62px] text-center"
+                                 style="background: rgba(0, 255, 163, 0.15); border: 1.5px solid #00ffa3; color: #00ffa3; text-shadow: 0 0 10px rgba(0,255,163,0.5); box-shadow: 0 0 10px rgba(0,255,163,0.2);">
+                                <bdi>${t4.price || '58$'}</bdi>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- 3. Features Card (مميزات الشوب) -->
-            <div class="w-full p-2.5 rounded-2xl flex flex-col gap-1.5 shadow-sm" 
-                 style="background: rgba(255, 255, 255, 0.88); backdrop-filter: blur(8px); border: 1.5px solid rgba(0, 255, 163, 0.35); z-index: 10;">
-                <div class="self-start inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-black"
-                     style="background: #181c24; color: #00ffa3;">
-                    <span>⚡</span>
-                    <span>${appState.featureTitle || 'مميزات الشوب'}</span>
+            <!-- 3. Unified Glass Hub: Features & Trust & Payment (متناسقة تماماً وبنفس الهوية الفاخرة) -->
+            <div class="w-full rounded-2xl flex flex-col gap-2 p-3 relative z-10"
+                 style="background: linear-gradient(135deg, rgba(12, 19, 31, 0.88) 0%, rgba(7, 11, 18, 0.94) 100%); backdrop-filter: blur(14px); border: 1.5px solid rgba(0, 255, 163, 0.28); box-shadow: 0 8px 30px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1);">
+                
+                <!-- Top Row: Features Header & Live Guarantee -->
+                <div class="flex items-center justify-between pb-1.5 border-b border-white/10">
+                    <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-black"
+                         style="background: rgba(0, 255, 163, 0.15); border: 1px solid rgba(0, 255, 163, 0.4); color: #00ffa3;">
+                        <span>⚡</span>
+                        <span>${appState.featureTitle || 'مميزات الشوب'}</span>
+                    </div>
+                    <div class="text-[9.5px] font-extrabold text-emerald-300 flex items-center gap-1">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <span>ضمان وأمان كامل 100% بدون باند</span>
+                    </div>
                 </div>
-                <div class="flex flex-col gap-1 pr-1 text-[11px] font-extrabold text-slate-900">
-                    <div class="flex items-center gap-1.5">
-                        <span class="text-emerald-600 text-sm font-black">●</span>
-                        <span>${appState.feature1 || 'نشحن الويب اب المقفل (Web App Locked) 🔓'}</span>
+
+                <!-- 3 Core Advantages List -->
+                <div class="flex flex-col gap-1.5 text-[11px] font-bold text-white pr-0.5">
+                    <div class="flex items-center gap-2">
+                        <span class="w-4 h-4 rounded bg-emerald-500/20 text-emerald-300 flex items-center justify-center text-[10px] shrink-0">🔓</span>
+                        <span class="text-slate-100">${appState.feature1 || 'نشحن الويب اب المقفل (Web App Locked)'}</span>
                     </div>
-                    <div class="flex items-center gap-1.5">
-                        <span class="text-emerald-600 text-sm font-black">●</span>
-                        <span>${appState.feature2 || 'سرعة فائقة في التسليم بدون أي انتظار ⚡'}</span>
+                    <div class="flex items-center gap-2">
+                        <span class="w-4 h-4 rounded bg-emerald-500/20 text-emerald-300 flex items-center justify-center text-[10px] shrink-0">⚡</span>
+                        <span class="text-slate-100">${appState.feature2 || 'سرعة فائقة في التسليم بدون أي انتظار'}</span>
                     </div>
-                    <div class="flex items-center gap-1.5">
-                        <span class="text-emerald-600 text-sm font-black">●</span>
-                        <span>${appState.feature3 || 'شحن آمن 100% وضمان شامل لحسابك وناديك 🛡️'}</span>
+                    <div class="flex items-center gap-2">
+                        <span class="w-4 h-4 rounded bg-emerald-500/20 text-emerald-300 flex items-center justify-center text-[10px] shrink-0">🛡️</span>
+                        <span class="text-slate-100">${appState.feature3 || 'شحن آمن 100% وضمان شامل لحسابك وناديك'}</span>
+                    </div>
+                </div>
+
+                <!-- Integrated Payment Methods Row -->
+                <div class="flex items-center justify-between pt-1.5 border-t border-white/10">
+                    <div class="text-[9.5px] font-bold text-slate-400 flex items-center gap-1">
+                        <span>💳 طرق الدفع المعتمدة:</span>
+                    </div>
+                    <div class="flex items-center gap-1.5 text-[10px] font-black font-sans">
+                        <span class="px-2 py-0.5 rounded bg-black text-[#ff5f00] border border-white/10 font-bold">Mastercard</span>
+                        <span class="px-2 py-0.5 rounded bg-[#1a1f71] text-white italic font-bold">VISA</span>
+                        <span class="px-2 py-0.5 rounded bg-[#003087] text-[#0079c1] font-bold">PayPal</span>
+                        <span class="px-2 py-0.5 rounded bg-[#00754a] text-white font-serif font-bold">مدى</span>
                     </div>
                 </div>
             </div>
 
-            <!-- 4. Payment Methods Row (طرق الدفع) -->
-            <div class="w-full px-3 py-1.5 rounded-xl flex items-center justify-between shadow-xs"
-                 style="background: rgba(255, 255, 255, 0.88); backdrop-filter: blur(8px); border: 1.5px solid rgba(0, 255, 163, 0.35); z-index: 10;">
-                <div class="px-2 py-0.5 rounded-full text-[10px] font-black" style="background: #181c24; color: #00ffa3;">
-                    <span>💳 طرق الدفع</span>
+            <!-- 4. CTA Action Island (زر الطلب المباشر) -->
+            <div class="w-full rounded-2xl p-1 shadow-[0_0_30px_rgba(0,255,163,0.35)] relative z-10"
+                 style="background: linear-gradient(135deg, rgba(0,255,163,0.4) 0%, rgba(0,210,122,0.2) 100%); backdrop-filter: blur(10px);">
+                <div class="w-full py-2 px-3.5 rounded-xl flex items-center justify-between cursor-pointer"
+                     style="background: linear-gradient(135deg, #00ffa3 0%, #00d27a 100%); color: #042411;">
+                    <div class="flex flex-col text-right overflow-hidden">
+                        <span class="text-[12px] font-black leading-tight">${appState.ctaHeadline || 'للطلب تواصل معنا على الخاص: @shop_coin15 📩'}</span>
+                        <span class="text-[8.5px] font-extrabold text-emerald-950 mt-0.5 whitespace-nowrap">${appState.ctaSub || '⚡ تسليم فوري • 🛡️ ضمان شامل للنادي • 🔒 أمان 100% بدون باند'}</span>
+                    </div>
+                    <div class="px-2.5 py-1 rounded-lg bg-emerald-950 text-[#00ffa3] text-[10px] font-black shadow-inner flex items-center gap-1 shrink-0 mr-1.5">
+                        <span>اطلب الآن</span>
+                        <span>⚡</span>
+                    </div>
                 </div>
-                <div class="flex items-center gap-2 text-[10.5px] font-black font-sans">
-                    <span class="px-1.5 py-0.5 rounded bg-black text-[#ff5f00]">Mastercard</span>
-                    <span class="px-1.5 py-0.5 rounded bg-[#1a1f71] text-white italic">VISA</span>
-                    <span class="px-1.5 py-0.5 rounded bg-[#003087] text-[#0079c1]">PayPal</span>
-                    <span class="px-1.5 py-0.5 rounded bg-[#00754a] text-white font-serif">مدى</span>
-                </div>
-            </div>
-
-            <!-- 5. CTA Button -->
-            <div class="w-full py-2.5 px-3 rounded-2xl text-center flex flex-col items-center gap-0.5 cursor-pointer shadow-lg"
-                 style="background: linear-gradient(135deg, #00ffa3 0%, #00d27a 100%); color: #052e16; z-index: 10;">
-                <span class="text-xs font-black">${appState.ctaHeadline || 'للطلب تواصل معنا على الخاص: @shop_coin15 📩'}</span>
-                <span class="text-[9.5px] font-extrabold text-emerald-950">${appState.ctaSub || '⚡ تسليم فوري • 🛡️ ضمان كامل للنادي • 🔒 أمان 100% بدون باند'}</span>
             </div>
         </div>
     `;
@@ -7876,9 +7939,42 @@ function renderFlashSaleControls() {
         badge: 'الأسطورية 💎'
     });
 
+    const activeBg = appState.storyBg || 'stadium';
+
     return `
         <div class="space-y-4">
-            <!-- 1. Currency Quick Switcher -->
+            <!-- 1. Background Theme Selector -->
+            <div class="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-2.5">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-black text-slate-800 flex items-center gap-1.5">
+                        <span>🎨</span>
+                        <span>خلفية الستوري الإبداعية:</span>
+                    </span>
+                    <span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">3 خلفيات سينمائية</span>
+                </div>
+                <div class="grid grid-cols-3 gap-2">
+                    <button type="button" onclick="setFlashSaleBg('stadium')" 
+                            class="px-2 py-2 rounded-xl text-center font-bold text-xs border transition ${activeBg === 'stadium' ? 'bg-emerald-50 border-emerald-500 text-emerald-900 shadow-xs ring-2 ring-emerald-400/20' : 'bg-slate-50 border-slate-200 text-slate-700 hover:border-slate-300'}">
+                        <div class="text-base mb-0.5">🏟️</div>
+                        <div class="font-black text-[10.5px]">استاد النيون</div>
+                        <div class="text-[9px] text-slate-500">ليزر وإضاءة</div>
+                    </button>
+                    <button type="button" onclick="setFlashSaleBg('tunnel')" 
+                            class="px-2 py-2 rounded-xl text-center font-bold text-xs border transition ${activeBg === 'tunnel' ? 'bg-emerald-50 border-emerald-500 text-emerald-900 shadow-xs ring-2 ring-emerald-400/20' : 'bg-slate-50 border-slate-200 text-slate-700 hover:border-slate-300'}">
+                        <div class="text-base mb-0.5">⚡</div>
+                        <div class="font-black text-[10.5px]">نفق الأبطال</div>
+                        <div class="text-[9px] text-slate-500">سايبر تكتيكي</div>
+                    </button>
+                    <button type="button" onclick="setFlashSaleBg('classic')" 
+                            class="px-2 py-2 rounded-xl text-center font-bold text-xs border transition ${activeBg === 'classic' ? 'bg-emerald-50 border-emerald-500 text-emerald-900 shadow-xs ring-2 ring-emerald-400/20' : 'bg-slate-50 border-slate-200 text-slate-700 hover:border-slate-300'}">
+                        <div class="text-base mb-0.5">🌿</div>
+                        <div class="font-black text-[10.5px]">كلاسيكي هادئ</div>
+                        <div class="text-[9px] text-slate-500">الاستاد الفاتح</div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 2. Currency Quick Switcher -->
             <div class="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-xs flex items-center justify-between">
                 <span class="text-xs font-black text-slate-800 flex items-center gap-1.5">
                     <span>💱</span>
@@ -7892,7 +7988,7 @@ function renderFlashSaleControls() {
                 </div>
             </div>
 
-            <!-- 2. 4 Tiers Setup -->
+            <!-- 3. 4 Tiers Setup -->
             <div class="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-3">
                 <span class="text-xs font-black text-slate-800 flex items-center gap-1.5 pb-1 border-b border-slate-100">
                     <span>💰</span>
@@ -8023,15 +8119,15 @@ function renderFlashSaleControls() {
                 </div>
             </div>
 
-            <!-- 3. Features Controls (كارت مميزات الشوب) -->
-            <div class="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-3">
+            <!-- 4. Shop Features & Trust Card Controls -->
+            <div class="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-2.5">
                 <span class="text-xs font-black text-slate-800 flex items-center gap-1.5 pb-1 border-b border-slate-100">
                     <span>⚡</span>
                     <span>كارت مميزات الشوب:</span>
                 </span>
                 <div>
                     <label class="block text-[10px] font-bold text-slate-500 mb-0.5">عنوان الكارت:</label>
-                    <input type="text" value="${appState.featureTitle || 'مميزات الشوب'}" 
+                    <input type="text" value="${appState.featureTitle || ''}" 
                            oninput="appState.featureTitle = this.value; renderCanvas();" 
                            class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-xs font-bold text-slate-900">
                 </div>
@@ -8055,7 +8151,7 @@ function renderFlashSaleControls() {
                 </div>
             </div>
 
-            <!-- 4. Story Texts & CTA Controls -->
+            <!-- 5. Story Texts & CTA Controls -->
             <div class="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-3">
                 <span class="text-xs font-black text-slate-800 block">✍️ نصوص وعروض الستوري:</span>
 
@@ -8098,6 +8194,13 @@ function renderFlashSaleControls() {
         </div>
     `;
 }
+
+window.setFlashSaleBg = function(bgKey) {
+    if (!appState) return;
+    appState.storyBg = bgKey;
+    renderControls();
+    renderCanvas();
+};
 
 window.updateFlashSaleTier = function(tierKey, field, value) {
     if (!appState[tierKey]) {
