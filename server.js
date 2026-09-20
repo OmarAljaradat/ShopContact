@@ -1959,7 +1959,7 @@ const server = http.createServer((req, res) => {
                 const chatId = (payload.chatId || '').trim();
                 const dataUrl = payload.dataUrl || '';
                 const caption = (payload.caption || '').trim();
-                const asDocument = !!payload.asDocument;
+                const sendMode = payload.sendMode || (payload.asDocument ? 'document' : 'both');
 
                 if (!botToken || !chatId) {
                     res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*' });
@@ -1974,28 +1974,70 @@ const server = http.createServer((req, res) => {
 
                 const base64Data = dataUrl.replace(/^data:image\/\w+;base64,/, '');
                 const fileBuffer = Buffer.from(base64Data, 'base64');
-                const isPng = dataUrl.startsWith('data:image/png') || asDocument;
+                const isPng = dataUrl.startsWith('data:image/png');
 
-                const endpoint = asDocument ? 'sendDocument' : 'sendPhoto';
-                const fileField = asDocument ? 'document' : 'photo';
-                const fileName = `shop_coin15_4K_${Date.now()}.${isPng ? 'png' : 'jpg'}`;
+                const fileName = `shop_coin15_4K_master_${Date.now()}.${isPng ? 'png' : 'jpg'}`;
                 const fileMime = isPng ? 'image/png' : 'image/jpeg';
 
                 // Telegram caption limit is 1024 characters for media
                 const photoCaption = caption.length > 1024 ? caption.slice(0, 1000) + '...' : caption;
 
-                await sendTelegramRequest({
-                    botToken,
-                    endpoint,
-                    fields: {
-                        chat_id: chatId,
-                        caption: photoCaption
-                    },
-                    fileField,
-                    fileBuffer,
-                    fileName,
-                    fileMime
-                });
+                if (sendMode === 'both') {
+                    // 1. Send immediate chat photo preview with caption
+                    await sendTelegramRequest({
+                        botToken,
+                        endpoint: 'sendPhoto',
+                        fields: {
+                            chat_id: chatId,
+                            caption: photoCaption
+                        },
+                        fileField: 'photo',
+                        fileBuffer,
+                        fileName: `preview_${Date.now()}.${isPng ? 'png' : 'jpg'}`,
+                        fileMime
+                    });
+
+                    // 2. Send untouched lossless 4K Master Document
+                    await sendTelegramRequest({
+                        botToken,
+                        endpoint: 'sendDocument',
+                        fields: {
+                            chat_id: chatId,
+                            caption: '📁 ملف الستوري الأصلي بدقة 4K فائقة النقاء (2160x3840) بدون أي قص أو ضغط لحفظه في ألبوم صور هاتفك 📱✨'
+                        },
+                        fileField: 'document',
+                        fileBuffer,
+                        fileName,
+                        fileMime
+                    });
+                } else if (sendMode === 'photo') {
+                    await sendTelegramRequest({
+                        botToken,
+                        endpoint: 'sendPhoto',
+                        fields: {
+                            chat_id: chatId,
+                            caption: photoCaption
+                        },
+                        fileField: 'photo',
+                        fileBuffer,
+                        fileName,
+                        fileMime
+                    });
+                } else {
+                    // 'document'
+                    await sendTelegramRequest({
+                        botToken,
+                        endpoint: 'sendDocument',
+                        fields: {
+                            chat_id: chatId,
+                            caption: photoCaption
+                        },
+                        fileField: 'document',
+                        fileBuffer,
+                        fileName,
+                        fileMime
+                    });
+                }
 
                 // If caption was long, send the full text in a second message
                 if (caption.length > 1024) {
@@ -2010,7 +2052,14 @@ const server = http.createServer((req, res) => {
                 }
 
                 res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*' });
-                res.end(JSON.stringify({ success: true, message: 'تم إرسال التصميم والكابشن إلى تليجرام بنجاح! 🚀📱' }));
+                res.end(JSON.stringify({ 
+                    success: true, 
+                    message: sendMode === 'both' 
+                        ? 'تم إرسال صورة المعاينة وملف 4K الأصلي بنجاح! 🚀📱' 
+                        : (sendMode === 'document' 
+                            ? 'تم إرسال ملف 4K الأصلي بدون أي ضغط بنجاح! 📁✨' 
+                            : 'تم إرسال صورة التصميم للشات بنجاح! 🖼️📱')
+                }));
             } catch (err) {
                 console.error('[Telegram Send Error]', err);
                 res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*' });

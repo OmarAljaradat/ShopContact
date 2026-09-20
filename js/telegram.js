@@ -7,6 +7,7 @@ const TelegramManager = {
     TOKEN_KEY: 'shopcoin_telegram_token',
     CHAT_ID_KEY: 'shopcoin_telegram_chat_id',
     AS_DOC_KEY: 'shopcoin_telegram_as_document',
+    SEND_MODE_KEY: 'shopcoin_telegram_send_mode',
 
     DEFAULT_TOKEN: '8903974669:AAGv7_Wpb-0ujiNVTpnhdrXOXOOzOi8rHFg',
     DEFAULT_CHAT_ID: '1965859902',
@@ -19,9 +20,20 @@ const TelegramManager = {
         return (localStorage.getItem(this.CHAT_ID_KEY) || this.DEFAULT_CHAT_ID).trim();
     },
 
+    getSendMode() {
+        const saved = localStorage.getItem(this.SEND_MODE_KEY);
+        if (saved) return saved;
+        // Default to 'both' so the user gets both the instant chat preview AND the 100% uncropped 4K master document!
+        return 'both';
+    },
+
+    setSendMode(mode) {
+        localStorage.setItem(this.SEND_MODE_KEY, mode);
+        localStorage.setItem(this.AS_DOC_KEY, mode === 'document' ? 'true' : 'false');
+    },
+
     getAsDocument() {
-        const val = localStorage.getItem(this.AS_DOC_KEY);
-        return val === null ? true : val === 'true';
+        return this.getSendMode() === 'document';
     },
 
     setToken(token) {
@@ -63,7 +75,7 @@ const TelegramManager = {
     },
 
     setAsDocument(val) {
-        localStorage.setItem(this.AS_DOC_KEY, val ? 'true' : 'false');
+        this.setSendMode(val ? 'document' : 'photo');
     },
 
     isConfigured() {
@@ -76,12 +88,19 @@ const TelegramManager = {
 
         const tokenInput = document.getElementById('tgBotTokenInput');
         const chatIdInput = document.getElementById('tgChatIdInput');
-        const asDocCheckbox = document.getElementById('tgAsDocumentCheckbox');
         const statusEl = document.getElementById('tgStatusMessage');
 
         if (tokenInput) tokenInput.value = this.getToken();
         if (chatIdInput) chatIdInput.value = this.getChatId();
-        if (asDocCheckbox) asDocCheckbox.checked = this.getAsDocument();
+
+        const currentMode = this.getSendMode();
+        const modeRadios = document.querySelectorAll('input[name="tgSendMode"]');
+        if (modeRadios && modeRadios.length) {
+            modeRadios.forEach(r => {
+                r.checked = (r.value === currentMode);
+            });
+        }
+
         if (statusEl) {
             statusEl.className = 'hidden';
             statusEl.innerHTML = '';
@@ -98,15 +117,15 @@ const TelegramManager = {
     saveSettings() {
         const tokenInput = document.getElementById('tgBotTokenInput');
         const chatIdInput = document.getElementById('tgChatIdInput');
-        const asDocCheckbox = document.getElementById('tgAsDocumentCheckbox');
+        const selectedRadio = document.querySelector('input[name="tgSendMode"]:checked');
 
         const token = tokenInput ? tokenInput.value.trim() : '';
         const chatId = chatIdInput ? chatIdInput.value.trim() : '';
-        const asDoc = asDocCheckbox ? asDocCheckbox.checked : false;
+        const sendMode = selectedRadio ? selectedRadio.value : 'both';
 
         this.setToken(token);
         this.setChatId(chatId);
-        this.setAsDocument(asDoc);
+        this.setSendMode(sendMode);
 
         if (window.showCopyToast) {
             window.showCopyToast('تم حفظ إعدادات تيليجرام بنجاح! 💾⚡');
@@ -191,6 +210,7 @@ const TelegramManager = {
         const token = this.getToken();
         const chatId = this.getChatId();
         const asDoc = this.getAsDocument();
+        const sendMode = this.getSendMode();
 
         let caption = captionOverride;
         if (!caption) {
@@ -262,6 +282,7 @@ const TelegramManager = {
                 chatId: chatId,
                 dataUrl: dataUrl,
                 caption: caption,
+                sendMode: sendMode,
                 asDocument: asDoc
             })
         });
@@ -338,8 +359,12 @@ const TelegramManager = {
             return await window.ReelsEngine.sendReelVideoTelegram();
         }
 
+        const currentMode = this.getSendMode();
         if (window.showCopyToast) {
-            window.showCopyToast('جاري تجهيز التصميم 4K وإرساله للتليجرام... 🚀⏳');
+            const toastMsg = currentMode === 'both' 
+                ? 'جاري تجهيز صورة المعاينة وملف الستوري 4K وإرسالهما للتليجرام... 🚀⏳'
+                : (currentMode === 'document' ? 'جاري استخراج ملف الستوري 4K الأصلي وإرساله للتليجرام... 🚀⏳' : 'جاري تجهيز صورة التصميم وإرسالها للتليجرام... 🚀⏳');
+            window.showCopyToast(toastMsg);
         }
 
         const btns = document.querySelectorAll('.btn-telegram-action');
@@ -351,7 +376,10 @@ const TelegramManager = {
         try {
             await this.sendDesignInternal('exportCanvas', null);
             if (window.showCopyToast) {
-                window.showCopyToast('تم إرسال التصميم والكابشن إلى تيليجرام بنجاح! 🚀📱 افتح المحادثة الآن');
+                const doneMsg = currentMode === 'both'
+                    ? '🎉 تم إرسال صورة المعاينة + ملف الستوري 4K الأصلي بدون أي قص إلى تيليجرام بنجاح! 🚀📱'
+                    : (currentMode === 'document' ? '🎉 تم إرسال ملف الستوري 4K الأصلي الكامل إلى تيليجرام بنجاح! 📁✨' : '🎉 تم إرسال صورة التصميم إلى تيليجرام بنجاح! 🖼️📱');
+                window.showCopyToast(doneMsg);
             }
         } catch (error) {
             console.error('[Telegram Send Error]', error);

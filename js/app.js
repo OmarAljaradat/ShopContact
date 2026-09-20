@@ -8,6 +8,7 @@
  */
 
 let currentTemplate = 'store_promo';
+window.currentTemplate = currentTemplate;
 let currentRatio = 'story';
 let currentCopyStyle = 'hype';
 let appState = {};
@@ -106,75 +107,75 @@ function getDefaultLayers() {
     } else if (currentTemplate === 'market_tracker') {
         // Market Tracker is Story 9:16 only!
         return {
-            layer_market_header: { visible: true, x: null, y: 30, scale: 0.95, label: 'ترويسة الرادار والشعارات' },
-            layer_market_players: { visible: true, x: null, y: 165, scale: 0.94, label: 'بطاقات اللاعبين ومؤشرات FUTBIN' },
-            layer_market_cta: { visible: true, x: null, y: 690, scale: 0.95, label: 'بانر متجر شوب كوين (CTA)' }
+            layer_market_header: { visible: true, x: null, y: 35, scale: 0.95, label: 'ترويسة الرادار والشعارات' },
+            layer_market_players: { visible: true, x: null, y: 160, scale: 0.94, label: 'بطاقات اللاعبين ومؤشرات FUTBIN' },
+            layer_market_cta: { visible: true, x: null, y: 660, scale: 0.95, label: 'بانر متجر شوب كوين (CTA)' }
         };
     } else if (currentTemplate === 'promo_pack') {
         return {
-            layer_promo_header: { visible: true, x: null, y: 30, scale: 0.95, label: 'ترويسة العرض والعداد الزمني' },
-            layer_promo_body: { visible: true, x: null, y: 165, scale: 0.95, label: 'باكدج المتجر وبطاقات الووك أوت' },
-            layer_promo_cta: { visible: true, x: null, y: 690, scale: 0.95, label: 'بانر الشحن الفوري (CTA)' }
+            layer_promo_header: { visible: true, x: null, y: 35, scale: 0.95, label: 'ترويسة العرض والعداد الزمني' },
+            layer_promo_body: { visible: true, x: null, y: 160, scale: 0.95, label: 'باكدج المتجر وبطاقات الووك أوت' },
+            layer_promo_cta: { visible: true, x: null, y: 660, scale: 0.95, label: 'بانر الشحن الفوري (CTA)' }
         };
     } else if (currentTemplate === 'champs_squad') {
         return {
-            layer_champs_header: { visible: true, x: null, y: 30, scale: 0.95, label: 'ترويسة التشكيلة وخطة الميتا' },
-            layer_champs_body: { visible: true, x: null, y: 165, scale: 0.95, label: 'بطاقات التشكيلة والميزانية الإجمالية' },
-            layer_champs_cta: { visible: true, x: null, y: 690, scale: 0.95, label: 'بانر شحن التشكيلة (CTA)' }
+            layer_champs_header: { visible: true, x: null, y: 35, scale: 0.95, label: 'ترويسة التشكيلة وخطة الميتا' },
+            layer_champs_body: { visible: true, x: null, y: 160, scale: 0.95, label: 'بطاقات التشكيلة والميزانية الإجمالية' },
+            layer_champs_cta: { visible: true, x: null, y: 660, scale: 0.95, label: 'بانر شحن التشكيلة (CTA)' }
         };
     } else if (currentTemplate === 'evo_boost') {
         return {
-            layer_evo_header: { visible: true, x: null, y: 30, scale: 0.95, label: 'ترويسة الإيفولوشن والتكلفة' },
-            layer_evo_body: { visible: true, x: null, y: 165, scale: 0.95, label: 'مقارنة الكرت قبل وبعد الإيفو الخارق' },
-            layer_evo_cta: { visible: true, x: null, y: 690, scale: 0.95, label: 'بانر شحن كوينز الإيفو (CTA)' }
+            layer_evo_header: { visible: true, x: null, y: 35, scale: 0.95, label: 'ترويسة الإيفولوشن والتكلفة' },
+            layer_evo_body: { visible: true, x: null, y: 160, scale: 0.95, label: 'مقارنة الكرت قبل وبعد الإيفو الخارق' },
+            layer_evo_cta: { visible: true, x: null, y: 660, scale: 0.95, label: 'بانر شحن كوينز الإيفو (CTA)' }
         };
     } else if (currentTemplate === 'social_proof') {
         return {
-            layer_proof_header: { visible: true, x: null, y: 30, scale: 0.95, label: 'ترويسة التوثيق وثقة العملاء' },
-            layer_proof_body: { visible: true, x: null, y: 165, scale: 0.95, label: 'تفاصيل التحويل وتقييم العميل والأمان' },
-            layer_proof_cta: { visible: true, x: null, y: 690, scale: 0.95, label: 'بانر الشحن الفوري والضمان (CTA)' }
+            layer_proof_header: { visible: true, x: null, y: 35, scale: 0.95, label: 'ترويسة التوثيق وثقة العملاء' },
+            layer_proof_body: { visible: true, x: null, y: 160, scale: 0.95, label: 'تفاصيل التحويل وتقييم العميل والأمان' },
+            layer_proof_cta: { visible: true, x: null, y: 660, scale: 0.95, label: 'بانر الشحن الفوري والضمان (CTA)' }
         };
     } else if (currentTemplate === 'flash_sale') {
         return {
-            layer_sale_header: { visible: true, x: null, y: 30, scale: 0.95, label: 'ترويسة جدول باقات الكوينز' },
-            layer_sale_body: { visible: true, x: null, y: 165, scale: 0.95, label: 'بطاقات باقات الكوينز والأسعار' },
-            layer_sale_cta: { visible: true, x: null, y: 690, scale: 0.95, label: 'بانر الطلب المباشر (CTA)' }
+            layer_sale_header: { visible: true, x: null, y: 35, scale: 0.95, label: 'ترويسة جدول باقات الكوينز' },
+            layer_sale_body: { visible: true, x: null, y: 160, scale: 0.95, label: 'بطاقات باقات الكوينز والأسعار' },
+            layer_sale_cta: { visible: true, x: null, y: 660, scale: 0.95, label: 'بانر الطلب المباشر (CTA)' }
         };
     } else if (currentTemplate === 'loaded_accounts') {
         return {
-            layer_acc_header: { visible: true, x: null, y: 30, scale: 0.95, label: 'ترويسة الحسابات الجاهزة' },
-            layer_acc_body: { visible: true, x: null, y: 165, scale: 0.95, label: 'مواصفات الحساب ورصيد الكوينز' },
-            layer_acc_cta: { visible: true, x: null, y: 690, scale: 0.95, label: 'بانر طلب الحساب (CTA)' }
+            layer_acc_header: { visible: true, x: null, y: 35, scale: 0.95, label: 'ترويسة الحسابات الجاهزة' },
+            layer_acc_body: { visible: true, x: null, y: 160, scale: 0.95, label: 'مواصفات الحساب ورصيد الكوينز' },
+            layer_acc_cta: { visible: true, x: null, y: 660, scale: 0.95, label: 'بانر طلب الحساب (CTA)' }
         };
     } else if (currentTemplate === 'squad_makeover') {
         return {
-            layer_makeover_header: { visible: true, x: null, y: 30, scale: 0.95, label: 'ترويسة تطوير التشكيلة' },
-            layer_makeover_body: { visible: true, x: null, y: 165, scale: 0.95, label: 'مقارنة التشكيلة قبل وبعد بالكوينز' },
-            layer_makeover_cta: { visible: true, x: null, y: 690, scale: 0.95, label: 'بانر استشارة التطوير (CTA)' }
+            layer_makeover_header: { visible: true, x: null, y: 35, scale: 0.95, label: 'ترويسة تطوير التشكيلة' },
+            layer_makeover_body: { visible: true, x: null, y: 160, scale: 0.95, label: 'مقارنة التشكيلة قبل وبعد بالكوينز' },
+            layer_makeover_cta: { visible: true, x: null, y: 660, scale: 0.95, label: 'بانر استشارة التطوير (CTA)' }
         };
     } else if (currentTemplate === 'player_duel') {
         return {
-            layer_duel_header: { visible: true, x: null, y: 30, scale: 0.95, label: 'ترويسة معركة النجوم' },
-            layer_duel_body: { visible: true, x: null, y: 165, scale: 0.95, label: 'مقارنة اللاعبين ومنطقة تصويت الستوري' },
-            layer_duel_cta: { visible: true, x: null, y: 690, scale: 0.95, label: 'بانر شحن كوينز النجوم (CTA)' }
+            layer_duel_header: { visible: true, x: null, y: 35, scale: 0.95, label: 'ترويسة معركة النجوم' },
+            layer_duel_body: { visible: true, x: null, y: 160, scale: 0.95, label: 'مقارنة اللاعبين ومنطقة تصويت الستوري' },
+            layer_duel_cta: { visible: true, x: null, y: 660, scale: 0.95, label: 'بانر شحن كوينز النجوم (CTA)' }
         };
     } else if (currentTemplate === 'budget_beast') {
         return {
-            layer_budget_header: { visible: true, x: null, y: 30, scale: 0.95, label: 'ترويسة تشكيلة الميزانية' },
-            layer_budget_body: { visible: true, x: null, y: 165, scale: 0.95, label: 'ثلاثي الميتا الرخيص والتكلفة' },
-            layer_budget_cta: { visible: true, x: null, y: 690, scale: 0.95, label: 'بانر شحن التشكيلة (CTA)' }
+            layer_budget_header: { visible: true, x: null, y: 35, scale: 0.95, label: 'ترويسة تشكيلة الميزانية' },
+            layer_budget_body: { visible: true, x: null, y: 160, scale: 0.95, label: 'ثلاثي الميتا الرخيص والتكلفة' },
+            layer_budget_cta: { visible: true, x: null, y: 660, scale: 0.95, label: 'بانر شحن التشكيلة (CTA)' }
         };
     } else if (currentTemplate === 'player_review') {
         return {
-            layer_review_header: { visible: true, x: null, y: 30, scale: 0.95, label: 'ترويسة مراجعة الكرت' },
-            layer_review_body: { visible: true, x: null, y: 165, scale: 0.95, label: 'بطاقة مراجعة الكرت والإيجابيات' },
-            layer_review_cta: { visible: true, x: null, y: 690, scale: 0.95, label: 'بانر شحن كوينز الكرت (CTA)' }
+            layer_review_header: { visible: true, x: null, y: 35, scale: 0.95, label: 'ترويسة مراجعة الكرت' },
+            layer_review_body: { visible: true, x: null, y: 160, scale: 0.95, label: 'بطاقة مراجعة الكرت والإيجابيات' },
+            layer_review_cta: { visible: true, x: null, y: 660, scale: 0.95, label: 'بانر شحن كوينز الكرت (CTA)' }
         };
     } else if (currentTemplate === 'custom_story') {
         return {
-            layer_custom_header: { visible: true, x: null, y: 30, scale: 0.95, label: 'ترويسة القالب الخاص' },
-            layer_custom_body: { visible: true, x: null, y: 165, scale: 0.95, label: 'محتوى التصميم الخاص المخصص' },
-            layer_custom_cta: { visible: true, x: null, y: 690, scale: 0.95, label: 'بانر الطلب والتواصل (CTA)' }
+            layer_custom_header: { visible: true, x: null, y: 35, scale: 0.95, label: 'ترويسة القالب الخاص' },
+            layer_custom_body: { visible: true, x: null, y: 160, scale: 0.95, label: 'محتوى التصميم الخاص المخصص' },
+            layer_custom_cta: { visible: true, x: null, y: 660, scale: 0.95, label: 'بانر الطلب والتواصل (CTA)' }
         };
     } else if (currentTemplate === 'sbc') {
         // SBC is Story 9:16 only!
@@ -1645,6 +1646,7 @@ function updateCaptionVisibility() {
 window.selectTemplate = function(key) {
     if (!TEMPLATES[key]) return;
     currentTemplate = key;
+    window.currentTemplate = key;
 
     // Automatically synchronize the active category
     if (window.currentStudioSuite === 'suite_stories') {
@@ -5484,14 +5486,13 @@ function renderMarketTrackerTemplate() {
 
         <!-- Official Logos -->
         ${getFc27LogoHtml()}
-        ${getScBrandingHtml()}
 
         <div id="snapGuideV" class="snap-guide snap-guide-v"></div>
         <div id="snapGuideH" class="snap-guide snap-guide-h"></div>
 
         <!-- Layer 1: Market Header (Live alert badge & headlines) -->
         ${isLayerVisible('layer_market_header') ? `
-        <div id="layer_market_header" class="draggable-layer text-center flex flex-col items-center" style="${getLayerStyle('layer_market_header', 30)}; width: 100%; max-width: 500px; z-index: 30;">
+        <div id="layer_market_header" class="draggable-layer text-center flex flex-col items-center" style="${getLayerStyle('layer_market_header', 35)}; width: 100%; max-width: 500px; z-index: 30;">
             <div class="layer-scale-wrapper w-full flex flex-col items-center gap-2" style="transform: scale(${getLayerScale('layer_market_header')});">
                 
                 <!-- Live Pulse Alert Badge -->
@@ -5517,7 +5518,7 @@ function renderMarketTrackerTemplate() {
 
         <!-- Layer 2: Players & FUTBIN Price Analytics -->
         ${isLayerVisible('layer_market_players') ? `
-        <div id="layer_market_players" class="draggable-layer w-full" style="${getLayerStyle('layer_market_players', 165)}; width: 510px; z-index: 25;">
+        <div id="layer_market_players" class="draggable-layer w-full" style="${getLayerStyle('layer_market_players', 160)}; width: 510px; z-index: 25;">
             <div class="layer-scale-wrapper w-full" style="transform: scale(${getLayerScale('layer_market_players')});">
                 ${playersContentHtml}
             </div>
@@ -5527,7 +5528,7 @@ function renderMarketTrackerTemplate() {
 
         <!-- Layer 3: Store Promo CTA Banner -->
         ${isLayerVisible('layer_market_cta') ? `
-        <div id="layer_market_cta" class="draggable-layer text-center flex flex-col items-center" style="${getLayerStyle('layer_market_cta', 690)}; width: 100%; max-width: 480px; z-index: 35;">
+        <div id="layer_market_cta" class="draggable-layer text-center flex flex-col items-center" style="${getLayerStyle('layer_market_cta', 660)}; width: 100%; max-width: 480px; z-index: 35;">
             <div class="layer-scale-wrapper w-full px-2" style="transform: scale(${getLayerScale('layer_market_cta')});">
                 <div class="rounded-2xl bg-gradient-to-r from-slate-950/95 via-[#0c1524]/95 to-slate-950/95 border border-emerald-500/60 p-3 shadow-2xl backdrop-blur-md text-center space-y-2">
                     <!-- CTA Headline -->
@@ -6117,7 +6118,7 @@ function getStoryBackgroundHtml(bgThemeKey = 'official_stadium', bgLighting = 'b
 
         <!-- Official Logos -->
         ${getFc27LogoHtml()}
-        ${getScBrandingHtml()}
+        ${(!['promo_pack', 'market_tracker', 'champs_squad', 'evo_boost', 'social_proof', 'flash_sale', 'loaded_accounts', 'squad_makeover', 'player_duel', 'budget_beast', 'player_review', 'custom_story'].includes(currentTemplate)) ? getScBrandingHtml() : ''}
 
         <div id="snapGuideV" class="snap-guide snap-guide-v"></div>
         <div id="snapGuideH" class="snap-guide snap-guide-h"></div>
@@ -6144,7 +6145,7 @@ window.setStoryTemplateBgLighting = function(lighting) {
 function renderStoryHeader(layerKey, badgeText, headlineText, subheadlineText, isLightBg) {
     if (!isLayerVisible(layerKey)) return '';
     return `
-        <div id="${layerKey}" class="draggable-layer text-center flex flex-col items-center" style="${getLayerStyle(layerKey, 30)}; width: 100%; max-width: 500px; z-index: 30;">
+        <div id="${layerKey}" class="draggable-layer text-center flex flex-col items-center" style="${getLayerStyle(layerKey, 35)}; width: 100%; max-width: 500px; z-index: 30;">
             <div class="layer-scale-wrapper w-full flex flex-col items-center gap-2" style="transform: scale(${getLayerScale(layerKey)});">
                 ${badgeText ? `
                 <div class="px-3.5 py-1 rounded-full bg-slate-950/95 border border-emerald-500/80 shadow-xl text-emerald-400 text-[11px] font-black tracking-wide flex items-center gap-1.5 whitespace-nowrap">
@@ -6169,7 +6170,7 @@ function renderStoryHeader(layerKey, badgeText, headlineText, subheadlineText, i
 function renderStoryCta(layerKey, ctaHeadline, ctaSub) {
     if (!isLayerVisible(layerKey)) return '';
     return `
-        <div id="${layerKey}" class="draggable-layer text-center flex flex-col items-center" style="${getLayerStyle(layerKey, 690)}; width: 100%; max-width: 480px; z-index: 35;">
+        <div id="${layerKey}" class="draggable-layer text-center flex flex-col items-center" style="${getLayerStyle(layerKey, 660)}; width: 100%; max-width: 480px; z-index: 35;">
             <div class="layer-scale-wrapper w-full px-2" style="transform: scale(${getLayerScale(layerKey)});">
                 <div class="rounded-2xl bg-gradient-to-r from-slate-950/95 via-[#0c1524]/95 to-slate-950/95 border border-emerald-500/60 p-3 shadow-2xl backdrop-blur-md text-center space-y-2">
                     <div class="text-xs font-black text-emerald-300 flex items-center justify-center gap-1.5">
@@ -6256,7 +6257,7 @@ function renderPromoPackTemplate() {
 
         <!-- Layer 2: Promo Pack & Walkout Stars Body -->
         ${isLayerVisible('layer_promo_body') ? `
-        <div id="layer_promo_body" class="draggable-layer w-full text-center flex flex-col items-center" style="${getLayerStyle('layer_promo_body', 165)}; width: 510px; z-index: 25;">
+        <div id="layer_promo_body" class="draggable-layer w-full text-center flex flex-col items-center" style="${getLayerStyle('layer_promo_body', 160)}; width: 510px; z-index: 25;">
             <div class="layer-scale-wrapper w-full flex flex-col items-center gap-2" style="transform: scale(${getLayerScale('layer_promo_body')});">
                 
                 <!-- Urgency Countdown Capsule -->
