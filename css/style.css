@@ -220,6 +220,7 @@ body {
     user-select: none;
     border-radius: 0px !important; /* Pure 90-degree rectangle so preview matches exported image 100% */
     transform-origin: 0 0 !important;
+    container-type: inline-size;
 }
 
 /* Aspect ratio presets (Standard Instagram Dimensions) */

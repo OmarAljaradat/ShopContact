@@ -561,26 +561,33 @@ const TEMPLATES = {
         defaultState: {
             bgTheme: 'store',
             bgLighting: 'bright',
+            flashSaleStyle: 'square_official',
             saleTitle: 'عروض كوينز الويكند الحارقة ⚡',
             saleExpiry: '⏳ العرض ساري حتى منتصف الليل فقط',
             tier1: {
                 amount: '500,000 كوينز',
                 oldPrice: '15$',
                 price: '11$',
-                badge: '⚡ باقة البداية'
+                badge: 'باقة التوفير ⚡'
             },
             tier2: {
                 amount: '1,000,000 كوينز',
                 oldPrice: '28$',
                 price: '21$',
-                badge: 'الأكثر طلباً • BEST SELLER ⭐',
+                badge: 'الأكثر طلباً 🔥',
                 subBadge: 'ضمان شامل وأمان 100% للنادي 🛡️'
             },
             tier3: {
                 amount: '2,000,000 كوينز',
                 oldPrice: '52$',
                 price: '39$',
-                badge: '👑 باقة الحيتان VIP'
+                badge: 'باقة VIP 👑'
+            },
+            tier4: {
+                amount: '3,000,000 كوينز',
+                oldPrice: '78$',
+                price: '58$',
+                badge: 'الأسطورية 💎'
             },
             guaranteeText: '🛡️ جميع الباقات تشمل ضمان وأمان كامل للنادي 100% بدون باند • تسليم فوري',
             badgeText: '⚡ عروض كوينز حصرية لفترة محدودة • أسعار اليوم الأقوى',
