@@ -3151,8 +3151,8 @@ function renderControls() {
 
 
 
-    // Box & Button Customization Card (Only for templates with info box and CTA button like trio/market_drop, excluded for promo_pack, market_tracker, champs_squad)
-    if (currentTemplate !== 'promo_pack' && currentTemplate !== 'store_promo' && currentTemplate !== 'sbc' && currentTemplate !== 'showcase' && currentTemplate !== 'market_tracker' && currentTemplate !== 'champs_squad') {
+    // Box & Button Customization Card (Only for templates with info box and CTA button like trio/market_drop, excluded for promo_pack, market_tracker, champs_squad, evo_boost)
+    if (currentTemplate !== 'promo_pack' && currentTemplate !== 'store_promo' && currentTemplate !== 'sbc' && currentTemplate !== 'showcase' && currentTemplate !== 'market_tracker' && currentTemplate !== 'champs_squad' && currentTemplate !== 'evo_boost') {
         html += `
             <div class="mt-4 p-4 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-3.5">
                 <div class="flex items-center justify-between pb-2 border-b border-slate-100">
@@ -3240,8 +3240,8 @@ function renderControls() {
         `;
     }
 
-    // Background Framing & Position Controls (تحريك وتكبير الخلفية - Excluded for promo_pack, market_tracker, champs_squad)
-    if (currentTemplate !== 'promo_pack' && currentTemplate !== 'market_tracker' && currentTemplate !== 'champs_squad') {
+    // Background Framing & Position Controls (تحريك وتكبير الخلفية - Excluded for promo_pack, market_tracker, champs_squad, evo_boost)
+    if (currentTemplate !== 'promo_pack' && currentTemplate !== 'market_tracker' && currentTemplate !== 'champs_squad' && currentTemplate !== 'evo_boost') {
         html += `
             <div class="mt-4 p-4 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-3.5">
                 <div class="flex items-center justify-between pb-2 border-b border-slate-100">
@@ -6650,12 +6650,14 @@ const EVO_BOOST_PRESETS = [
 ];
 
 function renderEvoBoostTemplate() {
-    const isLightBg = (window.MARKET_BG_THEMES[appState.bgTheme || 'store']?.isLight) ?? true;
+    appState.bgTheme = 'store';
+    appState.bgLighting = 'bright';
+    const isLightBg = true;
     const bCard = appState.beforeCard || TEMPLATES.evo_boost.defaultState.beforeCard;
     const aCard = appState.afterCard || TEMPLATES.evo_boost.defaultState.afterCard;
 
     return `
-        ${getStoryBackgroundHtml(appState.bgTheme, appState.bgLighting)}
+        ${getStoryBackgroundHtml('store', 'bright')}
 
         <!-- Layer 1: Header -->
         ${renderStoryHeader('layer_evo_header', appState.badgeText || TEMPLATES.evo_boost.defaultState.badgeText, appState.headline || TEMPLATES.evo_boost.defaultState.headline, appState.subheadline || TEMPLATES.evo_boost.defaultState.subheadline, isLightBg)}
@@ -6677,7 +6679,7 @@ function renderEvoBoostTemplate() {
                     <!-- Left: Before Card -->
                     <div class="flex-1 flex flex-col items-center max-w-[210px] opacity-85">
                         <div class="px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 text-[10px] font-black mb-1 border border-slate-700">
-                            قبل التطوير (${bCard.rating || '80'})
+                            قبل التطوير (<bdi>${bCard.rating || '80'}</bdi>)
                         </div>
                         <div class="relative w-full h-[180px] flex items-center justify-center">
                             <img src="${bCard.url}" class="max-h-full max-w-full object-contain filter grayscale-[25%] drop-shadow" alt="">
@@ -6702,7 +6704,7 @@ function renderEvoBoostTemplate() {
                     <!-- Right: After Card (Upgraded Beast) -->
                     <div class="flex-1 flex flex-col items-center max-w-[210px]">
                         <div class="px-2.5 py-0.5 rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 text-slate-950 text-[10px] font-black mb-1 shadow">
-                            ⭐ بعد التطوير (${aCard.rating || '87'})
+                            ⭐ بعد التطوير (<bdi>${aCard.rating || '87'}</bdi>)
                         </div>
                         <div class="relative w-full h-[190px] flex items-center justify-center">
                             <div class="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[180px] h-[180px] bg-[radial-gradient(ellipse_at_center,rgba(0,255,163,0.32)_0%,transparent_70%)] blur-xl -z-10"></div>
@@ -6733,71 +6735,342 @@ function renderEvoBoostTemplate() {
 }
 
 function renderEvoBoostControls() {
+    const bCard = appState.beforeCard || TEMPLATES.evo_boost.defaultState.beforeCard;
+    const aCard = appState.afterCard || TEMPLATES.evo_boost.defaultState.afterCard;
+
     return `
         <div class="space-y-4">
-            <!-- 1. Background Selection -->
-            ${renderStoryBackgroundControls()}
-
-            <!-- 2. 1-Click Presets -->
-            <div class="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs space-y-2">
-                <span class="text-xs font-black text-slate-800 block">⚡ قوالب إيفو جاهزة:</span>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-                    ${EVO_BOOST_PRESETS.map(p => `
-                        <button type="button" onclick="applyEvoBoostPreset('${p.id}')" class="p-2 rounded-xl text-right border transition bg-slate-50 border-slate-200 hover:border-emerald-400 text-slate-800 text-xs font-bold">
-                            ${p.name}
-                        </button>
-                    `).join('')}
-                </div>
-            </div>
-
-            <!-- 3. Evo Setup Details -->
+            <!-- 1. Evo Setup Details -->
             <div class="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs space-y-3">
-                <span class="text-xs font-black text-slate-800 block">🧬 بيانات التطوير والتكلفة:</span>
+                <div class="flex items-center justify-between pb-1.5 border-b border-slate-100">
+                    <span class="text-xs font-black text-slate-900 flex items-center gap-1.5">
+                        <span>🧬</span>
+                        <span>بيانات التطويرة وتكلفة التفعيل:</span>
+                    </span>
+                    <span class="text-[10px] font-black text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                        تطويرات FC 27
+                    </span>
+                </div>
+
                 <div class="grid grid-cols-2 gap-2">
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-600 mb-1">اسم الإيفولوشن:</label>
-                        <input type="text" value="${appState.evoTitle || ''}" oninput="appState.evoTitle = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+                        <label class="block text-[11px] font-bold text-slate-700 mb-1">اسم الإيفولوشن (التطويرة):</label>
+                        <input type="text" value="${appState.evoTitle || ''}" 
+                               placeholder="تطوير: الجناح الفولاذي (Relentless Winger)"
+                               oninput="appState.evoTitle = this.value; renderCanvas();" 
+                               class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500 focus:bg-white transition">
                     </div>
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-600 mb-1">تكلفة التفعيل بالكوينز:</label>
-                        <input type="text" value="${appState.evoCost || ''}" oninput="appState.evoCost = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+                        <label class="block text-[11px] font-bold text-slate-700 mb-1">تكلفة التفعيل بالكوينز:</label>
+                        <input type="text" value="${appState.evoCost || ''}" 
+                               placeholder="100,000 كوينز"
+                               oninput="appState.evoCost = this.value; renderCanvas();" 
+                               class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500 focus:bg-white transition">
                     </div>
                 </div>
+
                 <div>
-                    <label class="block text-[11px] font-bold text-slate-600 mb-1">شريط ملخص التطوير:</label>
-                    <input type="text" value="${appState.boostSummary || ''}" oninput="appState.boostSummary = this.value; renderCanvas();" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500">
+                    <div class="flex items-center justify-between mb-1">
+                        <label class="text-[11px] font-bold text-slate-700">شريط ملخص الطفرة / الزيادات الإجمالية:</label>
+                        <button type="button" onclick="autoCalculateEvoBoostSummary()" class="px-2 py-0.5 rounded-md bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 font-bold text-[10px] transition cursor-pointer flex items-center gap-1">
+                            <span>🪄 حساب الفارق تلقائياً</span>
+                        </button>
+                    </div>
+                    <input type="text" id="input_evo_boostSummary" value="${appState.boostSummary || ''}" 
+                           placeholder="+12 سرعة • +14 تسديد • +11 مراوغة"
+                           oninput="appState.boostSummary = this.value; renderCanvas();" 
+                           class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500 focus:bg-white transition">
                 </div>
             </div>
 
-            <!-- 4. Before & After Cards Data -->
+            <!-- 2. Before Evolution Card -->
             <div class="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs space-y-3">
-                <span class="text-xs font-black text-slate-800 block">🔄 بيانات الكرت قبل وبعد:</span>
-                
-                <div class="p-2 bg-slate-50 rounded-xl space-y-1.5 border border-slate-200">
-                    <span class="text-[11px] font-bold text-slate-700 block">الكرت قبل التطوير:</span>
-                    <div class="grid grid-cols-4 gap-1">
-                        <input type="text" value="${appState.beforeCard?.pac || '89'}" placeholder="PAC" oninput="if(!appState.beforeCard) appState.beforeCard={}; appState.beforeCard.pac=this.value; renderCanvas();" class="px-1.5 py-1 rounded bg-white border border-slate-200 text-xs text-center font-mono">
-                        <input type="text" value="${appState.beforeCard?.sho || '71'}" placeholder="SHO" oninput="if(!appState.beforeCard) appState.beforeCard={}; appState.beforeCard.sho=this.value; renderCanvas();" class="px-1.5 py-1 rounded bg-white border border-slate-200 text-xs text-center font-mono">
-                        <input type="text" value="${appState.beforeCard?.dri || '82'}" placeholder="DRI" oninput="if(!appState.beforeCard) appState.beforeCard={}; appState.beforeCard.dri=this.value; renderCanvas();" class="px-1.5 py-1 rounded bg-white border border-slate-200 text-xs text-center font-mono">
-                        <input type="text" value="${appState.beforeCard?.rating || '80 LW'}" placeholder="التقييم" oninput="if(!appState.beforeCard) appState.beforeCard={}; appState.beforeCard.rating=this.value; renderCanvas();" class="px-1.5 py-1 rounded bg-white border border-slate-200 text-xs text-center font-mono">
+                <div class="flex items-center justify-between pb-1.5 border-b border-slate-100">
+                    <span class="text-xs font-black text-slate-900 flex items-center gap-1.5">
+                        <span class="w-5 h-5 rounded-full bg-slate-200 text-slate-700 font-black text-[10px] flex items-center justify-center">1</span>
+                        <span>الكرت قبل التطوير (الكرت العادي):</span>
+                    </span>
+                    <div class="flex items-center gap-1.5">
+                        <img src="${bCard.url}" class="w-6 h-8 object-contain rounded border border-slate-200 bg-white" alt="">
+                        <span class="text-[10.5px] font-black text-slate-700 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-full">
+                            ${bCard.rating || '80 LW'}
+                        </span>
                     </div>
-                    <input type="text" value="${appState.beforeCard?.url || ''}" placeholder="رابط صورة الكرت قبل" oninput="if(!appState.beforeCard) appState.beforeCard={}; appState.beforeCard.url=this.value; renderCanvas();" class="w-full px-2 py-1 rounded bg-white border border-slate-200 text-[10.5px] font-mono">
                 </div>
 
-                <div class="p-2 bg-emerald-50/50 rounded-xl space-y-1.5 border border-emerald-200">
-                    <span class="text-[11px] font-black text-emerald-900 block">الكرت بعد التطوير (الوحش):</span>
-                    <div class="grid grid-cols-4 gap-1">
-                        <input type="text" value="${appState.afterCard?.pac || '98'}" placeholder="PAC" oninput="if(!appState.afterCard) appState.afterCard={}; appState.afterCard.pac=this.value; renderCanvas();" class="px-1.5 py-1 rounded bg-white border border-emerald-300 text-xs text-center font-mono font-bold">
-                        <input type="text" value="${appState.afterCard?.sho || '85'}" placeholder="SHO" oninput="if(!appState.afterCard) appState.afterCard={}; appState.afterCard.sho=this.value; renderCanvas();" class="px-1.5 py-1 rounded bg-white border border-emerald-300 text-xs text-center font-mono font-bold">
-                        <input type="text" value="${appState.afterCard?.dri || '93'}" placeholder="DRI" oninput="if(!appState.afterCard) appState.afterCard={}; appState.afterCard.dri=this.value; renderCanvas();" class="px-1.5 py-1 rounded bg-white border border-emerald-300 text-xs text-center font-mono font-bold">
-                        <input type="text" value="${appState.afterCard?.rating || '87 LW'}" placeholder="التقييم" oninput="if(!appState.afterCard) appState.afterCard={}; appState.afterCard.rating=this.value; renderCanvas();" class="px-1.5 py-1 rounded bg-white border border-emerald-300 text-xs text-center font-mono font-bold">
+                <!-- Search & Fetch or Upload -->
+                <div class="flex gap-1.5">
+                    <input type="text" id="input_evo_beforeCard" 
+                           placeholder="اكتب اسم اللاعب (مثل: Barcola أو Yamal) أو رابط FUT.GG"
+                           onkeydown="if(event.key==='Enter') fetchEvoPlayerCard('beforeCard')"
+                           class="flex-1 px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-900 text-[11px] outline-none focus:border-emerald-600 transition shadow-2xs">
+                    <button id="btn_fetch_evo_beforeCard" type="button" onclick="fetchEvoPlayerCard('beforeCard')" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[11px] transition shrink-0 flex items-center gap-1 shadow-xs cursor-pointer">
+                        <span>⚡ سحب</span>
+                    </button>
+                    <label class="px-2.5 py-1.5 rounded-lg bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-[11px] font-bold cursor-pointer transition shrink-0 flex items-center gap-1 shadow-2xs" title="رفع صورة كرت">
+                        <span>📁 رفع</span>
+                        <input type="file" accept="image/*" class="hidden" onchange="handleEvoPlayerUpload('beforeCard', this)">
+                    </label>
+                </div>
+
+                <!-- Stats & Rating -->
+                <div class="grid grid-cols-4 gap-1.5">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-600 mb-0.5">التقييم والمركز:</label>
+                        <input type="text" value="${bCard.rating || '80 LW'}" 
+                               placeholder="80 LW" 
+                               oninput="updateEvoCard('beforeCard', 'rating', this.value)" 
+                               class="w-full px-2 py-1 rounded-md bg-white border border-slate-200 text-slate-900 text-xs font-bold text-center outline-none focus:border-emerald-500">
                     </div>
-                    <input type="text" value="${appState.afterCard?.url || ''}" placeholder="رابط صورة الكرت بعد" oninput="if(!appState.afterCard) appState.afterCard={}; appState.afterCard.url=this.value; renderCanvas();" class="w-full px-2 py-1 rounded bg-white border border-emerald-200 text-[10.5px] font-mono">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-600 mb-0.5">PAC (سرعة):</label>
+                        <input type="text" value="${bCard.pac || '89'}" 
+                               placeholder="89" 
+                               oninput="updateEvoCard('beforeCard', 'pac', this.value)" 
+                               class="w-full px-2 py-1 rounded-md bg-white border border-slate-200 text-slate-900 text-xs font-bold text-center font-mono outline-none focus:border-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-600 mb-0.5">SHO (تسديد):</label>
+                        <input type="text" value="${bCard.sho || '71'}" 
+                               placeholder="71" 
+                               oninput="updateEvoCard('beforeCard', 'sho', this.value)" 
+                               class="w-full px-2 py-1 rounded-md bg-white border border-slate-200 text-slate-900 text-xs font-bold text-center font-mono outline-none focus:border-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-600 mb-0.5">DRI (مراوغة):</label>
+                        <input type="text" value="${bCard.dri || '82'}" 
+                               placeholder="82" 
+                               oninput="updateEvoCard('beforeCard', 'dri', this.value)" 
+                               class="w-full px-2 py-1 rounded-md bg-white border border-slate-200 text-slate-900 text-xs font-bold text-center font-mono outline-none focus:border-emerald-500">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-500 mb-0.5">رابط صورة الكرت قبل التطوير:</label>
+                    <input type="text" value="${bCard.url || ''}" 
+                           placeholder="رابط الصورة المباشر" 
+                           oninput="updateEvoCard('beforeCard', 'url', this.value)" 
+                           class="w-full px-2 py-1 rounded-md bg-white border border-slate-200 text-slate-700 text-[10.5px] font-mono outline-none focus:border-emerald-500">
+                </div>
+            </div>
+
+            <!-- 3. After Evolution Card (Upgraded Beast) -->
+            <div class="p-3.5 rounded-xl bg-white border border-emerald-200 shadow-2xs space-y-3">
+                <div class="flex items-center justify-between pb-1.5 border-b border-emerald-100">
+                    <span class="text-xs font-black text-emerald-950 flex items-center gap-1.5">
+                        <span class="w-5 h-5 rounded-full bg-emerald-600 text-white font-black text-[10px] flex items-center justify-center">2</span>
+                        <span>الكرت بعد التطوير (الوحش المطور ⭐):</span>
+                    </span>
+                    <div class="flex items-center gap-1.5">
+                        <img src="${aCard.url}" class="w-6 h-8 object-contain rounded border border-emerald-300 bg-white" alt="">
+                        <span class="text-[10.5px] font-black text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                            ${aCard.rating || '87 LW'}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Search & Fetch or Upload -->
+                <div class="flex gap-1.5">
+                    <input type="text" id="input_evo_afterCard" 
+                           placeholder="اكتب اسم اللاعب أو رابط كرت الإيفو من FUT.GG"
+                           onkeydown="if(event.key==='Enter') fetchEvoPlayerCard('afterCard')"
+                           class="flex-1 px-2.5 py-1.5 rounded-lg bg-white border border-emerald-200 text-slate-900 text-[11px] outline-none focus:border-emerald-600 transition shadow-2xs">
+                    <button id="btn_fetch_evo_afterCard" type="button" onclick="fetchEvoPlayerCard('afterCard')" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[11px] transition shrink-0 flex items-center gap-1 shadow-xs cursor-pointer">
+                        <span>⚡ سحب</span>
+                    </button>
+                    <label class="px-2.5 py-1.5 rounded-lg bg-white hover:bg-emerald-50 text-emerald-800 border border-emerald-300 text-[11px] font-bold cursor-pointer transition shrink-0 flex items-center gap-1 shadow-2xs" title="رفع صورة كرت الإيفو">
+                        <span>📁 رفع</span>
+                        <input type="file" accept="image/*" class="hidden" onchange="handleEvoPlayerUpload('afterCard', this)">
+                    </label>
+                </div>
+
+                <!-- Stats & Rating -->
+                <div class="grid grid-cols-4 gap-1.5">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-600 mb-0.5">التقييم والمركز:</label>
+                        <input type="text" value="${aCard.rating || '87 LW'}" 
+                               placeholder="87 LW" 
+                               oninput="updateEvoCard('afterCard', 'rating', this.value)" 
+                               class="w-full px-2 py-1 rounded-md bg-white border border-emerald-300 text-slate-900 text-xs font-black text-center outline-none focus:border-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-600 mb-0.5">PAC (سرعة):</label>
+                        <input type="text" value="${aCard.pac || '98'}" 
+                               placeholder="98" 
+                               oninput="updateEvoCard('afterCard', 'pac', this.value)" 
+                               class="w-full px-2 py-1 rounded-md bg-white border border-emerald-300 text-slate-900 text-xs font-black text-center font-mono outline-none focus:border-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-600 mb-0.5">SHO (تسديد):</label>
+                        <input type="text" value="${aCard.sho || '85'}" 
+                               placeholder="85" 
+                               oninput="updateEvoCard('afterCard', 'sho', this.value)" 
+                               class="w-full px-2 py-1 rounded-md bg-white border border-emerald-300 text-slate-900 text-xs font-black text-center font-mono outline-none focus:border-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-600 mb-0.5">DRI (مراوغة):</label>
+                        <input type="text" value="${aCard.dri || '93'}" 
+                               placeholder="93" 
+                               oninput="updateEvoCard('afterCard', 'dri', this.value)" 
+                               class="w-full px-2 py-1 rounded-md bg-white border border-emerald-300 text-slate-900 text-xs font-black text-center font-mono outline-none focus:border-emerald-500">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-500 mb-0.5">رابط صورة الكرت بعد التطوير:</label>
+                    <input type="text" value="${aCard.url || ''}" 
+                           placeholder="رابط الصورة المباشر" 
+                           oninput="updateEvoCard('afterCard', 'url', this.value)" 
+                           class="w-full px-2 py-1 rounded-md bg-white border border-slate-200 text-slate-700 text-[10.5px] font-mono outline-none focus:border-emerald-500">
+                </div>
+            </div>
+
+            <!-- 4. Story Headlines & CTA Settings -->
+            <div class="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs space-y-3">
+                <div class="flex items-center gap-1.5 pb-1.5 border-b border-slate-100">
+                    <span class="text-xs font-black text-slate-900">✍️ نصوص وعروض الستوري:</span>
+                </div>
+
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-700 mb-1">شارة التنبيه العلوية:</label>
+                    <input type="text" value="${appState.badgeText || ''}" 
+                           oninput="appState.badgeText = this.value; renderCanvas();" 
+                           class="w-full px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500 focus:bg-white">
+                </div>
+
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-700 mb-1">العنوان الرئيسي للستوري:</label>
+                    <input type="text" value="${appState.headline || ''}" 
+                           oninput="appState.headline = this.value; renderCanvas();" 
+                           class="w-full px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500 focus:bg-white">
+                </div>
+
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-700 mb-1">الوصف التحفيزي:</label>
+                    <input type="text" value="${appState.subheadline || ''}" 
+                           oninput="appState.subheadline = this.value; renderCanvas();" 
+                           class="w-full px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-medium outline-none focus:border-emerald-500 focus:bg-white">
+                </div>
+
+                <div class="pt-2 border-t border-slate-100 space-y-2">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-700 mb-1">عنوان بانر المتجر (CTA):</label>
+                        <input type="text" value="${appState.ctaHeadline || ''}" 
+                               oninput="appState.ctaHeadline = this.value; renderCanvas();" 
+                               class="w-full px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500 focus:bg-white">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-700 mb-1">نص زر الطلب عبر الخاص:</label>
+                        <input type="text" value="${appState.ctaSub || ''}" 
+                               oninput="appState.ctaSub = this.value; renderCanvas();" 
+                               class="w-full px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500 focus:bg-white">
+                    </div>
                 </div>
             </div>
         </div>
     `;
 }
+
+window.updateEvoCard = function(cardType, field, value) {
+    if (!appState[cardType]) {
+        appState[cardType] = JSON.parse(JSON.stringify(TEMPLATES.evo_boost.defaultState[cardType] || {}));
+    }
+    appState[cardType][field] = value;
+    renderCanvas();
+};
+
+window.fetchEvoPlayerCard = async function(cardType) {
+    const input = document.getElementById(`input_evo_${cardType}`);
+    if (!input || !input.value.trim()) {
+        alert('يرجى كتابة اسم اللاعب أو لصق رابط الكرت من FUT.GG أو فوت بين');
+        return;
+    }
+    const val = input.value.trim();
+    const btn = document.getElementById(`btn_fetch_evo_${cardType}`);
+    const originalText = btn ? btn.innerHTML : '';
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<span>جاري...</span> <span class="animate-spin">⏳</span>';
+    }
+
+    try {
+        const res = await fetch(`/api/fetch-futgg?url=${encodeURIComponent(val)}`);
+        if (!res.ok) throw new Error(`خطأ في السيرفر (${res.status})`);
+        const data = await res.json();
+        if (data.success && data.cardImage) {
+            if (!appState[cardType]) {
+                appState[cardType] = JSON.parse(JSON.stringify(TEMPLATES.evo_boost.defaultState[cardType] || {}));
+            }
+            appState[cardType].url = data.cardImage;
+            if (data.playerName) appState[cardType].name = data.playerName;
+            if (data.rating) appState[cardType].rating = `${data.rating} ${data.position || ''}`.trim();
+            if (data.stats) {
+                if (data.stats.pac) appState[cardType].pac = String(data.stats.pac);
+                if (data.stats.sho) appState[cardType].sho = String(data.stats.sho);
+                if (data.stats.dri) appState[cardType].dri = String(data.stats.dri);
+            }
+            input.value = '';
+            renderControls();
+            renderCanvas();
+            if (window.showCopyToast) window.showCopyToast(`تم جلب كرت ${data.playerName} بنجاح! ⚡`);
+        } else {
+            alert(data.error || 'تعذر سحب كرت اللاعب. تأكد من الاسم أو الرابط');
+        }
+    } catch (e) {
+        alert('حدث خطأ أثناء جلب الكرت: ' + e.message);
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
+    }
+};
+
+window.handleEvoPlayerUpload = function(cardType, fileInput) {
+    if (!fileInput || !fileInput.files || !fileInput.files[0]) return;
+    const file = fileInput.files[0];
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        if (!appState[cardType]) {
+            appState[cardType] = JSON.parse(JSON.stringify(TEMPLATES.evo_boost.defaultState[cardType] || {}));
+        }
+        appState[cardType].url = e.target.result;
+        renderControls();
+        renderCanvas();
+        if (window.showCopyToast) window.showCopyToast(`تم رفع صورة الكرت بنجاح! 📁`);
+    };
+    reader.readAsDataURL(file);
+};
+
+window.autoCalculateEvoBoostSummary = function() {
+    const b = appState.beforeCard || TEMPLATES.evo_boost.defaultState.beforeCard;
+    const a = appState.afterCard || TEMPLATES.evo_boost.defaultState.afterCard;
+    const bPac = parseInt(b.pac, 10) || 0;
+    const aPac = parseInt(a.pac, 10) || 0;
+    const bSho = parseInt(b.sho, 10) || 0;
+    const aSho = parseInt(a.sho, 10) || 0;
+    const bDri = parseInt(b.dri, 10) || 0;
+    const aDri = parseInt(a.dri, 10) || 0;
+
+    const diffPac = aPac - bPac;
+    const diffSho = aSho - bSho;
+    const diffDri = aDri - bDri;
+
+    let parts = [];
+    if (diffPac !== 0) parts.push(`${diffPac > 0 ? '+' : ''}${diffPac} سرعة`);
+    if (diffSho !== 0) parts.push(`${diffSho > 0 ? '+' : ''}${diffSho} تسديد`);
+    if (diffDri !== 0) parts.push(`${diffDri > 0 ? '+' : ''}${diffDri} مراوغة`);
+
+    if (parts.length === 0) {
+        parts = ['+10 سرعة', '+12 تسديد', '+8 مراوغة'];
+    }
+
+    appState.boostSummary = parts.join(' • ');
+    const input = document.getElementById('input_evo_boostSummary');
+    if (input) input.value = appState.boostSummary;
+    renderCanvas();
+    if (window.showCopyToast) window.showCopyToast('تم حساب فارق الطاقات وتحديث الملخص! 🪄');
+};
 
 window.applyEvoBoostPreset = function(presetId) {
     const p = EVO_BOOST_PRESETS.find(x => x.id === presetId);
