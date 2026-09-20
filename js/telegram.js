@@ -20,7 +20,8 @@ const TelegramManager = {
     },
 
     getAsDocument() {
-        return localStorage.getItem(this.AS_DOC_KEY) === 'true';
+        const val = localStorage.getItem(this.AS_DOC_KEY);
+        return val === null ? true : val === 'true';
     },
 
     setToken(token) {
@@ -219,15 +220,17 @@ const TelegramManager = {
                 : (activeFont === 'zain' ? "'Zain', Cairo, sans-serif" : "'Alexandria', Cairo, sans-serif");
             const fontStyleRule = `<style>#${elementId}, #${elementId} * { font-family: ${fontCssString} !important; }</style>`;
 
+            const currentRes = (typeof CanvasExporter !== 'undefined' && CanvasExporter.resolution) ? CanvasExporter.resolution : '4k';
             const res = await fetch('/api/render-native', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     html: fontStyleRule + clone.innerHTML,
                     className: targetClassName,
-                    filename: 'telegram_design.jpg',
+                    filename: 'telegram_design_4k.jpg',
                     format: 'jpg',
-                    quality: 98
+                    quality: 100,
+                    resolution: currentRes
                 })
             });
 
@@ -245,8 +248,8 @@ const TelegramManager = {
         }
 
         if (!dataUrl && typeof CanvasExporter !== 'undefined') {
-            const canvas = await CanvasExporter.renderToCanvas(elementId, true);
-            dataUrl = canvas.toDataURL('image/jpeg', 0.98);
+            const canvas = await CanvasExporter.renderToCanvas(elementId, true, '4k');
+            dataUrl = canvas.toDataURL('image/jpeg', 1.0);
         }
 
         if (!dataUrl) throw new Error('تعذر إنشاء صورة التصميم بدقة فائقة');

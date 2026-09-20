@@ -4,11 +4,11 @@
  */
 
 const CanvasExporter = {
-    // Default export resolution: '2k' (1440p QHD) or '1080p' (Full HD)
-    resolution: '2k',
+    // Default export resolution: '4k' (2160p Ultra HD), '2k' (1440p QHD), or '1080p' (Full HD)
+    resolution: '4k',
 
     setResolution(res) {
-        if (res === '2k' || res === '1080p') {
+        if (res === '4k' || res === '2k' || res === '1080p') {
             this.resolution = res;
             if (typeof window.updateResolutionUI === 'function') {
                 window.updateResolutionUI(res);
@@ -114,12 +114,17 @@ const CanvasExporter = {
             await new Promise(r => setTimeout(r, 60));
 
             // Target Resolution Scale Multiplier:
+            // 4K Mode (Ultra HD 2160p): Story -> 2160x3840 (scale 4.8), Portrait -> 2160x2700 (scale 4.5), Square -> 2160x2160 (scale 4.32)
             // 2K Mode (QHD 1440p): Story -> 1440x2560 (scale 3.2), Portrait -> 1440x1800 (scale 3.0), Square -> 2048x2048 (scale 4.096)
             // 1080p Mode: Story -> 1080x1920 (scale 2.4), Portrait -> 1080x1350 (scale 2.25), Square -> 1080x1080 (scale 2.16)
-            const currentRes = customRes || this.resolution || '2k';
-            let targetWidth = 1080;
+            const currentRes = customRes || this.resolution || '4k';
+            let targetWidth = 2160;
             if (currentRes === '2k') {
                 targetWidth = isSquare ? 2048 : 1440;
+            } else if (currentRes === '1080p') {
+                targetWidth = 1080;
+            } else {
+                targetWidth = 2160;
             }
             const targetScale = targetWidth / width;
 
@@ -172,7 +177,8 @@ const CanvasExporter = {
     async downloadNative(elementId, format = 'jpg') {
         const isJpg = format.toLowerCase() === 'jpg' || format.toLowerCase() === 'jpeg';
         const ext = isJpg ? 'jpg' : 'png';
-        const resTag = '4K_NATIVE';
+        const activeRes = this.resolution || '4k';
+        const resTag = activeRes.toUpperCase() + '_NATIVE';
         const filename = `shop_coin15_FC27_${typeof currentTemplate !== 'undefined' ? currentTemplate : 'design'}_${resTag}_${Date.now()}.${ext}`;
 
         const source = document.getElementById(elementId);
@@ -188,7 +194,7 @@ const CanvasExporter = {
         });
 
         if (window.showCopyToast) {
-            window.showCopyToast(`جاري استخراج الصورة بمحرك المتصفح الحقيقي (Native 100% Engine)... 👑⏳`);
+            window.showCopyToast(`جاري استخراج الصورة بدقة ${activeRes.toUpperCase()} بمحرك المتصفح الحقيقي (Native Engine)... 👑⏳`);
         }
 
         try {
@@ -215,7 +221,8 @@ const CanvasExporter = {
                     className: targetClassName,
                     filename: filename,
                     format: ext,
-                    quality: 98
+                    quality: 100,
+                    resolution: activeRes
                 })
             });
 
@@ -254,7 +261,7 @@ const CanvasExporter = {
         const isJpg = format.toLowerCase() === 'jpg' || format.toLowerCase() === 'jpeg';
         const ext = isJpg ? 'jpg' : 'png';
         const mimeType = isJpg ? 'image/jpeg' : 'image/png';
-        const resTag = (this.resolution || '2k').toUpperCase();
+        const resTag = (this.resolution || '4k').toUpperCase();
 
         if (!filename) {
             filename = `shop_coin15_FC27_${typeof currentTemplate !== 'undefined' ? currentTemplate : 'design'}_${resTag}_${Date.now()}.${ext}`;
@@ -326,7 +333,7 @@ const CanvasExporter = {
             btn.classList.add('opacity-60', 'pointer-events-none');
         });
 
-        const resTag = (this.resolution || '2k').toUpperCase();
+        const resTag = (this.resolution || '4k').toUpperCase();
         if (window.showCopyToast) {
             window.showCopyToast(`جاري تجهيز الصورة بدقة ${resTag} للمعاينة والحفظ... ⏳`);
         }

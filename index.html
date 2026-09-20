@@ -210,26 +210,29 @@
                         <div class="grid grid-cols-3 gap-2">
                             <button class="ratio-btn px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-center transition hover:border-emerald-500" data-ratio="portrait">
                                 <div class="text-slate-900 font-bold">بوست طولي (4:5)</div>
-                                <div class="text-[10px] text-slate-500" id="dim_portrait">1440x1800</div>
+                                <div class="text-[10px] text-slate-500" id="dim_portrait">2160x2700</div>
                             </button>
                             <button class="ratio-btn px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-center transition hover:border-emerald-500" data-ratio="square">
                                 <div class="text-slate-900 font-bold">مربع (1:1)</div>
-                                <div class="text-[10px] text-slate-500" id="dim_square">2048x2048</div>
+                                <div class="text-[10px] text-slate-500" id="dim_square">2160x2160</div>
                             </button>
                             <button class="ratio-btn active px-3 py-2 rounded-xl bg-emerald-50 border-2 border-emerald-500 text-xs font-bold text-center transition" data-ratio="story">
                                 <div class="text-emerald-950 font-black">ستوري (9:16)</div>
-                                <div class="text-[10px] text-emerald-700 font-black" id="dim_story">1440x2560 📱</div>
+                                <div class="text-[10px] text-emerald-700 font-black" id="dim_story">2160x3840 👑</div>
                             </button>
                         </div>
 
-                        <!-- Resolution Selector (2K QHD vs 1080p FHD) -->
+                        <!-- Resolution Selector (4K Ultra HD vs 2K QHD vs 1080p FHD) -->
                         <div class="pt-3 mt-3 border-t border-slate-100 flex items-center justify-between">
                             <div class="flex items-center gap-2">
                                 <span class="text-xs text-slate-500 font-bold">دقة التصدير:</span>
-                                <span id="currentResBadge" class="text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 font-black">2K QHD فائقة الوضوح</span>
+                                <span id="currentResBadge" class="text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 font-black">4K Ultra HD فائقة النقاء 👑</span>
                             </div>
                             <div class="flex items-center gap-1.5" id="resSelector">
-                                <button class="res-btn active px-3 py-1 rounded-lg bg-emerald-600 text-white font-black text-xs transition shadow-sm shadow-emerald-600/20" data-res="2k" title="دقة 2K فائقة النقاء (1440p QHD)">
+                                <button class="res-btn active px-3 py-1 rounded-lg bg-emerald-600 text-white font-black text-xs transition shadow-sm shadow-emerald-600/20" data-res="4k" title="دقة 4K Ultra HD فائقة النقاء (2160x3840)">
+                                    <span>4K Ultra 👑</span>
+                                </button>
+                                <button class="res-btn px-2.5 py-1 rounded-lg bg-slate-100 border border-slate-200 text-slate-700 font-bold text-xs hover:border-slate-300 transition" data-res="2k" title="دقة 2K فائقة النقاء (1440p QHD)">
                                     <span>2K QHD ⭐</span>
                                 </button>
                                 <button class="res-btn px-2.5 py-1 rounded-lg bg-slate-100 border border-slate-200 text-slate-700 font-bold text-xs hover:border-slate-300 transition" data-res="1080p" title="دقة Full HD 1080p قياسية">
@@ -549,10 +552,10 @@
                 <!-- Format Option -->
                 <div class="pt-1">
                     <label class="flex items-center gap-2 cursor-pointer select-none">
-                        <input type="checkbox" id="tgAsDocumentCheckbox" class="w-4 h-4 rounded accent-sky-600">
-                        <span class="text-xs text-slate-700 font-bold">إرسال كملف غير مضغوط (Document) بدلاً من صورة عادية (لأقصى نقاء بدون أي ضغط)</span>
+                        <input type="checkbox" id="tgAsDocumentCheckbox" class="w-4 h-4 rounded accent-sky-600" checked>
+                        <span class="text-xs text-slate-800 font-black">إرسال كملف أصلي بدقة 4K غير مضغوط (Document) - لأقصى نقاء بدون أي ضغط من تليجرام</span>
                     </label>
-                    <p class="text-[10px] text-slate-400 mr-6 mt-0.5">💡 بدون تحديد هذا الخيار، سيتم الإرسال كصورة عادية يمكنك حفظها بلمسة واحدة في ألبوم صور الهاتف.</p>
+                    <p class="text-[10px] text-emerald-600 font-bold mr-6 mt-0.5">⭐ مُفعّل افتراضياً لحماية التصميم من خوارزميات ضغط تليجرام وحفظه بالدقة الكاملة 2160x3840 في ألبوم صور هاتفك.</p>
                 </div>
             </div>
 

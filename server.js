@@ -1978,7 +1978,7 @@ const server = http.createServer((req, res) => {
 
                 const endpoint = asDocument ? 'sendDocument' : 'sendPhoto';
                 const fileField = asDocument ? 'document' : 'photo';
-                const fileName = `shop_coin15_${Date.now()}.${isPng ? 'png' : 'jpg'}`;
+                const fileName = `shop_coin15_4K_${Date.now()}.${isPng ? 'png' : 'jpg'}`;
                 const fileMime = isPng ? 'image/png' : 'image/jpeg';
 
                 // Telegram caption limit is 1024 characters for media
@@ -2189,7 +2189,7 @@ const server = http.createServer((req, res) => {
             renderQueue = renderQueue.then(async () => {
                 try {
                     const payload = JSON.parse(body);
-                    const { html, className, filename, format, quality } = payload;
+                    const { html, className, filename, format, quality, resolution } = payload;
                     
                     const page = await ensureNativePage(PORT);
                     if (!page) {
@@ -2200,24 +2200,30 @@ const server = http.createServer((req, res) => {
 
                     const isSquare = className && (className.includes('canvas-square') || className.includes('canvas-post'));
                     const isPortrait = className && className.includes('canvas-portrait');
-                    let targetWidth = 1080;
-                    let targetHeight = 1920;
-                    if (isSquare) {
-                        targetWidth = 1080;
-                        targetHeight = 1080;
-                    } else if (isPortrait) {
-                        targetWidth = 1080;
-                        targetHeight = 1350;
+                    
+                    const baseWidth = isPortrait ? 480 : (isSquare ? 500 : 450);
+                    const baseHeight = isPortrait ? 600 : (isSquare ? 500 : 800);
+
+                    // True resolution scale factors:
+                    // 4K Ultra HD (default): Story -> 2160x3840 (scale 4.8), Portrait -> 2160x2700 (scale 4.5), Square -> 2160x2160 (scale 4.32)
+                    // 2K QHD: Story -> 1440x2560 (scale 3.2), Portrait -> 1440x1800 (scale 3.0), Square -> 2048x2048 (scale 4.096)
+                    // 1080p FHD: Story -> 1080x1920 (scale 2.4), Portrait -> 1080x1350 (scale 2.25), Square -> 1080x1080 (scale 2.16)
+                    const resMode = (resolution || '4k').toLowerCase();
+                    let scaleFactor = 4.8;
+                    if (resMode === '1080p') {
+                        scaleFactor = isPortrait ? 2.25 : (isSquare ? 2.16 : 2.4);
+                    } else if (resMode === '2k') {
+                        scaleFactor = isPortrait ? 3.0 : (isSquare ? 4.096 : 3.2);
                     } else {
-                        targetWidth = 1080;
-                        targetHeight = 1920;
+                        // 4k Ultra HD default
+                        scaleFactor = isPortrait ? 4.5 : (isSquare ? 4.32 : 4.8);
                     }
 
-                    // Set target viewport (deviceScaleFactor: 2 for Ultra-HD sharp export)
+                    // Set target viewport (deviceScaleFactor for crisp True 4K / 2K export)
                     await page.setViewport({
-                        width: targetWidth,
-                        height: targetHeight,
-                        deviceScaleFactor: 2
+                        width: Math.max(1200, Math.ceil(baseWidth * 1.5)),
+                        height: Math.max(1200, Math.ceil(baseHeight * 1.5)),
+                        deviceScaleFactor: scaleFactor
                     });
 
                     // Update DOM directly in persistent Chrome instance and enforce pure sharp 90-degree rectangle
@@ -2228,6 +2234,11 @@ const server = http.createServer((req, res) => {
                             stage.style.overflow = 'visible';
                             stage.style.boxShadow = 'none';
                             stage.style.border = 'none';
+                            stage.style.transform = 'none';
+                            stage.style.width = 'auto';
+                            stage.style.height = 'auto';
+                            stage.style.margin = '0px';
+                            stage.style.padding = '0px';
                         }
                         const el = document.getElementById('exportCanvas');
                         if (el) {
@@ -2237,6 +2248,11 @@ const server = http.createServer((req, res) => {
                             el.style.boxShadow = 'none';
                             el.style.border = 'none';
                             el.style.margin = '0px';
+                            el.style.position = 'relative';
+                            el.style.transform = 'none';
+                            el.style.transformOrigin = '0 0';
+                            el.style.left = '0';
+                            el.style.top = '0';
                         }
 
                         // Explicit font pre-loading for the active font-family
@@ -2291,7 +2307,7 @@ const server = http.createServer((req, res) => {
                     const isPng = (format || '').toLowerCase() === 'png' || (filename || '').toLowerCase().endsWith('.png');
                     const buffer = await cardEl.screenshot({
                         type: isPng ? 'png' : 'jpeg',
-                        quality: isPng ? undefined : (quality || 96)
+                        quality: isPng ? undefined : (quality ? Math.min(100, Math.max(90, parseInt(quality, 10))) : 100)
                     });
 
                     const outFilename = filename || (isPng ? 'shop_coin15_native_4k.png' : 'shop_coin15_native_4k.jpg');

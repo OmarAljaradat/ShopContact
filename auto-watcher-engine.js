@@ -390,7 +390,7 @@ class AutoWatcherEngine {
         await page.setViewport({
             width: 1080,
             height: 1920,
-            deviceScaleFactor: 2
+            deviceScaleFactor: 4.8
         });
 
         // 4 Clean, Punchy Single-Line Banners with authentic Twemoji vector art
@@ -471,7 +471,7 @@ class AutoWatcherEngine {
 
         const screenshotBuffer = await cardEl.screenshot({
             type: 'jpeg',
-            quality: 95
+            quality: 100
         });
 
         // 3. Formulate Marketing Caption
@@ -480,8 +480,8 @@ class AutoWatcherEngine {
 نوفر لك الكوينز المطلوبة وننفذ لك التحدي بحسابك بأمان وضمان كامل للنادي 🛡️🔥
 
 📌 مميزات متجر @shop_coin15:
-✅ كوينز صافية شاملة الضريبة لجميع المنصات (PS5 • XBOX • PC)
-✅ أمان وضمان كامل للنادي من التصفير والبان
+✅ كوينز صافية لجميع المنصات (PS5 • XBOX • PC)
+✅ أمان وضمان كامل واحترافي للنادي
 ✅ سرعة تنفيذ فائقة وتسليم فوري ومباشر
 
 📩 للطلب والاستفسار تواصل معنا عبر الخاص DM
@@ -489,17 +489,17 @@ class AutoWatcherEngine {
 
 #FC27 #FC26 #EAFC #SBC #تحديات_فيفا #shop_coin15 #كوينز`;
 
-        // 4. Send directly to Telegram
+        // 4. Send directly to Telegram as uncompressed 4K master document
         await this.sendTelegramRequest({
             botToken: DEFAULT_BOT_TOKEN,
-            endpoint: 'sendPhoto',
+            endpoint: 'sendDocument',
             fields: {
                 chat_id: DEFAULT_CHAT_ID,
                 caption: caption
             },
-            fileField: 'photo',
+            fileField: 'document',
             fileBuffer: screenshotBuffer,
-            fileName: `sbc_auto_${Date.now()}.jpg`,
+            fileName: `sbc_4K_master_${Date.now()}.jpg`,
             fileMime: 'image/jpeg'
         });
 

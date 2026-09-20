@@ -1292,8 +1292,10 @@ function updateRatioSelectorForTemplate() {
             btnStory.style.gridColumn = 'span 3 / span 3';
             const title = btnStory.querySelector('div:first-child');
             const sub = btnStory.querySelector('div:last-child');
+            const currentRes = (typeof CanvasExporter !== 'undefined' && CanvasExporter.resolution) ? CanvasExporter.resolution : '4k';
+            const storyDimText = currentRes === '4k' ? '2160x3840 👑 فائقة الدقة' : (currentRes === '2k' ? '1440x2560 فائقة الدقة' : '1080x1920 قياسي');
             if (title) title.innerHTML = '📱 ستوري إنستغرام كامل (9:16) • مقاس مخصص للستوري';
-            if (sub) sub.textContent = '1440x2560 فائقة الدقة';
+            if (sub) sub.textContent = storyDimText;
         }
         if (titleEl) {
             titleEl.textContent = 'أبعاد التصميم (مخصص ستوري إنستغرام فقط):';
@@ -1308,8 +1310,10 @@ function updateRatioSelectorForTemplate() {
             btnStory.style.gridColumn = '';
             const title = btnStory.querySelector('div:first-child');
             const sub = btnStory.querySelector('div:last-child');
+            const currentRes = (typeof CanvasExporter !== 'undefined' && CanvasExporter.resolution) ? CanvasExporter.resolution : '4k';
+            const storyDimText = currentRes === '4k' ? '2160x3840 👑' : (currentRes === '2k' ? '1440x2560 📱' : '1080x1920 📱');
             if (title) title.textContent = 'ستوري (9:16)';
-            if (sub) sub.textContent = '1440x2560 📱';
+            if (sub) sub.textContent = storyDimText;
         }
         if (titleEl) {
             titleEl.textContent = 'أبعاد التصميم لإنستغرام:';
@@ -1411,6 +1415,7 @@ function initResolutionSelector() {
 }
 
 window.updateResolutionUI = function(res) {
+    const is4k = res === '4k';
     const is2k = res === '2k';
 
     document.querySelectorAll('.res-btn').forEach(b => {
@@ -1425,25 +1430,33 @@ window.updateResolutionUI = function(res) {
 
     const badge = document.getElementById('currentResBadge');
     if (badge) {
-        badge.textContent = is2k ? '2K QHD فائقة الوضوح' : '1080p FHD قياسي';
-        badge.className = is2k
-            ? 'text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 font-black'
-            : 'text-[10px] px-2.5 py-0.5 rounded-full bg-slate-100 border border-slate-200 text-slate-600 font-bold';
+        if (is4k) {
+            badge.textContent = '4K Ultra HD فائقة النقاء 👑';
+            badge.className = 'text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 font-black';
+        } else if (is2k) {
+            badge.textContent = '2K QHD فائقة الوضوح ⭐';
+            badge.className = 'text-[10px] px-2.5 py-0.5 rounded-full bg-sky-50 border border-sky-200 text-sky-700 font-black';
+        } else {
+            badge.textContent = '1080p FHD قياسي';
+            badge.className = 'text-[10px] px-2.5 py-0.5 rounded-full bg-slate-100 border border-slate-200 text-slate-600 font-bold';
+        }
     }
 
     const dimStory = document.getElementById('dim_story');
     const dimPortrait = document.getElementById('dim_portrait');
     const dimSquare = document.getElementById('dim_square');
 
-    if (dimStory) dimStory.textContent = is2k ? '1440x2560 📱' : '1080x1920 📱';
-    if (dimPortrait) dimPortrait.textContent = is2k ? '1440x1800' : '1080x1350';
-    if (dimSquare) dimSquare.textContent = is2k ? '2048x2048' : '1080x1080';
+    if (dimStory) dimStory.textContent = is4k ? '2160x3840 👑' : (is2k ? '1440x2560 📱' : '1080x1920 📱');
+    if (dimPortrait) dimPortrait.textContent = is4k ? '2160x2700' : (is2k ? '1440x1800' : '1080x1350');
+    if (dimSquare) dimSquare.textContent = is4k ? '2160x2160' : (is2k ? '2048x2048' : '1080x1080');
 
     const btnJpg = document.getElementById('btnDownloadJpgLabel');
-    if (btnJpg) btnJpg.textContent = is2k ? '👑 تحميل أصلي 100% (Native 2K)' : '👑 تحميل أصلي 100% (Native 1080p)';
+    if (btnJpg) {
+        btnJpg.textContent = is4k ? '👑 تحميل أصلي 4K (Native UHD)' : (is2k ? '👑 تحميل أصلي 2K (Native QHD)' : '👑 تحميل أصلي 1080p (Native FHD)');
+    }
 
     if (window.showCopyToast) {
-        window.showCopyToast(`تم ضبط جودة التصدير على ${is2k ? '2K QHD (1440p) ⭐' : '1080p Full HD'}! 🚀`);
+        window.showCopyToast(`تم ضبط جودة التصدير على ${is4k ? '4K Ultra HD (2160p) 👑' : (is2k ? '2K QHD (1440p) ⭐' : '1080p Full HD')}! 🚀`);
     }
 };
 
