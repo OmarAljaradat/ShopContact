@@ -3240,8 +3240,8 @@ function renderControls() {
         `;
     }
 
-    // Background Framing & Position Controls (تحريك وتكبير الخلفية - Excluded for promo_pack)
-    if (currentTemplate !== 'promo_pack') {
+    // Background Framing & Position Controls (تحريك وتكبير الخلفية - Excluded for promo_pack and market_tracker)
+    if (currentTemplate !== 'promo_pack' && currentTemplate !== 'market_tracker') {
         html += `
             <div class="mt-4 p-4 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-3.5">
                 <div class="flex items-center justify-between pb-2 border-b border-slate-100">
