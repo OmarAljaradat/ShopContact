@@ -429,7 +429,7 @@ const TEMPLATES = {
     },
     promo_pack: {
         id: 'promo_pack',
-        name: '🔥 باكدجات المتجر الحارقة',
+        name: '🔥 باكات المتجر',
         icon: 'package',
         description: 'تسويق كوينز لفتح باكدجات المتجر محدودة الوقت والأيقونات مع عداد زمني وأضواء الووك أوت',
         defaultState: {
