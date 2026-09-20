@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منصة تقييم وتصفية قوالب الستوري • ShopCoin15</title>
+    <!-- Google Fonts: Alexandria -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Alexandria', sans-serif;
+            background: #060910;
+            color: #f1f5f9;
+        }
+        .glass-card {
+            background: rgba(14, 22, 38, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(34, 52, 84, 0.6);
+        }
+        .glass-header {
+            background: rgba(8, 13, 23, 0.95);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(34, 52, 84, 0.7);
+        }
+        .btn-decision {
+            transition: all 0.2s ease;
+        }
+        .btn-decision.active-keep {
+            background: #059669 !important;
+            border-color: #10b981 !important;
+            color: #ffffff !important;
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+        }
+        .btn-decision.active-tweak {
+            background: #d97706 !important;
+            border-color: #f59e0b !important;
+            color: #ffffff !important;
+            box-shadow: 0 0 15px rgba(245, 158, 11, 0.4);
+        }
+        .btn-decision.active-delete {
+            background: #dc2626 !important;
+            border-color: #ef4444 !important;
+            color: #ffffff !important;
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
+        }
+        .star-rating span {
+            cursor: pointer;
+            transition: transform 0.15s ease;
+        }
+        .star-rating span:hover {
+            transform: scale(1.25);
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #080d18;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #334155;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Top Navigation Header -->
+    <header class="glass-header sticky top-0 z-50 px-6 py-4">
+        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+            
+            <!-- Branding & Title -->
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 p-[2px] shadow-lg flex items-center justify-center">
+                    <div class="w-full h-full bg-[#080d18] rounded-[10px] flex items-center justify-center text-lg">
+                        📊
+                    </div>
+                </div>
+                <div>
+                    <h1 class="text-base font-black text-white flex items-center gap-2">
+                        <span>منصة تقييم وتصفية قوالب الستوري</span>
+                        <span class="text-xs px-2.5 py-0.5 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-500/50 font-mono">18 قوالب</span>
+                    </h1>
+                    <p class="text-xs text-slate-400 font-medium">عدّل براحتك: حدد خيارك لكل قالب واكتب ملاحظاتك، ثم اضغط على زر النسخ المباشر لإرسالها في الشات!</p>
+                </div>
+            </div>
+
+            <!-- Header Quick Stats & Action Buttons -->
+            <div class="flex items-center gap-3 flex-wrap">
+                <!-- Counters Pill -->
+                <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-xs font-bold font-mono">
+                    <span class="text-emerald-400 flex items-center gap-1"><span id="countKeep">0</span> ✅</span>
+                    <span class="text-slate-600">|</span>
+                    <span class="text-amber-400 flex items-center gap-1"><span id="countTweak">0</span> ✏️</span>
+                    <span class="text-slate-600">|</span>
+                    <span class="text-red-400 flex items-center gap-1"><span id="countDelete">0</span> ❌</span>
+                    <span class="text-slate-600">|</span>
+                    <span class="text-slate-400 flex items-center gap-1"><span id="countUnrated">18</span> ⏳</span>
+                </div>
+
+                <!-- Copy to Chat Button -->
+                <button type="button" onclick="copyEvaluationSummary()" class="px-5 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 text-slate-950 font-black text-xs shadow-lg hover:brightness-110 active:scale-95 transition flex items-center gap-2">
+                    <span>📋</span>
+                    <span>نسخ التقرير للدردشة</span>
+                </button>
+
+                <!-- Reset Button -->
+                <button type="button" onclick="resetAllEvaluations()" class="px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 text-xs font-bold transition">
+                    🔄 إعادة تعيين
+                </button>
+
+                <!-- Back to Studio -->
+                <a href="/?suite=suite_stories" class="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 text-xs font-bold transition flex items-center gap-1.5">
+                    <span>🏠</span>
+                    <span>العودة للاستوديو</span>
+                </a>
+            </div>
+
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto w-full p-6 flex-1 space-y-6">
+
+        <!-- Filter Tabs & Fast Bulk Actions Bar -->
+        <div class="glass-card rounded-2xl p-4 flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center gap-2 flex-wrap text-xs font-bold">
+                <span class="text-slate-400 ml-1">تصفية القائمة:</span>
+                <button type="button" onclick="setFilter('all')" id="tab_all" class="px-3.5 py-1.5 rounded-xl bg-emerald-500/20 text-emerald-300 border border-emerald-500/50 transition">
+                    الكل (18)
+                </button>
+                <button type="button" onclick="setFilter('keep')" id="tab_keep" class="px-3.5 py-1.5 rounded-xl bg-slate-900 text-slate-400 border border-slate-800 hover:text-white transition">
+                    ✅ اعتماد فقط
+                </button>
+                <button type="button" onclick="setFilter('tweak')" id="tab_tweak" class="px-3.5 py-1.5 rounded-xl bg-slate-900 text-slate-400 border border-slate-800 hover:text-white transition">
+                    ✏️ تعديل فقط
+                </button>
+                <button type="button" onclick="setFilter('delete')" id="tab_delete" class="px-3.5 py-1.5 rounded-xl bg-slate-900 text-slate-400 border border-slate-800 hover:text-white transition">
+                    ❌ حذف فقط
+                </button>
+                <button type="button" onclick="setFilter('unrated')" id="tab_unrated" class="px-3.5 py-1.5 rounded-xl bg-slate-900 text-slate-400 border border-slate-800 hover:text-white transition">
+                    ⏳ غير مقيم بعد
+                </button>
+            </div>
+
+            <!-- Fast Bulk Actions -->
+            <div class="flex items-center gap-2">
+                <button type="button" onclick="bulkSetAll('keep')" class="px-3 py-1.5 rounded-lg bg-emerald-950 hover:bg-emerald-900 border border-emerald-500/40 text-emerald-300 text-[11px] font-bold transition">
+                    ✅ اعتماد الكل مبدئياً
+                </button>
+                <button type="button" onclick="exportAsJson()" class="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 text-[11px] font-bold transition">
+                    💾 حفظ كملف
+                </button>
+            </div>
+        </div>
+
+        <!-- Evaluation Cards List -->
+        <div id="templatesList" class="space-y-4">
+            <!-- Rendered dynamically by JS -->
+        </div>
+
+    </main>
+
+    <!-- Floating Sticky Bottom Actions -->
+    <div class="sticky bottom-4 z-40 max-w-2xl mx-auto w-full px-4">
+        <div class="p-3.5 rounded-2xl bg-slate-950/95 border border-emerald-500/50 shadow-2xl backdrop-blur-md flex items-center justify-between gap-3">
+            <div class="text-xs text-slate-300 font-bold">
+                💡 بعد ما تنتهي من التقييم، اضغط هنا لنسخ التقرير فوراً والصقه في الدردشة:
+            </div>
+            <button type="button" onclick="copyEvaluationSummary()" class="px-6 py-2.5 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-black text-xs shadow-xl active:scale-95 transition flex items-center gap-2 shrink-0">
+                <span>📋</span>
+                <span>نسخ النتيجة الكاملة للشات</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="copyToast" class="fixed top-6 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-2xl bg-emerald-500 text-slate-950 font-black text-xs shadow-2xl transition-all duration-300 opacity-0 pointer-events-none transform -translate-y-4">
+        تم نسخ التقرير بنجاح! الصقه في الشات الآن 🚀
+    </div>
+
+    <!-- Preview Modal -->
+    <div id="previewModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+        <div class="relative max-w-sm w-full bg-slate-950 rounded-3xl border border-slate-800 p-4 space-y-3">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                <span id="previewTitle" class="text-xs font-black text-white">معاينة القالب</span>
+                <button type="button" onclick="closePreviewModal()" class="w-7 h-7 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold flex items-center justify-center">
+                    ✕
+                </button>
+            </div>
+            <div class="relative w-full aspect-[9/16] rounded-2xl overflow-hidden bg-slate-900 border border-slate-800 flex items-center justify-center">
+                <iframe id="previewIframe" src="" class="w-full h-full border-none"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script Data & Interactive Logic -->
+    <script>
+        const TEMPLATES_DATA = [
+            {
+                id: 'promo_pack',
+                name: '🔥 باكدجات المتجر الحارقة',
+                category: 'عروض وباكدجات',
+                desc: 'عرض باكدج المتجر العائم مع ووك أوت نجوم ومؤقت عد تنازلي وسعر الكوينز لتحفيز الشحن الفوري.',
+                defaultRating: { sales: 5, visual: 5, ease: 5 }
+            },
+            {
+                id: 'market_tracker',
+                name: '📈 رادار مؤشرات أسعار FUTBIN الحية',
+                category: 'متابعة السوق',
+                desc: 'رادار أسعار وبورصة للاعبين مع 7 أنماط عرض مختلفة لكروت اللاعبين ومؤشرات الصعود والهبوط.',
+                defaultRating: { sales: 4, visual: 5, ease: 4 }
+            },
+            {
+                id: 'champs_squad',
+                name: '⚔️ تشكيلة الفوت تشامبيونز الأسبوعية',
+                category: 'تشكيلات وتكتيكات',
+                desc: 'منصة ثلاثية لأعمدة تشكيلة الـ 15 فوز الميتا مع الخطة والكيمياء والميزانية الإجمالية بخصم 10%.',
+                defaultRating: { sales: 5, visual: 5, ease: 5 }
+            },
+            {
+                id: 'evo_boost',
+                name: '🧬 تطويرات الإيفولوشن الخارقة',
+                category: 'تطويرات كروت',
+                desc: 'مقارنة مباشرة (قبل ⬅️ بعد) لطفرة الإيفو مع صاعقة التطور وتكلفة تفعيل الكوينز.',
+                defaultRating: { sales: 4, visual: 5, ease: 4 }
+            },
+            {
+                id: 'social_proof',
+                name: '🤝 توثيق ثقة العملاء والتحويلات',
+                category: 'مصداقية وثقة',
+                desc: 'شهادة زجاجية راقية توثق شحنة حقيقية (1.5M) وسرعة التسليم بالدقائق وتقييم 5 نجوم وضمان الأمان.',
+                defaultRating: { sales: 5, visual: 5, ease: 5 }
+            },
+            {
+                id: 'flash_sale',
+                name: '💰 جدول باقات الكوينز والعروض',
+                category: 'تسعير وباقات',
+                desc: 'جدول أسعار 3 باقات كوينز مدرجة (500k / 1M الأكثر طلباً بوهج ذهبي / 2M VIP) مع أسعار الشطب.',
+                defaultRating: { sales: 5, visual: 5, ease: 5 }
+            },
+            {
+                id: 'event_leaks',
+                name: '💣 تسريبات نجوم الحدث القادم',
+                category: 'أخبار وتسريبات',
+                desc: 'رادار تسريبات أحداث الجمعة مع أختام LEAKED الحمراء ونصيحة الشحن المسبق قبل ارتفاع الأسعار.',
+                defaultRating: { sales: 4, visual: 5, ease: 4 }
+            },
+            {
+                id: 'loaded_accounts',
+                name: '🎮 حسابات جاهزة للبيع',
+                category: 'صفقات كبرى',
+                desc: 'عرض حساب فيفا كامل محمل بالكوينز (2.5M) مع ماركت ويب آب مفتوح وتسليم فوري بالبيانات الأصلية.',
+                defaultRating: { sales: 5, visual: 4, ease: 5 }
+            },
+            {
+                id: 'vip_voucher',
+                name: '🎟️ قسيمة الخصم الخاطفة',
+                category: 'عروض خاصة',
+                desc: 'تذكرة VIP ذهبية/زمردية مقطوعة الأطراف مع كود حصري وعداد مقاعد محدودة لتحفيز الشراء الفوري.',
+                defaultRating: { sales: 5, visual: 5, ease: 5 }
+            },
+            {
+                id: 'squad_makeover',
+                name: '🛠️ تجديد التشكيلة (قبل / بعد)',
+                category: 'استشارات وتطوير',
+                desc: 'استعراض تحول تشكيلة العميل من ديفيجن ضعيف إلى إليت بالكوينز لجلب استفسارات بالخاص.',
+                defaultRating: { sales: 5, visual: 4, ease: 4 }
+            },
+            {
+                id: 'vip_whales',
+                name: '👑 صالة الحيتان VIP',
+                category: 'خدمات النخبة',
+                desc: 'ثيم ملكي أسود وذهبي لكبار العملاء ومشتريات الملايين (5M-20M) مع خدمة مدير حساب واتساب 24/7.',
+                defaultRating: { sales: 4, visual: 5, ease: 4 }
+            },
+            {
+                id: 'player_duel',
+                name: '🥊 معركة النجوم وتصويت الستوري',
+                category: 'تفاعل واستفتاء',
+                desc: 'مواجهة رأس برأس (مبابي vs فيني) مع مقارنة الطاقات ومساحة مخصصة لستيكر تصويت إنستغرام.',
+                defaultRating: { sales: 4, visual: 5, ease: 5 }
+            },
+            {
+                id: 'budget_beast',
+                name: '💎 تشكيلة الميزانية الذكية (250k)',
+                category: 'تشكيلات رخيصة',
+                desc: 'تشكيلة الميتا المرعبة بـ 250 ألف كوينز لقهر فرق الملايين بأسعار في متناول المبتدئين.',
+                defaultRating: { sales: 5, visual: 4, ease: 5 }
+            },
+            {
+                id: 'player_review',
+                name: '🔍 مراجعة الكرت بعد 50 مباراة',
+                category: 'مراجعات وحكم',
+                desc: 'مراجعة أداء كرت ميتا خارق بعد 50 مباراة مع إيجابيات وسلبيات وتقييم نهائي وشحن فوري.',
+                defaultRating: { sales: 4, visual: 5, ease: 4 }
+            },
+            {
+                id: 'gift_friend',
+                name: '🎁 أهدي كوينز لخويك',
+                category: 'هدايا ومفاجآت',
+                desc: 'كرت إهداء رقمي راقٍ لشحن كوينز لحساب صديقك كمفاجأة في المناسبات مع رسالة مخصصة باسمك.',
+                defaultRating: { sales: 4, visual: 5, ease: 4 }
+            },
+            {
+                id: 'beat_the_pro',
+                name: '⚔️ تحدي الفوز على محترف المتجر',
+                category: 'تحديات المجتمع',
+                desc: 'بوستر تحدي حماسي: العب ودية ضد محترف المتجر وإذا فزت تحصل على 500k كوينز مجاناً بناديك.',
+                defaultRating: { sales: 4, visual: 5, ease: 4 }
+            },
+            {
+                id: 'store_promo',
+                name: '📱 ستوري المتجر الأصلية (الشرائط)',
+                category: 'القالب الأساسي',
+                desc: 'النموذج الكلاسيكي للمتجر بشرائط النصوص الملونة المكدسة وبطاقات العرض السفلية.',
+                defaultRating: { sales: 3, visual: 3, ease: 5 }
+            },
+            {
+                id: 'sbc',
+                name: '⚡ ستوري ترقيات وتحديات SBC',
+                category: 'خدمات الترقيات',
+                desc: 'عرض باقات ترقيات وتحديات الـ SBC بالكميات والأسعار وسرعة التنفيذ.',
+                defaultRating: { sales: 4, visual: 3, ease: 5 }
+            }
+        ];
+
+        // State storage in localStorage
+        const STORAGE_KEY = 'shopcoin15_templates_evaluation_v1';
+        let evalState = {};
+        try {
+            evalState = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+        } catch(e) {
+            evalState = {};
+        }
+
+        let currentFilter = 'all';
+
+        function saveState() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(evalState));
+            } catch(e) {}
+            updateCounters();
+        }
+
+        function setDecision(templateId, decision) {
+            if (!evalState[templateId]) evalState[templateId] = {};
+            // If already set, clicking same removes or keeps
+            evalState[templateId].decision = decision;
+            saveState();
+            renderList();
+        }
+
+        function setRating(templateId, criterion, val) {
+            if (!evalState[templateId]) evalState[templateId] = {};
+            if (!evalState[templateId].ratings) evalState[templateId].ratings = {};
+            evalState[templateId].ratings[criterion] = val;
+            saveState();
+            renderList();
+        }
+
+        function setNote(templateId, note) {
+            if (!evalState[templateId]) evalState[templateId] = {};
+            evalState[templateId].note = note;
+            saveState();
+        }
+
+        function setFilter(filter) {
+            currentFilter = filter;
+            document.querySelectorAll('[id^="tab_"]').forEach(btn => {
+                btn.className = 'px-3.5 py-1.5 rounded-xl bg-slate-900 text-slate-400 border border-slate-800 hover:text-white transition';
+            });
+            const activeBtn = document.getElementById(`tab_${filter}`);
+            if (activeBtn) {
+                activeBtn.className = 'px-3.5 py-1.5 rounded-xl bg-emerald-500/20 text-emerald-300 border border-emerald-500/50 transition font-black';
+            }
+            renderList();
+        }
+
+        function bulkSetAll(decision) {
+            TEMPLATES_DATA.forEach(t => {
+                if (!evalState[t.id]) evalState[t.id] = {};
+                evalState[t.id].decision = decision;
+            });
+            saveState();
+            renderList();
+            showToast('تم اعتماد كافة القوالب مبدئياً ✅');
+        }
+
+        function resetAllEvaluations() {
+            if (!confirm('هل أنت متأكد من رغبتك في مسح كافة التقييمات والبدء من جديد؟')) return;
+            evalState = {};
+            saveState();
+            renderList();
+            showToast('تمت إعادة التعيين بنجاح 🔄');
+        }
+
+        function updateCounters() {
+            let keep = 0, tweak = 0, del = 0, unrated = 0;
+            TEMPLATES_DATA.forEach(t => {
+                const dec = evalState[t.id]?.decision;
+                if (dec === 'keep') keep++;
+                else if (dec === 'tweak') tweak++;
+                else if (dec === 'delete') del++;
+                else unrated++;
+            });
+            document.getElementById('countKeep').textContent = keep;
+            document.getElementById('countTweak').textContent = tweak;
+            document.getElementById('countDelete').textContent = del;
+            document.getElementById('countUnrated').textContent = unrated;
+        }
+
+        function renderList() {
+            const container = document.getElementById('templatesList');
+            if (!container) return;
+
+            const filtered = TEMPLATES_DATA.filter(t => {
+                const dec = evalState[t.id]?.decision;
+                if (currentFilter === 'keep') return dec === 'keep';
+                if (currentFilter === 'tweak') return dec === 'tweak';
+                if (currentFilter === 'delete') return dec === 'delete';
+                if (currentFilter === 'unrated') return !dec;
+                return true; // 'all'
+            });
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="glass-card rounded-2xl p-12 text-center text-slate-400 space-y-2">
+                        <div class="text-3xl">🔍</div>
+                        <p class="text-sm font-bold">لا توجد قوالب تطابق هذا الفلتر حالياً.</p>
+                        <button onclick="setFilter('all')" class="text-xs text-emerald-400 hover:underline">عرض كل القوالب (18)</button>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = filtered.map((t, index) => {
+                const state = evalState[t.id] || {};
+                const currentDecision = state.decision || '';
+                const ratings = state.ratings || t.defaultRating;
+                const note = state.note || '';
+
+                return `
+                    <div class="glass-card rounded-2xl p-5 transition hover:border-slate-700 space-y-4">
+                        
+                        <!-- Card Header & Meta -->
+                        <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800/80 pb-3">
+                            <div class="flex items-center gap-3">
+                                <span class="w-7 h-7 rounded-lg bg-slate-900 border border-slate-700 text-slate-300 font-mono text-xs font-black flex items-center justify-center">
+                                    ${TEMPLATES_DATA.indexOf(t) + 1}
+                                </span>
+                                <div>
+                                    <h3 class="text-sm font-black text-white flex items-center gap-2">
+                                        <span>${t.name}</span>
+                                        <span class="text-[10px] px-2 py-0.5 rounded-full bg-slate-900 text-slate-400 border border-slate-800 font-mono">${t.id}</span>
+                                    </h3>
+                                    <p class="text-xs text-slate-400 font-medium mt-0.5">${t.desc}</p>
+                                </div>
+                            </div>
+
+                            <!-- Decision Buttons -->
+                            <div class="flex items-center gap-1.5 p-1 rounded-xl bg-slate-950 border border-slate-800 shrink-0">
+                                <button type="button" onclick="setDecision('${t.id}', 'keep')" class="btn-decision px-3.5 py-1.5 rounded-lg text-xs font-black flex items-center gap-1.5 ${currentDecision === 'keep' ? 'active-keep' : 'text-slate-400 hover:text-emerald-400 hover:bg-slate-900'}">
+                                    <span>✅</span>
+                                    <span>اعتماد</span>
+                                </button>
+                                <button type="button" onclick="setDecision('${t.id}', 'tweak')" class="btn-decision px-3.5 py-1.5 rounded-lg text-xs font-black flex items-center gap-1.5 ${currentDecision === 'tweak' ? 'active-tweak' : 'text-slate-400 hover:text-amber-400 hover:bg-slate-900'}">
+                                    <span>✏️</span>
+                                    <span>تعديل</span>
+                                </button>
+                                <button type="button" onclick="setDecision('${t.id}', 'delete')" class="btn-decision px-3.5 py-1.5 rounded-lg text-xs font-black flex items-center gap-1.5 ${currentDecision === 'delete' ? 'active-delete' : 'text-slate-400 hover:text-red-400 hover:bg-slate-900'}">
+                                    <span>❌</span>
+                                    <span>حذف</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Ratings & Custom Note Inputs -->
+                        <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+                            
+                            <!-- 3 Criteria Star Selectors -->
+                            <div class="md:col-span-6 grid grid-cols-3 gap-2">
+                                <div class="p-2 rounded-xl bg-slate-900/80 border border-slate-800 text-center space-y-1">
+                                    <span class="text-[10px] font-bold text-slate-400 block">💰 الأهمية البيعية</span>
+                                    <div class="star-rating text-xs flex justify-center gap-1">
+                                        ${[1, 2, 3, 4, 5].map(star => `
+                                            <span onclick="setRating('${t.id}', 'sales', ${star})" class="${star <= (ratings.sales || 0) ? 'text-amber-400' : 'text-slate-700'}">★</span>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                                <div class="p-2 rounded-xl bg-slate-900/80 border border-slate-800 text-center space-y-1">
+                                    <span class="text-[10px] font-bold text-slate-400 block">🎨 الجاذبية البصرية</span>
+                                    <div class="star-rating text-xs flex justify-center gap-1">
+                                        ${[1, 2, 3, 4, 5].map(star => `
+                                            <span onclick="setRating('${t.id}', 'visual', ${star})" class="${star <= (ratings.visual || 0) ? 'text-amber-400' : 'text-slate-700'}">★</span>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                                <div class="p-2 rounded-xl bg-slate-900/80 border border-slate-800 text-center space-y-1">
+                                    <span class="text-[10px] font-bold text-slate-400 block">⚡ سرعة التجهيز</span>
+                                    <div class="star-rating text-xs flex justify-center gap-1">
+                                        ${[1, 2, 3, 4, 5].map(star => `
+                                            <span onclick="setRating('${t.id}', 'ease', ${star})" class="${star <= (ratings.ease || 0) ? 'text-amber-400' : 'text-slate-700'}">★</span>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Custom Note Text Field -->
+                            <div class="md:col-span-6">
+                                <input type="text" 
+                                       placeholder="ملاحظتك السريعة على هذا القالب (اختياري)..." 
+                                       value="${note.replace(/"/g, '&quot;')}"
+                                       oninput="setNote('${t.id}', this.value)"
+                                       class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900/90 border border-slate-800 text-slate-200 text-xs font-medium placeholder-slate-500 outline-none focus:border-emerald-500 focus:bg-slate-900 transition shadow-inner">
+                            </div>
+
+                        </div>
+
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function copyEvaluationSummary() {
+            let keepList = [];
+            let tweakList = [];
+            let deleteList = [];
+            let unratedList = [];
+
+            TEMPLATES_DATA.forEach((t, i) => {
+                const num = i + 1;
+                const state = evalState[t.id] || {};
+                const dec = state.decision;
+                const note = state.note ? ` (ملاحظة: ${state.note})` : '';
+
+                if (dec === 'keep') {
+                    keepList.push(`${num}. ${t.name}${note}`);
+                } else if (dec === 'tweak') {
+                    tweakList.push(`${num}. ${t.name}${note}`);
+                } else if (dec === 'delete') {
+                    deleteList.push(`${num}. ${t.name}${note}`);
+                } else {
+                    unratedList.push(`${num}. ${t.name}`);
+                }
+            });
+
+            let report = `## 📊 تقرير وتصفية قوالب الستوري - متجر ShopCoin15\n\n`;
+            
+            report += `### ✅ قوالب معتمدة ومطلوب الإبقاء عليها (${keepList.length}):\n`;
+            if (keepList.length > 0) {
+                report += keepList.map(item => `- ${item}`).join('\n') + '\n\n';
+            } else {
+                report += `- (لا يوجد)\n\n`;
+            }
+
+            report += `### ✏️ قوالب مطلوب تعديلها وتحسينها (${tweakList.length}):\n`;
+            if (tweakList.length > 0) {
+                report += tweakList.map(item => `- ${item}`).join('\n') + '\n\n';
+            } else {
+                report += `- (لا يوجد)\n\n`;
+            }
+
+            report += `### ❌ قوالب مطلوب حذفها واستبعادها (${deleteList.length}):\n`;
+            if (deleteList.length > 0) {
+                report += deleteList.map(item => `- ${item}`).join('\n') + '\n\n';
+            } else {
+                report += `- (لا يوجد)\n\n`;
+            }
+
+            if (unratedList.length > 0) {
+                report += `### ⏳ قوالب لم يتم تحديد قرار لها بعد (${unratedList.length}):\n`;
+                report += unratedList.map(item => `- ${item}`).join('\n') + '\n\n';
+            }
+
+            navigator.clipboard.writeText(report).then(() => {
+                showToast('تم نسخ التقرير الكامل بنجاح! الصقه الآن في الشات 🚀');
+            }).catch(err => {
+                prompt('انسخ التقرير يدوياً:', report);
+            });
+        }
+
+        function exportAsJson() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(evalState, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `shopcoin15_templates_eval_${new Date().toISOString().slice(0,10)}.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('copyToast');
+            if (!toast) return;
+            toast.textContent = msg;
+            toast.classList.remove('opacity-0', '-translate-y-4', 'pointer-events-none');
+            toast.classList.add('opacity-100', 'translate-y-0');
+            setTimeout(() => {
+                toast.classList.add('opacity-0', '-translate-y-4', 'pointer-events-none');
+                toast.classList.remove('opacity-100', 'translate-y-0');
+            }, 2600);
+        }
+
+        // Initialize on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            updateCounters();
+            renderList();
+        });
+    </script>
+</body>
+</html>
