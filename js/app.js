@@ -842,12 +842,21 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
         const urlParams = new URLSearchParams(window.location.search);
         const suiteParam = urlParams.get('suite');
-        if (suiteParam && ['suite_stories', 'suite_posts', 'suite_carousel', 'suite_reels'].includes(suiteParam)) {
+        if (suiteParam === 'suite_reels') {
+            const isLocal = ['localhost', '127.0.0.1', '::1'].includes(window.location.hostname) ||
+                            window.location.hostname.endsWith('.local') ||
+                            window.location.protocol === 'file:';
+            if (isLocal) {
+                window.location.href = 'reels.html';
+                return;
+            }
+        }
+        if (suiteParam && ['suite_stories', 'suite_posts', 'suite_carousel'].includes(suiteParam)) {
             window.currentStudioSuite = suiteParam;
         } else {
             try {
                 const savedSuite = localStorage.getItem('shopcoin15_active_suite');
-                if (savedSuite && ['suite_stories', 'suite_posts', 'suite_carousel', 'suite_reels'].includes(savedSuite)) {
+                if (savedSuite && ['suite_stories', 'suite_posts', 'suite_carousel'].includes(savedSuite)) {
                     window.currentStudioSuite = savedSuite;
                 }
             } catch (e) {}

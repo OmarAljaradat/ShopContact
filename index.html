@@ -75,11 +75,29 @@
                     <span class="text-pink-500">↗</span>
                 </a>
 
-                <!-- Dedicated Standalone Reels Studio (Local) -->
-                <a href="reels.html" class="btn-download-action px-3 sm:px-3.5 py-2 rounded-full bg-gradient-to-r from-rose-500 via-pink-500 to-rose-600 hover:brightness-105 text-white font-black text-xs transition flex items-center gap-1.5 shadow-sm shadow-rose-500/20" title="فتح استوديو الريلز المخصص (محلي حصرياً)">
+                <!-- Dedicated Standalone Reels Studio (Strictly Local Only) -->
+                <a id="linkReelsStudio" href="reels.html" class="hidden btn-download-action px-3 sm:px-3.5 py-2 rounded-full bg-gradient-to-r from-rose-500 via-pink-500 to-rose-600 hover:brightness-105 text-white font-black text-xs transition items-center gap-1.5 shadow-sm shadow-rose-500/20" title="فتح استوديو الريلز المخصص (محلي حصرياً)">
                     <span>🎬 استوديو الريلز</span>
                     <span class="hidden sm:inline-block px-1.5 py-0.5 rounded-full bg-black/20 text-[9px] font-black">محلي</span>
                 </a>
+                <script>
+                    (function() {
+                        try {
+                            const isLocal = ['localhost', '127.0.0.1', '::1'].includes(window.location.hostname) ||
+                                            window.location.hostname.endsWith('.local') ||
+                                            window.location.protocol === 'file:';
+                            const btn = document.getElementById('linkReelsStudio');
+                            if (btn) {
+                                if (isLocal) {
+                                    btn.classList.remove('hidden');
+                                    btn.classList.add('flex');
+                                } else {
+                                    btn.remove();
+                                }
+                            }
+                        } catch(e) {}
+                    })();
+                </script>
 
                 <!-- Primary: Native 4K Ultra Engine -->
                 <button id="btnDownloadJpg" class="btn-download-action btn-luxury bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-500 hover:brightness-105 text-white font-black shadow-md shadow-emerald-600/20 text-xs py-2 px-3 sm:px-4" title="استخراج فوري بجودة 4K بمحرك المتصفح الأصلي (Native Engine)">

@@ -1397,6 +1397,34 @@ async function processReelJob(jobId, payload, execPath) {
     }
 }
 
+function isLocalhostRequest(req) {
+    const hostHeader = (req.headers['host'] || '').toLowerCase();
+    const forwardedHost = (req.headers['x-forwarded-host'] || '').toLowerCase();
+    const host = (forwardedHost || hostHeader).split(':')[0];
+
+    // Explicit cloud hosts
+    if (host.includes('render.com') || 
+        host.includes('github.io') || 
+        host.includes('railway.app') || 
+        host.includes('fly.dev') || 
+        host.includes('herokuapp.com') ||
+        host.includes('vercel.app')) {
+        return false;
+    }
+
+    const localHosts = ['localhost', '127.0.0.1', '::1', '0.0.0.0', ''];
+    if (localHosts.includes(host) || host.endsWith('.local')) {
+        return true;
+    }
+
+    const remote = req.socket?.remoteAddress || '';
+    if (remote === '127.0.0.1' || remote === '::1' || remote.endsWith('127.0.0.1')) {
+        return true;
+    }
+
+    return false;
+}
+
 const server = http.createServer((req, res) => {
     // Global CORS Preflight Handling (Allows seamless cross-origin and file:// access)
     if (req.method === 'OPTIONS') {
@@ -1412,6 +1440,27 @@ const server = http.createServer((req, res) => {
 
     const parsedUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
     const reqPath = decodeURIComponent(parsedUrl.pathname);
+
+    // Strict Local Only Enforcement for Reels Studio (Zero cloud access)
+    const isReelsRoute = reqPath === '/reels' || 
+                         reqPath === '/reels/' || 
+                         reqPath === '/reels.html' ||
+                         reqPath.startsWith('/api/reels/') ||
+                         reqPath === '/api/record-studio-reel' ||
+                         reqPath === '/api/reel-job-status' ||
+                         reqPath === '/api/finalize-reel-video' ||
+                         reqPath === '/api/download-reel';
+
+    if (isReelsRoute && !isLocalhostRequest(req)) {
+        if (reqPath.startsWith('/api/')) {
+            res.writeHead(403, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+            res.end(JSON.stringify({ success: false, error: 'استوديو الريلز محلي فقط وغير متاح سحابياً.' }));
+        } else {
+            res.writeHead(302, { 'Location': '/', 'Cache-Control': 'no-store' });
+            res.end();
+        }
+        return;
+    }
 
     // ==========================================
     // API: TikTok OAuth 2.0 & Publishing
