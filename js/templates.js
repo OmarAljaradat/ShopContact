@@ -367,6 +367,64 @@ const TEMPLATES = {
             card3_price: ''
         }
     },
+    market_tracker: {
+        id: 'market_tracker',
+        name: '📈 رادار ومؤشرات أسعار FUTBIN الحية',
+        icon: 'trending-up',
+        description: 'عرض 1 أو 2 أو 3 لاعبين مع صندوق تحليل السوق الحقيقي من فوت بين (التريند الأخضر/الأحمر، السعر، والمبيعات) لتحفيز الشراء الفوري',
+        defaultState: {
+            bgTheme: 'store',
+            cardCount: 2, // 1, 2, or 3
+            platform: 'ps_xbox', // 'ps_xbox' | 'pc'
+            badgeText: '🚨 رادار سوق FC 27 • تنبيه تحركات الأسعار في FUTBIN',
+            headline: 'الأسعار في مسار تصاعدي! اشحن كوينزك وقفّل لاعبك قبل الارتفاع 📈⚡',
+            subheadline: 'السوق يشهد قفزات سريعة.. لا تنتظر غلاء الكروت واقتنص نجومك الآن بأفضل سعر!',
+            ctaHeadline: 'متوفر شحن كوينز فوري لجميع المنصات بأفضل الأسعار 💰',
+            ctaSub: 'للطلب تواصل معنا على الخاص: @shop_coin15 📩',
+            player1: {
+                name: 'Bradley Barcola',
+                arName: 'باركولا',
+                rating: '85',
+                position: 'LW',
+                cardUrl: '/api/image-proxy?url=https%3A%2F%2Fgame-assets.fut.gg%2Fcdn-cgi%2Fimage%2Fquality%3D85%2Cformat%3Dauto%2Cwidth%3D600%2F2027%2Ffutgg-player-item-card%2F27-50596300.9b5dfc98a731bb7f8958c0eec6247d0bc94a42cb7d86de10a1c5482685f6b716.webp',
+                price: '107,000',
+                trend: '5.94% (+6K)',
+                trendDir: 'up', // 'up' (green ▲) | 'down' (red ▼)
+                recentSales: '108,000 | 108,000 | 109,000 | 109,000',
+                priceRange: '600 - 150,000',
+                updatedText: '35 SECS AGO',
+                tag: '🔥 كرت ميتا صاعد'
+            },
+            player2: {
+                name: 'Mohamed Salah',
+                arName: 'محمد صلاح',
+                rating: '87',
+                position: 'RM',
+                cardUrl: '/api/image-proxy?url=https%3A%2F%2Fgame-assets.fut.gg%2Fcdn-cgi%2Fimage%2Fquality%3D85%2Cformat%3Dauto%2Cwidth%3D600%2F2027%2Ffutgg-player-item-card%2F27-209331.bdfc8b1e25229756f608e53457f6d58285771dcfddb855e6d723a3023f6aa7c2.webp',
+                price: '21,250',
+                trend: '8.97% (+1.75K)',
+                trendDir: 'up',
+                recentSales: '21,250 | 21,250 | 21,250 | 21,250',
+                priceRange: '600 - 1,100,000',
+                updatedText: '1 MINS AGO',
+                tag: '⚡ فرصة اقتناص نادرة'
+            },
+            player3: {
+                name: 'Lionel Messi',
+                arName: 'ميسي',
+                rating: '89',
+                position: 'CAM',
+                cardUrl: '/api/image-proxy?url=https%3A%2F%2Fgame-assets.fut.gg%2Fcdn-cgi%2Fimage%2Fquality%3D85%2Cformat%3Dauto%2Cwidth%3D600%2F2027%2Ffutgg-player-item-card%2F27-158023.b7b052e75f1a00658907cbe5312eb4a62b2661631a6e0661b1924ec5e3f2a91c.webp',
+                price: '68,000',
+                trend: '2.86% (-2K)',
+                trendDir: 'down',
+                recentSales: '68,000 | 68,000 | 68,500 | 68,500',
+                priceRange: '700 - 300,000',
+                updatedText: '57 SECS AGO',
+                tag: '📉 قاع سعري ممتاز للشراء'
+            }
+        }
+    },
     trio: {
         id: 'trio',
         name: '👑 تريو 3 لاعبين متداخلين',

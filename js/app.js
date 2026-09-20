@@ -95,6 +95,13 @@ function getDefaultLayers() {
                 layer_cta_btn: { visible: true, x: null, y: 538, scale: 0.95, label: 'زر الطلب بالخاص (CTA)' }
             };
         }
+    } else if (currentTemplate === 'market_tracker') {
+        // Market Tracker is Story 9:16 only!
+        return {
+            layer_market_header: { visible: true, x: null, y: 30, scale: 0.95, label: 'ترويسة الرادار والشعارات' },
+            layer_market_players: { visible: true, x: null, y: 165, scale: 0.94, label: 'بطاقات اللاعبين ومؤشرات FUTBIN' },
+            layer_market_cta: { visible: true, x: null, y: 690, scale: 0.95, label: 'بانر متجر شوب كوين (CTA)' }
+        };
     } else if (currentTemplate === 'sbc') {
         // SBC is Story 9:16 only!
         return {
@@ -1022,7 +1029,7 @@ function initTemplateSelector() {
     container.innerHTML = '';
     
     // Filter templates based on current active studio suite
-    let availableKeys = ['store_promo', 'sbc'];
+    let availableKeys = ['store_promo', 'market_tracker', 'sbc'];
     if (window.currentStudioSuite === 'suite_posts') {
         availableKeys = ['showcase', 'trio', 'market_drop', 'potm'];
     }
@@ -1085,7 +1092,7 @@ window.switchStudioSuite = function(suiteKey) {
 
     if (suiteKey === 'suite_stories') {
         if (templateSection) templateSection.style.display = '';
-        if (templateTitle) templateTitle.textContent = 'اختر قالب الستوري (ستوري المتجر الأصلية أو تحديات الـ SBC):';
+        if (templateTitle) templateTitle.textContent = 'اختر قالب الستوري (ستوري المتجر، رادار فوت بين، أو تحديات الـ SBC):';
         if (templateControlsBox) templateControlsBox.style.display = '';
         if (carouselPanel) carouselPanel.classList.add('hidden');
         if (filmstripContainer) filmstripContainer.classList.add('hidden');
@@ -1093,7 +1100,7 @@ window.switchStudioSuite = function(suiteKey) {
         if (ratioContainer) ratioContainer.style.display = '';
         if (aiAssistantCard) aiAssistantCard.style.display = '';
 
-        if (currentTemplate !== 'store_promo' && currentTemplate !== 'sbc') {
+        if (currentTemplate !== 'store_promo' && currentTemplate !== 'market_tracker' && currentTemplate !== 'sbc') {
             currentTemplate = 'store_promo';
             initState();
         }
@@ -1198,7 +1205,7 @@ window.setMobileViewMode = function(mode) {
 };
 
 function updateRatioSelectorForTemplate() {
-    const isStoryOnly = currentTemplate === 'store_promo' || currentTemplate === 'sbc';
+    const isStoryOnly = currentTemplate === 'store_promo' || currentTemplate === 'market_tracker' || currentTemplate === 'sbc';
     const btnPortrait = document.querySelector('.ratio-btn[data-ratio="portrait"]');
     const btnSquare = document.querySelector('.ratio-btn[data-ratio="square"]');
     const btnStory = document.querySelector('.ratio-btn[data-ratio="story"]');
@@ -1258,7 +1265,7 @@ window.selectTemplate = function(key) {
     document.querySelectorAll('#templateSelector .tab-btn').forEach((b, i) => {
         const availableKeys = window.currentStudioSuite === 'suite_posts' 
             ? ['showcase', 'trio', 'market_drop', 'potm'] 
-            : ['store_promo', 'sbc'];
+            : ['store_promo', 'market_tracker', 'sbc'];
         b.classList.toggle('active', availableKeys[i] === key);
     });
     renderControls();
@@ -1277,7 +1284,7 @@ function initRatioSelector() {
 }
 
 function setRatio(ratio) {
-    if (window.currentStudioSuite === 'suite_stories' || currentTemplate === 'store_promo' || currentTemplate === 'sbc') {
+    if (window.currentStudioSuite === 'suite_stories' || currentTemplate === 'store_promo' || currentTemplate === 'market_tracker' || currentTemplate === 'sbc') {
         ratio = 'story';
     } else if (window.currentStudioSuite === 'suite_carousel') {
         ratio = 'portrait';
@@ -2643,6 +2650,8 @@ function renderControls() {
                 <input type="text" id="input_ctaText" value="${appState.ctaText || ''}" class="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs font-medium focus:border-emerald-500 focus:bg-white outline-none shadow-xs">
             </div>
         `;
+    } else if (currentTemplate === 'market_tracker') {
+        html += renderMarketTrackerControls();
     } else if (currentTemplate === 'sbc') {
         const banners = Array.isArray(appState.banners) && appState.banners.length > 0 
             ? appState.banners 
@@ -3045,7 +3054,7 @@ function renderControls() {
     }
 
     // Box & Button Customization Card (Only for templates with info box and CTA button like trio/market_drop)
-    if (currentTemplate !== 'store_promo' && currentTemplate !== 'sbc' && currentTemplate !== 'showcase') {
+    if (currentTemplate !== 'store_promo' && currentTemplate !== 'sbc' && currentTemplate !== 'showcase' && currentTemplate !== 'market_tracker') {
         html += `
             <div class="mt-4 p-4 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-3.5">
                 <div class="flex items-center justify-between pb-2 border-b border-slate-100">
@@ -3939,6 +3948,8 @@ function renderCanvas() {
 
     if (currentTemplate === 'store_promo') {
         canvas.innerHTML = renderStorePromoTemplate();
+    } else if (currentTemplate === 'market_tracker') {
+        canvas.innerHTML = renderMarketTrackerTemplate();
     } else if (currentTemplate === 'trio') {
         canvas.innerHTML = renderTrioTemplate();
         if (window.triggerAutoSaveTrio) window.triggerAutoSaveTrio();
@@ -4159,6 +4170,931 @@ function renderStorePromoTemplate() {
         ` : ''}
     `;
 }
+
+// ==========================================
+// FUTBIN MARKET TRACKER (Story 9:16 Template)
+// ==========================================
+
+const MARKET_STAR_PRESETS = [
+    {
+        id: 'barcola',
+        name: 'باركولا (85 LW)',
+        arName: 'باركولا',
+        rating: '85',
+        position: 'LW',
+        cardUrl: '/api/image-proxy?url=https%3A%2F%2Fgame-assets.fut.gg%2Fcdn-cgi%2Fimage%2Fquality%3D85%2Cformat%3Dauto%2Cwidth%3D600%2F2027%2Ffutgg-player-item-card%2F27-50596300.9b5dfc98a731bb7f8958c0eec6247d0bc94a42cb7d86de10a1c5482685f6b716.webp',
+        price: '107,000',
+        trend: '5.94% (+6K)',
+        trendDir: 'up',
+        recentSales: '108,000 | 108,000 | 109,000 | 109,000',
+        priceRange: '600 - 150,000',
+        updatedText: '35 SECS AGO',
+        tag: '🔥 كرت ميتا صاعد'
+    },
+    {
+        id: 'salah',
+        name: 'صلاح (87 RM)',
+        arName: 'محمد صلاح',
+        rating: '87',
+        position: 'RM',
+        cardUrl: '/api/image-proxy?url=https%3A%2F%2Fgame-assets.fut.gg%2Fcdn-cgi%2Fimage%2Fquality%3D85%2Cformat%3Dauto%2Cwidth%3D600%2F2027%2Ffutgg-player-item-card%2F27-209331.bdfc8b1e25229756f608e53457f6d58285771dcfddb855e6d723a3023f6aa7c2.webp',
+        price: '21,250',
+        trend: '8.97% (+1.75K)',
+        trendDir: 'up',
+        recentSales: '21,250 | 21,250 | 21,250 | 21,250',
+        priceRange: '600 - 1,100,000',
+        updatedText: '1 MINS AGO',
+        tag: '⚡ فرصة اقتناص نادرة'
+    },
+    {
+        id: 'messi',
+        name: 'ميسي (89 CAM)',
+        arName: 'ميسي',
+        rating: '89',
+        position: 'CAM',
+        cardUrl: '/api/image-proxy?url=https%3A%2F%2Fgame-assets.fut.gg%2Fcdn-cgi%2Fimage%2Fquality%3D85%2Cformat%3Dauto%2Cwidth%3D600%2F2027%2Ffutgg-player-item-card%2F27-158023.b7b052e75f1a00658907cbe5312eb4a62b2661631a6e0661b1924ec5e3f2a91c.webp',
+        price: '68,000',
+        trend: '2.86% (-2K)',
+        trendDir: 'down',
+        recentSales: '68,000 | 68,000 | 68,500 | 68,500',
+        priceRange: '700 - 300,000',
+        updatedText: '57 SECS AGO',
+        tag: '📉 قاع سعري ممتاز للشراء'
+    },
+    {
+        id: 'mbappe',
+        name: 'مبابي (91 ST)',
+        arName: 'كيليان مبابي',
+        rating: '91',
+        position: 'ST',
+        cardUrl: 'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=600/2027/futgg-player-item-card/27-231747.1b49b357729ba7dbf174dc4aa1e8519ce230b98ad399360e364a59f4b3477f07.webp',
+        price: '2,450,000',
+        trend: '4.20% (+95K)',
+        trendDir: 'up',
+        recentSales: '2,460,000 | 2,460,000 | 2,480,000 | 2,480,000',
+        priceRange: '10,000 - 3,500,000',
+        updatedText: '12 SECS AGO',
+        tag: '👑 نجم الميتا الأول'
+    },
+    {
+        id: 'vinicius',
+        name: 'فينيسيوس (90 LW)',
+        arName: 'فينيسيوس جونيور',
+        rating: '90',
+        position: 'LW',
+        cardUrl: 'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=600/2027/futgg-player-item-card/27-238794.6715e80f49fb5360b92261f8bd984f7178a47066cff3bfcd2c1b7dd57db13fbf.webp',
+        price: '980,000',
+        trend: '7.15% (+65K)',
+        trendDir: 'up',
+        recentSales: '985,000 | 990,000 | 995,000 | 1,000,000',
+        priceRange: '5,000 - 1,500,000',
+        updatedText: '40 SECS AGO',
+        tag: '⚡ سرعة خارقة وطلب عالي'
+    },
+    {
+        id: 'bellingham',
+        name: 'بيلينغهام (90 CAM)',
+        arName: 'جود بيلينغهام',
+        rating: '90',
+        position: 'CAM',
+        cardUrl: 'https://game-assets.fut.gg/cdn-cgi/image/quality=85,format=auto,width=600/2027/futgg-player-item-card/27-252371.49e4acdf2d78496f4951f41725cd17fb8efb118d99a69ba074ab76fc62d70735.webp',
+        price: '750,000',
+        trend: '3.10% (-24K)',
+        trendDir: 'down',
+        recentSales: '750,000 | 752,000 | 755,000 | 755,000',
+        priceRange: '5,000 - 1,200,000',
+        updatedText: '2 MINS AGO',
+        tag: '💎 فرصة قبل ارتفاع الويكند'
+    },
+    {
+        id: 'dembele',
+        name: 'ديمبيلي (86 RW)',
+        arName: 'عثمان ديمبيلي',
+        rating: '86',
+        position: 'RW',
+        cardUrl: '/api/image-proxy?url=https%3A%2F%2Fgame-assets.fut.gg%2Fcdn-cgi%2Fimage%2Fquality%3D85%2Cformat%3Dauto%2Cwidth%3D600%2F2027%2Ffutgg-player-item-card%2F27-231443.9d2df34d7d5634b9b794266c24e87ea7079be125a6059c3cdc40db7443a0fe4d.webp',
+        price: '84,500',
+        trend: '6.45% (+5K)',
+        trendDir: 'up',
+        recentSales: '85,000 | 85,000 | 86,000 | 86,000',
+        priceRange: '700 - 140,000',
+        updatedText: '18 SECS AGO',
+        tag: '🔥 كرت 5 نجوم مهارة'
+    },
+    {
+        id: 'yamal',
+        name: 'لامين يامال (84 RW)',
+        arName: 'لامين يامال',
+        rating: '84',
+        position: 'RW',
+        cardUrl: '/api/image-proxy?url=https%3A%2F%2Fgame-assets.fut.gg%2Fcdn-cgi%2Fimage%2Fquality%3D85%2Cformat%3Dauto%2Cwidth%3D600%2F2027%2Ffutgg-player-item-card%2F27-67386507.a953ece6dcf87cff76b8213692e7d57e1d31a2268e3f32596dd738c7a1591220.webp',
+        price: '38,000',
+        trend: '9.80% (+3.4K)',
+        trendDir: 'up',
+        recentSales: '38,500 | 38,500 | 39,000 | 39,000',
+        priceRange: '600 - 80,000',
+        updatedText: '45 SECS AGO',
+        tag: '⭐ الموهبة الأكثر طلباً'
+    }
+];
+
+function renderFutbinPriceBox(player, mode = 'standard') {
+    if (!player) return '';
+    const isUp = (player.trendDir || 'up') === 'up';
+    const trendIcon = isUp ? '▲' : '▼';
+    const trendColor = isUp ? '#00FF85' : '#FF4D4D';
+    const trendBg = isUp ? 'rgba(0, 255, 133, 0.12)' : 'rgba(255, 77, 77, 0.14)';
+    const trendBorder = isUp ? 'rgba(0, 255, 133, 0.35)' : 'rgba(255, 77, 77, 0.35)';
+
+    const salesList = (player.recentSales || '')
+        .split(/[|\n]/)
+        .map(s => s.trim())
+        .filter(Boolean);
+
+    const platform = (appState.platform === 'pc') ? 'PC' : 'PS / XBOX';
+
+    if (mode === 'compact') {
+        // 3 Cards Mode (Compact width ~155px)
+        return `
+            <div class="w-full rounded-xl bg-[#0c1017]/95 border border-[#242b3b] p-2 text-right shadow-2xl backdrop-blur-md flex flex-col justify-between" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; direction: ltr;">
+                <!-- Header: Platform & Trend -->
+                <div class="flex items-center justify-between pb-1 border-b border-[#1c2230] gap-1">
+                    <span class="text-[8px] font-mono font-black text-slate-400 bg-[#161a24] px-1.5 py-0.5 rounded border border-[#202738]">${platform}</span>
+                    <div class="flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9.5px] font-black font-mono" style="background: ${trendBg}; color: ${trendColor}; border: 1px solid ${trendBorder};">
+                        <span>${player.trend || '0%'}</span>
+                        <span class="text-[8.5px]">${trendIcon}</span>
+                    </div>
+                </div>
+
+                <!-- Price Row -->
+                <div class="py-1.5 flex items-center justify-center">
+                    <div class="flex items-center gap-1">
+                        <img src="assets/fc-coin.webp" class="w-4 h-4 object-contain" alt="Coin" onerror="this.src='assets/coin.png'">
+                        <span class="text-sm font-black font-mono text-white tracking-tight">${player.price || '0'}</span>
+                    </div>
+                </div>
+
+                <!-- Recent Sales List (2x2) -->
+                ${salesList.length > 0 ? `
+                <div class="pt-1 border-t border-[#1c2230]/90">
+                    <div class="text-[7.5px] font-mono text-slate-400 mb-0.5 text-center">RECENT SALES</div>
+                    <div class="grid grid-cols-2 gap-1 text-[7.5px] font-mono text-slate-300">
+                        ${salesList.slice(0, 4).map(s => `
+                            <div class="flex items-center gap-0.5 bg-[#151924] px-1 py-0.5 rounded text-center justify-center border border-[#1f2636] whitespace-nowrap overflow-hidden">
+                                <img src="assets/fc-coin.webp" class="w-2.5 h-2.5 object-contain opacity-80 shrink-0" alt="c">
+                                <span class="truncate whitespace-nowrap">${s}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                ` : ''}
+
+                <!-- Footer: Updated Time & Range -->
+                <div class="pt-1 mt-1 border-t border-[#1c2230]/70 flex items-center justify-between text-[7px] font-mono text-slate-400">
+                    <div class="flex items-center gap-1">
+                        <span class="w-1.5 h-1.5 rounded-full ${isUp ? 'bg-[#00ff85]' : 'bg-[#ff4d4d]'} animate-pulse"></span>
+                        <span class="truncate">${player.updatedText || 'NOW'}</span>
+                    </div>
+                    <span class="truncate">PR: ${player.priceRange ? (player.priceRange.split('-')[1]?.trim() || player.priceRange) : 'MAX'}</span>
+                </div>
+            </div>
+        `;
+    }
+
+    if (mode === 'hero') {
+        // 1 Card Mode (Hero Showcase Width ~420px)
+        return `
+            <div class="w-full max-w-[440px] mx-auto rounded-2xl bg-[#0c1017]/95 border border-[#242b3b] p-3.5 text-right shadow-2xl backdrop-blur-md" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; direction: ltr;">
+                <!-- Header: Platform, Live Status, Trend -->
+                <div class="flex items-center justify-between pb-2.5 border-b border-[#1c2230] gap-2">
+                    <div class="flex items-center gap-2">
+                        <span class="text-[11px] font-mono font-black text-slate-300 bg-[#161a24] px-2.5 py-0.5 rounded-md border border-[#22293b]">${platform}</span>
+                        <span class="text-[10px] font-mono text-slate-400 font-bold uppercase tracking-wider">FUTBIN LIVE MARKET</span>
+                    </div>
+                    <div class="flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-black font-mono tracking-tight shadow-xs" style="background: ${trendBg}; color: ${trendColor}; border: 1px solid ${trendBorder};">
+                        <span class="text-[10px] font-bold text-slate-300">Trend:</span>
+                        <span>${player.trend || '0%'}</span>
+                        <span class="text-[11px]">${trendIcon}</span>
+                    </div>
+                </div>
+
+                <!-- Price Row (Large Hero Price) -->
+                <div class="py-3 flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <img src="assets/fc-coin.webp" class="w-8 h-8 object-contain drop-shadow-[0_0_8px_rgba(245,158,11,0.4)]" alt="Coin" onerror="this.src='assets/coin.png'">
+                        <span class="text-3xl font-black font-mono text-white tracking-wider">${player.price || '0'}</span>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-[10px] font-mono text-slate-400 block">CURRENT LOWEST BIN</span>
+                        <span class="text-xs font-mono font-bold ${isUp ? 'text-[#00ff85]' : 'text-[#ff4d4d]'}">${isUp ? '📈 DEMAND RISING' : '📉 MARKET DIPPING'}</span>
+                    </div>
+                </div>
+
+                <!-- Recent Sales List -->
+                ${salesList.length > 0 ? `
+                <div class="py-2 border-t border-[#1c2230]">
+                    <div class="text-[10px] font-mono font-semibold text-slate-400 mb-1.5 flex items-center justify-between">
+                        <span>RECENT COMPLETED SALES:</span>
+                        <span class="text-[9px] text-emerald-400 font-mono">VERIFIED DATA</span>
+                    </div>
+                    <div class="grid grid-cols-4 gap-1.5">
+                        ${salesList.slice(0, 4).map(s => `
+                            <div class="flex items-center justify-center gap-1 bg-[#151924] px-2 py-1 rounded-md border border-[#202738] text-[10.5px] font-mono text-slate-200 whitespace-nowrap overflow-hidden">
+                                <img src="assets/fc-coin.webp" class="w-3.5 h-3.5 object-contain opacity-80 shrink-0" alt="c">
+                                <span class="whitespace-nowrap truncate">${s}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                ` : ''}
+
+                <!-- Footer: Updated Time & Range -->
+                <div class="pt-2 mt-1 border-t border-[#1c2230] flex items-center justify-between text-[10px] font-mono text-slate-400">
+                    <div class="flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full ${isUp ? 'bg-[#00ff85]' : 'bg-[#ff4d4d]'} animate-pulse"></span>
+                        <span>PRICE UPDATED: ${player.updatedText || 'JUST NOW'}</span>
+                    </div>
+                    <span>PRICE RANGE: ${player.priceRange || '600 - MAX'}</span>
+                </div>
+            </div>
+        `;
+    }
+
+    // Standard 2-Cards Mode (Exact match with user screenshots)
+    return `
+        <div class="w-full rounded-2xl bg-[#0c1017]/95 border border-[#242b3b] p-2.5 text-right shadow-2xl backdrop-blur-md flex flex-col justify-between" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; direction: ltr;">
+            <!-- Header: Platform Tag & Trend -->
+            <div class="flex items-center justify-between pb-1.5 border-b border-[#1c2230] gap-1.5">
+                <span class="text-[9.5px] font-mono font-black text-slate-400 bg-[#161a24] px-2 py-0.5 rounded border border-[#202738]">${platform}</span>
+                <div class="flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-black font-mono tracking-tight" style="background: ${trendBg}; color: ${trendColor}; border: 1px solid ${trendBorder};">
+                    <span class="text-[9px] font-bold text-slate-300">Trend:</span>
+                    <span>${player.trend || '0%'}</span>
+                    <span class="text-[9.5px]">${trendIcon}</span>
+                </div>
+            </div>
+
+            <!-- Price Row -->
+            <div class="py-2 flex items-center justify-center">
+                <div class="flex items-center gap-1.5">
+                    <img src="assets/fc-coin.webp" class="w-6 h-6 object-contain" alt="Coin" onerror="this.src='assets/coin.png'">
+                    <span class="text-xl font-black font-mono text-white tracking-wide">${player.price || '0'}</span>
+                </div>
+            </div>
+
+            <!-- Recent Sales Row (User Screenshot Structure) -->
+            ${salesList.length > 0 ? `
+            <div class="py-1.5 border-t border-[#1c2230]">
+                <div class="text-[8.5px] font-mono font-semibold text-slate-400 mb-1 flex items-center justify-between">
+                    <span>RECENT SALES:</span>
+                    <span class="text-[7.5px] text-slate-400 font-mono">FUTBIN</span>
+                </div>
+                <div class="grid grid-cols-2 gap-1">
+                    ${salesList.slice(0, 4).map(s => `
+                        <div class="flex items-center justify-center gap-1 bg-[#151924] px-1 py-0.5 rounded border border-[#202738] text-[9px] font-mono text-slate-200 whitespace-nowrap overflow-hidden">
+                            <img src="assets/fc-coin.webp" class="w-3 h-3 object-contain opacity-80 shrink-0" alt="c">
+                            <span class="whitespace-nowrap truncate">${s}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+            ` : ''}
+
+            <!-- Footer: Timestamp & Price Range -->
+            <div class="pt-1.5 mt-0.5 border-t border-[#1c2230] flex items-center justify-between text-[8px] font-mono text-slate-400">
+                <div class="flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 rounded-full ${isUp ? 'bg-[#00ff85]' : 'bg-[#ff4d4d]'} animate-pulse"></span>
+                    <span class="truncate">UPDATED: ${player.updatedText || 'JUST NOW'}</span>
+                </div>
+                <span class="truncate">PR: ${player.priceRange || '600 - MAX'}</span>
+            </div>
+        </div>
+    `;
+}
+
+function renderMarketTrackerTemplate() {
+    const isStoreBg = appState.bgTheme === 'store' || !appState.bgTheme;
+    const isDarkBg = appState.bgTheme === 'dark';
+    const bgUrl = isStoreBg 
+        ? (window.EMBEDDED_ASSETS?.STORE_BG_PURE || 'assets/store-bg-pure.png') 
+        : (isDarkBg ? 'assets/story-bg.jpg' : 'assets/shopcoin_arena_bg.jpg');
+
+    const cardCount = parseInt(appState.cardCount, 10) || 2;
+    const p1 = appState.player1 || TEMPLATES.market_tracker.defaultState.player1;
+    const p2 = appState.player2 || TEMPLATES.market_tracker.defaultState.player2;
+    const p3 = appState.player3 || TEMPLATES.market_tracker.defaultState.player3;
+
+    // Build Player Section HTML based on Card Count
+    let playersContentHtml = '';
+
+    if (cardCount === 1) {
+        // 1 Player: Hero Showcase (Single Large Player)
+        playersContentHtml = `
+            <div class="w-full flex flex-col items-center gap-2">
+                <!-- Tag Badge -->
+                ${p1.tag ? `
+                <div class="px-3 py-1 rounded-full bg-slate-900/90 border border-emerald-400 text-emerald-300 text-xs font-black shadow-lg">
+                    ${p1.tag}
+                </div>` : ''}
+
+                <!-- Large Player Card -->
+                <div class="relative w-[240px] h-[270px] flex items-center justify-center">
+                    <div class="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-[radial-gradient(ellipse_at_center,rgba(0,255,163,0.28)_0%,rgba(0,240,255,0.08)_50%,transparent_70%)] blur-2xl -z-10"></div>
+                    <img src="${p1.cardUrl}" class="max-h-full max-w-full object-contain pointer-events-none drop-shadow-[0_20px_35px_rgba(0,0,0,0.85)]" alt="${p1.name}">
+                </div>
+
+                <!-- Player Name Title -->
+                <div class="text-center">
+                    <span class="text-base font-black text-white drop-shadow-md">${p1.arName || p1.name}</span>
+                    <span class="text-xs font-bold text-emerald-400 font-mono ml-1.5">(${p1.rating} ${p1.position})</span>
+                </div>
+
+                <!-- Authentic FUTBIN Market Box (Hero mode) -->
+                ${renderFutbinPriceBox(p1, 'hero')}
+            </div>
+        `;
+    } else if (cardCount === 2) {
+        // 2 Players: Duo Comparison (Side-by-side)
+        playersContentHtml = `
+            <div class="w-full flex items-start justify-center gap-3.5 px-2">
+                <!-- Player 1 Column -->
+                <div class="flex-1 flex flex-col items-center gap-1.5 max-w-[245px]">
+                    ${p1.tag ? `
+                    <div class="px-2.5 py-0.5 rounded-full bg-slate-950/90 border border-emerald-400 text-emerald-300 text-[10.5px] font-black shadow-md truncate max-w-full">
+                        ${p1.tag}
+                    </div>` : ''}
+
+                    <!-- Card Image -->
+                    <div class="relative w-full h-[225px] flex items-center justify-center">
+                        <div class="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[210px] h-[210px] bg-[radial-gradient(ellipse_at_center,rgba(0,255,163,0.22)_0%,transparent_70%)] blur-xl -z-10"></div>
+                        <img src="${p1.cardUrl}" class="max-h-full max-w-full object-contain pointer-events-none drop-shadow-[0_15px_25px_rgba(0,0,0,0.8)]" alt="${p1.name}">
+                    </div>
+
+                    <!-- Player Name -->
+                    <div class="text-center truncate max-w-full">
+                        <span class="text-xs font-black text-white drop-shadow">${p1.arName || p1.name}</span>
+                        <span class="text-[10px] font-bold text-emerald-400 font-mono">(${p1.rating})</span>
+                    </div>
+
+                    <!-- FUTBIN Box 1 -->
+                    ${renderFutbinPriceBox(p1, 'standard')}
+                </div>
+
+                <!-- Player 2 Column -->
+                <div class="flex-1 flex flex-col items-center gap-1.5 max-w-[245px]">
+                    ${p2.tag ? `
+                    <div class="px-2.5 py-0.5 rounded-full bg-slate-950/90 border border-emerald-400 text-emerald-300 text-[10.5px] font-black shadow-md truncate max-w-full">
+                        ${p2.tag}
+                    </div>` : ''}
+
+                    <!-- Card Image -->
+                    <div class="relative w-full h-[225px] flex items-center justify-center">
+                        <div class="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[210px] h-[210px] bg-[radial-gradient(ellipse_at_center,rgba(0,240,255,0.20)_0%,transparent_70%)] blur-xl -z-10"></div>
+                        <img src="${p2.cardUrl}" class="max-h-full max-w-full object-contain pointer-events-none drop-shadow-[0_15px_25px_rgba(0,0,0,0.8)]" alt="${p2.name}">
+                    </div>
+
+                    <!-- Player Name -->
+                    <div class="text-center truncate max-w-full">
+                        <span class="text-xs font-black text-white drop-shadow">${p2.arName || p2.name}</span>
+                        <span class="text-[10px] font-bold text-emerald-400 font-mono">(${p2.rating})</span>
+                    </div>
+
+                    <!-- FUTBIN Box 2 -->
+                    ${renderFutbinPriceBox(p2, 'standard')}
+                </div>
+            </div>
+        `;
+    } else {
+        // 3 Players: Trio Radar (3 columns)
+        playersContentHtml = `
+            <div class="w-full grid grid-cols-3 gap-2 px-1">
+                <!-- Player 1 -->
+                <div class="flex flex-col items-center gap-1">
+                    ${p1.tag ? `
+                    <div class="px-1.5 py-0.5 rounded-full bg-slate-950/90 border border-emerald-400 text-emerald-300 text-[9px] font-black shadow truncate max-w-full">
+                        ${p1.tag}
+                    </div>` : ''}
+
+                    <div class="relative w-full h-[160px] flex items-center justify-center">
+                        <img src="${p1.cardUrl}" class="max-h-full max-w-full object-contain pointer-events-none drop-shadow-[0_12px_20px_rgba(0,0,0,0.8)]" alt="${p1.name}">
+                    </div>
+
+                    <div class="text-center truncate max-w-full">
+                        <span class="text-[11px] font-black text-white">${p1.arName || p1.name}</span>
+                        <span class="text-[9px] font-bold text-emerald-400 font-mono">(${p1.rating})</span>
+                    </div>
+
+                    ${renderFutbinPriceBox(p1, 'compact')}
+                </div>
+
+                <!-- Player 2 -->
+                <div class="flex flex-col items-center gap-1">
+                    ${p2.tag ? `
+                    <div class="px-1.5 py-0.5 rounded-full bg-slate-950/90 border border-emerald-400 text-emerald-300 text-[9px] font-black shadow truncate max-w-full">
+                        ${p2.tag}
+                    </div>` : ''}
+
+                    <div class="relative w-full h-[160px] flex items-center justify-center">
+                        <img src="${p2.cardUrl}" class="max-h-full max-w-full object-contain pointer-events-none drop-shadow-[0_12px_20px_rgba(0,0,0,0.8)]" alt="${p2.name}">
+                    </div>
+
+                    <div class="text-center truncate max-w-full">
+                        <span class="text-[11px] font-black text-white">${p2.arName || p2.name}</span>
+                        <span class="text-[9px] font-bold text-emerald-400 font-mono">(${p2.rating})</span>
+                    </div>
+
+                    ${renderFutbinPriceBox(p2, 'compact')}
+                </div>
+
+                <!-- Player 3 -->
+                <div class="flex flex-col items-center gap-1">
+                    ${p3.tag ? `
+                    <div class="px-1.5 py-0.5 rounded-full bg-slate-950/90 border border-emerald-400 text-emerald-300 text-[9px] font-black shadow truncate max-w-full">
+                        ${p3.tag}
+                    </div>` : ''}
+
+                    <div class="relative w-full h-[160px] flex items-center justify-center">
+                        <img src="${p3.cardUrl}" class="max-h-full max-w-full object-contain pointer-events-none drop-shadow-[0_12px_20px_rgba(0,0,0,0.8)]" alt="${p3.name}">
+                    </div>
+
+                    <div class="text-center truncate max-w-full">
+                        <span class="text-[11px] font-black text-white">${p3.arName || p3.name}</span>
+                        <span class="text-[9px] font-bold text-emerald-400 font-mono">(${p3.rating})</span>
+                    </div>
+
+                    ${renderFutbinPriceBox(p3, 'compact')}
+                </div>
+            </div>
+        `;
+    }
+
+    return `
+        <!-- Background -->
+        <div class="absolute inset-0 w-full h-full overflow-hidden pointer-events-none">
+            <div class="w-full h-full" style="background-image: url('${bgUrl}'); background-size: cover; background-position: center center;"></div>
+        </div>
+        <div class="absolute inset-0 bg-gradient-to-b from-[#080b12]/80 via-[#080b12]/50 to-[#080b12]/90 pointer-events-none"></div>
+
+        <!-- Official Logos -->
+        ${getFc27LogoHtml()}
+        ${getScBrandingHtml()}
+
+        <div id="snapGuideV" class="snap-guide snap-guide-v"></div>
+        <div id="snapGuideH" class="snap-guide snap-guide-h"></div>
+
+        <!-- Layer 1: Market Header (Live alert badge & headlines) -->
+        ${isLayerVisible('layer_market_header') ? `
+        <div id="layer_market_header" class="draggable-layer text-center flex flex-col items-center" style="${getLayerStyle('layer_market_header', 30)}; width: 100%; max-width: 500px; z-index: 30;">
+            <div class="layer-scale-wrapper w-full flex flex-col items-center gap-2" style="transform: scale(${getLayerScale('layer_market_header')});">
+                
+                <!-- Live Pulse Alert Badge -->
+                <div class="px-3.5 py-1 rounded-full bg-slate-950/95 border border-emerald-500/80 shadow-xl text-emerald-400 text-[11px] font-black tracking-wide flex items-center gap-1.5 whitespace-nowrap">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                    <span>${appState.badgeText || '🚨 رادار سوق FC 27 • تنبيه تحركات الأسعار في FUTBIN'}</span>
+                </div>
+
+                <!-- Main Story Headline -->
+                <h1 class="text-xl font-black text-white drop-shadow-[0_4px_16px_rgba(0,0,0,0.95)] leading-tight max-w-[460px] px-2">
+                    ${appState.headline || 'الأسعار في مسار تصاعدي! اشحن كوينزك وقفّل لاعبك قبل الارتفاع 📈⚡'}
+                </h1>
+
+                <!-- Subheadline -->
+                ${appState.subheadline ? `
+                <p class="text-[11.5px] font-bold text-slate-300 drop-shadow max-w-[430px] px-2 leading-relaxed">
+                    ${appState.subheadline}
+                </p>` : ''}
+            </div>
+            ${renderLayerToolbar('layer_market_header')}
+        </div>
+        ` : ''}
+
+        <!-- Layer 2: Players & FUTBIN Price Analytics -->
+        ${isLayerVisible('layer_market_players') ? `
+        <div id="layer_market_players" class="draggable-layer w-full" style="${getLayerStyle('layer_market_players', 165)}; width: 510px; z-index: 25;">
+            <div class="layer-scale-wrapper w-full" style="transform: scale(${getLayerScale('layer_market_players')});">
+                ${playersContentHtml}
+            </div>
+            ${renderLayerToolbar('layer_market_players')}
+        </div>
+        ` : ''}
+
+        <!-- Layer 3: Store Promo CTA Banner -->
+        ${isLayerVisible('layer_market_cta') ? `
+        <div id="layer_market_cta" class="draggable-layer text-center flex flex-col items-center" style="${getLayerStyle('layer_market_cta', 690)}; width: 100%; max-width: 480px; z-index: 35;">
+            <div class="layer-scale-wrapper w-full px-2" style="transform: scale(${getLayerScale('layer_market_cta')});">
+                <div class="rounded-2xl bg-gradient-to-r from-slate-950/95 via-[#0c1524]/95 to-slate-950/95 border border-emerald-500/60 p-3 shadow-2xl backdrop-blur-md text-center space-y-2">
+                    <!-- CTA Headline -->
+                    <div class="text-xs font-black text-emerald-300 flex items-center justify-center gap-1.5">
+                        <img src="assets/fc-coin.webp" class="w-4 h-4 object-contain" alt="c">
+                        <span>${appState.ctaHeadline || 'متوفر شحن كوينز فوري لجميع المنصات بأفضل الأسعار 💰'}</span>
+                    </div>
+
+                    <!-- Order Button -->
+                    <div class="py-1.5 px-4 rounded-xl bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-500 text-slate-950 font-black text-xs shadow-lg shadow-emerald-500/30 flex items-center justify-center gap-2">
+                        <span>${appState.ctaSub || 'للطلب تواصل معنا على الخاص: @shop_coin15 📩'}</span>
+                    </div>
+
+                    <!-- Trust Tags -->
+                    <div class="flex items-center justify-center gap-3 text-[9.5px] font-bold text-slate-400 pt-0.5">
+                        <span>⚡ تسليم فوري</span>
+                        <span>•</span>
+                        <span>🛡️ ضمان شامل الضريبة</span>
+                        <span>•</span>
+                        <span>🔒 أمان 100% بدون باند</span>
+                    </div>
+                </div>
+            </div>
+            ${renderLayerToolbar('layer_market_cta')}
+        </div>
+        ` : ''}
+    `;
+}
+
+function renderMarketTrackerControls() {
+    const cardCount = parseInt(appState.cardCount, 10) || 2;
+    const p1 = appState.player1 || TEMPLATES.market_tracker.defaultState.player1;
+    const p2 = appState.player2 || TEMPLATES.market_tracker.defaultState.player2;
+    const p3 = appState.player3 || TEMPLATES.market_tracker.defaultState.player3;
+    const activePlatform = appState.platform || 'ps_xbox';
+    const activeBg = appState.bgTheme || 'store';
+
+    let html = `
+        <div class="space-y-4">
+            <!-- 1. Card Count & Presentation Mode -->
+            <div class="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs space-y-2.5">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-black text-slate-800 flex items-center gap-1.5">
+                        <span>👥</span>
+                        <span>عدد اللاعبين المعروضين بالستوري:</span>
+                    </span>
+                    <div class="flex items-center gap-1">
+                        <button type="button" onclick="setMarketCardCount(1)" class="px-2.5 py-1 rounded-lg text-xs font-bold transition ${cardCount === 1 ? 'bg-emerald-600 text-white font-black shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}">
+                            🌟 كرت فردي
+                        </button>
+                        <button type="button" onclick="setMarketCardCount(2)" class="px-2.5 py-1 rounded-lg text-xs font-bold transition ${cardCount === 2 ? 'bg-emerald-600 text-white font-black shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}">
+                            👥 كرتين (ثنائي)
+                        </button>
+                        <button type="button" onclick="setMarketCardCount(3)" class="px-2.5 py-1 rounded-lg text-xs font-bold transition ${cardCount === 3 ? 'bg-emerald-600 text-white font-black shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}">
+                            👑 3 كروت
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Platform & Theme Selection -->
+                <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1">🎮 منصة فوت بين:</label>
+                        <div class="grid grid-cols-2 gap-1">
+                            <button type="button" onclick="setMarketPlatform('ps_xbox')" class="py-1 px-1.5 rounded-lg text-[10.5px] font-bold border transition ${activePlatform === 'ps_xbox' ? 'bg-emerald-50 border-emerald-500 text-emerald-950 font-black' : 'bg-slate-50 border-slate-200 text-slate-700'}">
+                                PS / XBOX
+                            </button>
+                            <button type="button" onclick="setMarketPlatform('pc')" class="py-1 px-1.5 rounded-lg text-[10.5px] font-bold border transition ${activePlatform === 'pc' ? 'bg-emerald-50 border-emerald-500 text-emerald-950 font-black' : 'bg-slate-50 border-slate-200 text-slate-700'}">
+                                PC
+                            </button>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1">🖼️ نمط الخلفية:</label>
+                        <div class="grid grid-cols-2 gap-1">
+                            <button type="button" onclick="setMarketBgTheme('store')" class="py-1 px-1.5 rounded-lg text-[10.5px] font-bold border transition ${activeBg === 'store' ? 'bg-emerald-50 border-emerald-500 text-emerald-950 font-black' : 'bg-slate-50 border-slate-200 text-slate-700'}">
+                                🏛️ رخام المتجر
+                            </button>
+                            <button type="button" onclick="setMarketBgTheme('dark')" class="py-1 px-1.5 rounded-lg text-[10.5px] font-bold border transition ${activeBg === 'dark' ? 'bg-emerald-50 border-emerald-500 text-emerald-950 font-black' : 'bg-slate-50 border-slate-200 text-slate-700'}">
+                                🌌 أرينا داكنة
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    `;
+
+    // Render individual player config blocks
+    const playersToRender = [
+        { index: 1, label: 'اللاعب الأول (اليمين / الرئيسي)', data: p1 },
+        { index: 2, label: 'اللاعب الثاني (اليسار)', data: p2 },
+        { index: 3, label: 'اللاعب الثالث (الوسط بالثلاثي)', data: p3 }
+    ].slice(0, cardCount);
+
+    playersToRender.forEach(pObj => {
+        const idx = pObj.index;
+        const pData = pObj.data;
+        const isUp = (pData.trendDir || 'up') === 'up';
+
+        html += `
+            <div class="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs space-y-3">
+                <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                    <span class="text-xs font-black text-slate-900 flex items-center gap-1.5">
+                        <span class="w-5 h-5 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center text-[11px] font-black">${idx}</span>
+                        <span>${pObj.label}:</span>
+                    </span>
+                    <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
+                        ${pData.rating || '85'} ${pData.position || 'POS'}
+                    </span>
+                </div>
+
+                <!-- 1-Click Star Presets for this slot -->
+                <div>
+                    <span class="block text-[10px] font-bold text-slate-500 mb-1">⚡ اختر نجماً جاهزاً بنقرة واحدة:</span>
+                    <div class="flex items-center gap-1 flex-wrap">
+                        ${MARKET_STAR_PRESETS.map(star => `
+                            <button type="button" onclick="applyMarketStarPreset(${idx}, '${star.id}')" class="px-2 py-1 rounded-md text-[10px] font-bold transition bg-slate-100 hover:bg-emerald-50 hover:text-emerald-900 hover:border-emerald-300 border border-slate-200">
+                                ${star.name}
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <!-- Card Image URL / Upload / Live Fetch -->
+                <div class="space-y-1.5 pt-1 border-t border-slate-100">
+                    <label class="block text-[11px] font-bold text-slate-700">سحب أو رفع بطاقة اللاعب (FUT.GG):</label>
+                    <div class="flex gap-1.5">
+                        <input type="text" id="market_p${idx}_cardUrl" value="${pData.cardUrl || ''}" 
+                               placeholder="اكتب اسم اللاعب (مثلاً Barcola أو Yamal) أو الصق رابطاً"
+                               onkeydown="if(event.key==='Enter') fetchMarketPlayerCard(${idx})"
+                               oninput="updateMarketPlayer(${idx}, 'cardUrl', this.value)"
+                               class="flex-1 px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-mono outline-none focus:border-emerald-500 focus:bg-white">
+                        <button type="button" id="btn_fetch_p${idx}" onclick="fetchMarketPlayerCard(${idx})" class="px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black shrink-0 transition flex items-center gap-1 shadow-xs cursor-pointer" title="سحب الكرت تلقائياً من FUT.GG">
+                            <span>⚡ جلب</span>
+                        </button>
+                        <input type="file" id="market_p${idx}_fileInput" accept="image/*" class="hidden" onchange="handleMarketPlayerFileUpload(${idx}, event)">
+                        <button type="button" onclick="document.getElementById('market_p${idx}_fileInput').click()" class="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold border border-slate-200 shrink-0 cursor-pointer" title="رفع صورة كرت">
+                            📁 رفع
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Player Names & Custom Tag -->
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-[10.5px] font-bold text-slate-600 mb-1">اسم اللاعب:</label>
+                        <input type="text" value="${pData.arName || pData.name || ''}" 
+                               placeholder="باركولا"
+                               oninput="updateMarketPlayer(${idx}, 'arName', this.value)"
+                               class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500 focus:bg-white">
+                    </div>
+                    <div>
+                        <label class="block text-[10.5px] font-bold text-slate-600 mb-1">الوسم التحفيزي:</label>
+                        <input type="text" value="${pData.tag || ''}" 
+                               placeholder="🔥 كرت ميتا صاعد"
+                               oninput="updateMarketPlayer(${idx}, 'tag', this.value)"
+                               class="w-full px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500 focus:bg-white">
+                    </div>
+                </div>
+
+                <!-- Price & Trend Direction Box -->
+                <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                    <div class="flex items-center justify-between">
+                        <label class="text-[11px] font-black text-slate-800">💰 سعر اللاعب الحالي في فوت بين:</label>
+                        <button type="button" onclick="autoGenerateMarketSales(${idx})" class="px-2 py-0.5 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[10px] transition shadow-xs flex items-center gap-1 cursor-pointer" title="يحسب مبيعات فوت بين تلقائياً بناءً على السعر">
+                            <span>🪄 توليد مبيعات ورينج تلقائياً</span>
+                        </button>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <input type="text" id="market_p${idx}_price" value="${pData.price || '107,000'}" 
+                                   placeholder="107,000"
+                                   oninput="updateMarketPlayer(${idx}, 'price', this.value)"
+                                   class="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-300 text-slate-900 text-xs font-black font-mono outline-none focus:border-emerald-500">
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <button type="button" onclick="setMarketTrendDir(${idx}, 'up')" class="flex-1 py-1 px-2 rounded-lg text-xs font-black border transition ${isUp ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs' : 'bg-white border-slate-200 text-emerald-700 hover:bg-emerald-50'}">
+                                صاعد ▲
+                            </button>
+                            <button type="button" onclick="setMarketTrendDir(${idx}, 'down')" class="flex-1 py-1 px-2 rounded-lg text-xs font-black border transition ${!isUp ? 'bg-rose-600 text-white border-rose-600 shadow-xs' : 'bg-white border-slate-200 text-rose-700 hover:bg-rose-50'}">
+                                هابط ▼
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2 pt-1">
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-500 mb-0.5">مؤشر التريند:</label>
+                            <input type="text" value="${pData.trend || '5.94% (+6K)'}" 
+                                   placeholder="5.94% (+6K)"
+                                   oninput="updateMarketPlayer(${idx}, 'trend', this.value)"
+                                   class="w-full px-2 py-1 rounded bg-white border border-slate-200 text-slate-800 text-[11px] font-mono outline-none focus:border-emerald-500">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-500 mb-0.5">وقت التحديث:</label>
+                            <input type="text" value="${pData.updatedText || '35 SECS AGO'}" 
+                                   placeholder="35 SECS AGO"
+                                   oninput="updateMarketPlayer(${idx}, 'updatedText', this.value)"
+                                   class="w-full px-2 py-1 rounded bg-white border border-slate-200 text-slate-800 text-[11px] font-mono outline-none focus:border-emerald-500">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Sales & Price Range -->
+                <div class="space-y-1.5">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 mb-0.5">آخر مبيعات (Recent Sales - مفصولة بـ | ):</label>
+                        <input type="text" id="market_p${idx}_sales" value="${pData.recentSales || ''}" 
+                               placeholder="108,000 | 108,000 | 109,000 | 109,000"
+                               oninput="updateMarketPlayer(${idx}, 'recentSales', this.value)"
+                               class="w-full px-2.5 py-1 rounded bg-slate-50 border border-slate-200 text-slate-800 text-[11px] font-mono outline-none focus:border-emerald-500 focus:bg-white">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 mb-0.5">رينج السعر (Price Range):</label>
+                        <input type="text" id="market_p${idx}_range" value="${pData.priceRange || ''}" 
+                               placeholder="600 - 150,000"
+                               oninput="updateMarketPlayer(${idx}, 'priceRange', this.value)"
+                               class="w-full px-2.5 py-1 rounded bg-slate-50 border border-slate-200 text-slate-800 text-[11px] font-mono outline-none focus:border-emerald-500 focus:bg-white">
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+
+    // Marketing & CTA Settings
+    html += `
+        <!-- Story Headlines & CTA Settings -->
+        <div class="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs space-y-3">
+            <div class="flex items-center gap-1.5 pb-1.5 border-b border-slate-100">
+                <span class="text-xs font-black text-slate-900">✍️ نصوص وعروض الستوري:</span>
+            </div>
+
+            <div>
+                <label class="block text-[11px] font-bold text-slate-700 mb-1">شارة التنبيه العلوية:</label>
+                <input type="text" value="${appState.badgeText || ''}" 
+                       oninput="appState.badgeText = this.value; renderCanvas();"
+                       class="w-full px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500 focus:bg-white">
+            </div>
+
+            <div>
+                <label class="block text-[11px] font-bold text-slate-700 mb-1">العنوان الرئيسي للستوري:</label>
+                <input type="text" value="${appState.headline || ''}" 
+                       oninput="appState.headline = this.value; renderCanvas();"
+                       class="w-full px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500 focus:bg-white">
+            </div>
+
+            <div>
+                <label class="block text-[11px] font-bold text-slate-700 mb-1">الوصف التحفيزي:</label>
+                <input type="text" value="${appState.subheadline || ''}" 
+                       oninput="appState.subheadline = this.value; renderCanvas();"
+                       class="w-full px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-medium outline-none focus:border-emerald-500 focus:bg-white">
+            </div>
+
+            <div class="pt-2 border-t border-slate-100 space-y-2">
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-700 mb-1">عنوان بانر المتجر (CTA):</label>
+                    <input type="text" value="${appState.ctaHeadline || ''}" 
+                           oninput="appState.ctaHeadline = this.value; renderCanvas();"
+                           class="w-full px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500 focus:bg-white">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-700 mb-1">نص زر الطلب عبر الخاص:</label>
+                    <input type="text" value="${appState.ctaSub || ''}" 
+                           oninput="appState.ctaSub = this.value; renderCanvas();"
+                           class="w-full px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 text-xs font-bold outline-none focus:border-emerald-500 focus:bg-white">
+                </div>
+            </div>
+        </div>
+    </div>
+    `;
+
+    return html;
+}
+
+window.setMarketCardCount = function(count) {
+    appState.cardCount = parseInt(count, 10) || 2;
+    renderControls();
+    renderCanvas();
+};
+
+window.setMarketPlatform = function(plat) {
+    appState.platform = plat;
+    renderControls();
+    renderCanvas();
+};
+
+window.setMarketBgTheme = function(theme) {
+    appState.bgTheme = theme;
+    renderControls();
+    renderCanvas();
+};
+
+window.updateMarketPlayer = function(playerIndex, field, value) {
+    const key = 'player' + playerIndex;
+    if (!appState[key]) {
+        appState[key] = JSON.parse(JSON.stringify(TEMPLATES.market_tracker.defaultState[key] || {}));
+    }
+    appState[key][field] = value;
+    renderCanvas();
+};
+
+window.setMarketTrendDir = function(playerIndex, dir) {
+    const key = 'player' + playerIndex;
+    if (!appState[key]) {
+        appState[key] = JSON.parse(JSON.stringify(TEMPLATES.market_tracker.defaultState[key] || {}));
+    }
+    appState[key].trendDir = dir;
+    renderControls();
+    renderCanvas();
+};
+
+window.autoGenerateMarketSales = function(playerIndex) {
+    const key = 'player' + playerIndex;
+    if (!appState[key]) {
+        appState[key] = JSON.parse(JSON.stringify(TEMPLATES.market_tracker.defaultState[key] || {}));
+    }
+    const rawPriceStr = (appState[key].price || '100,000').toString();
+    const raw = parseInt(rawPriceStr.replace(/[^0-9]/g, ''), 10) || 100000;
+    const isUp = (appState[key].trendDir || 'up') === 'up';
+
+    let step = 250;
+    if (raw >= 1000000) step = 10000;
+    else if (raw >= 100000) step = 1000;
+    else if (raw >= 20000) step = 250;
+    else step = 100;
+
+    const roundTo = (val, s) => Math.round(val / s) * s;
+
+    const s1 = roundTo(raw + (isUp ? step : -step), step);
+    const s2 = s1;
+    const s3 = roundTo(raw + (isUp ? step * 2 : 0), step);
+    const s4 = s3;
+
+    appState[key].recentSales = `${s1.toLocaleString()} | ${s2.toLocaleString()} | ${s3.toLocaleString()} | ${s4.toLocaleString()}`;
+
+    const minRange = raw > 50000 ? 1000 : 600;
+    const maxRange = roundTo(raw * 1.45, raw > 500000 ? 500000 : 50000);
+    appState[key].priceRange = `${minRange.toLocaleString()} - ${maxRange.toLocaleString()}`;
+
+    const pct = (Math.random() * 4 + 2.5).toFixed(2);
+    const deltaK = Math.round((raw * (parseFloat(pct) / 100)) / 1000);
+    appState[key].trend = `${pct}% (${isUp ? '+' : '-'}${deltaK > 0 ? deltaK + 'K' : rawPriceStr})`;
+    appState[key].updatedText = `${Math.floor(Math.random() * 50 + 10)} SECS AGO`;
+
+    renderControls();
+    renderCanvas();
+    if (window.showCopyToast) window.showCopyToast('تم توليد مبيعات فوت بين الذكية 🪄');
+};
+
+window.applyMarketStarPreset = function(playerIndex, presetId) {
+    const preset = MARKET_STAR_PRESETS.find(p => p.id === presetId);
+    if (!preset) return;
+    const key = 'player' + playerIndex;
+    appState[key] = JSON.parse(JSON.stringify(preset));
+    renderControls();
+    renderCanvas();
+    if (window.showCopyToast) window.showCopyToast(`تم تطبيق كرت ${preset.name} بنجاح ⚡`);
+};
+
+window.handleMarketPlayerFileUpload = function(playerIndex, event) {
+    const file = event.target.files && event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const key = 'player' + playerIndex;
+        if (!appState[key]) appState[key] = {};
+        appState[key].cardUrl = e.target.result;
+        renderControls();
+        renderCanvas();
+        if (window.showCopyToast) window.showCopyToast('تم تحميل صورة الكرت بنجاح 🖼️');
+    };
+    reader.readAsDataURL(file);
+};
+
+window.fetchMarketPlayerCard = async function(idx) {
+    const input = document.getElementById(`market_p${idx}_cardUrl`);
+    const query = input ? input.value.trim() : '';
+    if (!query) {
+        alert('يرجى كتابة اسم اللاعب أو رابط بطاقته من FUT.GG أو FUTBIN');
+        return;
+    }
+    const btn = document.getElementById(`btn_fetch_p${idx}`);
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = 'جاري... ⏳';
+    }
+    try {
+        const res = await fetch(`/api/fetch-futgg?url=${encodeURIComponent(query)}`);
+        const data = await res.json();
+        if (data && data.success && data.cardImage) {
+            const key = 'player' + idx;
+            if (!appState[key]) appState[key] = {};
+            appState[key].cardUrl = data.cardImage;
+            if (data.playerName) {
+                appState[key].name = data.playerName;
+                appState[key].arName = data.playerName;
+            }
+            if (data.rating) appState[key].rating = data.rating;
+            if (data.position) appState[key].position = data.position;
+            renderControls();
+            renderCanvas();
+            if (window.showCopyToast) window.showCopyToast(`تم جلب كرت ${data.playerName} (${data.rating}) بنجاح ⚡`);
+        } else {
+            alert('تعذر جلب اللاعب، يرجى كتابة الاسم بدقة بالإنجليزية أو رفع الصورة مباشرة');
+        }
+    } catch(e) {
+        alert('خطأ في جلب الكرت: ' + e.message);
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<span>⚡ جلب</span>';
+        }
+    }
+};
 
 // 1. Template Renderer: TRIO 3 Overlapping Players
 function renderTrioTemplate() {
