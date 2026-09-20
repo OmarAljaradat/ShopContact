@@ -133,75 +133,86 @@
         </div>
     </header>
 
-    <!-- Main Content -->
-    <main class="max-w-7xl mx-auto px-4 lg:px-8 py-6 space-y-6">
+    <!-- Main Content (Full Studio Width) -->
+    <main class="max-w-[1780px] w-full mx-auto px-3 sm:px-6 lg:px-8 py-3 space-y-3">
         
-        <!-- Top Studio Suite Switcher (4 Isolated Workspaces) -->
-        <div class="space-y-2.5">
-            <div class="flex items-center gap-2">
-                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span class="text-xs font-black text-slate-800">اختر مساحة العمل المطلوبة (مفصولة ومنظمة بالكامل):</span>
-            </div>
-
-            <!-- 3 Suite Switcher Tab Buttons (Cloud & Local) -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5" id="suiteNavigation">
-                <button type="button" onclick="switchStudioSuite('suite_stories')" id="suiteTab_stories" class="suite-tab-btn suite-tab-stories active p-3 rounded-2xl border-2 transition text-right flex items-center gap-3 bg-white border-emerald-500">
-                    <span class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg shrink-0 border border-emerald-200">📱</span>
-                    <div>
-                        <div class="text-xs font-black text-slate-900">استوديو الستوري</div>
-                        <div class="text-[10.5px] text-slate-500 font-medium">شرائط المتجر، تحديات SBC، و 8:00</div>
-                    </div>
-                </button>
-
-                <button type="button" onclick="switchStudioSuite('suite_posts')" id="suiteTab_posts" class="suite-tab-btn suite-tab-posts p-3 rounded-2xl border-2 transition text-right flex items-center gap-3 bg-white border-slate-200 hover:border-violet-400">
-                    <span class="w-10 h-10 rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center text-lg shrink-0 border border-violet-200">🖼️</span>
-                    <div>
-                        <div class="text-xs font-black text-slate-900">استوديو البوستات</div>
-                        <div class="text-[10.5px] text-slate-500 font-medium">هبوط الأسعار، ثلاثي النجوم، و POTM</div>
-                    </div>
-                </button>
-
-                <button type="button" onclick="switchStudioSuite('suite_carousel')" id="suiteTab_carousel" class="suite-tab-btn suite-tab-carousel p-3 rounded-2xl border-2 transition text-right flex items-center gap-3 bg-white border-slate-200 hover:border-blue-400">
-                    <span class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-lg shrink-0 border border-blue-200">🎮</span>
-                    <div>
-                        <div class="text-xs font-black text-slate-900">استوديو الكاروسيل</div>
-                        <div class="text-[10.5px] text-blue-600 font-bold">لعبة تركيب التصميم (12 مرجع) وتصدير 4K</div>
-                    </div>
-                </button>
-            </div>
-
-            <!-- Mobile View Mode Toggle (Full-width segmented bar on mobile) -->
-            <div class="lg:hidden w-full flex items-center bg-slate-200/90 p-1 rounded-2xl shadow-xs" id="mobileViewToggle">
-                <button type="button" onclick="setMobileViewMode('preview')" id="mobileBtnPreview" class="flex-1 py-2 rounded-xl text-xs font-black transition bg-white text-slate-900 shadow-xs text-center flex items-center justify-center gap-1.5">
-                    <span>🎨 شاشة المعاينة والتصدير</span>
-                </button>
-                <button type="button" onclick="setMobileViewMode('controls')" id="mobileBtnControls" class="flex-1 py-2 rounded-xl text-xs font-bold transition text-slate-600 text-center flex items-center justify-center gap-1.5">
-                    <span>🛠️ لوحة التعديل والخيارات</span>
-                </button>
-            </div>
+        <!-- Mobile View Mode Toggle (Full-width segmented bar on mobile) -->
+        <div class="lg:hidden w-full flex items-center bg-slate-200/90 p-1 rounded-2xl shadow-xs" id="mobileViewToggle">
+            <button type="button" onclick="setMobileViewMode('preview')" id="mobileBtnPreview" class="flex-1 py-2 rounded-xl text-xs font-black transition bg-white text-slate-900 shadow-xs text-center flex items-center justify-center gap-1.5">
+                <span>🎨 شاشة المعاينة والتصدير</span>
+            </button>
+            <button type="button" onclick="setMobileViewMode('controls')" id="mobileBtnControls" class="flex-1 py-2 rounded-xl text-xs font-bold transition text-slate-600 text-center flex items-center justify-center gap-1.5">
+                <span>🛠️ لوحة التعديل والخيارات</span>
+            </button>
         </div>
 
-        <!-- Sub-header for Templates (Filtered per Suite) -->
-        <div id="suiteTemplateSelectorSection">
-            <div class="text-xs uppercase tracking-wider text-slate-500 font-bold mb-2 flex items-center justify-between">
-                <span id="suiteTemplateSectionTitle">اختر قالب الستوري:</span>
-                <div class="flex items-center gap-2">
-                    <a href="eval.html" target="_blank" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 text-slate-950 font-black text-xs shadow-md hover:brightness-110 transition active:scale-95">
-                        <span>📊</span>
-                        <span>نافذة تقييم وتصفية القوالب (خارجية)</span>
-                    </a>
-                    <span class="text-[11px] text-emerald-600 font-black hidden sm:inline">جاهز للتحميل بجودة 4K ✨</span>
-                </div>
-            </div>
-            <div id="templateSelector" class="flex flex-wrap gap-2.5">
-                <!-- Dynamically generated buttons for active suite -->
-            </div>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
             
-            <!-- Left Column: Controls & Editing Form (col-span-5) -->
-            <div id="leftControlColumn" class="hidden lg:block lg:col-span-5 space-y-6">
+            <!-- Left Column: Controls & Editing Form (col-span-5 in RTL = Right Side Dashboard) -->
+            <div id="leftControlColumn" class="hidden lg:block lg:col-span-5 space-y-5">
+
+                <!-- 1. Workspace Suite Switcher (3 Studios) -->
+                <div class="double-bezel">
+                    <div class="double-bezel-inner p-3.5 space-y-2">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                            <span class="text-xs font-black text-slate-800">مساحة العمل المطلوبة:</span>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2" id="suiteNavigation">
+                            <button type="button" onclick="switchStudioSuite('suite_stories')" id="suiteTab_stories" class="suite-tab-btn suite-tab-stories active p-2.5 rounded-xl border-2 transition text-right flex flex-col justify-center gap-1 bg-white border-emerald-500 shadow-xs">
+                                <div class="flex items-center gap-1.5">
+                                    <span class="text-base">📱</span>
+                                    <span class="text-xs font-black text-slate-900">الستوري</span>
+                                </div>
+                                <div class="text-[9.5px] text-emerald-700 font-bold">شرائط، SBC، 8:00</div>
+                            </button>
+
+                            <button type="button" onclick="switchStudioSuite('suite_posts')" id="suiteTab_posts" class="suite-tab-btn suite-tab-posts p-2.5 rounded-xl border-2 transition text-right flex flex-col justify-center gap-1 bg-white border-slate-200 hover:border-violet-400 shadow-xs">
+                                <div class="flex items-center gap-1.5">
+                                    <span class="text-base">🖼️</span>
+                                    <span class="text-xs font-black text-slate-900">البوستات</span>
+                                </div>
+                                <div class="text-[9.5px] text-slate-500 font-medium">هبوط، ثلاثي، POTM</div>
+                            </button>
+
+                            <button type="button" onclick="switchStudioSuite('suite_carousel')" id="suiteTab_carousel" class="suite-tab-btn suite-tab-carousel p-2.5 rounded-xl border-2 transition text-right flex flex-col justify-center gap-1 bg-white border-slate-200 hover:border-blue-400 shadow-xs">
+                                <div class="flex items-center gap-1.5">
+                                    <span class="text-base">🎮</span>
+                                    <span class="text-xs font-black text-slate-900">الكاروسيل</span>
+                                </div>
+                                <div class="text-[9.5px] text-blue-600 font-bold">تركيب 12 سلايد 4K</div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Smart Categorized Template Selector Section -->
+                <div id="suiteTemplateSelectorSection" class="double-bezel">
+                    <div class="double-bezel-inner p-4 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span id="suiteTemplateSectionTitle" class="text-xs font-black text-slate-800 flex items-center gap-1.5">
+                                <span>🎯</span>
+                                <span>قوالب الأستوديو الجاهزة:</span>
+                            </span>
+                            <div class="flex items-center gap-1.5">
+                                <a href="eval.html" target="_blank" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 font-bold text-[10.5px] transition" title="فتح نافذة تقييم وتصفية القوالب">
+                                    <span>📊 التقييم</span>
+                                    <span class="text-emerald-600">↗</span>
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- 4 Smart Category Tabs for Story Suite -->
+                        <div id="storyCategoryTabsContainer" class="flex items-center gap-1.5 flex-wrap pb-2 border-b border-slate-100">
+                            <!-- Populated dynamically by initTemplateSelector() -->
+                        </div>
+
+                        <!-- Template Cards Grid -->
+                        <div id="templateSelector" class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <!-- Populated dynamically by initTemplateSelector() -->
+                        </div>
+                    </div>
+                </div>
                 
                 <!-- Aspect Ratio & Resolution Bar -->
                 <div class="double-bezel">
@@ -339,38 +350,35 @@
             </div>
 
             <!-- Right Column: Live High-Fidelity Preview (col-span-7) -->
-            <div id="rightPreviewColumn" class="lg:col-span-7 flex flex-col items-center sticky top-28">
+            <div id="rightPreviewColumn" class="lg:col-span-7 flex flex-col items-center sticky top-20 z-20 space-y-3">
                 
-                <div class="w-full flex items-center justify-between mb-3 px-2">
+                <div class="w-full flex items-center justify-between mb-1.5 px-2">
                     <div class="flex items-center gap-2">
                         <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></span>
-                        <span class="text-xs font-black text-slate-700">المعاينة المباشرة (مطابقة 100% للتصدير):</span>
+                        <span class="text-xs font-black text-slate-800">المعاينة المباشرة (4K Ultra):</span>
                     </div>
                     <!-- Direct Format Actions -->
-                    <div class="flex items-center gap-2 flex-wrap justify-end">
-                        <button type="button" onclick="if (window.CanvasExporter && typeof window.CanvasExporter.openFullscreen === 'function') { window.CanvasExporter.openFullscreen(); }" class="btn-download-action px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 hover:brightness-110 text-white font-black text-xs transition flex items-center gap-1.5 shadow-md shadow-purple-600/25 active:scale-95 cursor-pointer" title="معاينة ملء الشاشة (Fullscreen)">
+                    <div class="flex items-center gap-1.5 justify-end">
+                        <button type="button" onclick="if (window.CanvasExporter && typeof window.CanvasExporter.openFullscreen === 'function') { window.CanvasExporter.openFullscreen(); }" class="btn-download-action px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:brightness-110 text-white font-black text-xs transition flex items-center gap-1 shadow-sm shadow-purple-600/20 active:scale-95 cursor-pointer" title="معاينة ملء الشاشة (Fullscreen)">
                             <span>⛶ ملء الشاشة</span>
                         </button>
-                        <button onclick="TelegramManager.sendCurrentDesign()" class="btn-download-action btn-telegram-action px-3 py-1.5 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 hover:brightness-105 text-white font-black text-xs transition flex items-center gap-1 shadow-md shadow-sky-500/20" title="إرسال التصميم والكابشن لهاتفك مباشرة عبر تيليجرام بنقرة واحدة">
-                            <span>🚀 تيليجرام 4K</span>
+                        <button onclick="TelegramManager.sendCurrentDesign()" class="btn-download-action btn-telegram-action px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 hover:brightness-105 text-white font-black text-xs transition flex items-center gap-1 shadow-sm shadow-sky-500/20 cursor-pointer" title="إرسال التصميم والكابشن لهاتفك مباشرة عبر تيليجرام بنقرة واحدة">
+                            <span>🚀 تيليجرام</span>
                         </button>
-                        <button onclick="CanvasExporter.downloadNative('exportCanvas', 'jpg')" class="btn-download-action px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs transition shadow-md shadow-emerald-600/20 flex items-center gap-1.5" title="استخراج فوري بجودة 4K بمحرك المتصفح الأصلي (Chrome Blink) لضمان تطابق 100% بدون أي فرق بكسل واحد">
-                            <span>👑 تحميل فائق الدقة (Native 100%)</span>
+                        <button onclick="CanvasExporter.downloadNative('exportCanvas', 'jpg')" class="btn-download-action px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs transition shadow-sm shadow-emerald-600/20 flex items-center gap-1 cursor-pointer" title="استخراج فوري بجودة 4K بمحرك المتصفح الأصلي (Native Engine)">
+                            <span>👑 تحميل 4K</span>
                         </button>
-                        <button onclick="CanvasExporter.downloadPng('exportCanvas')" class="btn-download-action px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-slate-800 text-xs font-bold transition flex items-center gap-1 shadow-xs" title="صيغة PNG عالية النقاء">
-                            <span>PNG 💎</span>
+                        <button onclick="CanvasExporter.downloadPng('exportCanvas')" class="btn-download-action px-2.5 py-1.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-slate-800 text-xs font-bold transition flex items-center gap-1 shadow-xs cursor-pointer" title="صيغة PNG عالية النقاء">
+                            <span>💎 PNG</span>
                         </button>
-                        <button onclick="CanvasExporter.openImageModal('exportCanvas')" class="btn-download-action px-2.5 py-1.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-xs font-bold transition flex items-center gap-1 shadow-xs" title="فتح نافذة المعاينة للحفظ بالزر الأيمن">
-                            <span>🖼️ حفظ باسم</span>
-                        </button>
-                        <button onclick="CanvasExporter.copyToClipboard('exportCanvas')" class="btn-download-action px-2.5 py-1.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-xs font-bold transition shadow-xs" title="نسخ الصورة للحافظة">
+                        <button onclick="CanvasExporter.copyToClipboard('exportCanvas')" class="btn-download-action px-2.5 py-1.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-xs font-bold transition shadow-xs cursor-pointer" title="نسخ الصورة للحافظة">
                             <span>📋 نسخ</span>
                         </button>
                     </div>
                 </div>
 
                 <!-- Preview Frame Container (Auto-fitted, never cropped) -->
-                <div id="previewContainer" class="w-full p-2 sm:p-4 rounded-3xl border border-slate-200 shadow-sm flex items-center justify-center min-h-[440px] sm:min-h-[520px] overflow-hidden">
+                <div id="previewContainer" class="w-full p-2 sm:p-4 rounded-3xl border border-slate-200 shadow-sm flex items-center justify-center relative overflow-hidden">
                     <!-- Scaled stage wrapper that fits full canvas on screen -->
                     <div id="canvasScaleStage" class="relative">
                         <!-- The Element Captured by html2canvas -->
@@ -378,12 +386,22 @@
                             <!-- Injected via JavaScript -->
                         </div>
                     </div>
+
+                    <!-- Floating Interactive Zoom Controller Pill -->
+                    <div dir="ltr" class="absolute bottom-3.5 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-white/95 backdrop-blur-md border border-slate-200 shadow-md text-xs font-bold text-slate-700 select-none">
+                        <button type="button" onclick="setPreviewZoom('out')" class="w-6 h-6 rounded-full hover:bg-slate-100 flex items-center justify-center font-black text-slate-800 transition cursor-pointer" title="تصغير المعاينة">−</button>
+                        <span id="previewZoomValue" class="px-1 text-[11px] font-mono font-black text-emerald-700 min-w-[38px] text-center">100%</span>
+                        <button type="button" onclick="setPreviewZoom('in')" class="w-6 h-6 rounded-full hover:bg-slate-100 flex items-center justify-center font-black text-slate-800 transition cursor-pointer" title="تكبير المعاينة">+</button>
+                        <div class="w-px h-3.5 bg-slate-200 mx-1"></div>
+                        <button type="button" onclick="setPreviewZoom('fit')" class="px-2 py-0.5 rounded-full hover:bg-slate-100 text-[10.5px] font-bold text-slate-700 transition cursor-pointer" title="ملاءمة الشاشة التلقائية">ملاءمة</button>
+                        <button type="button" onclick="setPreviewZoom('100')" class="px-2 py-0.5 rounded-full hover:bg-slate-100 text-[10.5px] font-bold text-slate-700 transition cursor-pointer" title="حجم طبيعي 100%">100%</button>
+                    </div>
                 </div>
 
                 <!-- Carousel Filmstrip Container (Shown when in Carousel suite) -->
                 <div id="carouselFilmstripContainer" class="w-full mt-3 hidden"></div>
 
-                <div class="mt-4 text-center">
+                <div class="mt-2 text-center">
                     <p class="text-[11px] text-slate-500 font-medium">
                         💡 اسحب أي عنصر مباشرة على الكانفاس لتحريكه أو اضغط عليه لتكبيره وتصغيره.
                     </p>

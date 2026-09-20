@@ -244,32 +244,66 @@ function getDefaultLayers() {
     return {};
 }
 
+window.userPreviewZoom = 1.0;
+window.setPreviewZoom = function(mode) {
+    if (mode === 'fit') {
+        window.userPreviewZoom = 1.0;
+    } else if (mode === '100') {
+        const canvas = document.getElementById('exportCanvas');
+        const container = document.getElementById('previewContainer');
+        if (canvas && container) {
+            const padX = 40;
+            const padY = 40;
+            const baseScale = Math.min((container.clientWidth - padX) / (canvas.offsetWidth || 450), (container.clientHeight - padY) / (canvas.offsetHeight || 800));
+            window.userPreviewZoom = baseScale > 0 ? (1.0 / baseScale) : 1.0;
+        } else {
+            window.userPreviewZoom = 1.0;
+        }
+    } else if (mode === 'in') {
+        window.userPreviewZoom = Math.min(2.0, (window.userPreviewZoom || 1.0) + 0.1);
+    } else if (mode === 'out') {
+        window.userPreviewZoom = Math.max(0.4, (window.userPreviewZoom || 1.0) - 0.1);
+    }
+    window.updateCanvasViewportScale();
+};
+
 window.updateCanvasViewportScale = function() {
     const canvas = document.getElementById('exportCanvas');
     const container = document.getElementById('previewContainer');
     const stage = document.getElementById('canvasScaleStage');
     if (!canvas || !container || !stage) return;
 
-    const availableWidth = container.clientWidth - 32;
-    const containerRect = container.getBoundingClientRect();
-    const availableHeight = Math.max(400, Math.min(window.innerHeight - Math.max(0, containerRect.top) - 36, window.innerHeight * 0.76));
+    // Use full container dimensions with breathing padding
+    const paddingX = 40;
+    const paddingY = 75;
+    const availableWidth = Math.max(280, container.clientWidth - paddingX);
+    const availableHeight = Math.max(480, container.clientHeight - paddingY);
 
     const canvasW = canvas.offsetWidth || 450;
     const canvasH = canvas.offsetHeight || 800;
 
     const scaleW = availableWidth / canvasW;
     const scaleH = availableHeight / canvasH;
-    const fitScale = Math.min(1.0, Math.min(scaleW, scaleH));
+    
+    // Fit comfortably to full container height & width
+    const baseFitScale = Math.min(scaleW, scaleH);
+    const userZoom = window.userPreviewZoom || 1.0;
+    const finalScale = Math.min(1.6, Math.max(0.35, Math.round(baseFitScale * userZoom * 100) / 100));
 
-    window.currentFitScale = fitScale;
+    window.currentFitScale = finalScale;
 
-    stage.style.width = `${Math.round(canvasW * fitScale)}px`;
-    stage.style.height = `${Math.round(canvasH * fitScale)}px`;
+    stage.style.width = `${Math.round(canvasW * finalScale)}px`;
+    stage.style.height = `${Math.round(canvasH * finalScale)}px`;
 
-    canvas.style.transform = `scale(${fitScale})`;
+    canvas.style.transform = `scale(${finalScale})`;
     canvas.style.transformOrigin = '0 0';
     canvas.style.left = '0';
     canvas.style.top = '0';
+
+    const zoomValEl = document.getElementById('previewZoomValue');
+    if (zoomValEl) {
+        zoomValEl.textContent = `${Math.round(finalScale * 100)}%`;
+    }
 };
 
 window.addEventListener('resize', () => {
@@ -1096,30 +1130,141 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+const STORY_CATEGORIES = [
+    {
+        id: 'sales',
+        name: 'عروض وباقات الكوينز',
+        icon: '💰',
+        badge: 'مبيعات وأسعار',
+        templates: [
+            { key: 'promo_pack', title: 'باكات المتجر', desc: 'حزم وباكدجات الكوينز الترويجية', icon: '🎁', badge: 'الأكثر طلباً 🔥' },
+            { key: 'flash_sale', title: 'جدول باقات الكوينز', desc: 'عرض كميات وأسعار الكوينز الرسمية', icon: '📊', badge: 'قائمة الأسعار 💎' },
+            { key: 'store_promo', title: 'ستوري المتجر الأصلية', desc: 'شرائط نصوص مكدسة مع كروت الحدث', icon: '📱', badge: 'الستوري الأصلية ⭐' },
+            { key: 'social_proof', title: 'توثيق طلبات الشحن', desc: 'إثبات تسليم وشحن فوري للزبائن', icon: '✅', badge: 'توثيق وتسليم 🛡️' },
+            { key: 'loaded_accounts', title: 'حسابات جاهزة للبيع', desc: 'عرض حسابات وأندية جاهزة بالكوينز', icon: '🏷️', badge: 'حسابات FC 27 🎮' }
+        ]
+    },
+    {
+        id: 'content',
+        name: 'المحتوى والتفاعل',
+        icon: '🌟',
+        badge: 'تفاعل وتقييمات',
+        templates: [
+            { key: 'player_review', title: 'مراجعة وتقييم اللاعبين', desc: 'كرت اللاعب مع التقييم وميزات الشراء', icon: '👑', badge: 'تقييم احترافي ⭐' },
+            { key: 'player_duel', title: 'معركة النجوم والتصويت', desc: 'مقارنة نجمين وتفاعل تصويت الستوري', icon: '⚔️', badge: 'تفاعل وتصويت 🔥' },
+            { key: 'market_tracker', title: 'رادار أسعار FUTBIN', desc: 'مؤشرات حركة السوق وارتفاع الكروت', icon: '📈', badge: 'سوق فوت بين ⚡' },
+            { key: 'evo_boost', title: 'تطويرات الإيفولوشن', desc: 'عرض كروت الإيفو وتطويرات اللاعبين', icon: '🧬', badge: 'إيفولوشن خارق 🚀' }
+        ]
+    },
+    {
+        id: 'squads',
+        name: 'التحديات والتشكيلات',
+        icon: '⚽',
+        badge: 'تحديات وتشكيل',
+        templates: [
+            { key: 'sbc', title: 'ستوري تحديات SBC', desc: 'تحديات وترقيات محتوى الساعة 8:00', icon: '⚡', badge: 'محتوى 8:00 مساءً ⏰' },
+            { key: 'champs_squad', title: 'تشكيلة الفوت تشامبيونز', desc: 'تشكيلة الأسبوع وتكتيكات الفوز', icon: '🏆', badge: 'فوت تشامبيونز 🥇' },
+            { key: 'budget_beast', title: 'تشكيلة الميزانية الذكية', desc: 'أقوى تشكيلات الميزانية (250k فما دون)', icon: '💎', badge: 'ميزانية اقتصادية 💡' },
+            { key: 'squad_makeover', title: 'تجديد وتطوير التشكيلة', desc: 'مقارنة الفريق قبل وبعد تعزيز الكوينز', icon: '🔄', badge: 'قبل / بعد 🔁' }
+        ]
+    },
+    {
+        id: 'custom',
+        name: 'تصميم حر خاص',
+        icon: '✨',
+        badge: 'تخصيص كامل',
+        templates: [
+            { key: 'custom_story', title: 'قالب خاص حر', desc: 'حرية كاملة للنصوص، الكروت، والشعار', icon: '🎨', badge: 'تصميم مخصص 🖌️' }
+        ]
+    }
+];
+window.STORY_CATEGORIES = STORY_CATEGORIES;
+window.activeStoryCategory = 'sales';
+
+window.selectStoryCategory = function(catId) {
+    window.activeStoryCategory = catId;
+    initTemplateSelector();
+};
+
 function initTemplateSelector() {
     const container = document.getElementById('templateSelector');
+    const categoryTabsContainer = document.getElementById('storyCategoryTabsContainer');
     if (!container) return;
 
     container.innerHTML = '';
     
-    // Filter templates based on current active studio suite
-    let availableKeys = STORY_TEMPLATE_KEYS;
-    if (window.currentStudioSuite === 'suite_posts') {
-        availableKeys = ['showcase', 'trio', 'market_drop', 'potm'];
-    }
+    // Suite Stories: Render Smart Category Tabs + Category Template Cards
+    if (window.currentStudioSuite === 'suite_stories') {
+        if (categoryTabsContainer) {
+            categoryTabsContainer.classList.remove('hidden');
+            categoryTabsContainer.innerHTML = '';
+            STORY_CATEGORIES.forEach(cat => {
+                const isActive = cat.id === window.activeStoryCategory;
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = `cat-tab-btn px-3.5 py-1.5 text-xs font-black transition flex items-center gap-1.5 ${isActive ? 'active' : ''}`;
+                btn.innerHTML = `<span>${cat.icon}</span><span>${cat.name}</span><span class="text-[10px] px-1.5 py-0.2 rounded-full ${isActive ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-700'} font-bold">${cat.templates.length}</span>`;
+                btn.addEventListener('click', () => {
+                    window.selectStoryCategory(cat.id);
+                });
+                categoryTabsContainer.appendChild(btn);
+            });
+        }
 
-    availableKeys.forEach(key => {
-        const tmpl = TEMPLATES[key];
-        if (!tmpl) return;
-        const btn = document.createElement('button');
-        const isActive = key === currentTemplate;
-        btn.className = `tab-btn flex items-center gap-2 px-5 py-2.5 text-xs font-black transition ${isActive ? 'active' : ''}`;
-        btn.innerHTML = `<span>${tmpl.name}</span>`;
-        btn.addEventListener('click', () => {
-            window.selectTemplate(key);
+        const activeCat = STORY_CATEGORIES.find(c => c.id === window.activeStoryCategory) || STORY_CATEGORIES[0];
+        activeCat.templates.forEach(t => {
+            const isActive = t.key === currentTemplate;
+            const card = document.createElement('button');
+            card.type = 'button';
+            card.className = `tmpl-card-item p-3 transition flex flex-col justify-between gap-1.5 ${isActive ? 'active' : ''}`;
+            card.innerHTML = `
+                <div class="flex items-start justify-between gap-2 w-full">
+                    <div class="flex items-center gap-2.5">
+                        <span class="text-xl shrink-0">${t.icon}</span>
+                        <div class="text-right">
+                            <div class="text-xs font-black ${isActive ? 'text-emerald-950' : 'text-slate-900'}">${t.title}</div>
+                            <div class="text-[10px] ${isActive ? 'text-emerald-700 font-bold' : 'text-slate-500'} line-clamp-1">${t.desc}</div>
+                        </div>
+                    </div>
+                    ${isActive ? '<span class="px-2 py-0.5 rounded-full bg-emerald-600 text-white text-[9px] font-black shrink-0 animate-pulse">النشط حالياً ✨</span>' : `<span class="px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-600 text-[9px] font-bold shrink-0">${t.badge}</span>`}
+                </div>
+            `;
+            card.addEventListener('click', () => {
+                window.selectTemplate(t.key);
+            });
+            container.appendChild(card);
         });
-        container.appendChild(btn);
-    });
+    } else if (window.currentStudioSuite === 'suite_posts') {
+        if (categoryTabsContainer) {
+            categoryTabsContainer.classList.add('hidden');
+        }
+        const postKeys = ['showcase', 'trio', 'market_drop', 'potm'];
+        postKeys.forEach(key => {
+            const tmpl = TEMPLATES[key];
+            if (!tmpl) return;
+            const isActive = key === currentTemplate;
+            const card = document.createElement('button');
+            card.type = 'button';
+            card.className = `tmpl-card-item p-3 transition flex flex-col justify-between gap-1.5 ${isActive ? 'active' : ''}`;
+            const iconMap = { showcase: '⭐', trio: '👥', market_drop: '📉', potm: '🏆' };
+            card.innerHTML = `
+                <div class="flex items-start justify-between gap-2 w-full">
+                    <div class="flex items-center gap-2.5">
+                        <span class="text-xl shrink-0">${iconMap[key] || '🖼️'}</span>
+                        <div class="text-right">
+                            <div class="text-xs font-black ${isActive ? 'text-emerald-950' : 'text-slate-900'}">${tmpl.name}</div>
+                            <div class="text-[10px] ${isActive ? 'text-emerald-700 font-bold' : 'text-slate-500'} line-clamp-1">${tmpl.description || ''}</div>
+                        </div>
+                    </div>
+                    ${isActive ? '<span class="px-2 py-0.5 rounded-full bg-emerald-600 text-white text-[9px] font-black shrink-0 animate-pulse">النشط ✨</span>' : ''}
+                </div>
+            `;
+            card.addEventListener('click', () => {
+                window.selectTemplate(key);
+            });
+            container.appendChild(card);
+        });
+    }
 }
 
 window.switchStudioSuite = function(suiteKey) {
@@ -1334,18 +1479,22 @@ function updateCaptionVisibility() {
 window.selectTemplate = function(key) {
     if (!TEMPLATES[key]) return;
     currentTemplate = key;
+
+    // Automatically synchronize the active category
+    if (window.currentStudioSuite === 'suite_stories') {
+        const parentCat = STORY_CATEGORIES.find(c => c.templates.some(t => t.key === key));
+        if (parentCat && parentCat.id !== window.activeStoryCategory) {
+            window.activeStoryCategory = parentCat.id;
+        }
+    }
+
     initState();
     updateRatioSelectorForTemplate();
     updateCaptionVisibility();
     if (window.AiAssistant && typeof window.AiAssistant.onTemplateChanged === 'function') {
         window.AiAssistant.onTemplateChanged(key);
     }
-    document.querySelectorAll('#templateSelector .tab-btn').forEach((b, i) => {
-        const availableKeys = window.currentStudioSuite === 'suite_posts' 
-            ? ['showcase', 'trio', 'market_drop', 'potm'] 
-            : STORY_TEMPLATE_KEYS;
-        b.classList.toggle('active', availableKeys[i] === key);
-    });
+    initTemplateSelector();
     renderControls();
     renderCanvas();
     updateCaption();
