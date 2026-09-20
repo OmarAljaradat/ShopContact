@@ -5217,7 +5217,7 @@ function renderMarketTrackerTemplate() {
                     <div class="flex items-center justify-center gap-3 text-[9.5px] font-bold text-slate-400 pt-0.5">
                         <span>⚡ تسليم فوري</span>
                         <span>•</span>
-                        <span>🛡️ ضمان شامل الضريبة</span>
+                        <span>🛡️ ضمان وأمان كامل للنادي</span>
                         <span>•</span>
                         <span>🔒 أمان 100% بدون باند</span>
                     </div>
