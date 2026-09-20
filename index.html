@@ -387,14 +387,41 @@
                         </div>
                     </div>
 
-                    <!-- Floating Interactive Zoom Controller Pill -->
-                    <div dir="ltr" class="absolute bottom-3.5 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-white/95 backdrop-blur-md border border-slate-200 shadow-md text-xs font-bold text-slate-700 select-none">
+                    <!-- Floating Interactive Zoom Controller Pill (Draggable anywhere) -->
+                    <div id="previewZoomBar" dir="ltr" class="absolute bottom-3.5 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1 px-2 py-1.5 rounded-full bg-white/95 backdrop-blur-md border border-slate-200/90 shadow-lg text-xs font-bold text-slate-700 select-none transition-shadow hover:shadow-xl group cursor-grab">
+                        <!-- Drag Handle -->
+                        <div id="zoomBarDragHandle" class="p-1 -ml-0.5 text-slate-400 hover:text-slate-800 transition flex items-center shrink-0 cursor-grab active:cursor-grabbing" title="اسحب لتحريك شريط الزووم لأي مكان في المعاينة (انقر مرتين لإعادته للمنتصف)">
+                            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
+                                <circle cx="8" cy="6" r="1.8"></circle>
+                                <circle cx="16" cy="6" r="1.8"></circle>
+                                <circle cx="8" cy="12" r="1.8"></circle>
+                                <circle cx="16" cy="12" r="1.8"></circle>
+                                <circle cx="8" cy="18" r="1.8"></circle>
+                                <circle cx="16" cy="18" r="1.8"></circle>
+                            </svg>
+                        </div>
+
+                        <!-- Zoom Out -->
                         <button type="button" onclick="setPreviewZoom('out')" class="w-6 h-6 rounded-full hover:bg-slate-100 flex items-center justify-center font-black text-slate-800 transition cursor-pointer" title="تصغير المعاينة">−</button>
-                        <span id="previewZoomValue" class="px-1 text-[11px] font-mono font-black text-emerald-700 min-w-[38px] text-center">100%</span>
+                        
+                        <!-- Zoom Value -->
+                        <span id="previewZoomValue" class="px-1 text-[11px] font-mono font-black text-emerald-700 min-w-[38px] text-center cursor-default">100%</span>
+                        
+                        <!-- Zoom In -->
                         <button type="button" onclick="setPreviewZoom('in')" class="w-6 h-6 rounded-full hover:bg-slate-100 flex items-center justify-center font-black text-slate-800 transition cursor-pointer" title="تكبير المعاينة">+</button>
-                        <div class="w-px h-3.5 bg-slate-200 mx-1"></div>
+                        
+                        <div class="w-px h-3.5 bg-slate-200 mx-0.5"></div>
+                        
+                        <!-- Fit & 100% -->
                         <button type="button" onclick="setPreviewZoom('fit')" class="px-2 py-0.5 rounded-full hover:bg-slate-100 text-[10.5px] font-bold text-slate-700 transition cursor-pointer" title="ملاءمة الشاشة التلقائية">ملاءمة</button>
                         <button type="button" onclick="setPreviewZoom('100')" class="px-2 py-0.5 rounded-full hover:bg-slate-100 text-[10.5px] font-bold text-slate-700 transition cursor-pointer" title="حجم طبيعي 100%">100%</button>
+                        
+                        <div class="w-px h-3.5 bg-slate-200 mx-0.5"></div>
+
+                        <!-- Quick Dock Position Cycle Button -->
+                        <button type="button" id="btnCycleZoomPosition" onclick="cycleZoomBarPosition()" class="w-6 h-6 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-800 flex items-center justify-center text-[11px] transition cursor-pointer" title="تبديل زاوية التثبيت السريع (أعلى، أسفل، زوايا)">
+                            <span>📌</span>
+                        </button>
                     </div>
                 </div>
 

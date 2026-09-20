@@ -315,6 +315,172 @@ window.addEventListener('resize', () => {
 });
 
 /* =========================================================================
+   DRAGGABLE & REPOSITIONABLE PREVIEW ZOOM CONTROLLER (شريط الزووم التفاعلي القابل للتحريك)
+   ========================================================================= */
+
+window.resetZoomBarPosition = function() {
+    const bar = document.getElementById('previewZoomBar');
+    if (!bar) return;
+    bar.style.left = '50%';
+    bar.style.top = 'auto';
+    bar.style.bottom = '14px';
+    bar.style.transform = 'translateX(-50%)';
+    try { localStorage.removeItem('shopcoin_zoom_bar_pos'); } catch(e) {}
+};
+
+window.cycleZoomBarPosition = function() {
+    const bar = document.getElementById('previewZoomBar');
+    const container = document.getElementById('previewContainer');
+    if (!bar || !container) return;
+
+    const currentPosIdx = parseInt(bar.dataset.posIdx || '0', 10);
+    const nextPosIdx = (currentPosIdx + 1) % 5;
+    bar.dataset.posIdx = nextPosIdx;
+    bar.style.transform = 'none';
+
+    if (nextPosIdx === 0) {
+        // أسفل المنتصف (الافتراضي)
+        bar.style.left = '50%';
+        bar.style.top = 'auto';
+        bar.style.bottom = '14px';
+        bar.style.transform = 'translateX(-50%)';
+        try { localStorage.removeItem('shopcoin_zoom_bar_pos'); } catch(e) {}
+    } else if (nextPosIdx === 1) {
+        // أعلى اليمين
+        bar.style.left = `${Math.max(14, container.clientWidth - bar.offsetWidth - 16)}px`;
+        bar.style.top = '14px';
+        bar.style.bottom = 'auto';
+    } else if (nextPosIdx === 2) {
+        // أعلى اليسار
+        bar.style.left = '16px';
+        bar.style.top = '14px';
+        bar.style.bottom = 'auto';
+    } else if (nextPosIdx === 3) {
+        // أسفل اليسار
+        bar.style.left = '16px';
+        bar.style.top = `${Math.max(14, container.clientHeight - bar.offsetHeight - 14)}px`;
+        bar.style.bottom = 'auto';
+    } else if (nextPosIdx === 4) {
+        // أسفل اليمين
+        bar.style.left = `${Math.max(14, container.clientWidth - bar.offsetWidth - 16)}px`;
+        bar.style.top = `${Math.max(14, container.clientHeight - bar.offsetHeight - 14)}px`;
+        bar.style.bottom = 'auto';
+    }
+
+    try {
+        if (nextPosIdx !== 0) {
+            localStorage.setItem('shopcoin_zoom_bar_pos', JSON.stringify({
+                left: parseFloat(bar.style.left),
+                top: parseFloat(bar.style.top),
+                posIdx: nextPosIdx
+            }));
+        }
+    } catch(e) {}
+};
+
+window.initDraggableZoomBar = function() {
+    const bar = document.getElementById('previewZoomBar');
+    const handle = document.getElementById('zoomBarDragHandle');
+    const container = document.getElementById('previewContainer');
+    if (!bar || !container) return;
+
+    // Restore saved position if any
+    try {
+        const saved = localStorage.getItem('shopcoin_zoom_bar_pos');
+        if (saved) {
+            const pos = JSON.parse(saved);
+            if (pos && typeof pos.left === 'number' && typeof pos.top === 'number') {
+                bar.style.left = `${pos.left}px`;
+                bar.style.top = `${pos.top}px`;
+                bar.style.bottom = 'auto';
+                bar.style.transform = 'none';
+                if (pos.posIdx) bar.dataset.posIdx = pos.posIdx;
+            }
+        }
+    } catch(e) {}
+
+    let isDragging = false;
+    let startX = 0, startY = 0, initialLeft = 0, initialTop = 0;
+
+    function onPointerDown(e) {
+        // Do not drag if clicking an action button inside the bar
+        if (e.target.closest('button') || e.target.closest('input')) return;
+
+        isDragging = true;
+        startX = e.clientX;
+        startY = e.clientY;
+
+        const containerRect = container.getBoundingClientRect();
+        const barRect = bar.getBoundingClientRect();
+
+        initialLeft = barRect.left - containerRect.left;
+        initialTop = barRect.top - containerRect.top;
+
+        bar.style.bottom = 'auto';
+        bar.style.transform = 'none';
+        bar.style.left = `${initialLeft}px`;
+        bar.style.top = `${initialTop}px`;
+        bar.classList.add('cursor-grabbing', 'shadow-2xl');
+
+        document.addEventListener('pointermove', onPointerMove);
+        document.addEventListener('pointerup', onPointerUp);
+        e.preventDefault();
+    }
+
+    function onPointerMove(e) {
+        if (!isDragging) return;
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+
+        const containerRect = container.getBoundingClientRect();
+        const barRect = bar.getBoundingClientRect();
+
+        let newLeft = initialLeft + dx;
+        let newTop = initialTop + dy;
+
+        const maxLeft = Math.max(10, containerRect.width - barRect.width - 10);
+        const maxTop = Math.max(10, containerRect.height - barRect.height - 10);
+
+        newLeft = Math.max(10, Math.min(maxLeft, newLeft));
+        newTop = Math.max(10, Math.min(maxTop, newTop));
+
+        bar.style.left = `${newLeft}px`;
+        bar.style.top = `${newTop}px`;
+    }
+
+    function onPointerUp() {
+        if (!isDragging) return;
+        isDragging = false;
+        bar.classList.remove('cursor-grabbing', 'shadow-2xl');
+        document.removeEventListener('pointermove', onPointerMove);
+        document.removeEventListener('pointerup', onPointerUp);
+
+        try {
+            localStorage.setItem('shopcoin_zoom_bar_pos', JSON.stringify({
+                left: parseFloat(bar.style.left),
+                top: parseFloat(bar.style.top)
+            }));
+        } catch(e) {}
+    }
+
+    bar.addEventListener('pointerdown', onPointerDown);
+
+    if (handle) {
+        handle.addEventListener('dblclick', (e) => {
+            e.stopPropagation();
+            window.resetZoomBarPosition();
+        });
+    }
+};
+
+// Initialize on page load
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => window.initDraggableZoomBar());
+} else {
+    setTimeout(() => window.initDraggableZoomBar(), 100);
+}
+
+/* =========================================================================
    TRIO PRESETS & CONTINUOUS AUTO-SAVE MANAGEMENT (قوالب الـ 3 لاعبين المحفوظة)
    ========================================================================= */
 
