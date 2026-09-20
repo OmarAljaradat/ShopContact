@@ -177,6 +177,26 @@ const STORE_BANNER_THEMES = {
 };
 
 const SHOWCASE_BG_THEMES = {
+    official_stadium: {
+        id: 'official_stadium',
+        name: '🏟️ الاستاد الفاتح (تبعت الأسعار)',
+        url: 'assets/shopcoin_story_official_bg.jpg',
+        badgeColor: 'text-slate-900',
+        cardGlow: 'rgba(0, 255, 163, 0.55)',
+        podiumGradient: 'linear-gradient(135deg, rgba(255,255,255,0.95), rgba(240,245,250,0.9))',
+        podiumBorder: 'rgba(0, 255, 163, 0.5)',
+        isLight: true
+    },
+    cyber_wave: {
+        id: 'cyber_wave',
+        name: '⚡ النيون التجريدي (الجديدة)',
+        url: 'assets/shopcoin_story_cyber_wave.png',
+        badgeColor: 'text-slate-900',
+        cardGlow: 'rgba(0, 255, 163, 0.55)',
+        podiumGradient: 'linear-gradient(135deg, rgba(255,255,255,0.95), rgba(240,245,250,0.9))',
+        podiumBorder: 'rgba(0, 255, 163, 0.5)',
+        isLight: true
+    },
     store: {
         id: 'store',
         name: '🏛️ رخام المتجر الملكي (SC Marble)',
@@ -1038,52 +1058,37 @@ const MARKET_DISPLAY_LAYOUTS = [
 ];
 
 const MARKET_BG_THEMES = {
+    official_stadium: {
+        id: 'official_stadium',
+        name: '🏟️ الاستاد الفاتح',
+        shortName: 'الاستاد الفاتح',
+        url: 'assets/shopcoin_story_official_bg.jpg',
+        isLight: true,
+        desc: 'تبعت الأسعار الرسمية'
+    },
+    cyber_wave: {
+        id: 'cyber_wave',
+        name: '⚡ النيون التجريدي',
+        shortName: 'النيون التجريدي',
+        url: 'assets/shopcoin_story_cyber_wave.png',
+        isLight: true,
+        desc: 'أمواج خضراء وانحناءات نيون'
+    },
     store: {
         id: 'store',
-        name: '🏛️ رخام ملكي أبيض وذهبي',
+        name: '🏛️ الرخام الأصلي',
+        shortName: 'الرخام الأصلي',
         url: 'assets/store-bg-pure.png',
         isLight: true,
-        desc: 'ناصع وفائق الفخامة'
+        desc: 'رخام المتجر الملكي SC'
     },
-    daylight_arena: {
-        id: 'daylight_arena',
-        name: '🏟️ ستاديوم نهاري ناصع',
-        url: 'assets/shopcoin_arena_bg.jpg',
-        isLight: false,
-        style: 'filter: brightness(1.22) saturate(1.15);',
-        desc: 'أجواء استاديوم نهاري مشرق'
-    },
-    cyber_blue: {
-        id: 'cyber_blue',
-        name: '⚡ سايبر بلو نيون مشرق',
-        url: 'assets/story-bg.jpg',
-        isLight: false,
-        style: 'filter: hue-rotate(190deg) brightness(1.2) contrast(1.1);',
-        desc: 'طاقة وأضواء زرقاء حيوية'
-    },
-    emerald_glow: {
-        id: 'emerald_glow',
-        name: '🌿 زمردي متجر الكوينز المشع',
-        url: 'assets/story-bg.jpg',
-        isLight: false,
-        style: 'filter: hue-rotate(90deg) brightness(1.25) saturate(1.2);',
-        desc: 'أخضر زمردي مبهج ومضاء'
-    },
-    gold_lounge: {
-        id: 'gold_lounge',
-        name: '👑 صالة الذهب VIP الملكية',
-        url: 'assets/shopcoin_gold_lounge.jpg',
-        isLight: false,
-        style: 'filter: brightness(1.15) saturate(1.1);',
-        desc: 'صالة ذهبية فخمة ودافئة'
-    },
-    dark_neon: {
-        id: 'dark_neon',
-        name: '🌌 مدرج ليلي بأضواء كاشفة',
-        url: 'assets/story-bg.jpg',
-        isLight: false,
-        style: 'filter: brightness(1.05) contrast(1.15);',
-        desc: 'مدرج ليلي بأضواء كاشفة وضاءة'
+    marble_pure: {
+        id: 'marble_pure',
+        name: '🏛️ الرخام الأصلي',
+        shortName: 'الرخام الأصلي',
+        url: 'assets/store-bg-pure.png',
+        isLight: true,
+        desc: 'رخام المتجر الملكي SC'
     }
 };
 

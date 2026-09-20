@@ -5681,20 +5681,96 @@ window.fetchMarketPlayerCard = async function(idx) {
 // UNIVERSAL STORY BACKGROUND ENGINE & CONTROLS (6 NEW TEMPLATES)
 // =========================================================
 
-function getStoryBackgroundHtml(bgThemeKey = 'store', bgLighting = 'bright') {
-    const bgMeta = (window.MARKET_BG_THEMES && window.MARKET_BG_THEMES[bgThemeKey]) || {
-        url: 'assets/store-bg-pure.png',
-        isLight: true,
-        style: ''
-    };
-    const bgUrl = bgMeta.url || (window.EMBEDDED_ASSETS?.STORE_BG_PURE || 'assets/store-bg-pure.png');
+function getStoryBgUrl(bgThemeKey) {
+    const key = bgThemeKey || appState.bgTheme || 'official_stadium';
+    if (key === 'marble_pure' || key === 'store') {
+        return 'assets/store-bg-pure.png';
+    }
+    if (key === 'cyber_wave' || key === 'wave') {
+        return 'assets/shopcoin_story_cyber_wave.png';
+    }
+    if (key === 'official_stadium' || key === 'stadium' || key === 'rates') {
+        return 'assets/shopcoin_story_official_bg.jpg';
+    }
+    if (window.MARKET_BG_THEMES && window.MARKET_BG_THEMES[key]?.url) {
+        return window.MARKET_BG_THEMES[key].url;
+    }
+    return 'assets/shopcoin_story_official_bg.jpg';
+}
+window.getStoryBgUrl = getStoryBgUrl;
+
+function renderStoryBgSelector(title = 'اختيار خلفية الستوري:', showLighting = false) {
+    const active = appState.bgTheme || 'official_stadium';
+    const isStadium = active === 'official_stadium' || active === 'stadium' || (!['marble_pure', 'store', 'cyber_wave', 'wave'].includes(active));
+    const isWave = active === 'cyber_wave' || active === 'wave';
+    const isMarble = active === 'marble_pure' || active === 'store';
+    const activeLighting = appState.bgLighting || 'bright';
+
+    return `
+        <!-- 3 Official Story Backgrounds Selector -->
+        <div class="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-2.5">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-black text-slate-800 flex items-center gap-1.5">
+                    <span>🖼️</span>
+                    <span>${title}</span>
+                </span>
+                <span class="text-[10px] font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">3 خيارات معتمدة</span>
+            </div>
+            <div class="grid grid-cols-3 gap-2 pt-1">
+                <!-- 1. الاستاد الفاتح (تبعت الأسعار) -->
+                <button type="button" onclick="setStoryBgTheme('official_stadium')" 
+                        class="p-2 rounded-xl text-center border transition flex flex-col items-center justify-between gap-1 cursor-pointer ${isStadium ? 'bg-emerald-50 border-2 border-emerald-500 text-emerald-950 font-black shadow-xs ring-1 ring-emerald-400' : 'bg-slate-50 border-slate-200 hover:border-slate-300 text-slate-700 font-bold'}">
+                    <span class="text-base">🏟️</span>
+                    <span class="text-[11px] font-black leading-tight">الاستاد الفاتح</span>
+                    <span class="text-[8.5px] text-slate-500 leading-tight">تبعت الأسعار</span>
+                </button>
+
+                <!-- 2. النيون التجريدي (الجديدة) -->
+                <button type="button" onclick="setStoryBgTheme('cyber_wave')" 
+                        class="p-2 rounded-xl text-center border transition flex flex-col items-center justify-between gap-1 cursor-pointer ${isWave ? 'bg-emerald-50 border-2 border-emerald-500 text-emerald-950 font-black shadow-xs ring-1 ring-emerald-400' : 'bg-slate-50 border-slate-200 hover:border-slate-300 text-slate-700 font-bold'}">
+                    <span class="text-base">⚡</span>
+                    <span class="text-[11px] font-black leading-tight">النيون التجريدي</span>
+                    <span class="text-[8.5px] text-slate-500 leading-tight">أمواج خضراء</span>
+                </button>
+
+                <!-- 3. الرخام الأصلي -->
+                <button type="button" onclick="setStoryBgTheme('marble_pure')" 
+                        class="p-2 rounded-xl text-center border transition flex flex-col items-center justify-between gap-1 cursor-pointer ${isMarble ? 'bg-emerald-50 border-2 border-emerald-500 text-emerald-950 font-black shadow-xs ring-1 ring-emerald-400' : 'bg-slate-50 border-slate-200 hover:border-slate-300 text-slate-700 font-bold'}">
+                    <span class="text-base">🏛️</span>
+                    <span class="text-[11px] font-black leading-tight">الرخام الأصلي</span>
+                    <span class="text-[8.5px] text-slate-500 leading-tight">رخام الشوب SC</span>
+                </button>
+            </div>
+            ${showLighting ? `
+            <div class="pt-2 border-t border-slate-100 flex items-center justify-between">
+                <span class="text-[11px] font-bold text-slate-600">إضاءة الخلفية:</span>
+                <div class="flex items-center gap-1">
+                    <button type="button" onclick="setStoryTemplateBgLighting('bright')" class="px-2.5 py-1 rounded-lg text-[10.5px] font-bold border transition cursor-pointer ${activeLighting === 'bright' ? 'bg-emerald-600 text-white font-black shadow-xs' : 'bg-slate-100 border-slate-200 text-slate-700'}">
+                        ✨ ناصع ومشرق
+                    </button>
+                    <button type="button" onclick="setStoryTemplateBgLighting('medium')" class="px-2.5 py-1 rounded-lg text-[10.5px] font-bold border transition cursor-pointer ${activeLighting === 'medium' ? 'bg-emerald-600 text-white font-black shadow-xs' : 'bg-slate-100 border-slate-200 text-slate-700'}">
+                        🌟 متوازن
+                    </button>
+                    <button type="button" onclick="setStoryTemplateBgLighting('dim')" class="px-2.5 py-1 rounded-lg text-[10.5px] font-bold border transition cursor-pointer ${activeLighting === 'dim' ? 'bg-emerald-600 text-white font-black shadow-xs' : 'bg-slate-100 border-slate-200 text-slate-700'}">
+                        🎬 سينمائي
+                    </button>
+                </div>
+            </div>
+            ` : ''}
+        </div>
+    `;
+}
+
+function getStoryBackgroundHtml(bgThemeKey = 'official_stadium', bgLighting = 'bright') {
+    const bgUrl = getStoryBgUrl(bgThemeKey);
+    const bgMeta = (window.MARKET_BG_THEMES && window.MARKET_BG_THEMES[bgThemeKey]) || {};
     const bgCustomStyle = bgMeta.style || '';
-    const isLightBg = !!bgMeta.isLight;
+    const isLightBg = (bgMeta.isLight !== undefined) ? !!bgMeta.isLight : true;
 
     let overlayHtml = '';
     if (bgLighting === 'bright') {
         if (isLightBg) {
-            overlayHtml = `<div class="absolute inset-0 bg-gradient-to-b from-white/20 via-transparent to-amber-50/15 pointer-events-none"></div>`;
+            overlayHtml = `<div class="absolute inset-0 bg-gradient-to-b from-white/10 via-transparent to-black/5 pointer-events-none"></div>`;
         } else {
             overlayHtml = `<div class="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/20 pointer-events-none"></div>`;
         }
@@ -5721,54 +5797,20 @@ function getStoryBackgroundHtml(bgThemeKey = 'store', bgLighting = 'bright') {
 }
 
 function renderStoryBackgroundControls() {
-    const activeBg = appState.bgTheme || 'store';
-    const activeLighting = appState.bgLighting || 'bright';
-    return `
-        <!-- Background Theme & Lighting Controls -->
-        <div class="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs space-y-2.5">
-            <div class="flex items-center justify-between">
-                <span class="text-xs font-black text-slate-800 flex items-center gap-1.5">
-                    <span>🖼️</span>
-                    <span>خلفية الستوري وإضاءتها:</span>
-                </span>
-                <span class="text-[10px] font-black text-emerald-600">مشرقة وفاخرة 100%</span>
-            </div>
-            <div class="grid grid-cols-2 sm:grid-cols-3 gap-1.5 pt-1">
-                ${Object.values(window.MARKET_BG_THEMES || {}).map(bg => `
-                    <button type="button" onclick="setStoryTemplateBgTheme('${bg.id}')" class="p-2 rounded-xl text-right border transition flex flex-col justify-between gap-0.5 cursor-pointer ${activeBg === bg.id ? 'bg-emerald-50 border-2 border-emerald-500 text-emerald-950 font-black shadow-xs' : 'bg-slate-50 border-slate-200 hover:border-slate-300 text-slate-700'}">
-                        <span class="text-xs font-black truncate">${bg.name}</span>
-                        <span class="text-[9px] text-slate-500 truncate">${bg.desc || ''}</span>
-                    </button>
-                `).join('')}
-            </div>
-            <div class="pt-2 border-t border-slate-100 flex items-center justify-between">
-                <span class="text-[11px] font-bold text-slate-600">إضاءة الخلفية:</span>
-                <div class="flex items-center gap-1">
-                    <button type="button" onclick="setStoryTemplateBgLighting('bright')" class="px-2.5 py-1 rounded-lg text-[10.5px] font-bold border transition cursor-pointer ${activeLighting === 'bright' ? 'bg-emerald-600 text-white font-black shadow-xs' : 'bg-slate-100 border-slate-200 text-slate-700'}">
-                        ✨ ناصع ومشرق
-                    </button>
-                    <button type="button" onclick="setStoryTemplateBgLighting('medium')" class="px-2.5 py-1 rounded-lg text-[10.5px] font-bold border transition cursor-pointer ${activeLighting === 'medium' ? 'bg-emerald-600 text-white font-black shadow-xs' : 'bg-slate-100 border-slate-200 text-slate-700'}">
-                        🌟 متوازن
-                    </button>
-                    <button type="button" onclick="setStoryTemplateBgLighting('dim')" class="px-2.5 py-1 rounded-lg text-[10.5px] font-bold border transition cursor-pointer ${activeLighting === 'dim' ? 'bg-emerald-600 text-white font-black shadow-xs' : 'bg-slate-100 border-slate-200 text-slate-700'}">
-                        🎬 سينمائي
-                    </button>
-                </div>
-            </div>
-        </div>
-    `;
+    return renderStoryBgSelector('خلفية الستوري المعتمدة:', true);
 }
 
-window.setStoryTemplateBgTheme = function(theme) {
+window.setStoryBgTheme = function(theme) {
     appState.bgTheme = theme;
-    renderControls();
-    renderCanvas();
+    if (typeof renderControls === 'function') renderControls();
+    if (typeof renderCanvas === 'function') renderCanvas();
 };
+window.setStoryTemplateBgTheme = window.setStoryBgTheme;
 
 window.setStoryTemplateBgLighting = function(lighting) {
     appState.bgLighting = lighting;
-    renderControls();
-    renderCanvas();
+    if (typeof renderControls === 'function') renderControls();
+    if (typeof renderCanvas === 'function') renderCanvas();
 };
 
 function renderStoryHeader(layerKey, badgeText, headlineText, subheadlineText, isLightBg) {
@@ -7719,7 +7761,7 @@ function renderFlashSaleTemplate() {
         badge: 'الأسطورية 💎'
     });
 
-    const bgUrl = 'assets/shopcoin_story_official_bg.jpg';
+    const bgUrl = getStoryBgUrl(appState.bgTheme);
 
     return `
         <div class="relative w-full h-full overflow-hidden select-none flex flex-col justify-between"
@@ -7732,7 +7774,7 @@ function renderFlashSaleTemplate() {
                     <span>⚡</span>
                     <span>${appState.badgeText || 'عروض كوينز حصرية لفترة محدودة • أسعار اليوم الأقوى'}</span>
                 </div>
-                <div class="text-[21px] font-black text-slate-950 leading-tight tracking-tight" style="text-shadow: 0 1px 3px rgba(255,255,255,0.9);">
+                <div class="text-[21px] font-black text-slate-950 leading-tight tracking-tight" style="text-shadow: 0 0 14px #ffffff, 0 1px 4px #ffffff, 0 0 24px rgba(255,255,255,0.95);">
                     ${appState.headline || 'باقات الكوينز الأقوى لجميع المنصات! 💰🔥'}
                 </div>
                 <div class="text-[10.5px] font-bold text-slate-800 px-3 py-0.5 rounded-full shadow-2xs" 
@@ -7931,7 +7973,10 @@ function renderFlashSaleControls() {
 
     return `
         <div class="space-y-4">
-            <!-- 1. Currency Quick Switcher -->
+            <!-- 1. Background Selector -->
+            ${renderStoryBgSelector('خلفية جدول الأسعار:')}
+
+            <!-- 2. Currency Quick Switcher -->
             <div class="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-xs flex items-center justify-between">
                 <span class="text-xs font-black text-slate-800 flex items-center gap-1.5">
                     <span>💱</span>
@@ -9894,9 +9939,11 @@ function renderPlayerReviewTemplate() {
     const def = TEMPLATES.player_review.defaultState;
     const cardUrl = appState.playerCardUrl || def.playerCardUrl;
 
+    const bgUrl = getStoryBgUrl(appState.bgTheme);
+
     return `
         <div class="relative w-full h-full overflow-hidden select-none flex flex-col justify-between"
-             style="background-image: url('assets/shopcoin_story_official_bg.jpg'); background-size: cover; background-position: center; padding: 22px 18px 18px 18px;">
+             style="background-image: url('${bgUrl}'); background-size: cover; background-position: center; padding: 22px 18px 18px 18px;">
             
             <!-- 1. Top Header -->
             <div class="text-center w-full flex flex-col items-center gap-1.5 relative z-10">
@@ -9905,7 +9952,7 @@ function renderPlayerReviewTemplate() {
                     <span>⭐</span>
                     <span>${appState.badgeText || def.badgeText}</span>
                 </div>
-                <div class="text-[21px] font-black text-slate-950 leading-tight tracking-tight" style="text-shadow: 0 1px 3px rgba(255,255,255,0.9);">
+                <div class="text-[21px] font-black text-slate-950 leading-tight tracking-tight" style="text-shadow: 0 0 14px #ffffff, 0 1px 4px #ffffff, 0 0 24px rgba(255,255,255,0.95);">
                     ${appState.headline || def.headline}
                 </div>
                 <div class="text-[10.5px] font-bold text-slate-800 px-3 py-0.5 rounded-full shadow-2xs" 
@@ -10018,7 +10065,10 @@ function renderPlayerReviewControls() {
 
     return `
         <div class="space-y-4">
-            <!-- 1. Star Presets Row -->
+            <!-- 1. Background Selector -->
+            ${renderStoryBgSelector('خلفية مراجعة الكرت:')}
+
+            <!-- 2. Star Presets Row -->
             <div class="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-2.5">
                 <div class="flex items-center justify-between pb-1 border-b border-slate-100">
                     <span class="text-xs font-black text-slate-800 flex items-center gap-1.5">
