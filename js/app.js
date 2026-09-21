@@ -4376,6 +4376,24 @@ function renderCanvas() {
     canvas.classList.remove('font-family-alexandria', 'font-family-thmanyah', 'font-family-zain');
     canvas.classList.add(`font-family-${activeFont}`);
 
+    // Fail-safe Universal Safe-Zone Auto-Enforcer (Golden Safe Zone Standard)
+    // Ensures store_promo and story templates NEVER render in the danger zone (< 85px top, > 640px bottom)
+    if (currentRatio === 'story' || !currentRatio) {
+        if (currentTemplate === 'store_promo') {
+            if (!appState.layers) appState.layers = getDefaultLayers();
+            if (appState.layers.layer_store_banners) {
+                if (!appState.layers.layer_store_banners.y || appState.layers.layer_store_banners.y < 85) {
+                    appState.layers.layer_store_banners.y = 105;
+                }
+            }
+            if (appState.layers.layer_promo_cards) {
+                if (!appState.layers.layer_promo_cards.y || appState.layers.layer_promo_cards.y > 365) {
+                    appState.layers.layer_promo_cards.y = 350;
+                }
+            }
+        }
+    }
+
     if (currentTemplate === 'store_promo') {
         canvas.innerHTML = renderStorePromoTemplate();
     } else if (currentTemplate === 'market_tracker') {
@@ -4535,8 +4553,11 @@ function renderStorePromoTemplate() {
         if (!b || !b.text || !b.text.trim()) return '';
         const bg = b.bg || '#0084FF';
         const color = b.color || '#FFFFFF';
+        const textLen = (b.text || '').length;
+        const fontSize = textLen > 38 ? '13px' : (textLen > 26 ? '14px' : '14.5px');
+        const padding = textLen > 38 ? '5px 12px' : '6px 14px';
         return `
-            <div style="display: inline-block; background-color: ${bg}; color: ${color}; padding: 6px 16px; border-radius: 6px; font-weight: 800; font-size: 15px; line-height: 1.35; text-align: center; white-space: nowrap; max-width: 95%; box-shadow: 0 4px 12px rgba(0,0,0,0.15); margin: 0 auto;">
+            <div style="display: inline-block; background-color: ${bg}; color: ${color}; padding: ${padding}; border-radius: 7px; font-weight: 800; font-size: ${fontSize}; line-height: 1.35; text-align: center; white-space: nowrap; max-width: 94%; box-shadow: 0 4px 14px rgba(0,0,0,0.18); margin: 0 auto;">
                 ${b.text}
             </div>
         `;
@@ -4639,7 +4660,7 @@ function renderStorePromoTemplate() {
 
         <!-- Layer 1: Stacked Text Banners (Top Half) -->
         ${isLayerVisible('layer_store_banners') ? `
-        <div id="layer_store_banners" class="draggable-layer text-center flex flex-col items-center" style="${getLayerStyle('layer_store_banners', 105)}; width: max-content; max-width: 500px; z-index: 30;">
+        <div id="layer_store_banners" class="draggable-layer text-center flex flex-col items-center" style="${getLayerStyle('layer_store_banners', 105)}; width: max-content; max-width: 430px; z-index: 30;">
             <div class="layer-scale-wrapper w-full flex flex-col items-center gap-2.5" style="transform: scale(${getLayerScale('layer_store_banners')});">
                 ${bannersHtml}
             </div>
@@ -4649,7 +4670,7 @@ function renderStorePromoTemplate() {
 
         <!-- Layer 2: Promo Event Cards (Bottom Half) -->
         ${isLayerVisible('layer_promo_cards') ? `
-        <div id="layer_promo_cards" class="draggable-layer w-full text-center" style="${getLayerStyle('layer_promo_cards', 350)}; width: 450px; z-index: 20;">
+        <div id="layer_promo_cards" class="draggable-layer w-full text-center" style="${getLayerStyle('layer_promo_cards', 350)}; width: 450px; max-width: 100%; z-index: 20;">
             <div class="layer-scale-wrapper w-full" style="transform: scale(${getLayerScale('layer_promo_cards')});">
                 ${cardsHtml}
             </div>

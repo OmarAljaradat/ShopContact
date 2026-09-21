@@ -152,8 +152,9 @@ async function ensureNativePage(port) {
     if (!b) return null;
 
     nativePage = await b.newPage();
-    // Warm up the page by navigating to the studio
     try {
+        await nativePage.setCacheEnabled(false);
+        // Warm up the page by navigating to the studio
         await nativePage.goto(`http://127.0.0.1:${port}`, { waitUntil: 'domcontentloaded', timeout: 25000 });
         await nativePage.waitForFunction(() => typeof window.selectTemplate === 'function', { timeout: 15000 });
         if (nativePage.evaluate) {
@@ -2268,44 +2269,60 @@ const server = http.createServer((req, res) => {
                         scaleFactor = isPortrait ? 4.5 : (isSquare ? 4.32 : 4.8);
                     }
 
-                    // Set target viewport (deviceScaleFactor for crisp True 4K / 2K export)
+                    // Set exact viewport for the canvas preset
                     await page.setViewport({
-                        width: Math.max(1200, Math.ceil(baseWidth * 1.5)),
-                        height: Math.max(1200, Math.ceil(baseHeight * 1.5)),
+                        width: baseWidth,
+                        height: baseHeight,
                         deviceScaleFactor: scaleFactor
                     });
 
-                    // Update DOM directly in persistent Chrome instance and enforce pure sharp 90-degree rectangle
-                    await page.evaluate(async ({ html, className }) => {
-                        const stage = document.getElementById('canvasScaleStage');
-                        if (stage) {
-                            stage.style.borderRadius = '0px';
-                            stage.style.overflow = 'visible';
-                            stage.style.boxShadow = 'none';
-                            stage.style.border = 'none';
-                            stage.style.transform = 'none';
-                            stage.style.width = 'auto';
-                            stage.style.height = 'auto';
-                            stage.style.margin = '0px';
-                            stage.style.padding = '0px';
-                        }
-                        const el = document.getElementById('exportCanvas');
-                        if (el) {
-                            el.className = className;
-                            el.innerHTML = html;
-                            el.style.borderRadius = '0px';
-                            el.style.boxShadow = 'none';
-                            el.style.border = 'none';
-                            el.style.margin = '0px';
-                            el.style.position = 'relative';
-                            el.style.transform = 'none';
-                            el.style.transformOrigin = '0 0';
-                            el.style.left = '0';
-                            el.style.top = '0';
-                        }
+                    // Build pure isolated HTML document with zero dashboard interference
+                    const cleanHtml = `<!DOCTYPE html>
+<html dir="rtl">
+<head>
+    <meta charset="utf-8">
+    <base href="http://127.0.0.1:${PORT}/">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/fonts.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body {
+            width: ${baseWidth}px;
+            height: ${baseHeight}px;
+            overflow: hidden;
+            background: #0B0D13;
+            margin: 0;
+            padding: 0;
+        }
+        #exportCanvas {
+            width: ${baseWidth}px !important;
+            height: ${baseHeight}px !important;
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            transform: none !important;
+            border: none !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+            overflow: hidden !important;
+        }
+    </style>
+</head>
+<body>
+    <div id="exportCanvas" class="${className || ''}">
+        ${html}
+    </div>
+</body>
+</html>`;
 
-                        // Explicit font pre-loading for the active font-family
-                        if (className && className.includes('font-family-thmanyah')) {
+                    await page.setContent(cleanHtml, { waitUntil: 'domcontentloaded' });
+
+                    // Ensure fonts and images are 100% loaded before capture
+                    await page.evaluate(async (cls) => {
+                        if (cls && cls.includes('font-family-thmanyah')) {
                             try {
                                 await Promise.all([
                                     document.fonts.load('400 24px "Thmanyah Sans"'),
@@ -2313,7 +2330,7 @@ const server = http.createServer((req, res) => {
                                     document.fonts.load('900 24px "Thmanyah Sans"')
                                 ]);
                             } catch (e) {}
-                        } else if (className && className.includes('font-family-zain')) {
+                        } else if (cls && cls.includes('font-family-zain')) {
                             try {
                                 await Promise.all([
                                     document.fonts.load('400 24px "Zain"'),
@@ -2339,22 +2356,15 @@ const server = http.createServer((req, res) => {
                             return new Promise(resolve => {
                                 img.addEventListener('load', resolve, { once: true });
                                 img.addEventListener('error', resolve, { once: true });
-                                setTimeout(resolve, 4000); // 4s fallback safety timeout
+                                setTimeout(resolve, 3500);
                             });
                         }));
-                        await new Promise(r => setTimeout(r, 120));
+                        await new Promise(r => setTimeout(r, 100));
                         await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-                    }, { html, className });
-
-                    const cardEl = await page.$('#exportCanvas');
-                    if (!cardEl) {
-                        res.writeHead(500, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
-                        res.end(JSON.stringify({ error: 'عنصر التصميم غير موجود' }));
-                        return;
-                    }
+                    }, className);
 
                     const isPng = (format || '').toLowerCase() === 'png' || (filename || '').toLowerCase().endsWith('.png');
-                    const buffer = await cardEl.screenshot({
+                    const buffer = await page.screenshot({
                         type: isPng ? 'png' : 'jpeg',
                         quality: isPng ? undefined : (quality ? Math.min(100, Math.max(90, parseInt(quality, 10))) : 100)
                     });
