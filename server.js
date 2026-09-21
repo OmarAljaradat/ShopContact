@@ -7,6 +7,7 @@ const { execFile } = require('child_process');
 const autoWatcher = require('./auto-watcher-engine');
 const tiktokEngine = require('./tiktok-engine');
 const futnextScraper = require('./futnext-scraper');
+const aiCaptionEngine = require('./ai-caption-engine');
 
 let ffmpegPath = null;
 try {
@@ -2546,6 +2547,40 @@ const server = http.createServer((req, res) => {
             'Access-Control-Allow-Origin': '*'
         });
         res.end(JSON.stringify({ success: true, ...job }));
+        return;
+    }
+
+    // API: Smart AI Caption Generator
+    if (reqPath === '/api/ai-caption' && req.method === 'POST') {
+        let body = '';
+        req.on('data', chunk => {
+            body += chunk;
+            if (body.length > 1e6) req.destroy();
+        });
+        req.on('end', async () => {
+            try {
+                const payload = JSON.parse(body || '{}');
+                const result = await aiCaptionEngine.generateCaptionWithAi({
+                    idea: payload.idea,
+                    style: payload.style || 'discussion',
+                    players: payload.players || [],
+                    apiKey: payload.apiKey || (typeof DEFAULT_GEMINI_KEY !== 'undefined' ? DEFAULT_GEMINI_KEY : '')
+                });
+
+                res.writeHead(200, {
+                    'Content-Type': 'application/json; charset=utf-8',
+                    'Access-Control-Allow-Origin': '*'
+                });
+                res.end(JSON.stringify(result));
+            } catch (err) {
+                console.error('[AI Caption API Error]', err);
+                res.writeHead(500, {
+                    'Content-Type': 'application/json; charset=utf-8',
+                    'Access-Control-Allow-Origin': '*'
+                });
+                res.end(JSON.stringify({ success: false, error: err.message || 'فشل توليد الكابشن' }));
+            }
+        });
         return;
     }
 

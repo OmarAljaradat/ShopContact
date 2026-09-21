@@ -1,12 +1,216 @@
 /**
  * Smart Arabic Gamer Copywriter Engine for ShopCoin15
- * 100% Tailored for the 3 Direct Store Templates:
- * 1. trio: تريو 3 لاعبين متداخلين
- * 2. market_drop: هبوط أسعار السوق
- * 3. sbc: تقفيل تحديات الـ SBC
+ * 100% Tailored for Instagram Posts, Stories, and Reels.
+ * Supports:
+ * - Direct Store Templates (trio, market_drop, sbc, potm, showcase)
+ * - Smart AI Caption Generation (Community-first, logical, non-robotic, engaging)
  */
 
 const CopywriterEngine = {
+    // ---------------------------------------------------------
+    // 1. Context Parser (Extracts positions, themes, and stars)
+    // ---------------------------------------------------------
+    parseIdeaContext(ideaText, extraPlayers = []) {
+        const text = (ideaText || '').trim();
+        const lower = text.toLowerCase();
+
+        let position = '';
+        let positionAr = '';
+        if (lower.includes('cam') || text.includes('صانع') || text.includes('صناع')) {
+            position = 'CAM'; positionAr = 'صناع اللعب (CAM)';
+        } else if (lower.includes('cb') || text.includes('دفاع') || text.includes('مدافع') || text.includes('قلوب دفاع') || text.includes('قلب دفاع')) {
+            position = 'CB'; positionAr = 'قلوب الدفاع (CB)';
+        } else if (lower.includes('st') || text.includes('مهاجم') || text.includes('هجوم') || text.includes('رأس حربة') || text.includes('مهاجمين')) {
+            position = 'ST'; positionAr = 'المهاجمين ورؤوس الحربة (ST)';
+        } else if (lower.includes('cm') || text.includes('وسط') || text.includes('محور') || text.includes('ارتكاز') || lower.includes('cdm')) {
+            position = 'CM/CDM'; positionAr = 'لاعبي الوسط والمحور (CM/CDM)';
+        } else if (lower.includes('rw') || lower.includes('rm') || text.includes('جناح يمين') || text.includes('يمين')) {
+            position = 'RW'; positionAr = 'الأجنحة الهجومية';
+        } else if (lower.includes('lw') || lower.includes('lm') || text.includes('جناح يسار') || text.includes('يسار') || text.includes('أجنحة')) {
+            position = 'LW'; positionAr = 'الأجنحة الهجومية';
+        } else if (lower.includes('gk') || text.includes('حارس') || text.includes('حراس') || text.includes('حراسة')) {
+            position = 'GK'; positionAr = 'حراسة المرمى (GK)';
+        }
+
+        const isIcons = lower.includes('icon') || lower.includes('hero') || text.includes('أيقون') || text.includes('ايقون') || text.includes('أساطير') || text.includes('اساطير') || text.includes('هيرو');
+        const isStarter = text.includes('بداية') || text.includes('بدايات') || text.includes('رخيص') || text.includes('رخاص') || text.includes('ميزانية') || text.includes('اقتصادي') || lower.includes('starter') || lower.includes('budget');
+        const isVersus = text.includes('مقارنة') || text.includes('ضد') || text.includes('صراع') || lower.includes('vs') || text.includes('مين أفضل') || text.includes('مين تختار');
+        const isMeta = text.includes('ميتا') || text.includes('ميتّا') || text.includes('أقوى') || text.includes('أفضل') || text.includes('توب') || text.includes('افضل');
+
+        const knownStars = [
+            { en: 'Pelé', ar: 'بيليه' },
+            { en: 'Cruyff', ar: 'كرويف' },
+            { en: 'Zidane', ar: 'زيدان' },
+            { en: 'Zico', ar: 'زيكو' },
+            { en: 'Kaká', ar: 'كاكا' },
+            { en: 'Ronaldo', ar: 'رونالدو' },
+            { en: 'Messi', ar: 'ميسي' },
+            { en: 'Mbappé', ar: 'مبابي' },
+            { en: 'Haaland', ar: 'هالاند' },
+            { en: 'Vinícius', ar: 'فينيسيوس' },
+            { en: 'Bellingham', ar: 'بيلينغهام' },
+            { en: 'Valverde', ar: 'فالفيردي' },
+            { en: 'Rodri', ar: 'رودري' },
+            { en: 'Saliba', ar: 'صليبا' },
+            { en: 'Van Dijk', ar: 'فان دايك' },
+            { en: 'Militão', ar: 'ميليتاو' },
+            { en: 'Rüdiger', ar: 'روديغر' },
+            { en: 'Walker', ar: 'ووكر' },
+            { en: 'Theo Hernández', ar: 'ثيو هيرنانديز' },
+            { en: 'Yamal', ar: 'يامال' },
+            { en: 'Salah', ar: 'صلاح' },
+            { en: 'Courtois', ar: 'كورتوا' },
+            { en: 'Alisson', ar: 'أليسون' }
+        ];
+
+        const detectedPlayers = [];
+        knownStars.forEach(star => {
+            if (text.includes(star.ar) || lower.includes(star.en.toLowerCase())) {
+                detectedPlayers.push(star.ar);
+            }
+        });
+
+        if (Array.isArray(extraPlayers)) {
+            extraPlayers.forEach(p => {
+                const pName = (typeof p === 'string' ? p : (p.name || p.arName || '')).trim();
+                if (pName && !detectedPlayers.includes(pName)) {
+                    detectedPlayers.push(pName);
+                }
+            });
+        }
+
+        return {
+            cleanTitle: text,
+            position,
+            positionAr,
+            isIcons,
+            isStarter,
+            isVersus,
+            isMeta,
+            players: detectedPlayers.slice(0, 5)
+        };
+    },
+
+    // ---------------------------------------------------------
+    // 2. High-Quality Smart Arabic Copywriter (Zero Robotic Spam)
+    // ---------------------------------------------------------
+    generateLocalSmartCaption(ideaText, style = 'discussion', extraPlayers = []) {
+        const ctx = this.parseIdeaContext(ideaText, extraPlayers);
+        const title = ctx.cleanTitle || 'أقوى كروت FC 27';
+        const playersListStr = ctx.players.length > 0 ? ctx.players.join(' • ') : '';
+
+        const hashtags = [
+            '#FC27',
+            '#UltimateTeam',
+            '#EAFC27',
+            '#فيفا27',
+            ctx.position ? `#${ctx.position}_FC27` : '#تشكيلة_الموسم',
+            '#فوت27',
+            '#ShopCoin15'
+        ].join(' ');
+
+        // STYLE 1: 💬 DISCUSSION (نقاش كروي وميتّا)
+        if (style === 'discussion') {
+            let hook = '';
+            let body = '';
+            let question = '';
+
+            if (ctx.isVersus) {
+                hook = `مقارنة تشعل الحيرة في FC 27.. مين يستاهل مكان أساسي بتشكيلتك؟ 🔥⚽`;
+                body = `المقارنة هنا مش بس أرقام على الورق، الفارق الحقيقي يظهر بالانسيابية داخل الملعب وأسلوب اللعب التكتيكي (PlayStyles+). كرت يعطيك سرعة ارتداد خيالية، وكرت ثاني يعطيك ثبات وقوة بدنية ما تنهزم.`;
+                question = `👇 صوتك يحسمها:\nلو الخيار بيدك وميزانيتك تكفي لاعب واحد منهم، مين تختار بدون تردد؟`;
+            } else if (ctx.isIcons) {
+                hook = `هيبة أساطير اللعبة وذكريات الكورة الجميلة مع كروت الـ Heroes & Icons في FC 27 👑✨`;
+                body = `كروت تصنع الفارق باللحظات الصعبة في الفوت تشامبيونز، التمركز الذكي وإنهاء الهجمات من أنصاف الفرص هو اللي يبرر قيمتها العالية في السوق.${playersListStr ? `\n\n📌 الأسماء الحاضرة: ${playersListStr}` : ''}`;
+                question = `👀 سؤال للمتابعين:\nمين الأيقونة أو الهيرو اللي تشوفه الحلم الأول لناديك هذا الموسم؟`;
+            } else if (ctx.isStarter) {
+                hook = `بناء تشكيلة البداية بذكاء هو اللي يضمن لك فوز مريح في أول أسابيع FC 27 💡⚽`;
+                body = `مش لازم تحرق كل كوينزك على كرت واحد غالي، في كروت اقتصادية أدائها داخل المستطيل الأخضر ينافس كروت الملايين بفضل سرعتها وملاءمتها للميتّا الحالية.`;
+                question = `🗣️ شاركنا بالتعليقات:\nمين أفضل كرت اقتصادي جربته وصنع لك الفارق من أول أسبوع؟`;
+            } else if (ctx.position) {
+                hook = `مركز ${ctx.positionAr} في FC 27.. خيارات تصنع لك الأمان وتتحكم برتم المباريات بالكامل ⚡🎯`;
+                body = `بعد تجربة اللعبة والوقوف على أسلوب اللعب الجديد، هذي الأسماء أثبتت أنها الأفضل حالياً في مركزها من حيث التوازن الدفاعي والانسيابية.${playersListStr ? `\n\n⭐ أبرز الكروت: ${playersListStr}` : ''}`;
+                question = `👇 تتفق مع هذا الترتيب؟\nولا في لاعب تشوفه مظلوم ويستحق يكون بالقائمة؟`;
+            } else {
+                hook = `كلام منطقي عن ${title} في FC 27 🔥`;
+                body = `التفاصيل الصغيرة وسرعة الحركة هي اللي تحسم مواجهات الرايفلز والتشامبيونز. اختيارك للكرت المناسب لأسلوب لعبك أهم بكثير من مجرد الرايتينغ المكتوب على البطاقة.${playersListStr ? `\n\n⚽ الأسماء: ${playersListStr}` : ''}`;
+                question = `💬 اعطنا رأيك بالتعليقات: مين لاعبك المفضل بهذي الفئة؟`;
+            }
+
+            return `${hook}\n\n${body}\n\n${question}\n\n---\n⚡ متجر @shop_coin15 — كوينز مضمونة 100% لتطوير ناديك، حياك على الخاص 📩\n\n${hashtags}`;
+        }
+
+        // STYLE 2: 🔥 TREND & REELS (سريع للريلز والتيك توك)
+        if (style === 'trend') {
+            let hook = `احفظ الفيديو عندك عشان ترجع له وقت ما تبني تشكيلتك 📌⚡\n\n${title} في FC 27:`;
+            let body = `المفاضلة باللعبة حالياً تعتمد على اللي يقدم لك أعلى قيمة داخل الملعب. كروت تجمع بين السرعة الفائقة والإنهاء النظيف بدون تعقيد.${playersListStr ? `\n\n💎 الاختيارات: ${playersListStr}` : ''}`;
+            let cta = `👇 اكتب بالتعليقات: كم تقيم هذي الخيارات من 10؟\n\nتابع الحساب للمزيد من كروت ونصائح FC 27 اليومية 📲\nكوينز ناديك جاهزة وفورية مع @shop_coin15 عبر الخاص 📩`;
+
+            return `${hook}\n\n${body}\n\n${cta}\n\n${hashtags} #ريلز_فيفا #تيك_توك_فيفا`;
+        }
+
+        // STYLE 3: 💡 TACTICS (تحليل وتكتيك)
+        if (style === 'tactics') {
+            let hook = `تحليل فني مختصر: كيف تختار الأنسب لتشكيلتك في ${title}؟ 🧠⚽`;
+            let body = `في آليات اللعب الجديدة لـ FC 27:\n• الـ PlayStyles+ تصنع فارق أكبر من أرقام الكرت المجردة.\n• ردة الفعل والـ Agility هي اللي تمنحك أفضلية بالمرتدات السريعة.\n• الاستثمار في كروت متوازنة يوفر عليك كوينز طائلة على المدى البعيد.${playersListStr ? `\n\n📋 كروت يُنصح بالتركيز عليها: ${playersListStr}` : ''}`;
+            let question = `📌 نصيحة اليوم: ركز على جودة الكرت داخل الملعب وتجربة المحترفين قبل الشراء.\n\nمن خلال تجربتك، مين الكرت اللي يستاهل كل كوينز اندفعت فيه؟ 👇\n\nشحن وتطوير فريقك بأمان واحترافية: @shop_coin15 🛡️`;
+
+            return `${hook}\n\n${body}\n\n${question}\n\n${hashtags}`;
+        }
+
+        // STYLE 4: 👑 STORE SUBTLE (توصية راقية للمتجر)
+        let hook = `طوّر تشكيلتك بذكاء ونافس على أعلى رانك في FC 27 👑⚡`;
+        let body = `${title}\n\nامتلاك النجوم اللي تصنع الفارق بالوقت الحاسم ما عاد يحتاج انتظار الحظ من الباكات المجهولة.${playersListStr ? ` نجوم مثل (${playersListStr}) يعطوا ناديك هيبة استثنائية من الدقيقة الأولى.` : ''}`;
+        let storePlug = `متجر @shop_coin15 يوفر لك كوينز ناديك بأعلى معايير الأمان وسرعة التسليم لجميع المنصات (PS5 / Xbox / PC) مع ضمان كامل 🔒\n\n📩 للطلب والاستفسار: حياك الله عبر الرسائل الخاصة DM`;
+        let question = `👇 شاركنا بتعليق: مين أول لاعب ناوي تضمه لناديك اليوم؟`;
+
+        return `${hook}\n\n${body}\n\n${question}\n\n${storePlug}\n\n${hashtags}`;
+    },
+
+    // ---------------------------------------------------------
+    // 3. Main AI Caption Interface (Server API + Local Fallback)
+    // ---------------------------------------------------------
+    async generateAiCaption({ idea, style = 'discussion', players = [], apiKey = '' }) {
+        const cleanIdea = (idea || '').trim();
+        if (!cleanIdea) {
+            throw new Error('يرجى كتابة فكرة أو عنوان للكابشن');
+        }
+
+        try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 6000);
+
+            const res = await fetch('/api/ai-caption', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                signal: controller.signal,
+                body: JSON.stringify({ idea: cleanIdea, style, players, apiKey })
+            });
+            clearTimeout(timeoutId);
+
+            if (res.ok) {
+                const data = await res.json();
+                if (data && data.caption) {
+                    return data;
+                }
+            }
+        } catch (e) {
+            console.warn('[CopywriterEngine] Server AI caption endpoint skipped, using local smart engine:', e.message);
+        }
+
+        // Instant Fallback to Local Smart Football Engine
+        const localText = this.generateLocalSmartCaption(cleanIdea, style, players);
+        return {
+            success: true,
+            source: 'local_smart_engine',
+            caption: localText,
+            style
+        };
+    },
+
+    // ---------------------------------------------------------
+    // 4. Legacy Template Generator (Maintained for existing canvas)
+    // ---------------------------------------------------------
     generate(templateId, state, style = 'hype') {
         if (window.aiGeneratedCaption) {
             return window.aiGeneratedCaption;
@@ -42,7 +246,7 @@ const CopywriterEngine = {
                     `• ${promo}\n\n` +
                     `للطلب والاستفسار تواصل معنا عبر الخاص DM 📩\n\n` +
                     `${hashtags}`;
-            } else { // trust
+            } else {
                 return `ضمان وأمان حسابك في أيدٍ أمينة مع متجر @shop_coin15 🛡️\n\n` +
                     `نوفر لك كوينز شراء كرت ${player} بأحدث طرق النقل الآمنة 100% وبدون أي مخاطر على ناديك.\n` +
                     (priceLine ? `${priceLine}` : '') +
@@ -78,7 +282,7 @@ const CopywriterEngine = {
                     `• دعم فني مستمر وسرعة تنفيذ\n\n` +
                     `تواصل معنا على الخاص DM وحياكم الله جميعاً 📩\n\n` +
                     `${hashtags}`;
-            } else { // trust
+            } else {
                 return `أمان حسابك هو أولويتنا الأولى في @shop_coin15 🛡️\n\n` +
                     `شحن كوينز FC 27 بأعلى درجات الأمان والضمان الشامل.\n` +
                     `أكثر من 10,000 عملية شحن ناجحة وتقييمات عملاء موثقة على مدار المواسم.\n\n` +

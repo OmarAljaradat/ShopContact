@@ -1526,7 +1526,7 @@ window.switchStudioSuite = function(suiteKey) {
     } else if (suiteKey === 'suite_carousel') {
         if (templateSection) templateSection.style.display = 'none';
         if (templateControlsBox) templateControlsBox.style.display = 'none';
-        if (captionSection) captionSection.style.display = 'none';
+        if (captionSection) captionSection.style.display = '';
         if (carouselPanel) carouselPanel.classList.remove('hidden');
         if (filmstripContainer) filmstripContainer.classList.remove('hidden');
         if (ratioContainer) ratioContainer.style.display = 'none';
@@ -9706,27 +9706,144 @@ async function fetchFutGGCard(url) {
     }
 }
 
+let currentMainCaptionStyle = 'discussion';
+
 function initCopywriterControls() {
     document.querySelectorAll('.copy-style-btn').forEach(btn => {
         btn.addEventListener('click', () => {
-            currentCopyStyle = btn.dataset.style;
-            document.querySelectorAll('.copy-style-btn').forEach(b => {
-                b.classList.remove('active');
-                b.className = 'copy-style-btn px-2.5 py-1 rounded-lg bg-slate-100 border border-slate-200 text-[11px] font-bold text-slate-600 shadow-xs';
-            });
+            currentMainCaptionStyle = btn.dataset.style || 'discussion';
+            document.querySelectorAll('.copy-style-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            btn.className = 'copy-style-btn active px-2.5 py-1 rounded-lg bg-slate-900 text-white text-[11px] font-bold shadow-xs';
-            updateCaption();
+
+            const ideaInput = document.getElementById('captionIdeaInputMain');
+            if (ideaInput && ideaInput.value.trim()) {
+                triggerGenerateMainCaption();
+            } else {
+                updateCaption();
+            }
         });
     });
+
+    const ideaInput = document.getElementById('captionIdeaInputMain');
+    if (ideaInput) {
+        ideaInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                triggerGenerateMainCaption();
+            }
+        });
+    }
 }
+
+window.extractIdeaFromCurrentDesign = function() {
+    const ideaInput = document.getElementById('captionIdeaInputMain');
+    if (!ideaInput) return;
+
+    let title = '';
+    if (typeof appState !== 'undefined') {
+        title = appState.headline || appState.playerArName || appState.playerName || '';
+    }
+    if (!title && typeof currentTemplate !== 'undefined') {
+        if (currentTemplate === 'showcase') title = 'استعراض كرت ' + (appState?.playerArName || appState?.playerName || 'اللاعب');
+        else if (currentTemplate === 'sbc') title = 'تحدي ' + (appState?.playerArName || appState?.playerName || 'اللاعب');
+        else if (currentTemplate === 'market_drop') title = 'هبوط أسعار سوق FC 27';
+        else if (currentTemplate === 'trio' || currentTemplate === 'store_promo') title = 'تشكيلة خارقة لـ FC 27';
+    }
+    if (!title) title = 'أقوى كروت FC 27';
+
+    ideaInput.value = title;
+    if (window.showCopyToast) window.showCopyToast('تم سحب عنوان التصميم بنجاح 🎯');
+    triggerGenerateMainCaption();
+};
+
+window.triggerGenerateMainCaption = async function() {
+    const ideaInput = document.getElementById('captionIdeaInputMain');
+    const ta = document.getElementById('captionText');
+    const btnText = document.getElementById('btnAiTextMain');
+    const btnSpinner = document.getElementById('btnAiSpinnerMain');
+    const btnIcon = document.getElementById('btnAiIconMain');
+    const badge = document.getElementById('captionStatusBadgeMain');
+    const sourceTag = document.getElementById('captionSourceTagMain');
+
+    let idea = (ideaInput && ideaInput.value) ? ideaInput.value.trim() : '';
+    if (!idea) {
+        if (typeof appState !== 'undefined') {
+            idea = appState.headline || appState.playerArName || appState.playerName || '';
+        }
+        if (!idea) idea = 'أفضل كروت FC 27';
+        if (ideaInput) ideaInput.value = idea;
+    }
+
+    let players = [];
+    if (typeof appState !== 'undefined') {
+        if (appState.playerArName) players.push(appState.playerArName);
+        if (appState.playerName && !players.includes(appState.playerName)) players.push(appState.playerName);
+        if (Array.isArray(appState.players)) {
+            appState.players.forEach(p => {
+                const name = typeof p === 'string' ? p : (p.name || p.arName);
+                if (name && !players.includes(name)) players.push(name);
+            });
+        }
+    }
+
+    if (btnText) btnText.textContent = 'جاري الصياغة الذكية...';
+    if (btnSpinner) btnSpinner.classList.remove('hidden');
+    if (btnIcon) btnIcon.classList.add('hidden');
+    if (badge) {
+        badge.classList.remove('hidden');
+        badge.textContent = '⏳ جاري الصياغة...';
+    }
+
+    try {
+        let result = null;
+        if (window.CopywriterEngine && typeof window.CopywriterEngine.generateAiCaption === 'function') {
+            result = await window.CopywriterEngine.generateAiCaption({
+                idea,
+                style: currentMainCaptionStyle,
+                players
+            });
+        }
+
+        if (result && result.caption) {
+            if (ta) ta.value = result.caption;
+            if (badge) {
+                badge.textContent = '✨ جاهز للنسخ';
+                badge.className = 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/60';
+            }
+            if (sourceTag) {
+                const srcLabel = result.source === 'gemini' ? '🤖 ذكاء اصطناعي (Gemini)' : '⚡ صياغة كروية ذكية متخصصة';
+                sourceTag.innerHTML = `<span>🎯</span> <span>${srcLabel} • جاهز للنشر والنسخ</span>`;
+            }
+        }
+    } catch (err) {
+        console.error('Main caption generation error:', err);
+        if (window.CopywriterEngine && typeof window.CopywriterEngine.generateLocalSmartCaption === 'function') {
+            const fallback = window.CopywriterEngine.generateLocalSmartCaption(idea, currentMainCaptionStyle, players);
+            if (ta) ta.value = fallback;
+        }
+    } finally {
+        if (btnText) btnText.textContent = 'توليد كابشن ذكي بالـ AI';
+        if (btnSpinner) btnSpinner.classList.add('hidden');
+        if (btnIcon) btnIcon.classList.remove('hidden');
+    }
+};
 
 function updateCaption() {
     const captionText = document.getElementById('captionText');
     if (!captionText) return;
 
-    const caption = CopywriterEngine.generate(currentTemplate, appState, currentCopyStyle);
-    captionText.value = caption;
+    const ideaInput = document.getElementById('captionIdeaInputMain');
+    if (ideaInput && ideaInput.value.trim()) {
+        triggerGenerateMainCaption();
+        return;
+    }
+
+    const caption = CopywriterEngine.generate(currentTemplate, appState, currentMainCaptionStyle || 'discussion');
+    if (caption) {
+        captionText.value = caption;
+    } else {
+        triggerGenerateMainCaption();
+    }
 }
 
 function copyCaptionToClipboard() {
