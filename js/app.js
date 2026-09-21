@@ -1539,17 +1539,6 @@ window.switchStudioSuite = function(suiteKey) {
             window.CarouselEngine.renderSlideToMainCanvas();
         }
     }
-
-    if (window.showCopyToast) {
-        const names = {
-            suite_stories: 'استوديو الستوري (Stories 9:16) 📱',
-            suite_posts: 'استوديو البوستات والفيد (Posts 4:5 & 1:1) 🖼️',
-            suite_carousel: 'استوديو الكاروسيل متعدد السلايدات (Carousel 4:5) 📚'
-        };
-        if (names[suiteKey]) {
-            window.showCopyToast(`تم فتح ${names[suiteKey]}! ✨`);
-        }
-    }
 };
 
 window.setMobileViewMode = function(mode) {
@@ -9751,14 +9740,16 @@ function copyCaptionToClipboard() {
     }
 }
 
+let _copyToastTimer = null;
 window.showCopyToast = function(msg = 'تم بنجاح! 🚀') {
     const toast = document.getElementById('copyToast');
     if (toast) {
         toast.textContent = msg;
         toast.classList.add('show');
-        setTimeout(() => {
+        if (_copyToastTimer) clearTimeout(_copyToastTimer);
+        _copyToastTimer = setTimeout(() => {
             toast.classList.remove('show');
-        }, 2500);
+        }, 1800);
     }
 };
 

@@ -478,25 +478,47 @@ body {
     animation: floatSlow 4s ease-in-out infinite;
 }
 
-/* Copy Toast (Top Floating Island Notification) */
+/* Modern Discreet Toast Notification (Small, subtle, bottom corner, never blocks UI) */
 .copy-toast {
     position: fixed;
-    top: 5.5rem;
-    left: 50%;
-    transform: translateX(-50%) translateY(-60px);
-    background: #0F172A;
-    color: #FFFFFF;
+    bottom: 1.5rem;
+    left: 1.5rem;
+    transform: translateY(14px) scale(0.96);
+    opacity: 0;
+    pointer-events: none;
+    background: rgba(15, 23, 42, 0.94);
+    color: #F8FAFC;
     border: 1px solid rgba(255, 255, 255, 0.15);
-    padding: 0.65rem 1.5rem;
+    padding: 0.45rem 1rem;
     border-radius: 9999px;
-    font-weight: 800;
-    font-size: 0.85rem;
-    box-shadow: 0 15px 35px rgba(15, 23, 42, 0.25);
-    transition: transform 0.4s var(--ease-out-expo);
-    z-index: 9999;
+    font-weight: 700;
+    font-size: 0.78rem;
+    line-height: 1.4;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    transition: opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1), transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 99999;
+    max-width: 90vw;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
+
+@media (max-width: 768px) {
+    .copy-toast {
+        left: 50%;
+        bottom: 5rem;
+        transform: translateX(-50%) translateY(14px) scale(0.96);
+    }
+    .copy-toast.show {
+        transform: translateX(-50%) translateY(0) scale(1) !important;
+    }
+}
+
 .copy-toast.show {
-    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+    transform: translateY(0) scale(1);
 }
 
 /* Presets List Scrollbar */
