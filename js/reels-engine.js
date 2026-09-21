@@ -452,6 +452,59 @@ window.ReelsEngine = (function() {
                 0%, 100% { transform: translateY(0); }
                 50% { transform: translateY(-10px); }
             }
+            @keyframes reelHookFanWave {
+                0% { transform: translateY(0) scale(1); }
+                50% { transform: translateY(-8px) scale(1.03); }
+                100% { transform: translateY(4px) scale(0.98); }
+            }
+            @keyframes reelHookVortex {
+                0% { transform: rotateY(0deg); }
+                100% { transform: rotateY(360deg); }
+            }
+            @keyframes reelHookFloatA {
+                0%, 100% { transform: translateY(0) rotate(0deg); }
+                50% { transform: translateY(-12px) rotate(2deg); }
+            }
+            @keyframes reelHookFloatB {
+                0%, 100% { transform: translateY(0) rotate(0deg); }
+                50% { transform: translateY(10px) rotate(-3deg); }
+            }
+            @keyframes reelHookFloatC {
+                0%, 100% { transform: translateY(0) scale(1); }
+                50% { transform: translateY(-14px) scale(1.04); }
+            }
+            @keyframes reelHookPodiumFloat {
+                0%, 100% { transform: translateY(0); filter: drop-shadow(0 0 16px rgba(251,191,36,0.6)); }
+                50% { transform: translateY(-10px); filter: drop-shadow(0 0 32px rgba(251,191,36,0.95)); }
+            }
+            @keyframes reelHookVersusLeft {
+                0%, 100% { transform: rotateY(20deg) rotateZ(-4deg) scale(1); }
+                50% { transform: rotateY(16deg) rotateZ(-2deg) scale(1.04); }
+            }
+            @keyframes reelHookVersusRight {
+                0%, 100% { transform: rotateY(-20deg) rotateZ(4deg) scale(1); }
+                50% { transform: rotateY(-16deg) rotateZ(2deg) scale(1.04); }
+            }
+            @keyframes reelHookRoulette {
+                0% { transform: translateY(0); }
+                100% { transform: translateY(-50%); }
+            }
+            @keyframes reelHoloSheen {
+                0% { transform: translateX(-180%) rotate(25deg); opacity: 0; }
+                15% { opacity: 0.85; }
+                65% { transform: translateX(280%) rotate(25deg); opacity: 0.85; }
+                66%, 100% { opacity: 0; }
+            }
+            @keyframes reelScanLine {
+                0% { top: 0%; opacity: 0; }
+                12% { opacity: 1; }
+                88% { opacity: 1; }
+                100% { top: 100%; opacity: 0; }
+            }
+            @keyframes reelIsoDrift {
+                0% { transform: translate3d(0, 0, 0); }
+                100% { transform: translate3d(-100px, -60px, 0); }
+            }
             @keyframes reelHookMysteryPulse {
                 0%, 100% { transform: scale(1.0); filter: drop-shadow(0 0 16px rgba(245,158,11,0.5)) drop-shadow(0 0 35px rgba(217,119,6,0.3)); }
                 50% { transform: scale(1.05); filter: drop-shadow(0 0 32px rgba(245,158,11,0.95)) drop-shadow(0 0 60px rgba(217,119,6,0.6)); }
@@ -2108,12 +2161,12 @@ window.ReelsEngine = (function() {
             slide.sfxConfig = {};
             if (slide.type === 'intro') {
                 slide.sfxConfig.whoosh = true;
-                slide.sfxConfig.boom = (slide.introHookStyle === 'mystery_card');
+                slide.sfxConfig.boom = (slide.introHookStyle === 'mystery_card' || slide.introHookStyle === 'versus_clash' || slide.introHookStyle === 'top3_podium');
                 slide.sfxConfig.whistle = (slide.introHookStyle !== 'mystery_card');
-                slide.sfxConfig.cardSlam = false;
+                slide.sfxConfig.cardSlam = (slide.introHookStyle === 'cards_scatter' || slide.introHookStyle === 'top3_podium');
                 slide.sfxConfig.coin = false;
-                slide.sfxConfig.crowd = false;
-                slide.sfxConfig.electric = false;
+                slide.sfxConfig.crowd = (slide.introHookStyle === 'top3_podium');
+                slide.sfxConfig.electric = (slide.introHookStyle === 'versus_clash' || slide.introHookStyle === 'holo_card');
                 slide.sfxConfig.rankBell = false;
             } else if (slide.type === 'player_card') {
                 slide.sfxConfig.whoosh = true;
@@ -5341,37 +5394,46 @@ window.ReelsEngine = (function() {
     function renderIntroVisualHookHtml(slide) {
         if (!slide || slide.type !== 'intro') return '';
 
-        const style = slide.introHookStyle || 'cards_stream';
+        const style = slide.introHookStyle || 'dual_stream';
         if (style === 'none') return '';
 
-        const blurVal = slide.introHookBlur || '3px';
-        const opacityVal = (slide.introHookOpacity !== undefined) ? slide.introHookOpacity : 0.48;
+        const blurVal = slide.introHookBlur || '2px';
+        const opacityVal = (slide.introHookOpacity !== undefined) ? slide.introHookOpacity : 0.62;
         const hasGlow = slide.introHookGlow !== false;
 
         const cardUrls = getIntroHookCardUrls();
         const activeCards = cardUrls.slice(0, 6);
 
-        // Center Spotlight Gradient
+        // Center Spotlight Gradient (Elevates contrast & luxury aesthetic)
         const glowHtml = hasGlow ? `
-            <div class="absolute top-[44%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[380px] h-[380px] rounded-full pointer-events-none" 
-                 style="background: radial-gradient(circle, rgba(251, 191, 36, 0.42) 0%, rgba(245, 158, 11, 0.16) 45%, transparent 70%); filter: blur(35px); z-index: 5;">
+            <div class="absolute top-[42%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[390px] h-[390px] rounded-full pointer-events-none" 
+                 style="background: radial-gradient(circle, rgba(251, 191, 36, 0.45) 0%, rgba(245, 158, 11, 0.18) 45%, transparent 70%); filter: blur(35px); z-index: 5;">
             </div>
         ` : '';
 
-        if (style === 'cards_stream') {
-            // 3D Infinite Diagonal Cards Stream
+        // 1. ⚡ صفين كروت متقاطعة 3D (تأطير سينمائي باتجاهين متعاكسين)
+        if (style === 'dual_stream') {
             const cardItems = activeCards.map(url => `
-                <div class="shrink-0 w-36 h-auto drop-shadow-[0_15px_25px_rgba(0,0,0,0.45)] pointer-events-none transition-transform">
-                    <img src="${toProxyUrl(url)}" alt="Card" class="w-full h-auto object-contain" crossorigin="anonymous">
+                <div class="shrink-0 w-28 h-auto drop-shadow-[0_16px_28px_rgba(0,0,0,0.55)] pointer-events-none transition-transform hover:scale-105">
+                    <img src="${toProxyUrl(url)}" alt="Card" class="w-full h-auto object-contain rounded-xl" crossorigin="anonymous">
                 </div>
             `).join('');
 
             return `
-                <div class="absolute inset-0 pointer-events-none overflow-hidden z-10 flex items-center justify-center" style="direction: ltr;">
+                <div class="absolute inset-0 pointer-events-none overflow-hidden z-10" style="direction: ltr; perspective: 1200px;">
                     ${glowHtml}
-                    <div class="w-full overflow-hidden absolute top-[36%]" style="perspective: 1000px; transform: rotate(-5deg); z-index: 10;">
-                        <div class="flex items-center gap-6 w-max" 
-                             style="transform: rotateY(-14deg) rotateX(8deg); transform-style: preserve-3d; animation: reelHookCardsStream 22s linear infinite; filter: blur(${blurVal}) opacity(${opacityVal}); will-change: transform;">
+                    <!-- Row 1: Top 3D Stream (Drifting Left) -->
+                    <div class="absolute w-full overflow-hidden" style="top: 15%; transform: rotate(-5.5deg) rotateX(12deg) rotateY(-8deg); transform-style: preserve-3d; z-index: 10;">
+                        <div class="flex items-center gap-6 w-max" style="animation: reelHookCardsStream 22s linear infinite; will-change: transform; filter: blur(${blurVal}) opacity(${opacityVal});">
+                            ${cardItems}
+                            ${cardItems}
+                            ${cardItems}
+                        </div>
+                    </div>
+                    <!-- Row 2: Bottom 3D Stream (Drifting Right) -->
+                    <div class="absolute w-full overflow-hidden" style="top: 50%; transform: rotate(-5.5deg) rotateX(-12deg) rotateY(8deg); transform-style: preserve-3d; z-index: 10;">
+                        <div class="flex items-center gap-6 w-max" style="animation: reelHookCardsStreamReverse 24s linear infinite; will-change: transform; filter: blur(${blurVal}) opacity(${opacityVal});">
+                            ${cardItems}
                             ${cardItems}
                             ${cardItems}
                         </div>
@@ -5380,76 +5442,285 @@ window.ReelsEngine = (function() {
             `;
         }
 
+        // 2. 🃏 مروحة الكروت 3D المقوسة الفاخرة (تموج عائم وتوهج)
         if (style === 'cards_fan') {
-            // 3D 5-Card Arc Fan
             const fanConfigs = [
-                { deg: -22, x: -130, y: 22, s: 0.80, z: 1, delay: 0 },
-                { deg: -11, x: -65, y: 8, s: 0.92, z: 2, delay: 0.2 },
-                { deg: 0, x: 0, y: -6, s: 1.06, z: 5, delay: 0.4 },
-                { deg: 11, x: 65, y: 8, s: 0.92, z: 2, delay: 0.6 },
-                { deg: 22, x: 130, y: 22, s: 0.80, z: 1, delay: 0.8 }
+                { deg: -26, x: -140, y: 26, s: 0.82, z: 1, delay: 0 },
+                { deg: -13, x: -70, y: 9, s: 0.94, z: 2, delay: 0.15 },
+                { deg: 0, x: 0, y: -12, s: 1.12, z: 6, delay: 0.3, isLead: true },
+                { deg: 13, x: 70, y: 9, s: 0.94, z: 2, delay: 0.45 },
+                { deg: 26, x: 140, y: 26, s: 0.82, z: 1, delay: 0.6 }
             ];
 
             const fanCardsHtml = fanConfigs.map((cfg, i) => {
                 const cUrl = cardUrls[i % cardUrls.length];
+                const leadDrop = cfg.isLead ? 'drop-shadow-[0_20px_35px_rgba(251,191,36,0.6)] drop-shadow-[0_0_20px_rgba(245,158,11,0.45)]' : 'drop-shadow-2xl';
                 return `
-                    <div class="absolute w-36 h-auto drop-shadow-2xl pointer-events-none" 
-                         style="left: calc(50% + ${cfg.x}px - 72px); top: calc(50% + ${cfg.y}px - 100px); z-index: ${cfg.z}; transform: rotate(${cfg.deg}deg) scale(${cfg.s}); animation: reelHookFanFloat 3.8s ease-in-out infinite ${cfg.delay}s; will-change: transform;">
-                        <img src="${toProxyUrl(cUrl)}" class="w-full h-auto object-contain" crossorigin="anonymous">
+                    <div class="absolute w-36 h-auto ${leadDrop} pointer-events-none transition-all" 
+                         style="left: calc(50% + ${cfg.x}px - 72px); top: calc(50% + ${cfg.y}px - 105px); z-index: ${cfg.z}; transform: rotate(${cfg.deg}deg) scale(${cfg.s}); animation: reelHookFanWave 3.6s ease-in-out infinite alternate ${cfg.delay}s; will-change: transform;">
+                        <img src="${toProxyUrl(cUrl)}" class="w-full h-auto object-contain rounded-xl" crossorigin="anonymous">
                     </div>
                 `;
             }).join('');
 
             return `
-                <div class="absolute inset-0 pointer-events-none overflow-hidden z-10 flex items-center justify-center" style="direction: ltr;">
+                <div class="absolute inset-0 pointer-events-none overflow-hidden z-10" style="direction: ltr;">
                     ${glowHtml}
-                    <div class="relative w-[380px] h-[300px] flex items-center justify-center" style="top: 4%; filter: blur(${blurVal}) opacity(${opacityVal}); z-index: 10;">
+                    <div class="absolute w-[400px] h-[320px] flex items-center justify-center" style="top: 42%; left: 50%; transform: translate(-50%, -50%); filter: blur(${blurVal}) opacity(${opacityVal}); z-index: 10;">
                         ${fanCardsHtml}
                     </div>
                 </div>
             `;
         }
 
-        if (style === 'mystery_card') {
-            // Mystery Glowing Card with Question Mark
-            const leadCard = cardUrls[0] || 'assets/placeholder_card.png';
+        // 3. 🌪️ إعصار ودوامة الكروت 3D (دوران أسطواني مبهر)
+        if (style === 'cards_vortex') {
+            const vortexCards = activeCards.slice(0, 6);
+            const count = vortexCards.length;
+            const radius = 180;
+            const itemsHtml = vortexCards.map((url, i) => {
+                const angle = (360 / count) * i;
+                return `
+                    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-auto drop-shadow-2xl pointer-events-none"
+                         style="transform: rotateY(${angle}deg) translateZ(${radius}px);">
+                        <img src="${toProxyUrl(url)}" class="w-full h-auto object-contain rounded-xl" crossorigin="anonymous">
+                    </div>
+                `;
+            }).join('');
+
             return `
-                <div class="absolute inset-0 pointer-events-none overflow-hidden z-10 flex flex-col items-center justify-center" style="direction: ltr;">
+                <div class="absolute inset-0 pointer-events-none overflow-hidden z-10" style="direction: ltr; perspective: 950px;">
                     ${glowHtml}
-                    <div class="relative flex flex-col items-center justify-center" style="top: 4%; animation: reelHookMysteryPulse 2.8s ease-in-out infinite; filter: blur(${blurVal}) opacity(${opacityVal}); z-index: 10;">
-                        <div class="relative w-44 h-64 flex items-center justify-center">
-                            <img src="${toProxyUrl(leadCard)}" alt="Mystery Card" class="max-h-full max-w-full object-contain filter contrast-125 brightness-95 drop-shadow-2xl" crossorigin="anonymous">
-                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-amber-950/45 to-transparent rounded-2xl flex items-center justify-center">
-                                <span class="text-6xl drop-shadow-[0_0_25px_rgba(251,191,36,0.95)]" style="animation: reelHookMysteryQuestion 2s ease-in-out infinite;">❓</span>
-                            </div>
-                        </div>
-                        <div class="mt-2 px-3.5 py-1 rounded-full bg-black/75 border border-amber-400/60 text-amber-300 text-[11px] font-black tracking-wide shadow-xl">
-                            🔒 كرت المركز الأول السري
+                    <div class="absolute w-[360px] h-[340px] flex items-center justify-center" style="top: 42%; left: 50%; transform: translate(-50%, -50%) rotateX(-8deg); transform-style: preserve-3d; filter: blur(${blurVal}) opacity(${opacityVal}); z-index: 10;">
+                        <div class="w-full h-full relative" style="transform-style: preserve-3d; animation: reelHookVortex 24s linear infinite; will-change: transform;">
+                            ${itemsHtml}
                         </div>
                     </div>
                 </div>
             `;
         }
 
-        if (style === 'dual_stream') {
-            // Dual Drifting Rows in Opposite Directions
-            const cardItems = activeCards.map(url => `
-                <div class="shrink-0 w-32 h-auto drop-shadow-lg pointer-events-none">
-                    <img src="${toProxyUrl(url)}" alt="Card" class="w-full h-auto object-contain" crossorigin="anonymous">
+        // 4. 💥 انفجار وتناثر الكروت 3D (عمق سينمائي وتناثر هوليوودي)
+        if (style === 'cards_scatter') {
+            const scatterConfigs = [
+                { top: '15%', left: '4%', deg: -16, s: 0.78, z: 1, anim: 'reelHookFloatA 4.2s infinite ease-in-out' },
+                { top: '16%', right: '4%', deg: 18, s: 0.82, z: 2, anim: 'reelHookFloatB 4.6s infinite ease-in-out' },
+                { top: '38%', left: '50%', isCenter: true, deg: 0, s: 1.10, z: 6, anim: 'reelHookFloatC 3.8s infinite ease-in-out' },
+                { bottom: '26%', left: '2%', deg: 14, s: 0.84, z: 3, anim: 'reelHookFloatB 4.0s infinite ease-in-out' },
+                { bottom: '22%', right: '2%', deg: -15, s: 0.86, z: 3, anim: 'reelHookFloatA 4.4s infinite ease-in-out' },
+                { bottom: '10%', left: '50%', isCenter: true, deg: -4, s: 0.72, z: 1, anim: 'reelHookFloatC 3.5s infinite ease-in-out' }
+            ];
+
+            const scatterCardsHtml = scatterConfigs.map((cfg, i) => {
+                const cUrl = cardUrls[i % cardUrls.length];
+                const posStyles = cfg.isCenter 
+                    ? `left: 50%; transform: translateX(-50%) rotate(${cfg.deg}deg) scale(${cfg.s});`
+                    : `${cfg.top ? `top: ${cfg.top};` : `bottom: ${cfg.bottom};`} ${cfg.left ? `left: ${cfg.left};` : `right: ${cfg.right};`} transform: rotate(${cfg.deg}deg) scale(${cfg.s});`;
+                return `
+                    <div class="absolute w-32 h-auto drop-shadow-2xl pointer-events-none"
+                         style="${posStyles} z-index: ${cfg.z}; animation: ${cfg.anim}; will-change: transform;">
+                        <img src="${toProxyUrl(cUrl)}" class="w-full h-auto object-contain rounded-xl" crossorigin="anonymous">
+                    </div>
+                `;
+            }).join('');
+
+            return `
+                <div class="absolute inset-0 pointer-events-none overflow-hidden z-10" style="direction: ltr; filter: blur(${blurVal}) opacity(${opacityVal});">
+                    ${glowHtml}
+                    ${scatterCardsHtml}
+                </div>
+            `;
+        }
+
+        // 5. 👑 منصة التوب 3 الماسية (تتويج المراكز 1 و 2 و 3)
+        if (style === 'top3_podium') {
+            const card1 = cardUrls[0] || 'assets/placeholder_card.png';
+            const card2 = cardUrls[1] || card1;
+            const card3 = cardUrls[2] || card1;
+
+            return `
+                <div class="absolute inset-0 pointer-events-none overflow-hidden z-10" style="direction: ltr;">
+                    ${glowHtml}
+                    <div class="absolute w-[390px] h-[340px] flex items-center justify-center" style="top: 42%; left: 50%; transform: translate(-50%, -50%); filter: blur(${blurVal}) opacity(${opacityVal}); z-index: 10;">
+                        <!-- #3 Bronze (Left) -->
+                        <div class="absolute left-3 top-8 w-28 h-auto drop-shadow-xl pointer-events-none flex flex-col items-center" 
+                             style="transform: rotate(-10deg) scale(0.88); z-index: 2; animation: reelHookFanFloat 3.8s ease-in-out infinite 0.4s;">
+                            <img src="${toProxyUrl(card3)}" class="w-full h-auto object-contain rounded-xl" crossorigin="anonymous">
+                            <span class="mt-1.5 px-2 py-0.5 rounded-full bg-amber-900/80 text-amber-200 border border-amber-600 text-[10px] font-black shadow-md">🥉 #3</span>
+                        </div>
+
+                        <!-- #1 Gold (Center Star) -->
+                        <div class="relative w-36 h-auto drop-shadow-[0_20px_35px_rgba(251,191,36,0.85)] pointer-events-none flex flex-col items-center" 
+                             style="transform: scale(1.14); z-index: 6; animation: reelHookPodiumFloat 3.4s ease-in-out infinite;">
+                            <div class="absolute -top-7 px-3 py-1 rounded-full bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 text-slate-950 text-[11px] font-black shadow-lg border border-amber-200 flex items-center gap-1 animate-pulse">
+                                <span>👑</span>
+                                <span>المركز الأول</span>
+                            </div>
+                            <img src="${toProxyUrl(card1)}" class="w-full h-auto object-contain rounded-xl border-2 border-amber-400/60" crossorigin="anonymous">
+                            <span class="mt-2 px-3 py-0.5 rounded-full bg-black/85 text-amber-300 border border-amber-400 text-xs font-black shadow-xl">🥇 #1</span>
+                        </div>
+
+                        <!-- #2 Silver (Right) -->
+                        <div class="absolute right-3 top-6 w-28 h-auto drop-shadow-xl pointer-events-none flex flex-col items-center" 
+                             style="transform: rotate(10deg) scale(0.92); z-index: 3; animation: reelHookFanFloat 3.8s ease-in-out infinite 0.2s;">
+                            <img src="${toProxyUrl(card2)}" class="w-full h-auto object-contain rounded-xl" crossorigin="anonymous">
+                            <span class="mt-1.5 px-2 py-0.5 rounded-full bg-slate-800/80 text-slate-200 border border-slate-500 text-[10px] font-black shadow-md">🥈 #2</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 6. ⚔️ صدام العمالقة وجه لوجه (كروت متقابلة مع صاعقة طاقة)
+        if (style === 'versus_clash') {
+            const cardA = cardUrls[0] || 'assets/placeholder_card.png';
+            const cardB = cardUrls[1] || cardA;
+
+            return `
+                <div class="absolute inset-0 pointer-events-none overflow-hidden z-10" style="direction: ltr; perspective: 1100px;">
+                    ${glowHtml}
+                    <div class="absolute w-[380px] h-[320px] flex items-center justify-between px-2" style="top: 42%; left: 50%; transform: translate(-50%, -50%); filter: blur(${blurVal}) opacity(${opacityVal}); z-index: 10;">
+                        <!-- Card Left (Player A) -->
+                        <div class="w-36 h-auto drop-shadow-2xl pointer-events-none" style="animation: reelHookVersusLeft 3.2s ease-in-out infinite; will-change: transform;">
+                            <img src="${toProxyUrl(cardA)}" class="w-full h-auto object-contain rounded-xl" crossorigin="anonymous">
+                        </div>
+
+                        <!-- Central Lightning Energy Arc -->
+                        <div class="relative flex flex-col items-center justify-center z-10 mx-auto pointer-events-none">
+                            <div class="w-14 h-14 rounded-full bg-gradient-to-br from-amber-500 via-rose-500 to-amber-600 flex items-center justify-center shadow-[0_0_30px_rgba(245,158,11,0.9)] border-2 border-white/80 animate-pulse">
+                                <span class="text-white font-black text-sm tracking-widest drop-shadow-md">VS</span>
+                            </div>
+                            <div class="mt-1 text-[11px] font-black text-amber-300 drop-shadow-[0_0_8px_rgba(251,191,36,0.8)]">⚡ صـدام ⚡</div>
+                        </div>
+
+                        <!-- Card Right (Player B) -->
+                        <div class="w-36 h-auto drop-shadow-2xl pointer-events-none" style="animation: reelHookVersusRight 3.2s ease-in-out infinite; will-change: transform;">
+                            <img src="${toProxyUrl(cardB)}" class="w-full h-auto object-contain rounded-xl" crossorigin="anonymous">
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 7. 🎰 روليت الكروت الخاطف (سحب باكات سريع وحماس فوري)
+        if (style === 'cards_roulette') {
+            const rouletteCards = activeCards.concat(activeCards);
+            const rItems = rouletteCards.map(url => `
+                <div class="w-32 h-auto shrink-0 drop-shadow-lg">
+                    <img src="${toProxyUrl(url)}" class="w-full h-auto object-contain rounded-xl" crossorigin="anonymous">
                 </div>
             `).join('');
 
             return `
-                <div class="absolute inset-0 pointer-events-none overflow-hidden z-10 flex flex-col justify-center gap-6" style="direction: ltr; transform: rotate(-5deg); filter: blur(${blurVal}) opacity(${opacityVal});">
+                <div class="absolute inset-0 pointer-events-none overflow-hidden z-10" style="direction: ltr;">
                     ${glowHtml}
-                    <div class="w-full overflow-hidden" style="top: 30%; z-index: 10;">
-                        <div class="flex items-center gap-5 w-max" style="animation: reelHookCardsStreamReverse 26s linear infinite; will-change: transform;">
-                            ${cardItems}
-                            ${cardItems}
+                    <div class="absolute w-36 h-[340px] overflow-hidden rounded-2xl border-2 border-amber-400/80 shadow-[0_0_35px_rgba(245,158,11,0.45)] bg-black/40 backdrop-blur-xs" 
+                         style="top: 42%; left: 50%; transform: translate(-50%, -50%); filter: blur(${blurVal}) opacity(${opacityVal}); z-index: 10;">
+                        <!-- Selector Aim Brackets -->
+                        <div class="absolute top-1/2 left-0 right-0 -translate-y-1/2 h-28 border-y-2 border-amber-400 bg-amber-400/15 pointer-events-none z-20 flex items-center justify-between px-1">
+                            <span class="text-amber-400 font-black text-sm animate-pulse">▶</span>
+                            <span class="text-amber-400 font-black text-sm animate-pulse">◀</span>
+                        </div>
+                        <!-- Scrolling Reel -->
+                        <div class="flex flex-col items-center gap-4 py-2" style="animation: reelHookRoulette 6s linear infinite; will-change: transform;">
+                            ${rItems}
+                            ${rItems}
                         </div>
                     </div>
-                    <div class="w-full overflow-hidden" style="top: 55%; z-index: 10;">
-                        <div class="flex items-center gap-5 w-max" style="animation: reelHookCardsStream 22s linear infinite; will-change: transform;">
+                </div>
+            `;
+        }
+
+        // 8. 💎 الكرت الهولوغرافي الماسي (كرت ضخم ولمعان ضوئي متحرك)
+        if (style === 'holo_card') {
+            const leadCard = cardUrls[0] || 'assets/placeholder_card.png';
+            return `
+                <div class="absolute inset-0 pointer-events-none overflow-hidden z-10" style="direction: ltr;">
+                    ${glowHtml}
+                    <div class="absolute flex flex-col items-center justify-center" style="top: 42%; left: 50%; transform: translate(-50%, -50%); filter: blur(${blurVal}) opacity(${opacityVal}); z-index: 10;">
+                        <div class="relative w-48 h-auto drop-shadow-[0_25px_40px_rgba(245,158,11,0.55)] overflow-hidden rounded-2xl">
+                            <img src="${toProxyUrl(leadCard)}" class="w-full h-auto object-contain rounded-2xl" crossorigin="anonymous">
+                            <!-- Animated Sheen Beam -->
+                            <div class="absolute inset-0 pointer-events-none" style="background: linear-gradient(105deg, transparent 20%, rgba(255,255,255,0.7) 45%, rgba(251,191,36,0.9) 50%, rgba(255,255,255,0.7) 55%, transparent 75%); animation: reelHoloSheen 3.2s ease-in-out infinite; will-change: transform;"></div>
+                        </div>
+
+                        <!-- Floating Stat Indicators -->
+                        <div class="mt-3 flex items-center gap-2">
+                            <span class="px-2.5 py-1 rounded-full bg-slate-950/85 text-amber-300 border border-amber-400/80 text-[10px] font-black shadow-lg">⚡ 99 PAC</span>
+                            <span class="px-2.5 py-1 rounded-full bg-slate-950/85 text-emerald-300 border border-emerald-400/80 text-[10px] font-black shadow-lg">🔮 META 100%</span>
+                            <span class="px-2.5 py-1 rounded-full bg-slate-950/85 text-purple-300 border border-purple-400/80 text-[10px] font-black shadow-lg">🪄 5★ SKILLS</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 9. 🧱 الجدار الشبكي الماسي 3D (مصفوفة كروت مستقبلية)
+        if (style === 'isometric_grid') {
+            const gridCards = activeCards.slice(0, 6);
+            const gridItems = gridCards.map(url => `
+                <div class="w-28 h-auto drop-shadow-xl shrink-0">
+                    <img src="${toProxyUrl(url)}" class="w-full h-auto object-contain rounded-xl" crossorigin="anonymous">
+                </div>
+            `).join('');
+
+            return `
+                <div class="absolute inset-0 pointer-events-none overflow-hidden z-10" style="direction: ltr;">
+                    ${glowHtml}
+                    <div class="absolute w-[500px] h-[380px] flex flex-col gap-5 justify-center" 
+                         style="top: 42%; left: 50%; transform: translate(-50%, -50%) rotateX(24deg) rotateZ(-12deg) skewX(-4deg); transform-style: preserve-3d; filter: blur(${blurVal}) opacity(${opacityVal}); z-index: 10;">
+                        <div class="flex items-center gap-5 w-max" style="animation: reelIsoDrift 18s linear infinite; will-change: transform;">
+                            ${gridItems}
+                            ${gridItems}
+                        </div>
+                        <div class="flex items-center gap-5 w-max" style="margin-left: -50px; animation: reelIsoDrift 18s linear infinite; will-change: transform;">
+                            ${gridItems}
+                            ${gridItems}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 10. ❓ كرت الصدمة والغموض المطوّر (ماسح ليزري للفضول)
+        if (style === 'mystery_card') {
+            const leadCard = cardUrls[0] || 'assets/placeholder_card.png';
+            return `
+                <div class="absolute inset-0 pointer-events-none overflow-hidden z-10 flex flex-col items-center justify-center" style="direction: ltr;">
+                    ${glowHtml}
+                    <div class="absolute flex flex-col items-center justify-center" style="top: 42%; left: 50%; transform: translate(-50%, -50%); animation: reelHookMysteryPulse 2.8s ease-in-out infinite; filter: blur(${blurVal}) opacity(${opacityVal}); z-index: 10;">
+                        <div class="relative w-44 h-64 flex items-center justify-center overflow-hidden rounded-2xl shadow-[0_20px_40px_rgba(0,0,0,0.7)]">
+                            <img src="${toProxyUrl(leadCard)}" alt="Mystery Card" class="max-h-full max-w-full object-contain filter contrast-125 brightness-90 drop-shadow-2xl rounded-2xl" crossorigin="anonymous">
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-amber-950/50 to-slate-950/30 rounded-2xl flex items-center justify-center">
+                                <span class="text-6xl drop-shadow-[0_0_25px_rgba(251,191,36,0.95)]" style="animation: reelHookMysteryQuestion 2s ease-in-out infinite;">❓</span>
+                            </div>
+                            <!-- Laser Scanning Line -->
+                            <div class="absolute left-0 right-0 h-1 bg-gradient-to-r from-transparent via-amber-300 to-transparent shadow-[0_0_15px_#f59e0b] pointer-events-none" style="animation: reelScanLine 2.2s ease-in-out infinite;"></div>
+                        </div>
+                        <div class="mt-2.5 px-3.5 py-1 rounded-full bg-black/85 border border-amber-400/80 text-amber-300 text-[11px] font-black tracking-wide shadow-xl flex items-center gap-1.5">
+                            <span>🔒</span>
+                            <span>كرت المركز الأول السري (من هو؟)</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 11. 🎴 قطار الكروت 3D المتتالي الفردي (انسياب كلاسيكي مائل)
+        if (style === 'cards_stream') {
+            const cardItems = activeCards.map(url => `
+                <div class="shrink-0 w-36 h-auto drop-shadow-[0_15px_25px_rgba(0,0,0,0.5)] pointer-events-none transition-transform">
+                    <img src="${toProxyUrl(url)}" alt="Card" class="w-full h-auto object-contain rounded-xl" crossorigin="anonymous">
+                </div>
+            `).join('');
+
+            return `
+                <div class="absolute inset-0 pointer-events-none overflow-hidden z-10" style="direction: ltr;">
+                    ${glowHtml}
+                    <div class="absolute w-full overflow-hidden" style="top: 38%; perspective: 1000px; transform: rotate(-5.5deg); z-index: 10;">
+                        <div class="flex items-center gap-6 w-max" 
+                             style="transform: rotateY(-14deg) rotateX(8deg); transform-style: preserve-3d; animation: reelHookCardsStream 22s linear infinite; filter: blur(${blurVal}) opacity(${opacityVal}); will-change: transform;">
+                            ${cardItems}
                             ${cardItems}
                             ${cardItems}
                         </div>
@@ -6692,10 +6963,17 @@ window.ReelsEngine = (function() {
                             <label class="text-[10.5px] font-black text-slate-800">نمط الحركة والكروت بالخلفية:</label>
                             <select onchange="ReelsEngine.updateCurrentSlideField('introHookStyle', this.value); ReelsEngine.renderCanvas(); ReelsEngine.renderEditorControls();" 
                                     class="w-full px-2.5 py-2 rounded-xl bg-white border border-amber-300 text-xs font-bold text-slate-900 outline-none focus:border-amber-500 shadow-2xs cursor-pointer">
-                                <option value="cards_stream" ${(slide.introHookStyle === 'cards_stream' || !slide.introHookStyle) ? 'selected' : ''}>🎴 قطار الكروت 3D المتتالي (الموصى به - كروت تمشي ورا بعض)</option>
-                                <option value="cards_fan" ${slide.introHookStyle === 'cards_fan' ? 'selected' : ''}>🃏 مروحة الكروت 3D المقوسة (تموج عائم وتوهج)</option>
-                                <option value="mystery_card" ${slide.introHookStyle === 'mystery_card' ? 'selected' : ''}>❓ كرت الصدمة الغامض (فضول عالي لمعرفة صاحب #1)</option>
-                                <option value="dual_stream" ${slide.introHookStyle === 'dual_stream' ? 'selected' : ''}>⚡ صفين كروت متقاطعة (اتجاهين متعاكسين)</option>
+                                <option value="dual_stream" ${(slide.introHookStyle === 'dual_stream' || !slide.introHookStyle) ? 'selected' : ''}>⚡ صفين كروت متقاطعة 3D (تأطير سينمائي باتجاهين)</option>
+                                <option value="cards_fan" ${slide.introHookStyle === 'cards_fan' ? 'selected' : ''}>🃏 مروحة الكروت 3D المقوسة الفاخرة (تموج عائم وتوهج)</option>
+                                <option value="cards_vortex" ${slide.introHookStyle === 'cards_vortex' ? 'selected' : ''}>🌪️ إعصار ودوامة الكروت 3D (دوران أسطواني مبهر)</option>
+                                <option value="cards_scatter" ${slide.introHookStyle === 'cards_scatter' ? 'selected' : ''}>💥 انفجار وتناثر الكروت 3D (عمق سينمائي وتناثر هوليوودي)</option>
+                                <option value="top3_podium" ${slide.introHookStyle === 'top3_podium' ? 'selected' : ''}>👑 منصة التوب 3 الماسية (تتويج المراكز 1 و 2 و 3)</option>
+                                <option value="versus_clash" ${slide.introHookStyle === 'versus_clash' ? 'selected' : ''}>⚔️ صدام العمالقة وجه لوجه (كروت متقابلة مع صاعقة طاقة)</option>
+                                <option value="cards_roulette" ${slide.introHookStyle === 'cards_roulette' ? 'selected' : ''}>🎰 روليت الكروت الخاطف (سحب باكات سريع وحماس فوري)</option>
+                                <option value="holo_card" ${slide.introHookStyle === 'holo_card' ? 'selected' : ''}>💎 الكرت الهولوغرافي الماسي (كرت ضخم ولمعان ضوئي متحرك)</option>
+                                <option value="isometric_grid" ${slide.introHookStyle === 'isometric_grid' ? 'selected' : ''}>🧱 الجدار الشبكي الماسي 3D (مصفوفة كروت مستقبلية)</option>
+                                <option value="mystery_card" ${slide.introHookStyle === 'mystery_card' ? 'selected' : ''}>❓ كرت الصدمة والغموض المطوّر (ماسح ليزري للفضول)</option>
+                                <option value="cards_stream" ${slide.introHookStyle === 'cards_stream' ? 'selected' : ''}>🎴 قطار الكروت 3D المتتالي الفردي (انسياب كلاسيكي مائل)</option>
                                 <option value="none" ${slide.introHookStyle === 'none' ? 'selected' : ''}>⏹️ خلفية رخام عادية (بدون كروت بالخلفية)</option>
                             </select>
                         </div>
